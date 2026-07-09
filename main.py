@@ -2,29 +2,30 @@ import os
 import psycopg2
 from starkerak import StarKerakClient
 
-# 1. Bazaga ulanish
-DATABASE_URL = os.environ['DATABASE_URL']
-conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-cur = conn.cursor()
+# 1. Bazaga ulanishni tekshiramiz
+try:
+    DATABASE_URL = os.environ['DATABASE_URL']
+    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    cur = conn.cursor()
+    print("Baza bilan ulanish muvaffaqiyatli!")
+except Exception as e:
+    print(f"BAZA XATOLIGI: {e}")
 
-# 2. Clientni ishga tushirish
-client = StarKerakClient("7bshDqG6hefSUPewpPcL8jmuM4uoCk27jtAL1sSfHks") # API kalitingiz
+# 2. Client
+client = StarKerakClient("7bshDqG6hefSUpewpPcL8jmu4uOcK27jtAL1sSfHks") 
 
 @client.on_payment
 async def pull_keldi(payment):
-    amount = payment['amount']
-    # Mijoz to'lov qilganda izohga yozgan ID raqamini olamiz
-    # Eslatma: payment['comment'] yoki shunga o'xshash maydon bo'lishi kerak
-    user_id = payment.get('comment', '0') 
+    print(f"To'lov qabul qilindi: {payment}") # Har qanday to'lovni ko'rish uchun
+    amount = payment.get('amount')
+    user_id = payment.get('comment', '0')
     
-    print(f"Yangi to'lov: {amount} so'm. Mijoz ID: {user_id}")
-
     try:
-        # 3. Bazada balansni oshirish
         cur.execute("UPDATE users SET balance = balance + %s WHERE id = %s", (amount, user_id))
         conn.commit()
-        print("Balans muvaffaqiyatli yangilandi!")
+        print(f"Balans {user_id} uchun {amount} ga oshdi!")
     except Exception as e:
-        print(f"Xatolik yuz berdi: {e}")
+        print(f"BAZA YANGILASH XATOLIGI: {e}")
 
+print("Bot ishga tushdi va to'lovlarni kutmoqda...")
 client.start_listening()
