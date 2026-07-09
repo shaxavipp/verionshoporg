@@ -40,7 +40,12 @@ Profil → **EGASI → Admin panel** (faqat ADMIN_IDS ro'yxatidagi Telegram akka
 
 Imkoniyatlar: mahsulot qo'shish/tahrirlash/o'chirish, narx/soni/kategoriya, galereyadan rasm, Aktiv/Noaktiv, jonli ko'rinish.
 
-**Muhim:** admin qo'shgan mahsulotlar faqat shu qurilmada saqlanadi (server yo'q). Hammaga ko'rsatish uchun: **Katalogni eksport qilish** → JSON'ni dasturchiga yuboring → fayl yangilanadi → qayta yuklanadi. Ikkinchi admin bilan sinxronlash: birinchi admin eksport qiladi, ikkinchisi **Import** ga qo'yadi.
+**Umumiy katalog (Railway'da):** admin panelda o'zgartirish qilib **🌍 Nashr qilish** tugmasini bossangiz, katalog serverga saqlanadi va **barcha mijozlar darhol ko'radi**. Buning ishlashi uchun Railway'da bitta sozlama shart:
+
+1. Railway → service → **Variables** → **New Variable**: nomi `BOT_TOKEN`, qiymati — BotFather bergan bot token (`/mybots` → bot → API Token). Bu server "nashr qilayotgan odam rostdan admin ekanini" Telegram imzosi orqali tekshirishi uchun kerak — tokensiz nashr ishlamaydi (403).
+2. Tavsiya: service → **Add Volume** → mount path: `/data` — shunda katalog qayta deploy'da ham saqlanib qoladi. (Volume bo'lmasa: har deploy'dan keyin admin paneldan bir marta qayta Nashr qilasiz.)
+
+Eksport/Import tugmalari zaxira sifatida qoladi. tiiny.host'da esa server yo'q — u yerda katalog faqat shu qurilmada bo'ladi.
 
 ## To'lov oqimi
 

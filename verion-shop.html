@@ -303,6 +303,8 @@ en:{
   a_import:"Import catalog",a_import_hint:"Paste a catalog JSON and press Import (syncs another admin's export).",
   a_import_done:"Catalog imported",a_import_bad:"Invalid JSON",a_copy:"Copy JSON",
   a_reset:"Reset to file defaults",a_reset_done:"Catalog reset",
+  a_publish:"🌍 Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
+  a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
   onb_sub:"Choose your language",
   guest_note:"Open the shop through the Telegram bot to place orders."
 },
@@ -335,6 +337,8 @@ uz:{
   a_import:"Katalogni import qilish",a_import_hint:"Katalog JSON'ini shu yerga qo'yib Import bosing (ikkinchi adminning eksportini sinxronlaydi).",
   a_import_done:"Katalog import qilindi",a_import_bad:"JSON noto'g'ri",a_copy:"JSON nusxalash",
   a_reset:"Fayl holatiga qaytarish",a_reset_done:"Katalog tiklandi",
+  a_publish:"🌍 Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
+  a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
   onb_sub:"Tilni tanlang",
   guest_note:"Buyurtma berish uchun do'konni Telegram bot orqali oching."
 },
@@ -367,6 +371,8 @@ ru:{
   a_import:"Импорт каталога",a_import_hint:"Вставьте JSON каталога и нажмите Импорт (синхронизация экспорта другого админа).",
   a_import_done:"Каталог импортирован",a_import_bad:"Неверный JSON",a_copy:"Копировать JSON",
   a_reset:"Сбросить к файлу",a_reset_done:"Каталог сброшен",
+  a_publish:"🌍 Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
+  a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
   onb_sub:"Выберите язык",
   guest_note:"Чтобы заказывать, откройте магазин через Telegram-бота."
 }
@@ -427,19 +433,26 @@ var S={
   over:Store.get("vn_over",{}),         // admin edits to default items {id:patch}
   removed:Store.get("vn_removed",[]),   // deleted default ids
   imported:Store.get("vn_imported",null), // full imported catalog (overrides everything)
+  serverCat:Store.get("vn_srv",null),    // catalog published on the server (shared with everyone)
   payCtx:null                            // {orderId,amount,title,locked}
 };
 function persist(){
   Store.set("vn_lang",S.lang);Store.set("vn_orders",S.orders);Store.set("vn_custom",S.custom);
   Store.set("vn_over",S.over);Store.set("vn_removed",S.removed);Store.set("vn_imported",S.imported);
+  Store.set("vn_srv",S.serverCat);
 }
 
 /* ===== catalog ===== */
+function baseCatalog(){
+  if(S.serverCat&&S.serverCat.length)return S.serverCat;
+  return DEFAULT_CATALOG;
+}
 function catalog(){
   if(S.imported&&S.imported.length)return S.imported;
+  var BASE=baseCatalog();
   var out=[];
-  for(var i=0;i<DEFAULT_CATALOG.length;i++){
-    var it=DEFAULT_CATALOG[i];
+  for(var i=0;i<BASE.length;i++){
+    var it=BASE[i];
     if(S.removed.indexOf(it.id)!==-1)continue;
     var copy=JSON.parse(JSON.stringify(it));
     var p=S.over[it.id];
@@ -696,6 +709,8 @@ function profileHTML(){
 function openAdmin(){
   var html='<h2>'+esc(t("a_panel"))+'</h2>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn green" id="aPub">'+esc(t("a_publish"))+'</button>'
+    +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
     +'<button class="btn" id="aNew">'+esc(t("a_new"))+'</button>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_current"))+'</div><div id="aList"></div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_export"))+'</div>'
@@ -708,6 +723,7 @@ function openAdmin(){
     +'<div style="height:8px"></div><button class="btn gray" id="aImpBtn">'+esc(t("a_import"))+'</button>'
     +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>';
   var sh=openSheet(html);
+  sh.querySelector("#aPub").addEventListener("click",publishCatalog);
   sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
   sh.querySelector("#aExp").value=JSON.stringify(catalog());
   sh.querySelector("#aCopy").addEventListener("click",function(){copyText(sh.querySelector("#aExp").value);});
@@ -761,6 +777,33 @@ function deleteItem(id){
   if(S.imported){S.imported=S.imported.filter(function(x){return x.id!==id;});return;}
   if(isCustom(id)){S.custom=S.custom.filter(function(x){return x.id!==id;});return;}
   if(S.removed.indexOf(id)===-1)S.removed.push(id);
+}
+
+/* ===== shared catalog: publish + load ===== */
+function publishCatalog(){
+  var initData=(TG&&TG.initData)?TG.initData:"";
+  if(!initData||typeof fetch!=="function"){toast(t("a_publish_err"));return;}
+  var arr=catalog();
+  fetch("/api/catalog",{method:"POST",
+    headers:{"Content-Type":"application/json","X-Init-Data":initData},
+    body:JSON.stringify(arr)})
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(){
+    S.serverCat=arr;S.custom=[];S.over={};S.removed=[];S.imported=null;
+    persist();haptic("ok");toast(t("a_publish_ok"));closeSheet();S.screen="home";render();
+  })
+  .catch(function(){toast(t("a_publish_err"));});
+}
+function loadServerCatalog(){
+  try{
+    if(typeof fetch!=="function")return;
+    fetch("/api/catalog",{cache:"no-store"})
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(arr){
+      if(Array.isArray(arr)&&arr.length){S.serverCat=arr;persist();if(S.lang)render();}
+    })
+    .catch(function(){});
+  }catch(e){}
 }
 </script>
 <script>
@@ -932,6 +975,7 @@ render=function(){
 /* ===== boot ===== */
 function boot(){
   render();
+  loadServerCatalog();
   setTimeout(function(){
     var sp=document.getElementById("splash");
     if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},500);}
