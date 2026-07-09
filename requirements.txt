@@ -1,0 +1,2 @@
+starkerak
+psycopg2-binary
