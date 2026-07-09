@@ -1,2 +1,3 @@
-starkerak
 psycopg2-binary
+requests
+starkerak
