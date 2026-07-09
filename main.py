@@ -12,7 +12,7 @@ except Exception as e:
     print(f"BAZA XATOLIGI: {e}")
 
 # 2. Client
-client = StarKerakClient("7bshDqG6hefSUpewpPcL8jmu4uOcK27jtAL1sSfHks") 
+client = StarKerakClient("yWjGEHOYemUolmXfTvG03j0Va34qooeKxN4wMpdzu-U") 
 
 @client.on_payment
 async def pull_keldi(payment):
