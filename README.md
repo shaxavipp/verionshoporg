@@ -1,6 +1,6 @@
 # Verion Shop — Telegram Mini App
 
-Bitta fayl: `verion-shop.html`. Butun do'kon shu faylning ichida (dizayn, mahsulotlar, 3 til, admin panel, to'lov oqimi). Server kerak emas.
+Bitta fayl: `verion-shop.html`. Butun do'kon shu faylning ichida (dizayn, mahsulotlar, 3 til, admin panel, to'lov oqimi). Railway'da server bilan ishlaydi (balans, katalog, buyurtmalar serverda).
 
 ## Deploy — 1-usul: Railway (tavsiya, banner yo'q)
 
@@ -47,19 +47,24 @@ Imkoniyatlar: mahsulot qo'shish/tahrirlash/o'chirish, narx/soni/kategoriya, gale
 
 Eksport/Import tugmalari zaxira sifatida qoladi. tiiny.host'da esa server yo'q — u yerda katalog faqat shu qurilmada bo'ladi.
 
-## To'lov oqimi
+## Balans va to'lov tizimi (Stage 1)
 
-1. Mijoz mahsulotni tanlaydi → **Sotib olish** → buyurtma (VN-XXXXXX) yaratiladi.
-2. To'lov ekrani: HUMO yoki UZCARD → karta raqami + aniq summa ko'rsatiladi.
-3. Mijoz pulni o'tkazadi → **Chek yuborish** → @verionshop_support chati Buyurtma ID bilan ochiladi → mijoz chek skrinshotini yuboradi.
-4. Admin pulni tekshiradi va mahsulotni chatda beradi.
+Endi balans SERVERDA saqlanadi (har bir Telegram ID uchun). Oqim:
 
-Balans/hamyon YO'Q — har buyurtma alohida to'lanadi (serversiz hamyonni xavfsiz qilib bo'lmaydi).
+1. Mijoz **To'ldirish** → summa + usul (HUMO/UZCARD) → **Davom etish**.
+2. Ilova UNIKAL summa beradi (masalan 50 001 so'm — tanib olish uchun), karta, 10 daqiqalik taymer va qoidalarni ko'rsatadi.
+3. Mijoz aynan shu summani o'tkazib **✅ To'lov qildim** ni bosadi.
+4. Admin panel → **💰 To'lovlar va mijozlar** da to'lov chiqadi → bank SMS'ni tekshirib **✅** bosiladi → mijoz balansiga avtomatik tushadi.
+5. Xarid: mijoz **Sotib olish** → balansdan yechiladi → buyurtma "Yetkazilmoqda" → admin mahsulotni berib **✅** bosadi → holat "Bajarildi". Bekor qilinsa pul avtomatik qaytadi.
+
+Admin panelda mijozni qidirish (ID/@username) va balansga qo'lda +/− qilish ham bor.
+
+Diqqat: bank SMS'dan AVTOMAT o'qish texnik jihatdan web-ilovada mumkin emas — tasdiqlash bir bosishlik qoldi. To'liq avtomat uchun keyinroq Click/Payme merchant yoki Telegram Stars ulanadi.
 
 ## Cheklovlar (Phase 2 rejasi)
 
-Server qo'shilganda: umumiy katalog (admin qo'shsa hammaga darhol ko'rinadi), rasmlar serverda, buyurtmalarni admin panelda tasdiqlash, balans tizimi, promo-kodlar, referral, Click/Payme/Telegram Stars.
+Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'yinlar, kichik kartochkalar, Dark/Light rejim), referral tizimi, buyurtmalar filtri, keyin Click/Payme/Telegram Stars.
 
 ---
 
-*Texnik: vanilla JS, tashqi kutubxonasiz (faqat Telegram WebApp SDK), localStorage, 33 ta avtomatik test o'tgan.*
+*Texnik: vanilla JS, tashqi kutubxonasiz (faqat Telegram WebApp SDK), localStorage, 77 ta avtomatik test o'tgan.*

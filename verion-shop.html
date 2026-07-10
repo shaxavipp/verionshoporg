@@ -120,6 +120,7 @@ header .sub{font-size:12px;color:var(--mut);margin-top:2px}
 .row .r{font-size:13px;color:var(--mut);text-align:right}
 .sect{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--mut);margin:18px 16px 8px;text-transform:uppercase}
 .badge{font-size:10.5px;padding:4px 10px;border-radius:999px;font-weight:800;white-space:nowrap}
+.badge.ok{background:rgba(48,209,88,.14);color:var(--ok)}
 .badge.pend{background:rgba(255,214,10,.14);color:var(--warn)}
 .badge.chk{background:rgba(77,163,255,.14);color:var(--blue)}
 .badge.cncl{background:rgba(255,69,58,.14);color:var(--err)}
@@ -182,6 +183,19 @@ nav button svg{width:22px;height:22px}
 .paynote{font-size:12.5px;color:var(--mut);margin:12px 0;line-height:1.55}
 .refline{display:flex;align-items:center;justify-content:space-between;background:var(--card2);
   border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px}
+
+/* balance card */
+.balcard{margin:12px 16px;background:linear-gradient(135deg,#2743ff,#7c5cff);border-radius:20px;padding:18px;
+  color:#fff;box-shadow:0 10px 30px rgba(60,70,255,.35);animation:fadeUp .22s ease}
+.balcard .bl{font-size:12px;opacity:.85;font-weight:700}
+.balcard .bv{font-size:29px;font-weight:800;margin-top:2px}
+.balcard .brow{display:flex;gap:10px;margin-top:14px}
+.balcard .brow button{flex:1;background:rgba(255,255,255,.16);border-radius:12px;padding:11px 6px;
+  font-weight:800;color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.14)}
+.payhuge{font-size:30px;font-weight:800;color:var(--acc2);letter-spacing:.02em}
+.rule{display:flex;gap:8px;font-size:12.5px;padding:4px 0;color:var(--mut)}
+.rule.bad{color:#ff8f88}
+.timer{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:800;color:var(--warn)}
 
 /* profile */
 .avatar{width:56px;height:56px;border-radius:50%;background:var(--grad);display:flex;align-items:center;
@@ -305,6 +319,17 @@ en:{
   a_reset:"Reset to file defaults",a_reset_done:"Catalog reset",
   a_publish:"🌍 Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
   a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
+  bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
+  buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
+  need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
+  pw_exact:"Transfer EXACTLY this amount",pw_rule1:"Do not change the amount even by 1 sum",
+  pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
+  pw_paid:"✅ I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
+  continue_btn:"Continue",st_done:"Completed",st_deliver:"Being delivered",
+  topup_created:"Now transfer the exact amount",srv_off:"Server unavailable — try again later",
+  adm_money:"💰 Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
+  adm_confirm:"Confirm",adm_cancel:"Cancel",adm_none:"Nothing pending",
+  adm_search:"Client (ID or @username)",adm_find:"Find",adm_amountph:"Amount (sum)",adm_done:"Done ✓",
   onb_sub:"Choose your language",
   guest_note:"Open the shop through the Telegram bot to place orders."
 },
@@ -339,6 +364,17 @@ uz:{
   a_reset:"Fayl holatiga qaytarish",a_reset_done:"Katalog tiklandi",
   a_publish:"🌍 Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
   a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
+  bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
+  buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
+  need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
+  pw_exact:"AYNAN shu summani o'tkazing",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
+  pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
+  pw_paid:"✅ To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
+  continue_btn:"Davom etish",st_done:"Bajarildi",st_deliver:"Yetkazilmoqda",
+  topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Server ishlamayapti — keyinroq urinib ko'ring",
+  adm_money:"💰 To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
+  adm_confirm:"Tasdiqlash",adm_cancel:"Bekor",adm_none:"Hozircha bo'sh",
+  adm_search:"Mijoz (ID yoki @username)",adm_find:"Qidirish",adm_amountph:"Summa (so'm)",adm_done:"Bajarildi ✓",
   onb_sub:"Tilni tanlang",
   guest_note:"Buyurtma berish uchun do'konni Telegram bot orqali oching."
 },
@@ -373,6 +409,17 @@ ru:{
   a_reset:"Сбросить к файлу",a_reset_done:"Каталог сброшен",
   a_publish:"🌍 Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
   a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
+  bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
+  buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
+  need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
+  pw_exact:"Переведите РОВНО эту сумму",pw_rule1:"Не меняйте сумму даже на 1 сум",
+  pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
+  pw_paid:"✅ Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
+  continue_btn:"Продолжить",st_done:"Выполнено",st_deliver:"Доставляется",
+  topup_created:"Теперь переведите ровно эту сумму",srv_off:"Сервер недоступен — попробуйте позже",
+  adm_money:"💰 Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
+  adm_confirm:"Подтвердить",adm_cancel:"Отмена",adm_none:"Пока пусто",
+  adm_search:"Клиент (ID или @username)",adm_find:"Найти",adm_amountph:"Сумма (сум)",adm_done:"Готово ✓",
   onb_sub:"Выберите язык",
   guest_note:"Чтобы заказывать, откройте магазин через Telegram-бота."
 }
@@ -434,12 +481,31 @@ var S={
   removed:Store.get("vn_removed",[]),   // deleted default ids
   imported:Store.get("vn_imported",null), // full imported catalog (overrides everything)
   serverCat:Store.get("vn_srv",null),    // catalog published on the server (shared with everyone)
-  payCtx:null                            // {orderId,amount,title,locked}
+  activePay:Store.get("vn_actpay",null), // current top-up payment window {id,pay,amount,method,expiresAt}
+  topup:{amount:50000,method:null}
 };
+var ME={balance:null,payments:[],orders:[]}; // server account (loaded via /api/me)
 function persist(){
   Store.set("vn_lang",S.lang);Store.set("vn_orders",S.orders);Store.set("vn_custom",S.custom);
   Store.set("vn_over",S.over);Store.set("vn_removed",S.removed);Store.set("vn_imported",S.imported);
-  Store.set("vn_srv",S.serverCat);
+  Store.set("vn_srv",S.serverCat);Store.set("vn_actpay",S.activePay);
+}
+
+/* ===== server api ===== */
+function api(path,method,body){
+  if(typeof fetch!=="function")return Promise.reject(new Error("nofetch"));
+  var initData=(TG&&TG.initData)?TG.initData:"";
+  return fetch(path,{method:method||"GET",
+    headers:{"Content-Type":"application/json","X-Init-Data":initData},
+    body:body?JSON.stringify(body):undefined})
+  .then(function(r){return r.json().then(function(j){j.__code=r.status;if(!r.ok){var e=new Error("http");e.resp=j;throw e;}return j;});});
+}
+function loadMe(cb){
+  if(!tgUser()||typeof fetch!=="function"){if(cb)cb();return;}
+  api("/api/me").then(function(r){
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[]};
+    if(cb)cb();else if(S.lang)render();
+  }).catch(function(){if(cb)cb();});
 }
 
 /* ===== catalog ===== */
@@ -532,7 +598,14 @@ function tileHTML(it,big){
     +'<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div></div>';
 }
 function homeHTML(){
-  var html='<div class="tabs">';
+  var html='';
+  if(tgUser()){
+    html+='<div class="balcard"><div class="bl">'+esc(t("bal_title"))+'</div>'
+      +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
+      +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
+      +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
+  }
+  html+='<div class="tabs">';
   for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
   html+='</div><div class="grid">';
   var items=activeItems(S.tab);
@@ -571,106 +644,149 @@ function openProduct(id){
     +'<button class="btn big" id="buyBtn" '+((out||guest)?"disabled":"")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — '+esc(money(it.price))+'</button>'
   );
   var btn=sh.querySelector("#buyBtn");
-  if(btn&&!out&&!guest)btn.addEventListener("click",function(){startOrder(it);});
+  if(btn&&!out&&!guest)btn.addEventListener("click",function(){openBuyConfirm(it);});
 }
 
-/* ===== order + payment flow ===== */
-function startOrder(it){
-  var u=tgUser();
-  var o={id:orderId(),item:loc(it.title),price:it.price,ts:Date.now(),status:"pending",
-         uid:u?u.id:null,uname:u&&u.username?u.username:null};
-  S.orders.unshift(o);persist();haptic("ok");closeSheet();
-  S.payCtx={orderId:o.id,amount:o.price,title:o.item,locked:true,method:null};
-  toast(t("order_created"));go("pay");
+/* ===== buy from balance ===== */
+function openBuyConfirm(it){
+  var bal=ME.balance,price=it.price;
+  var enough=bal!==null&&bal>=price;
+  var sh=openSheet(
+    tileHTML(it,true)
+    +'<h2>'+esc(t("buy_confirm"))+'</h2>'
+    +'<div class="refline"><span>'+esc(loc(it.title))+'</span><b>'+esc(money(price))+'</b></div>'
+    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
+    +(enough?'<div class="refline"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-price))+'</b></div>':'')
+    +'<div style="height:12px"></div>'
+    +(enough
+      ?'<button class="btn big green" id="doBuy">'+esc(t("pay_from_balance"))+'</button>'
+      :'<div class="paynote">⚠️ '+esc(t("need_more"))+'</div><button class="btn big" id="goTopup">➕ '+esc(t("bal_topup"))+'</button>')
+  );
+  var b=sh.querySelector("#doBuy");
+  if(b)b.addEventListener("click",function(){
+    api("/api/buy","POST",{itemId:it.id}).then(function(r){
+      ME.balance=r.balance;haptic("ok");closeSheet();toast(t("bought_ok"));
+      loadMe(function(){go("orders");});
+    }).catch(function(e){
+      closeSheet();
+      if(e.resp&&e.resp.error==="balance"){toast(t("need_more"));go("pay");}
+      else toast(t("srv_off"));
+    });
+  });
+  var g=sh.querySelector("#goTopup");
+  if(g)g.addEventListener("click",function(){
+    var need=price-(bal||0);
+    S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
+    closeSheet();go("pay");
+  });
 }
-function orderById(id){for(var i=0;i<S.orders.length;i++)if(S.orders[i].id===id)return S.orders[i];return null;}
 
+/* ===== top-up (payment window with unique amount + timer) ===== */
 function payHTML(){
-  var ctx=S.payCtx;
-  var locked=!!(ctx&&ctx.locked);
-  var amount=ctx?ctx.amount:50000;
-  var method=ctx&&ctx.method?ctx.method:null;
   var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
-  if(SHOW_VIDEO_ROW&&VIDEO_URL){
-    html+='<div class="card"><div class="row" ><div class="l">▶️ Video qo\'llanma<div class="d">'+esc(VIDEO_URL)+'</div></div></div></div>';
-  }
   html+='<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))+'<div class="d">@'+esc(SUPPORT_USERNAME)+'</div></div><button class="btn sm gray" data-support="1">→</button></div></div>';
-  if(locked){
-    html+='<div class="paybox"><div class="refline"><span>'+esc(t("pay_for"))+': <b>'+esc(ctx.title)+'</b></span></div>'
-      +'<div class="refline"><span>'+esc(t("order_ref"))+': <span class="code">'+esc(ctx.orderId)+'</span></span>'
-      +'<button class="btn sm gray" data-copy="'+esc(ctx.orderId)+'">'+esc(t("copy"))+'</button></div></div>';
+  if(!tgUser()){
+    return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
   }
-  html+='<div class="paybox"><label style="margin-top:0">'+esc(t("enter_amount"))+'</label>'
-    +'<div class="amount"><input id="payAmount" type="number" inputmode="numeric" value="'+amount+'" '+(locked?'readonly':'')+'><span class="cur">so\'m</span></div>'
-    +'<div class="minnote">'+esc(t("min_note"))+'</div>';
-  if(!locked){
-    html+='<div class="chips">'
-      +'<button data-chip="50000">50k</button><button data-chip="100000">100k</button>'
-      +'<button data-chip="200000">200k</button><button data-chip="500000">500k</button></div>';
+  var ap=S.activePay;
+  if(ap){
+    var card=null;
+    for(var k=0;k<CARDS.length;k++)if(CARDS[k].id===ap.method)card=CARDS[k];
+    html+='<div class="paybox">'
+      +'<label style="margin-top:0">'+esc(t("pw_exact"))+'</label>'
+      +'<div class="refline"><span class="payhuge">'+esc(money(ap.pay))+'</span>'
+      +'<button class="btn sm gray" data-copy="'+ap.pay+'">'+esc(t("copy"))+'</button></div>'
+      +'<div class="refline"><span>⏳</span><span class="timer" id="pwTimer">--:--</span></div>'
+      +'</div>';
+    if(card){
+      html+='<div class="cardbox"><div class="crow"><div><div class="cnum">'+esc(card.number)+'</div>'
+        +'<div class="chold">'+esc(card.holder)+'</div></div>'
+        +'<button class="cpy" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+esc(t("copy"))+'</button></div></div>';
+    }
+    html+='<div class="paybox">'
+      +'<div class="rule">✅ '+esc(t("pw_rule1"))+'</div>'
+      +'<div class="rule">✅ '+esc(t("pw_rule2"))+'</div>'
+      +'<div class="rule bad">❌ '+esc(t("pw_rule3"))+'</div>'
+      +'<div class="rule bad">❌ '+esc(t("pw_rule4"))+'</div>'
+      +'<div style="height:10px"></div>'
+      +'<button class="btn big green" id="pwPaid">'+esc(t("pw_paid"))+'</button>'
+      +'<div style="height:10px"></div>'
+      +'<button class="btn red" id="pwAbort">'+esc(t("pw_abort"))+'</button>'
+      +'</div>';
+    return html;
   }
-  html+='</div>';
+  html+='<div class="paybox">'
+    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(ME.balance===null?"…":esc(money(ME.balance)))+'</b></div>'
+    +'<label>'+esc(t("enter_amount"))+'</label>'
+    +'<div class="amount"><input id="payAmount" type="number" inputmode="numeric" value="'+S.topup.amount+'"><span class="cur">so\'m</span></div>'
+    +'<div class="minnote">'+esc(t("min_note"))+'</div>'
+    +'<div class="chips">'
+    +'<button data-chip="50000" class="'+(S.topup.amount===50000?"on":"")+'">50k</button>'
+    +'<button data-chip="100000" class="'+(S.topup.amount===100000?"on":"")+'">100k</button>'
+    +'<button data-chip="200000" class="'+(S.topup.amount===200000?"on":"")+'">200k</button>'
+    +'<button data-chip="500000" class="'+(S.topup.amount===500000?"on":"")+'">500k</button></div>'
+    +'</div>';
   html+='<div class="paybox"><label style="margin-top:0">'+esc(t("pay_method"))+'</label><div class="methods">';
   for(var i=0;i<CARDS.length;i++){
     var c=CARDS[i];
     var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
-    html+='<button class="method'+(method===c.id?" on":"")+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
+    html+='<button class="method'+(S.topup.method===c.id?" on":"")+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
       +'<span class="ic">'+c.icon+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
   }
-  html+='</div>';
-  var card=null;
-  for(var k=0;k<CARDS.length;k++)if(CARDS[k].id===method)card=CARDS[k];
-  if(card){
-    html+='<div class="cardbox"><div class="crow"><div><div class="cnum">'+esc(card.number)+'</div>'
-      +'<div class="chold">'+esc(card.holder)+'</div></div>'
-      +'<button class="cpy" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+esc(t("copy"))+'</button></div></div>'
-      +'<div class="paynote">'+esc(t("paynote"))+'</div>'
-      +'<button class="btn big green" id="sendReceipt">📤 '+esc(t("send_receipt"))+'</button>';
-    if(locked)html+='<div style="height:10px"></div><button class="btn red" id="cancelOrder">'+esc(t("cancel_order"))+'</button>';
-  }else{
-    html+='<div class="paynote">'+esc(t("choose_method"))+'</div>';
-  }
-  html+='</div>';
+  html+='</div><div style="height:12px"></div>'
+    +'<button class="btn big" id="topupGo">'+esc(t("continue_btn"))+'</button></div>';
   return html;
 }
-function sendReceipt(){
-  var ctx=S.payCtx;if(!ctx)return;
-  var amtEl=document.getElementById("payAmount");
-  var amount=ctx.locked?ctx.amount:Number(amtEl&&amtEl.value||0);
-  if(!ctx.locked){
-    if(!amount||amount<MIN_AMOUNT){toast(t("amount_low"));return;}
-    var u=tgUser();
-    var o={id:orderId(),item:t("custom_pay"),price:amount,ts:Date.now(),status:"pending",uid:u?u.id:null,uname:u&&u.username?u.username:null};
-    S.orders.unshift(o);ctx.orderId=o.id;ctx.amount=amount;ctx.title=o.item;
-  }
-  var o2=orderById(ctx.orderId);
-  if(o2&&o2.status==="pending")o2.status="checking";
-  persist();haptic("ok");
-  var mname="";for(var i=0;i<CARDS.length;i++)if(CARDS[i].id===ctx.method)mname=CARDS[i].name;
-  var msg="🧾 Chek | "+ctx.orderId+" | "+ctx.title+" | "+money(ctx.amount)+" | "+mname;
-  openLink("https://t.me/"+SUPPORT_USERNAME+"?text="+encodeURIComponent(msg));
-  go("orders");
+function createTopup(){
+  var el=document.getElementById("payAmount");
+  var amount=Math.round(Number(el&&el.value)||0);
+  if(!amount||amount<MIN_AMOUNT){toast(t("amount_low"));return;}
+  if(!S.topup.method){toast(t("choose_method"));return;}
+  api("/api/topup","POST",{amount:amount,method:S.topup.method}).then(function(r){
+    S.activePay={id:r.payment.id,pay:r.payment.pay,amount:r.payment.amount,method:r.payment.method,expiresAt:r.expiresAt};
+    persist();haptic("ok");toast(t("topup_created"));render();
+  }).catch(function(){toast(t("srv_off"));});
+}
+function markPaid(){
+  var ap=S.activePay;if(!ap)return;
+  api("/api/paid","POST",{id:ap.id}).then(function(){
+    S.activePay=null;persist();haptic("ok");
+    loadMe(function(){go("orders");});
+  }).catch(function(){
+    S.activePay=null;persist();loadMe(function(){go("orders");});
+  });
+}
+function tickTimer(){
+  var ap=S.activePay;if(!ap)return;
+  var el=document.getElementById("pwTimer");
+  var left=Math.floor((ap.expiresAt-Date.now())/1000);
+  if(left<=0){S.activePay=null;persist();toast(t("pw_expired"));if(S.screen==="pay")render();return;}
+  if(el)el.textContent=("0"+Math.floor(left/60)).slice(-2)+":"+("0"+(left%60)).slice(-2);
 }
 </script>
 <script>
 "use strict";
-/* ===== orders ===== */
-var ST_BADGE={pending:["pend","st_pending"],checking:["chk","st_checking"],cancelled:["cncl","st_cancelled"]};
+/* ===== orders (from server) ===== */
+var PAY_BADGE={waiting:["pend","st_pending"],checking:["chk","st_checking"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
+var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
 function ordersHTML(){
   var html='<div class="sect">'+esc(t("orders_title"))+'</div>';
-  if(!S.orders.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
-  for(var i=0;i<S.orders.length;i++){
-    var o=S.orders[i],b=ST_BADGE[o.status]||ST_BADGE.pending;
-    html+='<div class="card"><div class="row"><div class="l">'+esc(o.item)
-      +'<div class="d"><span class="code">'+esc(o.id)+'</span> · '+esc(fmtDate(o.ts))+'</div>'
-      +'<div class="d">'+esc(money(o.price))+'</div></div>'
-      +'<div class="r"><span class="badge '+b[0]+'">'+esc(t(b[1]))+'</span></div></div>';
-    if(o.status==="pending"){
-      html+='<div class="arow" style="margin-top:8px"><button class="btn sm" data-payorder="'+esc(o.id)+'">'+esc(t("goto_pay"))+'</button>'
-        +'<button class="btn sm red" data-cancelorder="'+esc(o.id)+'">'+esc(t("cancel_order"))+'</button></div>';
-    }else if(o.status==="checking"){
-      html+='<div style="margin-top:8px"><button class="btn sm gray" data-payorder="'+esc(o.id)+'">'+esc(t("resend"))+'</button></div>';
-    }
-    html+='</div>';
+  if(!tgUser())return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
+  var rows=[];
+  for(var i=0;i<ME.orders.length;i++){var o=ME.orders[i];rows.push({ts:o.ts,ic:"🛒",title:o.item,id:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending});}
+  for(var j=0;j<ME.payments.length;j++){
+    var p=ME.payments[j];
+    if(p.type==="manual"){rows.push({ts:p.ts,ic:"⚙️",title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
+    rows.push({ts:p.ts,ic:"💳",title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
+  }
+  rows.sort(function(a,b){return b.ts-a.ts;});
+  if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
+  for(var r=0;r<rows.length;r++){
+    var x=rows[r];
+    html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
+      +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
+      +'<div class="d">'+esc(money(x.amt))+'</div></div>'
+      +'<div class="r"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div></div></div>';
   }
   return html;
 }
@@ -680,13 +796,14 @@ function profileHTML(){
   var name=tgName(),u=tgUser();
   var av=u&&u.photo_url?'<img src="'+esc(u.photo_url)+'" alt="" onerror="this.remove()">':esc(initials());
   var cnt=0,sum=0;
-  for(var i=0;i<S.orders.length;i++){if(S.orders[i].status!=="cancelled"){cnt++;sum+=S.orders[i].price;}}
+  for(var i=0;i<ME.orders.length;i++){if(ME.orders[i].status!=="cancelled"){cnt++;sum+=ME.orders[i].price;}}
   var html='<div class="sect">'+esc(t("profile_title"))+'</div>'
     +'<div class="card"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
     +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px">'
     +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+(u?esc(u.id):"—")+'</div></div></div></div>'
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
-    +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div></div>'
+    +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
+    +'<div class="stat"><div class="v">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     +'<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))
     +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
     +'<button class="btn sm gray" data-support="1">→</button></div></div>'
@@ -709,6 +826,8 @@ function profileHTML(){
 function openAdmin(){
   var html='<h2>'+esc(t("a_panel"))+'</h2>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn" id="aMoney">'+esc(t("adm_money"))+'</button>'
+    +'<div style="height:10px"></div>'
     +'<button class="btn green" id="aPub">'+esc(t("a_publish"))+'</button>'
     +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
     +'<button class="btn" id="aNew">'+esc(t("a_new"))+'</button>'
@@ -723,6 +842,7 @@ function openAdmin(){
     +'<div style="height:8px"></div><button class="btn gray" id="aImpBtn">'+esc(t("a_import"))+'</button>'
     +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>';
   var sh=openSheet(html);
+  sh.querySelector("#aMoney").addEventListener("click",openAdminMoney);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
   sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
   sh.querySelector("#aExp").value=JSON.stringify(catalog());
@@ -777,6 +897,66 @@ function deleteItem(id){
   if(S.imported){S.imported=S.imported.filter(function(x){return x.id!==id;});return;}
   if(isCustom(id)){S.custom=S.custom.filter(function(x){return x.id!==id;});return;}
   if(S.removed.indexOf(id)===-1)S.removed.push(id);
+}
+
+/* ===== admin: payments & clients ===== */
+function openAdminMoney(){
+  var sh=openSheet('<h2>'+esc(t("adm_money"))+'</h2>'
+    +'<div class="sect" style="margin:12px 0 8px">'+esc(t("adm_pending"))+'</div><div id="amPay">…</div>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_orders_p"))+'</div><div id="amOrd">…</div>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_search"))+'</div>'
+    +'<div class="arow"><input id="admQ" placeholder="ID / @username"><button class="btn sm" id="admFind">'+esc(t("adm_find"))+'</button></div>'
+    +'<div id="admRes" style="margin-top:10px"></div>');
+  function reload(){
+    api("/api/admin/list").then(function(r){
+      var hp="";
+      for(var i=0;i<r.payments.length;i++){
+        var p=r.payments[i];
+        hp+='<div class="itemrow"><div><div class="nm">'+esc(money(p.pay))+' · '+esc(p.method||"")+'</div>'
+          +'<div class="meta">'+(p.uname?'@'+esc(p.uname)+' · ':'')+'ID '+esc(p.uid)+' · '+esc(fmtDate(p.ts))+' · '+esc(t(PAY_BADGE[p.status][1]))+'</div></div>'
+          +'<div class="acts"><button data-apc="'+esc(p.id)+'">✅</button><button data-apx="'+esc(p.id)+'">❌</button></div></div>';
+      }
+      sh.querySelector("#amPay").innerHTML=hp||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      var ho="";
+      for(var j=0;j<r.orders.length;j++){
+        var o=r.orders[j];
+        ho+='<div class="itemrow"><div><div class="nm">'+esc(o.item)+' · '+esc(money(o.price))+'</div>'
+          +'<div class="meta">'+(o.uname?'@'+esc(o.uname)+' · ':'')+'ID '+esc(o.uid)+' · <span class="code">'+esc(o.id)+'</span></div></div>'
+          +'<div class="acts"><button data-aoc="'+esc(o.id)+'">✅</button><button data-aox="'+esc(o.id)+'">❌</button></div></div>';
+      }
+      sh.querySelector("#amOrd").innerHTML=ho||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      function wire(sel,fn){var els=sh.querySelectorAll(sel);for(var k=0;k<els.length;k++)els[k].addEventListener("click",fn);}
+      wire("[data-apc]",function(){payAct(this.getAttribute("data-apc"),"confirm");});
+      wire("[data-apx]",function(){payAct(this.getAttribute("data-apx"),"cancel");});
+      wire("[data-aoc]",function(){ordAct(this.getAttribute("data-aoc"),"done");});
+      wire("[data-aox]",function(){ordAct(this.getAttribute("data-aox"),"cancel");});
+    }).catch(function(){sh.querySelector("#amPay").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+  }
+  function payAct(id,action){api("/api/admin/payment","POST",{id:id,action:action}).then(function(){toast(t("adm_done"));haptic("ok");reload();}).catch(function(){toast(t("srv_off"));});}
+  function ordAct(id,action){api("/api/admin/order","POST",{id:id,action:action}).then(function(){toast(t("adm_done"));haptic("ok");reload();}).catch(function(){toast(t("srv_off"));});}
+  sh.querySelector("#admFind").addEventListener("click",function(){
+    var q=sh.querySelector("#admQ").value.trim();if(!q)return;
+    api("/api/admin/user?q="+encodeURIComponent(q)).then(function(list){
+      var h="";
+      for(var i=0;i<list.length;i++){
+        var u=list[i];
+        h+='<div class="itemrow"><div><div class="nm">'+esc(u.name||"—")+(u.uname?' @'+esc(u.uname):'')+'</div>'
+          +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div></div>'
+          +'<div class="arow" style="margin:6px 0 12px"><input type="number" inputmode="numeric" placeholder="'+esc(t("adm_amountph"))+'" data-amt="'+u.uid+'">'
+          +'<button class="btn sm green" data-badd="'+u.uid+'">＋</button><button class="btn sm red" data-bsub="'+u.uid+'">−</button></div>';
+      }
+      sh.querySelector("#admRes").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      function adj(uid,sign){
+        var inp=sh.querySelector('[data-amt="'+uid+'"]');
+        var v=Math.round(Number(inp&&inp.value)||0);
+        if(!v)return;
+        api("/api/admin/balance","POST",{uid:Number(uid),delta:sign*v}).then(function(){toast(t("adm_done"));haptic("ok");sh.querySelector("#admFind").click();}).catch(function(){toast(t("srv_off"));});
+      }
+      var ad=sh.querySelectorAll("[data-badd]");for(var a=0;a<ad.length;a++)ad[a].addEventListener("click",function(){adj(this.getAttribute("data-badd"),1);});
+      var su=sh.querySelectorAll("[data-bsub]");for(var s=0;s<su.length;s++)su[s].addEventListener("click",function(){adj(this.getAttribute("data-bsub"),-1);});
+    }).catch(function(){toast(t("srv_off"));});
+  });
+  reload();
 }
 
 /* ===== shared catalog: publish + load ===== */
@@ -916,11 +1096,9 @@ function openAdminForm(editId){
 function bind(){
   var i,els;
   els=document.querySelectorAll("[data-nav]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    var id=this.getAttribute("data-nav");
-    if(id==="pay")S.payCtx=null;
-    go(id);
-  });
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
+  els=document.querySelectorAll("[data-gotopay]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go("pay");});
   els=document.querySelectorAll("[data-tab]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.tab=this.getAttribute("data-tab");render();});
   els=document.querySelectorAll("[data-open]");
@@ -933,49 +1111,34 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
   els=document.querySelectorAll("[data-chip]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    if(!S.payCtx)return;
-    S.payCtx.amount=Number(this.getAttribute("data-chip"));render();
+    S.topup.amount=Number(this.getAttribute("data-chip"));render();
   });
   els=document.querySelectorAll("[data-method]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    if(!S.payCtx)return;
     var amtEl=document.getElementById("payAmount");
-    if(amtEl&&!S.payCtx.locked)S.payCtx.amount=Number(amtEl.value)||S.payCtx.amount;
-    S.payCtx.method=this.getAttribute("data-method");haptic();render();
+    if(amtEl)S.topup.amount=Math.round(Number(amtEl.value))||S.topup.amount;
+    S.topup.method=this.getAttribute("data-method");haptic();render();
   });
-  els=document.querySelectorAll("[data-payorder]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    var o=orderById(this.getAttribute("data-payorder"));if(!o)return;
-    S.payCtx={orderId:o.id,amount:o.price,title:o.item,locked:true,method:null};
-    go("pay");
-  });
-  els=document.querySelectorAll("[data-cancelorder]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    var o=orderById(this.getAttribute("data-cancelorder"));if(!o)return;
-    o.status="cancelled";persist();toast(t("cancelled_toast"));haptic();render();
-  });
-  var sr=document.getElementById("sendReceipt");
-  if(sr)sr.addEventListener("click",sendReceipt);
-  var co=document.getElementById("cancelOrder");
-  if(co)co.addEventListener("click",function(){
-    if(S.payCtx&&S.payCtx.orderId){var o=orderById(S.payCtx.orderId);if(o)o.status="cancelled";}
-    S.payCtx=null;persist();toast(t("cancelled_toast"));haptic();go("orders");
-  });
+  var tg1=document.getElementById("topupGo");
+  if(tg1)tg1.addEventListener("click",createTopup);
+  var pw=document.getElementById("pwPaid");
+  if(pw)pw.addEventListener("click",markPaid);
+  var pa=document.getElementById("pwAbort");
+  if(pa)pa.addEventListener("click",function(){S.activePay=null;persist();toast(t("cancelled_toast"));render();});
   var ab=document.getElementById("adminBtn");
   if(ab)ab.addEventListener("click",openAdmin);
+  tickTimer();
 }
-
-/* ===== pay screen default ctx ===== */
-var _origRender=render;
-render=function(){
-  if(S.screen==="pay"&&!S.payCtx)S.payCtx={orderId:null,amount:50000,title:t("custom_pay"),locked:false,method:null};
-  _origRender();
-};
 
 /* ===== boot ===== */
 function boot(){
   render();
   loadServerCatalog();
+  loadMe();
+  setInterval(tickTimer,1000);
+  setInterval(function(){
+    if(tgUser()&&(S.screen==="orders"||S.screen==="home"))loadMe();
+  },20000);
   setTimeout(function(){
     var sp=document.getElementById("splash");
     if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},500);}
