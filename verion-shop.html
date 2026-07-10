@@ -582,7 +582,14 @@ function bindOnboarding(){
   for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){S.lang=this.getAttribute("data-lang");persist();haptic("ok");render();});
 }
 function headerHTML(){
-  return '<header><h1><span class="logo">V</span> Verion Shop</h1><div class="sub">'+esc(t("shop_sub"))+'</div></header>';
+  var u = tgUser();
+  var name = tgName() || t("guest");
+  return '<header style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;">' +
+         '<div style="display:flex;align-items:center;gap:10px;">' +
+         '<div class="avatar" style="width:36px;height:36px;font-size:14px;">'+initials()+'</div>' +
+         '<div><div style="font-weight:700;font-size:15px;">'+esc(name)+'</div>' +
+         '<div style="font-size:12px;color:var(--mut);">@'+esc(u ? u.username : "guest")+'</div></div>' +
+         '</div></header>';
 }
 function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
@@ -598,13 +605,31 @@ function tileHTML(it,big){
     +'<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div></div>';
 }
 function homeHTML(){
-  var html='';
-  if(tgUser()){
-    html+='<div class="balcard"><div class="bl">'+esc(t("bal_title"))+'</div>'
-      +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
-      +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
-      +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
+  var html = '';
+  // Ko'k balans kartasi
+  html += '<div class="balcard" style="background:linear-gradient(135deg,#2743ff,#5a70ff);">';
+  html += '<div class="bl" style="opacity:0.8">'+esc(t("bal_title"))+'</div>';
+  html += '<div class="bv" style="font-size:26px;margin:4px 0 16px;">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>';
+  html += '<div class="brow" style="margin-top:0;gap:12px;">' +
+          '<button data-gotopay="1" style="background:rgba(255,255,255,0.2);padding:12px;border-radius:12px;">➕ '+esc(t("bal_topup"))+'</button>' +
+          '<button data-nav="orders" style="background:rgba(255,255,255,0.2);padding:12px;border-radius:12px;">📄 Buyurtmalarim</button>' +
+          '</div></div>';
+
+  html += '<div class="tabs">';
+  for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
+  html+='</div><div class="grid">';
+  
+  var items=activeItems(S.tab);
+  if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
+  for(var j=0;j<items.length;j++){
+    var it=items[j],out=it.stock<=0;
+    // Kartochkani kichraytirish uchun transform qo'shildi
+    html+='<button class="pcard" data-open="'+esc(it.id)+'" style="transform:scale(0.95);">';
+    html+=tileHTML(it) + '<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div>' +
+          '<div class="prow"><span class="prc">'+esc(money(it.price))+'</span></div></div></button>';
   }
+  return html+'</div>';
+}
   html+='<div class="tabs">';
   for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
   html+='</div><div class="grid">';
