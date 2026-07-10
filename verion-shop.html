@@ -556,7 +556,7 @@ var IC={
 /* ===== shell ===== */
 function render(){
   var app = document.getElementById("app");
-  if(!app) return; // app elementi yo'q bo'lsa, xato bermaydi
+  if(!app) return;
   if(!S.lang){
     app.innerHTML = onboardingHTML();
     bindOnboarding();
