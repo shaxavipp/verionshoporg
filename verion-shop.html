@@ -555,15 +555,20 @@ var IC={
 
 /* ===== shell ===== */
 function render(){
-  var app=document.getElementById("app");
-  if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
-  var html=headerHTML()+'<div class="screen">';
-  if(S.screen==="home")html+=homeHTML();
-  else if(S.screen==="orders")html+=ordersHTML();
-  else if(S.screen==="pay")html+=payHTML();
-  else html+=profileHTML();
-  html+='</div>'+navHTML();
-  app.innerHTML=html;
+  var app = document.getElementById("app");
+  if(!app) return; // app elementi yo'q bo'lsa, xato bermaydi
+  if(!S.lang){
+    app.innerHTML = onboardingHTML();
+    bindOnboarding();
+    return;
+  }
+  var html = headerHTML() + '<div class="screen">';
+  if(S.screen === "home") html += homeHTML();
+  else if(S.screen === "orders") html += ordersHTML();
+  else if(S.screen === "pay") html += payHTML();
+  else html += profileHTML();
+  html += '</div>' + navHTML();
+  app.innerHTML = html;
   bind();
 }
 function go(screen){S.screen=screen;haptic();render();}
