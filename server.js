@@ -9,7 +9,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN || "";
 const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
 const MAX_BODY = 10 * 1024 * 1024;
-const HTML_FILE = path.join(__dirname, "verion-shop.html");
+const HTML_FILE = path.join(__dirname, "index.html");
 const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
 
