@@ -1,5 +1,6 @@
 // Verion Shop server v3 — static app + catalog + balances/payments/orders. No dependencies.
 const http = require("http");
+const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -13,6 +14,15 @@ const HTML_FILE = path.join(__dirname, "verion-shop.html");
 const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
 
+/* ---------- SMS auto-confirm (humocard / cardxabar orqali) ---------- */
+// Telegram guruhida humocard/cardxabar botlari yozgan SMS-xabarlarni ushlab,
+// summani o'qib, mos to'lovni avtomatik tasdiqlash uchun sozlamalar.
+const TG_WEBHOOK_SECRET = process.env.TG_WEBHOOK_SECRET || "";      // Telegram setWebhook secret_token bilan bir xil bo'lishi shart
+const SMS_SOURCE_CHAT_ID = process.env.SMS_SOURCE_CHAT_ID || "";    // humocard/cardxabar yozadigan guruh chat_id (masalan -1001234567890)
+const SMS_BOT_USERNAMES = (process.env.SMS_BOT_USERNAMES || "")     // bo'sh bo'lsa - guruhdagi barcha xabarlar tekshiriladi
+  .split(",").map(s => s.trim().toLowerCase().replace(/^@/, "")).filter(Boolean);
+const SMS_LOG_MAX = 200;
+
 let DATA_DIR = process.env.DATA_DIR || "/data";
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.constants.W_OK); }
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
@@ -20,7 +30,7 @@ const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
-let DB = { users: {}, payments: [], orders: [] };
+let DB = { users: {}, payments: [], orders: [], smsLog: [] };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => {
@@ -41,6 +51,45 @@ function expireOld() {
   const now = Date.now();
   for (const p of DB.payments)
     if (p.status === "waiting" && now - p.ts > TOPUP_TTL) p.status = "cancelled";
+}
+// To'lovni tasdiqlash (admin qo'lda ✅ bossa ham, SMS avtomat topsa ham shu funksiya ishlaydi)
+function confirmPayment(p, source) {
+  p.status = "done"; p.doneTs = Date.now(); p.confirmedBy = source || "admin";
+  const acc = DB.users[String(p.uid)] || (DB.users[String(p.uid)] = { balance: 0 });
+  acc.balance += p.amount;
+  save();
+  return acc.balance;
+}
+function tgSend(chatId, text) {
+  if (!BOT_TOKEN || !chatId) return;
+  try {
+    const data = JSON.stringify({ chat_id: chatId, text: text });
+    const req = https.request({
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendMessage", method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+    }, r => { r.on("data", () => {}); });
+    req.on("error", () => {});
+    req.write(data); req.end();
+  } catch (e) {}
+}
+// SMS/xabar matnidan pul summasini o'qib olish (Humo/Uzcard bildirishnomalari uchun)
+// Masalan: "Kartangizga 50 038 so'm tushdi" yoki "+50,038 UZS" kabi matnlardan 50038 ni topadi.
+function parseAmount(text) {
+  if (!text) return null;
+  const t = String(text).replace(/\u00A0/g, " ");
+  let re = /(\d[\d\s.,]{2,})\s*(so'?m|сум|sum|uzs)/gi, m;
+  while ((m = re.exec(t)) !== null) {
+    const n = parseInt(m[1].replace(/[^\d]/g, ""), 10);
+    if (n > 0) return n;
+  }
+  m = /[+]\s*(\d[\d\s.,]{3,})/.exec(t);
+  if (m) { const n = parseInt(m[1].replace(/[^\d]/g, ""), 10); if (n > 0) return n; }
+  return null;
+}
+function logSms(entry) {
+  DB.smsLog.push(entry);
+  if (DB.smsLog.length > SMS_LOG_MAX) DB.smsLog.splice(0, DB.smsLog.length - SMS_LOG_MAX);
+  save();
 }
 
 /* ---------- telegram auth ---------- */
@@ -195,10 +244,8 @@ const server = http.createServer((req, res) => {
         if (!p) return send(res, 404, { error: "not found" });
         if (p.status === "done") return send(res, 409, { error: "already done" });
         if (b.action === "confirm") {
-          p.status = "done"; p.doneTs = Date.now();
-          const acc = DB.users[String(p.uid)] || (DB.users[String(p.uid)] = { balance: 0 });
-          acc.balance += p.amount;
-          save(); return send(res, 200, { ok: true, balance: acc.balance });
+          const balance = confirmPayment(p, "admin");
+          return send(res, 200, { ok: true, balance: balance });
         }
         p.status = "cancelled"; save(); return send(res, 200, { ok: true });
       });
@@ -242,6 +289,88 @@ const server = http.createServer((req, res) => {
       });
     }
     return send(res, 404, { error: "unknown admin route" });
+  }
+
+  /* ----- Userbot webhook: Telethon skripti to'g'ridan-to'g'ri shu yerga SMS matnini yuboradi ----- */
+  if (url === "/api/sms-webhook" && m === "POST") {
+    if (!TG_WEBHOOK_SECRET || req.headers["x-sms-secret"] !== TG_WEBHOOK_SECRET)
+      return send(res, 401, { error: "bad secret" });
+    return readBody(req, res, b => {
+      send(res, 200, { ok: true });
+      try {
+        const text = String((b && b.text) || "").slice(0, 500);
+        const fromUser = String((b && b.from) || "").toLowerCase().replace(/^@/, "");
+        if (!text) return;
+        if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(fromUser) === -1) return;
+
+        const amount = parseAmount(text);
+        expireOld();
+        const candidates = amount == null ? [] :
+          DB.payments.filter(p => (p.status === "waiting" || p.status === "checking") && p.pay === amount);
+
+        const entry = { ts: Date.now(), from: fromUser || null, text, parsedAmount: amount,
+          matched: false, paymentId: null };
+
+        if (candidates.length === 1) {
+          const p = candidates[0];
+          const balance = confirmPayment(p, "sms");
+          entry.matched = true; entry.paymentId = p.id;
+          tgSend(p.uid, "✅ To'lovingiz tasdiqlandi!\n+" + p.amount.toLocaleString("ru-RU").replace(/,/g, " ") +
+            " so'm balansingizga qo'shildi.\nJoriy balans: " + balance.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm");
+        }
+        logSms(entry);
+      } catch (e) {}
+    });
+  }
+
+  /* ----- Telegram webhook: humocard/cardxabar guruhidagi SMS xabarlarni tinglash ----- */
+  if (url === "/api/tg-webhook" && m === "POST") {
+    // Telegram setWebhook'da berilgan secret_token shu yerga header sifatida keladi — soxta so'rovlarni blok qiladi
+    if (TG_WEBHOOK_SECRET && req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
+      return send(res, 401, { error: "bad secret" });
+    return readBody(req, res, upd => {
+      send(res, 200, { ok: true }); // Telegram'ga darhol javob (u tezkor ACK kutadi)
+      try {
+        // Guruhdan: upd.message / upd.channel_post. Telegram Business orqali shaxsiy chatdan: upd.business_message
+        const msg = upd.message || upd.channel_post || upd.business_message;
+        if (!msg || !msg.text) return;
+        const isBusiness = !!upd.business_message;
+        const uname = ((msg.from && msg.from.username) || "").toLowerCase();
+
+        if (isBusiness) {
+          // Business rejimida bitta umumiy guruh yo'q — har bir kontakt alohida chat.
+          // Shu sabab chat_id bo'yicha emas, faqat yuboruvchi bot nomi (SMS_BOT_USERNAMES) bo'yicha filtrlaymiz.
+          if (!SMS_BOT_USERNAMES.length || SMS_BOT_USERNAMES.indexOf(uname) === -1) return;
+        } else {
+          const chatId = String(msg.chat && msg.chat.id);
+          if (SMS_SOURCE_CHAT_ID && chatId !== String(SMS_SOURCE_CHAT_ID)) return;
+          if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(uname) === -1) return;
+        }
+
+        const amount = parseAmount(msg.text);
+        expireOld();
+        const candidates = amount == null ? [] :
+          DB.payments.filter(p => (p.status === "waiting" || p.status === "checking") && p.pay === amount);
+
+        const entry = { ts: Date.now(), from: uname || null, text: msg.text.slice(0, 300),
+          parsedAmount: amount, matched: false, paymentId: null };
+
+        if (candidates.length === 1) {
+          const p = candidates[0];
+          const balance = confirmPayment(p, "sms");
+          entry.matched = true; entry.paymentId = p.id;
+          tgSend(p.uid, "✅ To'lovingiz tasdiqlandi!\n+" + p.amount.toLocaleString("ru-RU").replace(/,/g, " ") +
+            " so'm balansingizga qo'shildi.\nJoriy balans: " + balance.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm");
+        }
+        logSms(entry);
+      } catch (e) {}
+    });
+  }
+  if (url === "/api/admin/sms-log" && m === "GET") {
+    if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
+    const a = auth(req);
+    if (!isAdm(a)) return send(res, 403, { error: "not admin" });
+    return send(res, 200, DB.smsLog.slice().reverse());
   }
 
   /* everything else → app */
