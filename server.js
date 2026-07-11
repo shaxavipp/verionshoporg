@@ -301,6 +301,19 @@ const server = http.createServer((req, res) => {
   }
  
   /* ----- Userbot webhook: Telethon skripti to'g'ridan-to'g'ri shu yerga SMS matnini yuboradi ----- */
+  if (url === "/api/debug/status" && m === "GET") {
+    if (!TG_WEBHOOK_SECRET || q.get("secret") !== TG_WEBHOOK_SECRET)
+      return send(res, 401, { error: "bad secret" });
+    expireOld();
+    return send(res, 200, {
+      faolTolovlar: DB.payments.filter(p => p.status === "waiting" || p.status === "checking")
+        .map(p => ({ id: p.id, uid: p.uid, kutilgan_summa: p.amount, tolash_kerak: p.pay, holat: p.status,
+          yaratilgan: new Date(p.ts).toLocaleString("ru-RU") })),
+      oxirgiSmsLog: DB.smsLog.slice(-20).reverse(),
+      jamiTolovlar: DB.payments.length,
+    });
+  }
+ 
   if (url === "/api/sms-webhook" && m === "POST") {
     if (!TG_WEBHOOK_SECRET || req.headers["x-sms-secret"] !== TG_WEBHOOK_SECRET)
       return send(res, 401, { error: "bad secret" });
@@ -309,13 +322,20 @@ const server = http.createServer((req, res) => {
       try {
         const text = String((b && b.text) || "").slice(0, 500);
         const fromUser = String((b && b.from) || "").toLowerCase().replace(/^@/, "");
-        if (!text) return;
-        if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(fromUser) === -1) return;
+        console.log("[sms-webhook] from=" + fromUser + " text=" + JSON.stringify(text));
+        if (!text) return console.log("[sms-webhook] bo'sh matn, chiqildi");
+        if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(fromUser) === -1)
+          return console.log("[sms-webhook] '" + fromUser + "' SMS_BOT_USERNAMES ro'yxatida yo'q, chiqildi");
  
         const amount = parseAmount(text);
+        console.log("[sms-webhook] o'qilgan summa = " + amount);
         expireOld();
         const candidates = amount == null ? [] :
           DB.payments.filter(p => (p.status === "waiting" || p.status === "checking") && p.pay === amount);
+        console.log("[sms-webhook] mos to'lovlar soni = " + candidates.length +
+          " | barcha faol to'lovlar: " + JSON.stringify(DB.payments
+            .filter(p => p.status === "waiting" || p.status === "checking")
+            .map(p => ({ id: p.id, pay: p.pay, status: p.status }))));
  
         const entry = { ts: Date.now(), from: fromUser || null, text, parsedAmount: amount,
           matched: false, paymentId: null };
@@ -324,6 +344,7 @@ const server = http.createServer((req, res) => {
           const p = candidates[0];
           const balance = confirmPayment(p, "sms");
           entry.matched = true; entry.paymentId = p.id;
+          console.log("[sms-webhook] TASDIQLANDI, to'lov id=" + p.id);
           tgSend(p.uid, "✅ To'lovingiz tasdiqlandi!\n+" + p.amount.toLocaleString("ru-RU").replace(/,/g, " ") +
             " so'm balansingizga qo'shildi.\nJoriy balans: " + balance.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm");
         }
