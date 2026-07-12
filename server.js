@@ -4,7 +4,7 @@ const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
- 
+
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN || "";
 const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
@@ -13,7 +13,7 @@ const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
- 
+
 /* ---------- SMS auto-confirm (humocard / cardxabar orqali) ---------- */
 // Telegram guruhida humocard/cardxabar botlari yozgan SMS-xabarlarni ushlab,
 // summani o'qib, mos to'lovni avtomatik tasdiqlash uchun sozlamalar.
@@ -22,15 +22,15 @@ const SMS_SOURCE_CHAT_ID = process.env.SMS_SOURCE_CHAT_ID || "";    // humocard/
 const SMS_BOT_USERNAMES = (process.env.SMS_BOT_USERNAMES || "")     // bo'sh bo'lsa - guruhdagi barcha xabarlar tekshiriladi
   .split(",").map(s => s.trim().toLowerCase().replace(/^@/, "")).filter(Boolean);
 const SMS_LOG_MAX = 200;
- 
+
 let DATA_DIR = process.env.DATA_DIR || "/data";
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.constants.W_OK); }
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
 const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
- 
+
 /* ---------- tiny db ---------- */
-let DB = { users: {}, payments: [], orders: [], smsLog: [] };
+let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {} };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => {
@@ -100,7 +100,7 @@ function logSms(entry) {
   if (DB.smsLog.length > SMS_LOG_MAX) DB.smsLog.splice(0, DB.smsLog.length - SMS_LOG_MAX);
   save();
 }
- 
+
 /* ---------- telegram auth ---------- */
 function checkInitData(initData) {
   try {
@@ -119,7 +119,7 @@ function checkInitData(initData) {
 }
 function auth(req) { return checkInitData(req.headers["x-init-data"] || ""); }
 function isAdm(u) { return !!u && ADMIN_IDS.indexOf(u.id) !== -1; }
- 
+
 function send(res, code, obj, type) {
   res.writeHead(code, { "Content-Type": type || "application/json; charset=utf-8", "Cache-Control": "no-store" });
   res.end(typeof obj === "string" ? obj : JSON.stringify(obj));
@@ -148,13 +148,13 @@ function myView(uid) {
     orders: DB.orders.filter(mine).slice(-50).reverse()
   };
 }
- 
+
 /* ---------- server ---------- */
 const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
- 
+
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {
     const c = catalogArr();
@@ -170,15 +170,20 @@ const server = http.createServer((req, res) => {
         err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true, items: arr.length }));
     });
   }
- 
+
   /* ----- user endpoints (need valid Telegram signature) ----- */
+  if (url === "/api/stock-counts" && m === "GET") {
+    const out = {};
+    for (const k in DB.stock) out[k] = (DB.stock[k] || []).length;
+    return send(res, 200, out);
+  }
   if (url === "/api/me" && m === "GET") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
     user(u); save();
     return send(res, 200, myView(u.id));
   }
- 
+
   if (url === "/api/topup" && m === "POST") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
@@ -200,7 +205,7 @@ const server = http.createServer((req, res) => {
       send(res, 200, { ok: true, payment: rec, expiresAt: rec.ts + TOPUP_TTL });
     });
   }
- 
+
   if (url === "/api/paid" && m === "POST") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
@@ -213,7 +218,7 @@ const server = http.createServer((req, res) => {
       send(res, 200, { ok: true });
     });
   }
- 
+
   if (url === "/api/buy" && m === "POST") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
@@ -224,22 +229,31 @@ const server = http.createServer((req, res) => {
       if (!it) return send(res, 404, { error: "no item" });
       const price = Math.round(Number(it.price) || 0);
       const acc = user(u);
+      // Agar bu mahsulot uchun inventar (aniq zaxira ro'yxati) yuritilayotgan bo'lsa va u tugagan bo'lsa — sotib bo'lmaydi
+      const listCheck = DB.stock[it.id];
+      if (Array.isArray(listCheck) && listCheck.length === 0)
+        return send(res, 409, { error: "out_of_stock" });
       if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+      // Zaxirada (stock) tayyor mahsulot bo'lsa — bittasini olib, shu mijozga qat'iy biriktiramiz
+      // (boshqa hech kimga qayta berilmaydi), balansdan yechamiz va darhol "bajarildi" deb belgilaymiz.
+      const list = DB.stock[it.id];
+      const delivered = (Array.isArray(list) && list.length) ? list.shift() : null;
       acc.balance -= price;
       const title = typeof it.title === "string" ? it.title : (it.title.uz || it.title.en || "");
       const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
-        item: title, price, status: "pending", ts: Date.now() };
+        item: title, price, status: delivered ? "done" : "pending", ts: Date.now(),
+        delivered: delivered || null, doneTs: delivered ? Date.now() : null };
       DB.orders.push(o); save();
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
   }
- 
+
   /* ----- admin endpoints ----- */
   if (url.indexOf("/api/admin/") === 0) {
     if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
     const a = auth(req);
     if (!isAdm(a)) return send(res, 403, { error: "not admin" });
- 
+
     if (url === "/api/admin/list" && m === "GET") {
       expireOld();
       return send(res, 200, {
@@ -277,12 +291,49 @@ const server = http.createServer((req, res) => {
       const out = [];
       for (const k in DB.users) {
         const v = DB.users[k];
-        if (k === s || (v.uname && v.uname.toLowerCase().indexOf(s) !== -1) ||
+        if (k === s || k.indexOf(s) !== -1 ||
+            (v.uname && v.uname.toLowerCase().indexOf(s) !== -1) ||
             (v.name && v.name.toLowerCase().indexOf(s) !== -1))
           out.push({ uid: Number(k), uname: v.uname, name: v.name, balance: v.balance });
         if (out.length >= 10) break;
       }
       return send(res, 200, out);
+    }
+    if (url === "/api/admin/stock" && m === "GET") {
+      const itemId = q.get("itemId") || "";
+      const list = DB.stock[itemId] || [];
+      return send(res, 200, { itemId, count: list.length, items: list });
+    }
+    if (url === "/api/admin/stock/add" && m === "POST") {
+      return readBody(req, res, b => {
+        const itemId = String(b.itemId || "");
+        if (!itemId) return send(res, 400, { error: "itemId" });
+        const lines = String(b.text || "").split("\n").map(s => s.trim()).filter(Boolean);
+        if (!lines.length) return send(res, 400, { error: "empty" });
+        if (!DB.stock[itemId]) DB.stock[itemId] = [];
+        DB.stock[itemId] = DB.stock[itemId].concat(lines);
+        save();
+        return send(res, 200, { ok: true, count: DB.stock[itemId].length });
+      });
+    }
+    if (url === "/api/admin/stock/remove" && m === "POST") {
+      return readBody(req, res, b => {
+        const itemId = String(b.itemId || "");
+        const idx = Number(b.index);
+        if (!DB.stock[itemId] || !(idx >= 0) || idx >= DB.stock[itemId].length)
+          return send(res, 404, { error: "not found" });
+        DB.stock[itemId].splice(idx, 1);
+        save();
+        return send(res, 200, { ok: true, count: DB.stock[itemId].length });
+      });
+    }
+    if (url === "/api/admin/stock/clear" && m === "POST") {
+      return readBody(req, res, b => {
+        const itemId = String(b.itemId || "");
+        DB.stock[itemId] = [];
+        save();
+        return send(res, 200, { ok: true, count: 0 });
+      });
     }
     if (url === "/api/admin/balance" && m === "POST") {
       return readBody(req, res, b => {
@@ -299,7 +350,7 @@ const server = http.createServer((req, res) => {
     }
     return send(res, 404, { error: "unknown admin route" });
   }
- 
+
   /* ----- Userbot webhook: Telethon skripti to'g'ridan-to'g'ri shu yerga SMS matnini yuboradi ----- */
   if (url === "/api/debug/status" && m === "GET") {
     if (!TG_WEBHOOK_SECRET || q.get("secret") !== TG_WEBHOOK_SECRET)
@@ -313,7 +364,7 @@ const server = http.createServer((req, res) => {
       jamiTolovlar: DB.payments.length,
     });
   }
- 
+
   if (url === "/api/sms-webhook" && m === "POST") {
     if (!TG_WEBHOOK_SECRET || req.headers["x-sms-secret"] !== TG_WEBHOOK_SECRET)
       return send(res, 401, { error: "bad secret" });
@@ -324,9 +375,12 @@ const server = http.createServer((req, res) => {
         const fromUser = String((b && b.from) || "").toLowerCase().replace(/^@/, "");
         console.log("[sms-webhook] from=" + fromUser + " text=" + JSON.stringify(text));
         if (!text) return console.log("[sms-webhook] bo'sh matn, chiqildi");
-        if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(fromUser) === -1)
-          return console.log("[sms-webhook] '" + fromUser + "' SMS_BOT_USERNAMES ro'yxatida yo'q, chiqildi");
- 
+        if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(fromUser) === -1) {
+          console.log("[sms-webhook] '" + fromUser + "' SMS_BOT_USERNAMES ro'yxatida yo'q, chiqildi");
+          return logSms({ ts: Date.now(), from: fromUser || null, text, parsedAmount: null,
+            matched: false, paymentId: null, rejected: "username_not_allowed" });
+        }
+
         const amount = parseAmount(text);
         console.log("[sms-webhook] o'qilgan summa = " + amount);
         expireOld();
@@ -336,10 +390,10 @@ const server = http.createServer((req, res) => {
           " | barcha faol to'lovlar: " + JSON.stringify(DB.payments
             .filter(p => p.status === "waiting" || p.status === "checking")
             .map(p => ({ id: p.id, pay: p.pay, status: p.status }))));
- 
+
         const entry = { ts: Date.now(), from: fromUser || null, text, parsedAmount: amount,
           matched: false, paymentId: null };
- 
+
         if (candidates.length === 1) {
           const p = candidates[0];
           const balance = confirmPayment(p, "sms");
@@ -352,7 +406,7 @@ const server = http.createServer((req, res) => {
       } catch (e) {}
     });
   }
- 
+
   /* ----- Telegram webhook: humocard/cardxabar guruhidagi SMS xabarlarni tinglash ----- */
   if (url === "/api/tg-webhook" && m === "POST") {
     // Telegram setWebhook'da berilgan secret_token shu yerga header sifatida keladi — soxta so'rovlarni blok qiladi
@@ -366,7 +420,7 @@ const server = http.createServer((req, res) => {
         if (!msg || !msg.text) return;
         const isBusiness = !!upd.business_message;
         const uname = ((msg.from && msg.from.username) || "").toLowerCase();
- 
+
         if (isBusiness) {
           // Business rejimida bitta umumiy guruh yo'q — har bir kontakt alohida chat.
           // Shu sabab chat_id bo'yicha emas, faqat yuboruvchi bot nomi (SMS_BOT_USERNAMES) bo'yicha filtrlaymiz.
@@ -376,15 +430,15 @@ const server = http.createServer((req, res) => {
           if (SMS_SOURCE_CHAT_ID && chatId !== String(SMS_SOURCE_CHAT_ID)) return;
           if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(uname) === -1) return;
         }
- 
+
         const amount = parseAmount(msg.text);
         expireOld();
         const candidates = amount == null ? [] :
           DB.payments.filter(p => (p.status === "waiting" || p.status === "checking") && p.pay === amount);
- 
+
         const entry = { ts: Date.now(), from: uname || null, text: msg.text.slice(0, 300),
           parsedAmount: amount, matched: false, paymentId: null };
- 
+
         if (candidates.length === 1) {
           const p = candidates[0];
           const balance = confirmPayment(p, "sms");
@@ -402,7 +456,7 @@ const server = http.createServer((req, res) => {
     if (!isAdm(a)) return send(res, 403, { error: "not admin" });
     return send(res, 200, DB.smsLog.slice().reverse());
   }
- 
+
   /* everything else → app */
   fs.readFile(HTML_FILE, (err, data) => {
     if (err) return send(res, 500, "verion-shop.html not found", "text/plain");
@@ -410,8 +464,7 @@ const server = http.createServer((req, res) => {
     res.end(data);
   });
 });
- 
+
 server.listen(PORT, "0.0.0.0", () => {
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
 });
- 
