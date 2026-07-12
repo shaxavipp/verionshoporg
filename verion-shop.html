@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Verion Shop</title>
+<title>Shop</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
@@ -69,20 +69,20 @@ header .sub{font-size:12px;color:var(--mut);margin-top:2px}
 .tab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(124,92,255,.35)}
 
 /* product grid */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 16px}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
-  text-align:left;display:flex;flex-direction:column;box-shadow:0 6px 20px rgba(0,0,0,.25);}
-.ptile{height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;padding:8px;position:relative;overflow:hidden;}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
+  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);}
+.ptile{height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;padding:6px;position:relative;overflow:hidden;}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ptile .tl{font-size:17px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
-.ptile .ts{font-size:10.5px;opacity:.9;position:relative;z-index:1;text-align:center}
-.pbody{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
-.pbody .nm{font-size:13.5px;font-weight:650;min-height:2.6em}
-.pbody .ct{font-size:11px;color:var(--mut)}
-.prow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:6px;flex-wrap:wrap}
-.prc{font-size:14px;font-weight:800;color:var(--acc2)}
-.stkb{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(48,209,88,.14);color:var(--ok);white-space:nowrap}
+.ptile .tl{font-size:12px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.ptile .ts{font-size:8px;opacity:.9;position:relative;z-index:1;text-align:center}
+.pbody{padding:7px 8px 8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.pbody .nm{font-size:11px;font-weight:650;min-height:2.4em}
+.pbody .ct{font-size:9px;color:var(--mut)}
+.prow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:4px;flex-wrap:wrap}
+.prc{font-size:11.5px;font-weight:800;color:var(--acc2)}
+.stkb{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(48,209,88,.14);color:var(--ok);white-space:nowrap}
 .stkb.out{background:rgba(255,69,58,.14);color:var(--err)}
 .empty{padding:40px 20px;text-align:center;color:var(--mut);font-size:13.5px;grid-column:1/-1}
 
@@ -230,7 +230,7 @@ nav button svg{width:22px;height:22px}
 </style>
 </head>
 <body>
-<div id="splash"><div class="slogo">V</div><div class="sname">Verion Shop</div><div class="sbar"><i></i></div></div>
+<div id="splash"><div class="sbar"><i></i></div></div>
 <div id="errbox"></div>
 <div id="app"></div>
 <div id="toast" class="toast"></div>
@@ -291,7 +291,7 @@ var I18N={
 en:{
   shop_sub:"Digital goods · fast delivery",
   nav_home:"Home",nav_orders:"Orders",nav_pay:"Payment",nav_profile:"Profile",
-  tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",
+  tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",tab_games:"Games",
   buy:"Buy now",in_stock:"in stock",out_stock:"Out of stock",empty_section:"Nothing here yet.",
   open_in_tg:"Open in Telegram to buy",order_created:"Order created — now pay",
   pay_title:"Payment",enter_amount:"Enter amount",min_note:"Minimum: 1 000 sum",pay_method:"Payment method",
@@ -336,7 +336,7 @@ en:{
 uz:{
   shop_sub:"Raqamli tovarlar · tez yetkazish",
   nav_home:"Asosiy",nav_orders:"Buyurtmalar",nav_pay:"To'lov",nav_profile:"Profil",
-  tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",
+  tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",tab_games:"O'yinlar",
   buy:"Sotib olish",in_stock:"dona bor",out_stock:"Tugagan",empty_section:"Hozircha bo'sh.",
   open_in_tg:"Xarid uchun Telegram orqali oching",order_created:"Buyurtma yaratildi — endi to'lang",
   pay_title:"To'lov",enter_amount:"Summani kiriting",min_note:"Eng kam: 1 000 so'm",pay_method:"To'lov usuli",
@@ -381,7 +381,7 @@ uz:{
 ru:{
   shop_sub:"Цифровые товары · быстрая доставка",
   nav_home:"Главная",nav_orders:"Заказы",nav_pay:"Оплата",nav_profile:"Профиль",
-  tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",
+  tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",tab_games:"Игры",
   buy:"Купить",in_stock:"в наличии",out_stock:"Нет в наличии",empty_section:"Пока пусто.",
   open_in_tg:"Для покупки откройте через Telegram",order_created:"Заказ создан — оплатите",
   pay_title:"Оплата",enter_amount:"Введите сумму",min_note:"Минимум: 1 000 сум",pay_method:"Способ оплаты",
@@ -458,11 +458,11 @@ var DEFAULT_CATALOG=[
   tile:{label:"VPN",sub:"Premium · 1 oy",bg:"#26123a",fg:"#e2c8ff",img:""},
   title:{en:"VPN Premium — 1 month",uz:"VPN Premium — 1 oy",ru:"VPN Premium — 1 месяц"},
   desc:{en:"Fast servers, unlimited traffic.",uz:"Tezkor serverlar, cheksiz trafik.",ru:"Быстрые серверы, безлимит."}},
- {id:"pr1",kind:"product",cat:"O'yin",price:95000,stock:30,active:true,
+ {id:"pr1",kind:"games",cat:"O'yin",price:95000,stock:30,active:true,
   tile:{label:"660 UC",sub:"PUBG Mobile",bg:"#3a2a0d",fg:"#ffe0a8",img:""},
   title:{en:"PUBG Mobile — 660 UC",uz:"PUBG Mobile — 660 UC",ru:"PUBG Mobile — 660 UC"},
   desc:{en:"UC top-up by player ID.",uz:"O'yinchi ID orqali UC to'ldiriladi.",ru:"Пополнение UC по ID игрока."}},
- {id:"pr2",kind:"product",cat:"O'yin",price:145000,stock:5,active:true,
+ {id:"pr2",kind:"games",cat:"O'yin",price:145000,stock:5,active:true,
   tile:{label:"STEAM",sub:"Wallet 10$",bg:"#10233a",fg:"#a8c8ff",img:""},
   title:{en:"Steam Wallet — 10$",uz:"Steam Wallet — 10$",ru:"Steam Wallet — 10$"},
   desc:{en:"Wallet code delivered in chat.",uz:"Wallet kodi chatda beriladi.",ru:"Код кошелька выдаётся в чате."}}
@@ -474,7 +474,7 @@ var DEFAULT_CATALOG=[
 var S={
   lang:Store.get("vn_lang",null),
   screen:"home",
-  tab:"obuna",
+  tab:"product",
   orders:Store.get("vn_orders",[]),
   custom:Store.get("vn_custom",[]),     // admin-added items (this device)
   over:Store.get("vn_over",{}),         // admin edits to default items {id:patch}
@@ -569,7 +569,7 @@ function render(){
 function go(screen){S.screen=screen;haptic();render();}
 
 function onboardingHTML(){
-  return '<div id="onb"><div class="biglogo">V</div><h1>Verion Shop</h1>'
+  return '<div id="onb">'
    +'<p>Tilni tanlang · Выберите язык · Choose language</p>'
    +'<div class="langs">'
    +'<button data-lang="uz"><span class="fl">🇺🇿</span> O‘zbekcha</button>'
@@ -582,7 +582,7 @@ function bindOnboarding(){
   for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){S.lang=this.getAttribute("data-lang");persist();haptic("ok");render();});
 }
 function headerHTML(){
-  return '<header><h1><span class="logo">V</span> Verion Shop</h1><div class="sub">'+esc(t("shop_sub"))+'</div></header>';
+  return '<header><h1>'+esc(t("shop_sub"))+'</h1></header>';
 }
 function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
@@ -590,7 +590,7 @@ function navHTML(){
 }
 
 /* ===== home ===== */
-var TABS=[["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["product","tab_products"]];
+var TABS=[["product","tab_products"],["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"]];
 function tileHTML(it,big){
   var st=it.tile||{};
   var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
@@ -1006,7 +1006,7 @@ function openAdminForm(editId){
   function kindBtn(k,key){return '<button data-kind="'+k+'" class="'+(F.kind===k?"on":"")+'">'+esc(t(key))+'</button>';}
   var html='<h2>'+esc(editId?t("a_edit"):t("a_new"))+'</h2>'
     +'<label>'+esc(t("a_section"))+'</label>'
-    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("product","tab_products")+'</div>'
+    +'<div class="seg" id="kindSeg">'+kindBtn("product","tab_products")+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
     +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
     +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
     +'<div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
