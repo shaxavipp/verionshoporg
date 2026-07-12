@@ -8,9 +8,14 @@
 <style>
 :root{
   --bg:#0c0c11; --card:#15151d; --card2:#1d1d27; --line:#2a2a38;
-  --txt:#f3f3f8; --mut:#8d8d9a; --acc:#7c5cff; --acc2:#9d7bff; --grad:linear-gradient(135deg,#7c5cff,#b487ff);
-  --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a;
+  --txt:#f3f3f8; --mut:#8d8d9a; --acc:#7c5cff; --acc2:#c9a6ff; --grad:linear-gradient(135deg,#6a3dff 0%,#9d5cff 55%,#e0a6ff 100%);
+  --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a; --gold:#ffd479;
   --r:18px;
+}
+[data-theme="light"]{
+  --bg:#f4f4f9; --card:#ffffff; --card2:#f0eefb; --line:#e4e2f1;
+  --txt:#1b1b25; --mut:#75758a; --acc:#7c5cff; --acc2:#5c33e6; --grad:linear-gradient(135deg,#6a3dff 0%,#9d5cff 55%,#e0a6ff 100%);
+  --ok:#1fa84c; --warn:#b8860b; --blue:#2a7fe0; --err:#e0342a; --gold:#c8922e;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -19,10 +24,12 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:15px;line-height:1.45;overflow-x:hidden;
   padding-bottom:calc(74px + env(safe-area-inset-bottom));
+  transition:background .25s ease,color .25s ease;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
 button:active{transform:scale(.96)}
 input,textarea{
+
   font:inherit;color:var(--txt);background:var(--card2);
   border:1px solid var(--line);border-radius:12px;padding:11px 13px;width:100%;outline:none;
   transition:border-color .15s;
@@ -185,13 +192,15 @@ nav button svg{width:22px;height:22px}
   border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px}
 
 /* balance card */
-.balcard{margin:12px 16px;background:linear-gradient(135deg,#2743ff,#7c5cff);border-radius:20px;padding:18px;
-  color:#fff;box-shadow:0 10px 30px rgba(60,70,255,.35);animation:fadeUp .22s ease}
-.balcard .bl{font-size:12px;opacity:.85;font-weight:700}
-.balcard .bv{font-size:29px;font-weight:800;margin-top:2px}
-.balcard .brow{display:flex;gap:10px;margin-top:14px}
-.balcard .brow button{flex:1;background:rgba(255,255,255,.16);border-radius:12px;padding:11px 6px;
-  font-weight:800;color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.14)}
+.balcard{margin:12px 16px;background:var(--grad);border-radius:22px;padding:20px;position:relative;overflow:hidden;
+  color:#fff;box-shadow:0 14px 34px rgba(124,92,255,.4);animation:fadeUp .22s ease}
+.balcard::after{content:"";position:absolute;top:-40%;right:-20%;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.28),transparent 70%);pointer-events:none}
+.balcard .bl{font-size:12px;opacity:.9;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.balcard .bv{font-size:30px;font-weight:800;margin-top:3px;text-shadow:0 2px 10px rgba(0,0,0,.15)}
+.balcard .brow{display:flex;gap:10px;margin-top:16px;position:relative}
+.balcard .brow button{flex:1;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);border-radius:13px;padding:12px 6px;
+  font-weight:800;color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.22)}
 .payhuge{font-size:30px;font-weight:800;color:var(--acc2);letter-spacing:.02em}
 .rule{display:flex;gap:8px;font-size:12.5px;padding:4px 0;color:var(--mut)}
 .rule.bad{color:#ff8f88}
@@ -220,7 +229,7 @@ nav button svg{width:22px;height:22px}
 .itemrow.offi .nm{opacity:.45;text-decoration:line-through}
 .seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
 .seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
-.seg button.on{background:var(--acc);color:#fff}
+.seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
 .swbtn{width:46px;height:27px;border-radius:999px;background:var(--card2);border:1px solid var(--line);position:relative}
 .swbtn i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--mut);transition:all .18s}
@@ -245,9 +254,11 @@ nav button svg{width:22px;height:22px}
 
 /* ===== CONFIG ===== */
 var SUPPORT_USERNAME="verionshop_support";
+var BOT_USERNAME="verionshopbot";     /* @ belgisisiz, do'st taklif havolasi uchun — o'zingiznikiga moslang */
 var SHOW_VIDEO_ROW=false;             /* set true + put link below when video is ready */
 var VIDEO_URL="";
 var MIN_AMOUNT=1000;
+var HIDE_STOCK_KINDS=["games","telegram"]; /* shu kategoriyalarda "N dona qoldi" ko'rsatilmaydi */
 var CARDS=[
   {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
   {id:"uzcard",name:"UZCARD",number:"5614 6873 0780 6340", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
@@ -304,7 +315,7 @@ en:{
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER",
-  support:"Support",support_sub:"Contact the operator",
+  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!",
   stat_orders:"Orders",stat_spent:"Total paid",
   a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product",
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
@@ -349,7 +360,7 @@ uz:{
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI",
-  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!",
   stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
   a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot",
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
@@ -394,7 +405,7 @@ ru:{
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ",
-  support:"Поддержка",support_sub:"Связаться с оператором",
+  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!",
   stat_orders:"Заказы",stat_spent:"Всего оплачено",
   a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар",
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
@@ -482,6 +493,7 @@ var S={
   imported:Store.get("vn_imported",null), // full imported catalog (overrides everything)
   serverCat:Store.get("vn_srv",null),    // catalog published on the server (shared with everyone)
   activePay:Store.get("vn_actpay",null), // current top-up payment window {id,pay,amount,method,expiresAt}
+  theme:Store.get("vn_theme","dark"),
   topup:{amount:50000,method:null}
 };
 var ME={balance:null,payments:[],orders:[]}; // server account (loaded via /api/me)
@@ -556,6 +568,7 @@ var IC={
 /* ===== shell ===== */
 function render(){
   var app=document.getElementById("app");
+  document.documentElement.setAttribute("data-theme",S.theme==="light"?"light":"dark");
   if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
   var html=headerHTML()+'<div class="screen">';
   if(S.screen==="home")html+=homeHTML();
@@ -600,7 +613,7 @@ function tileHTML(it,big){
 function homeHTML(){
   var html='';
   if(tgUser()){
-    html+='<div class="balcard"><div class="bl">'+esc(t("bal_title"))+'</div>'
+    html+='<div class="balcard"><div class="bl">💎 '+esc(t("bal_title"))+'</div>'
       +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
       +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
@@ -611,11 +624,11 @@ function homeHTML(){
   var items=activeItems(S.tab);
   if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   for(var j=0;j<items.length;j++){
-    var it=items[j],out=it.stock<=0;
+    var it=items[j],out=it.stock<=0,hideStk=HIDE_STOCK_KINDS.indexOf(it.kind)!==-1;
     html+='<button class="pcard" data-open="'+esc(it.id)+'">'+tileHTML(it)
       +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div><div class="ct">'+esc(it.cat||"")+'</div>'
       +'<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
-      +'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</span></div></div></button>';
+      +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</span>')+'</div></div></button>';
   }
   return html+'</div>';
 }
@@ -772,21 +785,49 @@ var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cn
 function ordersHTML(){
   var html='<div class="sect">'+esc(t("orders_title"))+'</div>';
   if(!tgUser())return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
-  var rows=[];
-  for(var i=0;i<ME.orders.length;i++){var o=ME.orders[i];rows.push({ts:o.ts,ic:"🛒",title:o.item,id:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending});}
-  for(var j=0;j<ME.payments.length;j++){
-    var p=ME.payments[j];
-    if(p.type==="manual"){rows.push({ts:p.ts,ic:"⚙️",title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
-    rows.push({ts:p.ts,ic:"💳",title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
-  }
-  rows.sort(function(a,b){return b.ts-a.ts;});
-  if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
-  for(var r=0;r<rows.length;r++){
-    var x=rows[r];
-    html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
-      +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
-      +'<div class="d">'+esc(money(x.amt))+'</div></div>'
-      +'<div class="r"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div></div></div>';
+  if(!S.ordTab)S.ordTab="orders";
+  if(!S.ordFilter)S.ordFilter="all";
+  html+='<div class="seg" id="ordTabSeg">'
+    +'<button data-ordtab="orders" class="'+(S.ordTab==="orders"?"on":"")+'">'+esc(t("tab_orders"))+'</button>'
+    +'<button data-ordtab="finance" class="'+(S.ordTab==="finance"?"on":"")+'">'+esc(t("tab_finance"))+'</button></div>';
+
+  if(S.ordTab==="orders"){
+    var filters=[["all","f_all"],["done","f_done"],["pending","f_pending"],["cancelled","f_cancelled"]];
+    html+='<div class="chips" id="ordFilterChips">';
+    for(var f=0;f<filters.length;f++)html+='<button data-ordfilter="'+filters[f][0]+'" class="'+(S.ordFilter===filters[f][0]?"on":"")+'">'+esc(t(filters[f][1]))+'</button>';
+    html+='</div>';
+    var rows=[];
+    for(var i=0;i<ME.orders.length;i++){
+      var o=ME.orders[i];
+      var st=o.status==="pending"?"pending":(o.status==="done"?"done":"cancelled");
+      if(S.ordFilter!=="all"&&st!==S.ordFilter)continue;
+      rows.push({ts:o.ts,ic:"🛒",title:o.item,id:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending});
+    }
+    rows.sort(function(a,b){return b.ts-a.ts;});
+    if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
+    for(var r=0;r<rows.length;r++){
+      var x=rows[r];
+      html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
+        +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
+        +'<div class="d">'+esc(money(x.amt))+'</div></div>'
+        +'<div class="r"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div></div></div>';
+    }
+  } else {
+    var frows=[];
+    for(var j=0;j<ME.payments.length;j++){
+      var p=ME.payments[j];
+      if(p.type==="manual"){frows.push({ts:p.ts,ic:"⚙️",title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
+      frows.push({ts:p.ts,ic:"💳",title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
+    }
+    frows.sort(function(a,b){return b.ts-a.ts;});
+    if(!frows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
+    for(var rr=0;rr<frows.length;rr++){
+      var y=frows[rr];
+      html+='<div class="card"><div class="row"><div class="l">'+y.ic+' '+esc(y.title)
+        +'<div class="d"><span class="code">'+esc(y.id)+'</span> · '+esc(fmtDate(y.ts))+'</div>'
+        +'<div class="d">'+esc(money(y.amt))+'</div></div>'
+        +'<div class="r"><span class="badge '+y.b[0]+'">'+esc(t(y.b[1]))+'</span></div></div></div>';
+    }
   }
   return html;
 }
@@ -807,11 +848,19 @@ function profileHTML(){
     +'<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))
     +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
     +'<button class="btn sm gray" data-support="1">→</button></div></div>'
+    +'<div class="card"><div class="row"><div class="l">🎁 '+esc(t("invite_title"))
+    +'<div class="d">'+esc(t("invite_sub"))+'</div></div>'
+    +'<button class="btn sm" id="inviteBtn">→</button></div></div>'
     +'<div class="sect">'+esc(t("language"))+'</div>'
     +'<div class="card"><div class="seg" id="langSeg">'
     +'<button data-setlang="uz" class="'+(S.lang==="uz"?"on":"")+'">O‘zbekcha</button>'
     +'<button data-setlang="ru" class="'+(S.lang==="ru"?"on":"")+'">Русский</button>'
     +'<button data-setlang="en" class="'+(S.lang==="en"?"on":"")+'">English</button>'
+    +'</div></div>'
+    +'<div class="sect">'+esc(t("theme_title"))+'</div>'
+    +'<div class="card"><div class="seg" id="themeSeg">'
+    +'<button data-settheme="dark" class="'+(S.theme!=="light"?"on":"")+'">🌙 '+esc(t("theme_dark"))+'</button>'
+    +'<button data-settheme="light" class="'+(S.theme==="light"?"on":"")+'">☀️ '+esc(t("theme_light"))+'</button>'
     +'</div></div>';
   if(isAdmin()){
     html+='<div class="sect">'+esc(t("owner"))+'</div>'
@@ -1109,6 +1158,15 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
   els=document.querySelectorAll("[data-setlang]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
+  els=document.querySelectorAll("[data-settheme]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.theme=this.getAttribute("data-settheme");Store.set("vn_theme",S.theme);haptic();render();});
+  var invBtn=document.getElementById("inviteBtn");
+  if(invBtn)invBtn.addEventListener("click",function(){
+    var u=tgUser();
+    var link="https://t.me/"+BOT_USERNAME+(u?"?start=ref_"+u.id:"");
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(t("invite_share_text"));
+    openLink(shareUrl);
+  });
   els=document.querySelectorAll("[data-chip]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     S.topup.amount=Number(this.getAttribute("data-chip"));render();
