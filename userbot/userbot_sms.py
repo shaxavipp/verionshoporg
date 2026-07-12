@@ -14,7 +14,7 @@ WATCH_USERNAMES = set(
 )
 
 SESSION_FILE = "verionshop_userbot.session"
-SESSION_B64 = os.environ.get("SESSION_B64")
+SESSION_B64 = (os.environ.get("SESSION_B64_PART1", "") + os.environ.get("SESSION_B64_PART2", "")) or os.environ.get("SESSION_B64")
 
 if SESSION_B64 and not os.path.exists(SESSION_FILE):
     with open(SESSION_FILE, "wb") as f:
