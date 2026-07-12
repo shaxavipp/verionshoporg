@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shop</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#0c0c11; --card:#15151d; --card2:#1d1d27; --line:#2a2a38;
+  --txt:#f3f3f8; --mut:#8d8d9a; --acc:#7c5cff; --acc2:#9d7bff; --grad:linear-gradient(135deg,#7c5cff,#b487ff);
+  --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a;
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.45;overflow-x:hidden;
+  padding-bottom:calc(74px + env(safe-area-inset-bottom));
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
+button:active{transform:scale(.96)}
+input,textarea{
+  font:inherit;color:var(--txt);background:var(--card2);
+  border:1px solid var(--line);border-radius:12px;padding:11px 13px;width:100%;outline:none;
+  transition:border-color .15s;
+}
+input:focus,textarea:focus{border-color:var(--acc)}
+label{display:block;font-size:12.5px;color:var(--mut);margin:12px 0 5px}
+.hide{display:none!important}
+img{max-width:100%}
+
+/* error overlay */
+#errbox{position:fixed;inset:auto 12px 94px 12px;z-index:9999;background:#3a1210;border:1px solid var(--err);
+  border-radius:12px;padding:12px;font-size:12px;color:#ffb4ae;white-space:pre-wrap;word-break:break-word;
+  display:none;max-height:40vh;overflow:auto;}
+
+/* splash */
+#splash{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;transition:opacity .45s ease;}
+#splash.off{opacity:0;pointer-events:none}
+#splash .slogo{width:86px;height:86px;border-radius:24px;background:var(--grad);display:flex;align-items:center;
+  justify-content:center;font-size:42px;font-weight:800;color:#fff;
+  box-shadow:0 12px 40px rgba(124,92,255,.45);animation:pulse 1.2s ease-in-out infinite;}
+#splash .sname{font-size:20px;font-weight:800;letter-spacing:.02em}
+#splash .sbar{width:120px;height:4px;border-radius:2px;background:var(--card2);overflow:hidden}
+#splash .sbar i{display:block;height:100%;width:40%;border-radius:2px;background:var(--grad);animation:slide 1s linear infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes slide{0%{margin-left:-40%}100%{margin-left:100%}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.screen{animation:fadeUp .22s ease}
+
+/* header */
+header{position:sticky;top:0;z-index:50;background:rgba(12,12,17,.85);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  padding:14px 16px 10px;border-bottom:1px solid var(--line);}
+header h1{font-size:19px;font-weight:800;display:flex;align-items:center;gap:9px}
+header .logo{width:28px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--grad);font-size:15px;font-weight:800;color:#fff;box-shadow:0 4px 14px rgba(124,92,255,.4)}
+header .sub{font-size:12px;color:var(--mut);margin-top:2px}
+
+/* tabs */
+.tabs{display:flex;gap:8px;padding:12px 16px 4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:9px 16px;border-radius:999px;background:var(--card);
+  border:1px solid var(--line);font-size:13.5px;color:var(--mut);font-weight:700;}
+.tab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(124,92,255,.35)}
+
+/* product grid */
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
+  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);}
+.ptile{height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;padding:6px;position:relative;overflow:hidden;}
+.ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ptile .tl{font-size:12px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.ptile .ts{font-size:8px;opacity:.9;position:relative;z-index:1;text-align:center}
+.pbody{padding:7px 8px 8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.pbody .nm{font-size:11px;font-weight:650;min-height:2.4em}
+.pbody .ct{font-size:9px;color:var(--mut)}
+.prow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:4px;flex-wrap:wrap}
+.prc{font-size:11.5px;font-weight:800;color:var(--acc2)}
+.stkb{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(48,209,88,.14);color:var(--ok);white-space:nowrap}
+.stkb.out{background:rgba(255,69,58,.14);color:var(--err)}
+.empty{padding:40px 20px;text-align:center;color:var(--mut);font-size:13.5px;grid-column:1/-1}
+
+/* sheet */
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;opacity:0;transition:opacity .22s}
+.dim.on{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;background:var(--card);
+  border-radius:22px 22px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom));
+  max-height:90vh;overflow-y:auto;transform:translateY(105%);transition:transform .28s cubic-bezier(.3,1,.4,1);}
+.sheet.on{transform:translateY(0)}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
+.sheet .cat{font-size:12px;color:var(--mut);margin-bottom:10px}
+.sheet .desc{font-size:14px;color:#cfcfda;margin:10px 0 14px;white-space:pre-wrap}
+.bigtile{height:118px;border-radius:16px;margin-bottom:12px}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  padding:14px;border-radius:14px;font-weight:800;font-size:15px;background:var(--grad);color:#fff;
+  box-shadow:0 6px 20px rgba(124,92,255,.35);}
+.btn.big{padding:17px;font-size:16.5px;border-radius:16px}
+.btn.gray{background:var(--card2);border:1px solid var(--line);color:var(--txt);box-shadow:none}
+.btn.red{background:transparent;border:1px solid var(--err);color:var(--err);box-shadow:none}
+.btn.green{background:linear-gradient(135deg,#1fa74a,#30d158)}
+.btn:disabled{opacity:.4;box-shadow:none}
+.btn.sm{width:auto;padding:8px 14px;font-size:13px;border-radius:11px}
+
+/* cards & rows */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin:0 16px 12px;
+  padding:14px 16px;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row .l{font-size:14px;font-weight:600}
+.row .l .d{font-size:11.5px;color:var(--mut);margin-top:2px;font-weight:400}
+.row .r{font-size:13px;color:var(--mut);text-align:right}
+.sect{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--mut);margin:18px 16px 8px;text-transform:uppercase}
+.badge{font-size:10.5px;padding:4px 10px;border-radius:999px;font-weight:800;white-space:nowrap}
+.badge.ok{background:rgba(48,209,88,.14);color:var(--ok)}
+.badge.pend{background:rgba(255,214,10,.14);color:var(--warn)}
+.badge.chk{background:rgba(77,163,255,.14);color:var(--blue)}
+.badge.cncl{background:rgba(255,69,58,.14);color:var(--err)}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card2);
+  border:1px dashed var(--acc);border-radius:8px;padding:2px 8px;font-size:12.5px;color:var(--acc2);}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+  background:#26262f;border:1px solid var(--line);color:var(--txt);padding:11px 18px;border-radius:13px;
+  font-size:13.5px;z-index:600;opacity:0;transition:all .25s;max-width:86vw;text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* bottom nav */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
+  background:rgba(17,17,24,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line);padding:7px 0 calc(7px + env(safe-area-inset-bottom));}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
+  color:var(--mut);font-size:10.5px;font-weight:700;}
+nav button.on{color:var(--acc2)}
+nav button svg{width:22px;height:22px}
+
+/* onboarding */
+#onb{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px;text-align:center}
+#onb .biglogo{width:80px;height:80px;border-radius:24px;background:var(--grad);display:flex;align-items:center;
+  justify-content:center;font-size:38px;font-weight:800;color:#fff;margin-bottom:18px;
+  box-shadow:0 12px 40px rgba(124,92,255,.45)}
+#onb h1{font-size:25px;margin-bottom:6px}
+#onb p{color:var(--mut);font-size:14px;margin-bottom:26px}
+#onb .langs{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+#onb .langs button{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;padding:15px 18px;font-size:15px;font-weight:700;}
+#onb .langs .fl{font-size:22px}
+
+/* pay screen */
+.paybox{margin:0 16px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+.amount{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);
+  border-radius:13px;padding:4px 14px 4px 4px;}
+.amount input{border:none;background:transparent;font-size:19px;font-weight:800;padding:11px}
+.amount .cur{color:var(--mut);font-size:14px;font-weight:700}
+.minnote{font-size:11.5px;color:var(--mut);margin-top:7px}
+.chips{display:flex;gap:8px;margin-top:11px}
+.chips button{flex:1;padding:10px 4px;border-radius:12px;background:var(--card2);border:1px solid var(--line);
+  font-size:13px;font-weight:700;color:var(--mut);}
+.chips button.on{border-color:var(--acc);color:var(--acc2);background:rgba(124,92,255,.1)}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.method{display:flex;align-items:center;gap:9px;padding:13px 12px;border-radius:13px;background:var(--card2);
+  border:1px solid var(--line);text-align:left;}
+.method .ic{font-size:18px}
+.method .mn{font-size:13px;font-weight:800}
+.method .md{font-size:10.5px;color:var(--mut)}
+.method.on{border-color:var(--acc);background:rgba(124,92,255,.1);box-shadow:0 0 0 1px var(--acc)}
+.method.dis{opacity:.42}
+.cardbox{margin-top:14px;background:var(--grad);border-radius:16px;padding:16px;color:#fff;
+  box-shadow:0 10px 30px rgba(124,92,255,.35);animation:fadeUp .25s ease}
+.cardbox .cnum{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:19px;font-weight:800;letter-spacing:.04em}
+.cardbox .chold{font-size:12.5px;opacity:.9;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+.cardbox .crow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cardbox .cpy{background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;color:#fff}
+.paynote{font-size:12.5px;color:var(--mut);margin:12px 0;line-height:1.55}
+.refline{display:flex;align-items:center;justify-content:space-between;background:var(--card2);
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px}
+
+/* balance card */
+.balcard{margin:12px 16px;background:linear-gradient(135deg,#2743ff,#7c5cff);border-radius:20px;padding:18px;
+  color:#fff;box-shadow:0 10px 30px rgba(60,70,255,.35);animation:fadeUp .22s ease}
+.balcard .bl{font-size:12px;opacity:.85;font-weight:700}
+.balcard .bv{font-size:29px;font-weight:800;margin-top:2px}
+.balcard .brow{display:flex;gap:10px;margin-top:14px}
+.balcard .brow button{flex:1;background:rgba(255,255,255,.16);border-radius:12px;padding:11px 6px;
+  font-weight:800;color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.14)}
+.payhuge{font-size:30px;font-weight:800;color:var(--acc2);letter-spacing:.02em}
+.rule{display:flex;gap:8px;font-size:12.5px;padding:4px 0;color:var(--mut)}
+.rule.bad{color:#ff8f88}
+.timer{font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:800;color:var(--warn)}
+
+/* profile */
+.avatar{width:56px;height:56px;border-radius:50%;background:var(--grad);display:flex;align-items:center;
+  justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex:0 0 auto}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.prof{display:flex;align-items:center;gap:13px}
+.stats{display:flex;gap:10px;margin:0 16px 12px}
+.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px;text-align:center}
+.stat .v{font-size:17px;font-weight:800;color:var(--acc2)}
+.stat .k{font-size:11px;color:var(--mut);margin-top:3px}
+
+/* admin */
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.arow{display:flex;gap:8px}
+.arow>*{flex:1}
+.itemrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.itemrow:last-child{border-bottom:none}
+.itemrow .nm{font-size:13.5px;font-weight:600}
+.itemrow .meta{font-size:11px;color:var(--mut)}
+.itemrow .acts{display:flex;gap:6px}
+.itemrow .acts button{padding:7px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px}
+.itemrow.offi .nm{opacity:.45;text-decoration:line-through}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
+.seg button.on{background:var(--acc);color:#fff}
+.switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
+.swbtn{width:46px;height:27px;border-radius:999px;background:var(--card2);border:1px solid var(--line);position:relative}
+.swbtn i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--mut);transition:all .18s}
+.swbtn.on{background:var(--acc);border-color:var(--acc)}
+.swbtn.on i{left:21px;background:#fff}
+.exta{font-family:ui-monospace,Menlo,monospace;font-size:11px;min-height:90px}
+</style>
+</head>
+<body>
+<div id="splash"><div class="sbar"><i></i></div></div>
+<div id="errbox"></div>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<script>
+"use strict";
+/* ===== visible errors, never a black screen ===== */
+(function(){
+  function show(msg){try{var b=document.getElementById("errbox");if(!b)return;b.style.display="block";b.textContent="⚠️ App error:\n"+msg;}catch(e){}}
+  window.addEventListener("error",function(e){show((e.message||"unknown")+(e.filename?"\n"+e.filename+":"+e.lineno:""));});
+  window.addEventListener("unhandledrejection",function(e){show("Promise: "+(e.reason&&e.reason.message?e.reason.message:String(e.reason)));});
+})();
+
+/* ===== CONFIG ===== */
+var SUPPORT_USERNAME="verionshop_support";
+var SHOW_VIDEO_ROW=false;             /* set true + put link below when video is ready */
+var VIDEO_URL="";
+var MIN_AMOUNT=1000;
+var CARDS=[
+  {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
+  {id:"uzcard",name:"UZCARD",number:"5614 6873 0780 6340", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
+  {id:"bank",  name:"BANKOMAT", number:"", holder:"", icon:"🏧", enabled:false},
+  {id:"intl",  name:"INTERNATIONAL", number:"", holder:"", icon:"🌐", enabled:false}
+];
+/* ============================================================
+   ADMIN ACCESS — EDIT THIS LINE
+   Telegram IDs of admins, comma separated.
+   ============================================================ */
+var ADMIN_IDS=[5606872249, 8684274899];
+
+/* ===== Telegram init (guarded) ===== */
+var TG=null;
+try{
+  if(window.Telegram&&window.Telegram.WebApp){
+    TG=window.Telegram.WebApp;
+    TG.ready();TG.expand();
+    if(TG.setHeaderColor)TG.setHeaderColor("#0c0c11");
+    if(TG.setBackgroundColor)TG.setBackgroundColor("#0c0c11");
+    if(TG.disableVerticalSwipes)TG.disableVerticalSwipes();
+  }
+}catch(e){}
+function haptic(kind){try{if(TG&&TG.HapticFeedback){kind==="ok"?TG.HapticFeedback.notificationOccurred("success"):TG.HapticFeedback.impactOccurred("light");}}catch(e){}}
+function tgUser(){try{var u=TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user;return u||null;}catch(e){return null;}}
+function isAdmin(){if(!ADMIN_IDS||ADMIN_IDS.length===0)return true;var u=tgUser();return !!u&&ADMIN_IDS.indexOf(u.id)!==-1;}
+function openLink(url){try{if(TG&&TG.openTelegramLink&&url.indexOf("https://t.me/")===0){TG.openTelegramLink(url);return;}}catch(e){}try{window.open(url,"_blank");}catch(e){}}
+
+/* ===== safe storage ===== */
+var Store=(function(){
+  var mem={},usable=false;
+  try{localStorage.setItem("__t","1");localStorage.removeItem("__t");usable=true;}catch(e){}
+  return{
+    get:function(k,d){try{if(usable){var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}}catch(e){}return (k in mem)?mem[k]:d;},
+    set:function(k,v){mem[k]=v;try{if(usable)localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  };
+})();
+
+/* ===== i18n EN ===== */
+var I18N={
+en:{
+  shop_sub:"Digital goods · fast delivery",
+  nav_home:"Home",nav_orders:"Orders",nav_pay:"Payment",nav_profile:"Profile",
+  tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",tab_games:"Games",
+  buy:"Buy now",in_stock:"in stock",out_stock:"Out of stock",empty_section:"Nothing here yet.",
+  open_in_tg:"Open in Telegram to buy",order_created:"Order created — now pay",
+  pay_title:"Payment",enter_amount:"Enter amount",min_note:"Minimum: 1 000 sum",pay_method:"Payment method",
+  soon:"Coming soon",card_transfer:"Card transfer",terminal:"Via terminal",visa_mc:"Visa / Mastercard",
+  copy:"Copy",copied:"Copied",send_receipt:"Send receipt",order_ref:"Order ID",pay_for:"Paying for",
+  paynote:"Transfer the exact amount to the card above, take a screenshot of the receipt, then press “Send receipt” — the chat opens with your Order ID, attach the screenshot there.",
+  cancel_order:"Cancel order",cancelled_toast:"Order cancelled",amount_low:"Amount is below the minimum",
+  choose_method:"Choose a payment method",custom_pay:"Payment",
+  orders_title:"My orders",orders_empty:"No orders yet.",
+  st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled",
+  goto_pay:"Pay",resend:"Resend receipt",
+  profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER",
+  support:"Support",support_sub:"Contact the operator",
+  stat_orders:"Orders",stat_spent:"Total paid",
+  a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product",
+  a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
+  a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
+  a_img:"Image from gallery",a_active:"Active (visible in store)",
+  a_desc_en:"Description — English",a_desc_uz:"Description — Uzbek",a_desc_ru:"Description — Russian",
+  a_preview:"Preview",a_save:"Save",a_add:"Add product",a_added:"Added ✓",a_saved:"Saved ✓",
+  a_need:"Fill in title and price",a_del:"Delete",a_del_done:"Deleted",a_edit:"Edit",
+  a_current:"Catalog",a_export:"Export catalog",a_export_hint:"Copy this JSON and send it to the developer — after re-upload every customer sees your changes.",
+  a_import:"Import catalog",a_import_hint:"Paste a catalog JSON and press Import (syncs another admin's export).",
+  a_import_done:"Catalog imported",a_import_bad:"Invalid JSON",a_copy:"Copy JSON",
+  a_reset:"Reset to file defaults",a_reset_done:"Catalog reset",
+  a_publish:"🌍 Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
+  a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
+  bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
+  buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
+  need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
+  pw_exact:"Transfer EXACTLY this amount",pw_rule1:"Do not change the amount even by 1 sum",
+  pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
+  pw_paid:"✅ I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
+  continue_btn:"Continue",st_done:"Completed",st_deliver:"Being delivered",
+  topup_created:"Now transfer the exact amount",srv_off:"Server unavailable — try again later",
+  adm_money:"💰 Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
+  adm_confirm:"Confirm",adm_cancel:"Cancel",adm_none:"Nothing pending",
+  adm_search:"Client (ID or @username)",adm_find:"Find",adm_amountph:"Amount (sum)",adm_done:"Done ✓",
+  onb_sub:"Choose your language",
+  guest_note:"Open the shop through the Telegram bot to place orders."
+},
+uz:{
+  shop_sub:"Raqamli tovarlar · tez yetkazish",
+  nav_home:"Asosiy",nav_orders:"Buyurtmalar",nav_pay:"To'lov",nav_profile:"Profil",
+  tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",tab_games:"O'yinlar",
+  buy:"Sotib olish",in_stock:"dona bor",out_stock:"Tugagan",empty_section:"Hozircha bo'sh.",
+  open_in_tg:"Xarid uchun Telegram orqali oching",order_created:"Buyurtma yaratildi — endi to'lang",
+  pay_title:"To'lov",enter_amount:"Summani kiriting",min_note:"Eng kam: 1 000 so'm",pay_method:"To'lov usuli",
+  soon:"Tez orada",card_transfer:"Kartaga o'tkazma",terminal:"Terminal orqali",visa_mc:"Visa / Mastercard",
+  copy:"Nusxalash",copied:"Nusxalandi",send_receipt:"Chek yuborish",order_ref:"Buyurtma ID",pay_for:"To'lov uchun",
+  paynote:"Yuqoridagi kartaga aynan shu summani o'tkazing, chek skrinshotini oling, so'ng “Chek yuborish” tugmasini bosing — chat Buyurtma ID bilan ochiladi, skrinshotni o'sha yerga yuboring.",
+  cancel_order:"Buyurtmani bekor qilish",cancelled_toast:"Buyurtma bekor qilindi",amount_low:"Summa eng kam miqdordan past",
+  choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",
+  orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.",
+  st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi",
+  goto_pay:"To'lash",resend:"Chekni qayta yuborish",
+  profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish",
+  stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
+  a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot",
+  a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
+  a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
+  a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
+  a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif — O'zbekcha",a_desc_ru:"Tavsif — Ruscha",
+  a_preview:"Ko'rinish",a_save:"Saqlash",a_add:"Qo'shish",a_added:"Qo'shildi ✓",a_saved:"Saqlandi ✓",
+  a_need:"Nomi va narxini kiriting",a_del:"O'chirish",a_del_done:"O'chirildi",a_edit:"Tahrirlash",
+  a_current:"Katalog",a_export:"Katalogni eksport qilish",a_export_hint:"Shu JSON'ni nusxalab dasturchiga yuboring — fayl yangilangach o'zgarishlar hamma mijozga ko'rinadi.",
+  a_import:"Katalogni import qilish",a_import_hint:"Katalog JSON'ini shu yerga qo'yib Import bosing (ikkinchi adminning eksportini sinxronlaydi).",
+  a_import_done:"Katalog import qilindi",a_import_bad:"JSON noto'g'ri",a_copy:"JSON nusxalash",
+  a_reset:"Fayl holatiga qaytarish",a_reset_done:"Katalog tiklandi",
+  a_publish:"🌍 Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
+  a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
+  bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
+  buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
+  need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
+  pw_exact:"AYNAN shu summani o'tkazing",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
+  pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
+  pw_paid:"✅ To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
+  continue_btn:"Davom etish",st_done:"Bajarildi",st_deliver:"Yetkazilmoqda",
+  topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Server ishlamayapti — keyinroq urinib ko'ring",
+  adm_money:"💰 To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
+  adm_confirm:"Tasdiqlash",adm_cancel:"Bekor",adm_none:"Hozircha bo'sh",
+  adm_search:"Mijoz (ID yoki @username)",adm_find:"Qidirish",adm_amountph:"Summa (so'm)",adm_done:"Bajarildi ✓",
+  onb_sub:"Tilni tanlang",
+  guest_note:"Buyurtma berish uchun do'konni Telegram bot orqali oching."
+},
+ru:{
+  shop_sub:"Цифровые товары · быстрая доставка",
+  nav_home:"Главная",nav_orders:"Заказы",nav_pay:"Оплата",nav_profile:"Профиль",
+  tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",tab_games:"Игры",
+  buy:"Купить",in_stock:"в наличии",out_stock:"Нет в наличии",empty_section:"Пока пусто.",
+  open_in_tg:"Для покупки откройте через Telegram",order_created:"Заказ создан — оплатите",
+  pay_title:"Оплата",enter_amount:"Введите сумму",min_note:"Минимум: 1 000 сум",pay_method:"Способ оплаты",
+  soon:"Скоро",card_transfer:"Перевод на карту",terminal:"Через терминал",visa_mc:"Visa / Mastercard",
+  copy:"Копировать",copied:"Скопировано",send_receipt:"Отправить чек",order_ref:"ID заказа",pay_for:"Оплата за",
+  paynote:"Переведите точную сумму на карту выше, сделайте скриншот чека и нажмите «Отправить чек» — откроется чат с ID заказа, приложите туда скриншот.",
+  cancel_order:"Отменить заказ",cancelled_toast:"Заказ отменён",amount_low:"Сумма меньше минимальной",
+  choose_method:"Выберите способ оплаты",custom_pay:"Оплата",
+  orders_title:"Мои заказы",orders_empty:"Заказов пока нет.",
+  st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён",
+  goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
+  profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ",
+  support:"Поддержка",support_sub:"Связаться с оператором",
+  stat_orders:"Заказы",stat_spent:"Всего оплачено",
+  a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар",
+  a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
+  a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
+  a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
+  a_desc_en:"Описание — Английский",a_desc_uz:"Описание — Узбекский",a_desc_ru:"Описание — Русский",
+  a_preview:"Предпросмотр",a_save:"Сохранить",a_add:"Добавить",a_added:"Добавлено ✓",a_saved:"Сохранено ✓",
+  a_need:"Укажите название и цену",a_del:"Удалить",a_del_done:"Удалено",a_edit:"Изменить",
+  a_current:"Каталог",a_export:"Экспорт каталога",a_export_hint:"Скопируйте этот JSON и отправьте разработчику — после обновления файла изменения увидят все клиенты.",
+  a_import:"Импорт каталога",a_import_hint:"Вставьте JSON каталога и нажмите Импорт (синхронизация экспорта другого админа).",
+  a_import_done:"Каталог импортирован",a_import_bad:"Неверный JSON",a_copy:"Копировать JSON",
+  a_reset:"Сбросить к файлу",a_reset_done:"Каталог сброшен",
+  a_publish:"🌍 Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
+  a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
+  bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
+  buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
+  need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
+  pw_exact:"Переведите РОВНО эту сумму",pw_rule1:"Не меняйте сумму даже на 1 сум",
+  pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
+  pw_paid:"✅ Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
+  continue_btn:"Продолжить",st_done:"Выполнено",st_deliver:"Доставляется",
+  topup_created:"Теперь переведите ровно эту сумму",srv_off:"Сервер недоступен — попробуйте позже",
+  adm_money:"💰 Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
+  adm_confirm:"Подтвердить",adm_cancel:"Отмена",adm_none:"Пока пусто",
+  adm_search:"Клиент (ID или @username)",adm_find:"Найти",adm_amountph:"Сумма (сум)",adm_done:"Готово ✓",
+  onb_sub:"Выберите язык",
+  guest_note:"Чтобы заказывать, откройте магазин через Telegram-бота."
+}
+};
+function t(k){var L=I18N[S.lang]||I18N.uz;return L[k]!==undefined?L[k]:(I18N.en[k]!==undefined?I18N.en[k]:k);}
+
+/* ===== default catalog ===== */
+var DEFAULT_CATALOG=[
+ {id:"tg1",kind:"telegram",cat:"Telegram",price:65000,stock:15,active:true,
+  tile:{label:"PREMIUM",sub:"1 oy",bg:"#2b1a5e",fg:"#ffffff",img:""},
+  title:{en:"Telegram Premium — 1 month",uz:"Telegram Premium — 1 oy",ru:"Telegram Premium — 1 месяц"},
+  desc:{en:"Official Premium for your account, activated by username within 15 minutes.",
+        uz:"Rasmiy Premium obuna, username orqali 15 daqiqada yoqiladi.",
+        ru:"Официальный Premium, активация по username за 15 минут."}},
+ {id:"tg2",kind:"telegram",cat:"Telegram",price:170000,stock:8,active:true,
+  tile:{label:"PREMIUM",sub:"3 oy",bg:"#1a3a5e",fg:"#ffffff",img:""},
+  title:{en:"Telegram Premium — 3 months",uz:"Telegram Premium — 3 oy",ru:"Telegram Premium — 3 месяца"},
+  desc:{en:"3 months of Premium at a better rate.",uz:"3 oylik Premium — qulay narxda.",ru:"Premium на 3 месяца по выгодной цене."}},
+ {id:"tg3",kind:"telegram",cat:"Telegram",price:130000,stock:25,active:true,
+  tile:{label:"★ 500",sub:"Stars",bg:"#4a3200",fg:"#ffe08a",img:""},
+  title:{en:"Telegram Stars — 500",uz:"Telegram Stars — 500 ta",ru:"Telegram Stars — 500 шт"},
+  desc:{en:"500 Stars gifted to your account.",uz:"Akkauntingizga 500 Stars sovg'a qilinadi.",ru:"500 Stars подарком на ваш аккаунт."}},
+ {id:"pk1",kind:"promokod",cat:"Promokod",price:29000,stock:20,active:true,
+  tile:{label:"YOUTUBE",sub:"Premium · 1 oy",bg:"#3a0d0d",fg:"#ffb4b4",img:""},
+  title:{en:"YouTube Premium — 1 month",uz:"YouTube Premium — 1 oy",ru:"YouTube Premium — 1 месяц"},
+  desc:{en:"Activated via invite/promo. No ads, background play.",uz:"Promo/taklif orqali yoqiladi. Reklamasiz, fonda ijro.",ru:"Активация через промо/приглашение. Без рекламы."}},
+ {id:"pk2",kind:"promokod",cat:"Promokod",price:55000,stock:10,active:true,
+  tile:{label:"PLAY",sub:"50 000 so'm",bg:"#0d2a3a",fg:"#a8dcff",img:""},
+  title:{en:"Google Play code — 50 000 sum",uz:"Google Play kodi — 50 000 so'm",ru:"Код Google Play — 50 000 сум"},
+  desc:{en:"Digital code delivered in chat.",uz:"Raqamli kod chatda beriladi.",ru:"Цифровой код выдаётся в чате."}},
+ {id:"ob1",kind:"obuna",cat:"Obuna",price:35000,stock:12,active:true,
+  tile:{label:"SPOTIFY",sub:"Premium · 1 oy",bg:"#0d3a1f",fg:"#baf7d0",img:""},
+  title:{en:"Spotify Premium — 1 month",uz:"Spotify Premium — 1 oy",ru:"Spotify Premium — 1 месяц"},
+  desc:{en:"Premium on your own account.",uz:"O'z akkauntingizda Premium.",ru:"Premium на вашем аккаунте."}},
+ {id:"ob2",kind:"obuna",cat:"Obuna",price:15000,stock:50,active:true,
+  tile:{label:"VPN",sub:"Premium · 1 oy",bg:"#26123a",fg:"#e2c8ff",img:""},
+  title:{en:"VPN Premium — 1 month",uz:"VPN Premium — 1 oy",ru:"VPN Premium — 1 месяц"},
+  desc:{en:"Fast servers, unlimited traffic.",uz:"Tezkor serverlar, cheksiz trafik.",ru:"Быстрые серверы, безлимит."}},
+ {id:"pr1",kind:"games",cat:"O'yin",price:95000,stock:30,active:true,
+  tile:{label:"660 UC",sub:"PUBG Mobile",bg:"#3a2a0d",fg:"#ffe0a8",img:""},
+  title:{en:"PUBG Mobile — 660 UC",uz:"PUBG Mobile — 660 UC",ru:"PUBG Mobile — 660 UC"},
+  desc:{en:"UC top-up by player ID.",uz:"O'yinchi ID orqali UC to'ldiriladi.",ru:"Пополнение UC по ID игрока."}},
+ {id:"pr2",kind:"games",cat:"O'yin",price:145000,stock:5,active:true,
+  tile:{label:"STEAM",sub:"Wallet 10$",bg:"#10233a",fg:"#a8c8ff",img:""},
+  title:{en:"Steam Wallet — 10$",uz:"Steam Wallet — 10$",ru:"Steam Wallet — 10$"},
+  desc:{en:"Wallet code delivered in chat.",uz:"Wallet kodi chatda beriladi.",ru:"Код кошелька выдаётся в чате."}}
+];
+</script>
+<script>
+"use strict";
+/* ===== state ===== */
+var S={
+  lang:Store.get("vn_lang",null),
+  screen:"home",
+  tab:"product",
+  orders:Store.get("vn_orders",[]),
+  custom:Store.get("vn_custom",[]),     // admin-added items (this device)
+  over:Store.get("vn_over",{}),         // admin edits to default items {id:patch}
+  removed:Store.get("vn_removed",[]),   // deleted default ids
+  imported:Store.get("vn_imported",null), // full imported catalog (overrides everything)
+  serverCat:Store.get("vn_srv",null),    // catalog published on the server (shared with everyone)
+  activePay:Store.get("vn_actpay",null), // current top-up payment window {id,pay,amount,method,expiresAt}
+  topup:{amount:50000,method:null}
+};
+var ME={balance:null,payments:[],orders:[]}; // server account (loaded via /api/me)
+function persist(){
+  Store.set("vn_lang",S.lang);Store.set("vn_orders",S.orders);Store.set("vn_custom",S.custom);
+  Store.set("vn_over",S.over);Store.set("vn_removed",S.removed);Store.set("vn_imported",S.imported);
+  Store.set("vn_srv",S.serverCat);Store.set("vn_actpay",S.activePay);
+}
+
+/* ===== server api ===== */
+function api(path,method,body){
+  if(typeof fetch!=="function")return Promise.reject(new Error("nofetch"));
+  var initData=(TG&&TG.initData)?TG.initData:"";
+  return fetch(path,{method:method||"GET",
+    headers:{"Content-Type":"application/json","X-Init-Data":initData},
+    body:body?JSON.stringify(body):undefined})
+  .then(function(r){return r.json().then(function(j){j.__code=r.status;if(!r.ok){var e=new Error("http");e.resp=j;throw e;}return j;});});
+}
+function loadMe(cb){
+  if(!tgUser()||typeof fetch!=="function"){if(cb)cb();return;}
+  api("/api/me").then(function(r){
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[]};
+    if(cb)cb();else if(S.lang)render();
+  }).catch(function(){if(cb)cb();});
+}
+
+/* ===== catalog ===== */
+function baseCatalog(){
+  if(S.serverCat&&S.serverCat.length)return S.serverCat;
+  return DEFAULT_CATALOG;
+}
+function catalog(){
+  if(S.imported&&S.imported.length)return S.imported;
+  var BASE=baseCatalog();
+  var out=[];
+  for(var i=0;i<BASE.length;i++){
+    var it=BASE[i];
+    if(S.removed.indexOf(it.id)!==-1)continue;
+    var copy=JSON.parse(JSON.stringify(it));
+    var p=S.over[it.id];
+    if(p)for(var k in p){if(k==="tile"){for(var tk in p.tile)copy.tile[tk]=p.tile[tk];}else copy[k]=p[k];}
+    out.push(copy);
+  }
+  for(var j=0;j<S.custom.length;j++)out.push(S.custom[j]);
+  return out;
+}
+function byId(id){var c=catalog();for(var i=0;i<c.length;i++)if(c[i].id===id)return c[i];return null;}
+function activeItems(kind){return catalog().filter(function(x){return x.kind===kind&&x.active!==false;});}
+
+/* ===== helpers ===== */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function money(n){n=Number(n)||0;return n.toLocaleString("ru-RU").replace(/,/g," ")+" so'm";}
+function loc(v){if(v==null)return"";if(typeof v==="string")return v;return v[S.lang]||v.uz||v.en||v.ru||"";}
+function orderId(){var a="ABCDEFGHJKMNPQRSTUVWXYZ23456789",s="";for(var i=0;i<6;i++)s+=a.charAt(Math.floor(Math.random()*a.length));return "VN-"+s;}
+function toast(msg){var el=document.getElementById("toast");el.textContent=msg;el.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){el.classList.remove("on");},2200);}
+function tgName(){var u=tgUser();return u?(u.first_name||"")+(u.last_name?" "+u.last_name:""):null;}
+function copyText(txt){
+  var done=function(){toast(t("copied"));haptic("ok");};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){});return;}}catch(e){}
+  try{var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();done();}catch(e){}
+}
+function fmtDate(ts){var d=new Date(ts);return d.toLocaleDateString()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
+function initials(){var n=tgName();if(!n)return "👤";var p=n.trim().split(/\s+/);return (p[0][0]||"")+(p[1]?p[1][0]:"");}
+
+var IC={
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5M5 9.5V21h14V9.5M9 21v-6h6v6"/></svg>',
+  orders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3zM9 8h6M9 12h6"/></svg>',
+  pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>'
+};
+
+/* ===== shell ===== */
+function render(){
+  var app=document.getElementById("app");
+  if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
+  var html=headerHTML()+'<div class="screen">';
+  if(S.screen==="home")html+=homeHTML();
+  else if(S.screen==="orders")html+=ordersHTML();
+  else if(S.screen==="pay")html+=payHTML();
+  else html+=profileHTML();
+  html+='</div>'+navHTML();
+  app.innerHTML=html;
+  bind();
+}
+function go(screen){S.screen=screen;haptic();render();}
+
+function onboardingHTML(){
+  return '<div id="onb">'
+   +'<p>Tilni tanlang · Выберите язык · Choose language</p>'
+   +'<div class="langs">'
+   +'<button data-lang="uz"><span class="fl">🇺🇿</span> O‘zbekcha</button>'
+   +'<button data-lang="ru"><span class="fl">🇷🇺</span> Русский</button>'
+   +'<button data-lang="en"><span class="fl">🇬🇧</span> English</button>'
+   +'</div></div>';
+}
+function bindOnboarding(){
+  var btns=document.querySelectorAll("#onb [data-lang]");
+  for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){S.lang=this.getAttribute("data-lang");persist();haptic("ok");render();});
+}
+function headerHTML(){
+  return '<header><h1>'+esc(t("shop_sub"))+'</h1></header>';
+}
+function navHTML(){
+  function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
+  return '<nav>'+b("home","home",t("nav_home"))+b("orders","orders",t("nav_orders"))+b("pay","pay",t("nav_pay"))+b("profile","user",t("nav_profile"))+'</nav>';
+}
+
+/* ===== home ===== */
+var TABS=[["product","tab_products"],["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"]];
+function tileHTML(it,big){
+  var st=it.tile||{};
+  var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
+  return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img
+    +'<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div></div>';
+}
+function homeHTML(){
+  var html='';
+  if(tgUser()){
+    html+='<div class="balcard"><div class="bl">'+esc(t("bal_title"))+'</div>'
+      +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
+      +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
+      +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
+  }
+  html+='<div class="tabs">';
+  for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
+  html+='</div><div class="grid">';
+  var items=activeItems(S.tab);
+  if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
+  for(var j=0;j<items.length;j++){
+    var it=items[j],out=it.stock<=0;
+    html+='<button class="pcard" data-open="'+esc(it.id)+'">'+tileHTML(it)
+      +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div><div class="ct">'+esc(it.cat||"")+'</div>'
+      +'<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
+      +'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</span></div></div></button>';
+  }
+  return html+'</div>';
+}
+
+/* ===== sheets ===== */
+function openSheet(inner){
+  closeSheet();
+  var dim=document.createElement("div");dim.className="dim";dim.id="dim";
+  var sh=document.createElement("div");sh.className="sheet";sh.id="sheetEl";
+  sh.innerHTML='<div class="grab"></div>'+inner;
+  document.body.appendChild(dim);document.body.appendChild(sh);
+  requestAnimationFrame(function(){dim.classList.add("on");sh.classList.add("on");});
+  dim.addEventListener("click",closeSheet);
+  return sh;
+}
+function closeSheet(){var d=document.getElementById("dim"),s=document.getElementById("sheetEl");if(d)d.remove();if(s)s.remove();}
+
+function openProduct(id){
+  var it=byId(id);if(!it)return;
+  var out=it.stock<=0,guest=!tgUser();
+  var sh=openSheet(
+    tileHTML(it,true)
+    +'<h2>'+esc(loc(it.title))+'</h2><div class="cat">'+esc(it.cat||"")+' · '+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</div>'
+    +'<div class="desc">'+esc(loc(it.desc))+'</div>'
+    +(guest?'<div class="paynote">⚠️ '+esc(t("guest_note"))+'</div>':"")
+    +'<button class="btn big" id="buyBtn" '+((out||guest)?"disabled":"")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — '+esc(money(it.price))+'</button>'
+  );
+  var btn=sh.querySelector("#buyBtn");
+  if(btn&&!out&&!guest)btn.addEventListener("click",function(){openBuyConfirm(it);});
+}
+
+/* ===== buy from balance ===== */
+function openBuyConfirm(it){
+  var bal=ME.balance,price=it.price;
+  var enough=bal!==null&&bal>=price;
+  var sh=openSheet(
+    tileHTML(it,true)
+    +'<h2>'+esc(t("buy_confirm"))+'</h2>'
+    +'<div class="refline"><span>'+esc(loc(it.title))+'</span><b>'+esc(money(price))+'</b></div>'
+    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
+    +(enough?'<div class="refline"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-price))+'</b></div>':'')
+    +'<div style="height:12px"></div>'
+    +(enough
+      ?'<button class="btn big green" id="doBuy">'+esc(t("pay_from_balance"))+'</button>'
+      :'<div class="paynote">⚠️ '+esc(t("need_more"))+'</div><button class="btn big" id="goTopup">➕ '+esc(t("bal_topup"))+'</button>')
+  );
+  var b=sh.querySelector("#doBuy");
+  if(b)b.addEventListener("click",function(){
+    api("/api/buy","POST",{itemId:it.id}).then(function(r){
+      ME.balance=r.balance;haptic("ok");closeSheet();toast(t("bought_ok"));
+      loadMe(function(){go("orders");});
+    }).catch(function(e){
+      closeSheet();
+      if(e.resp&&e.resp.error==="balance"){toast(t("need_more"));go("pay");}
+      else toast(t("srv_off"));
+    });
+  });
+  var g=sh.querySelector("#goTopup");
+  if(g)g.addEventListener("click",function(){
+    var need=price-(bal||0);
+    S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
+    closeSheet();go("pay");
+  });
+}
+
+/* ===== top-up (payment window with unique amount + timer) ===== */
+function payHTML(){
+  var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
+  html+='<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))+'<div class="d">@'+esc(SUPPORT_USERNAME)+'</div></div><button class="btn sm gray" data-support="1">→</button></div></div>';
+  if(!tgUser()){
+    return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
+  }
+  var ap=S.activePay;
+  if(ap){
+    var card=null;
+    for(var k=0;k<CARDS.length;k++)if(CARDS[k].id===ap.method)card=CARDS[k];
+    html+='<div class="paybox">'
+      +'<label style="margin-top:0">'+esc(t("pw_exact"))+'</label>'
+      +'<div class="refline"><span class="payhuge">'+esc(money(ap.pay))+'</span>'
+      +'<button class="btn sm gray" data-copy="'+ap.pay+'">'+esc(t("copy"))+'</button></div>'
+      +'<div class="refline"><span>⏳</span><span class="timer" id="pwTimer">--:--</span></div>'
+      +'</div>';
+    if(card){
+      html+='<div class="cardbox"><div class="crow"><div><div class="cnum">'+esc(card.number)+'</div>'
+        +'<div class="chold">'+esc(card.holder)+'</div></div>'
+        +'<button class="cpy" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+esc(t("copy"))+'</button></div></div>';
+    }
+    html+='<div class="paybox">'
+      +'<div class="rule">✅ '+esc(t("pw_rule1"))+'</div>'
+      +'<div class="rule">✅ '+esc(t("pw_rule2"))+'</div>'
+      +'<div class="rule bad">❌ '+esc(t("pw_rule3"))+'</div>'
+      +'<div class="rule bad">❌ '+esc(t("pw_rule4"))+'</div>'
+      +'<div style="height:10px"></div>'
+      +'<button class="btn big green" id="pwPaid">'+esc(t("pw_paid"))+'</button>'
+      +'<div style="height:10px"></div>'
+      +'<button class="btn red" id="pwAbort">'+esc(t("pw_abort"))+'</button>'
+      +'</div>';
+    return html;
+  }
+  html+='<div class="paybox">'
+    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(ME.balance===null?"…":esc(money(ME.balance)))+'</b></div>'
+    +'<label>'+esc(t("enter_amount"))+'</label>'
+    +'<div class="amount"><input id="payAmount" type="number" inputmode="numeric" value="'+S.topup.amount+'"><span class="cur">so\'m</span></div>'
+    +'<div class="minnote">'+esc(t("min_note"))+'</div>'
+    +'<div class="chips">'
+    +'<button data-chip="50000" class="'+(S.topup.amount===50000?"on":"")+'">50k</button>'
+    +'<button data-chip="100000" class="'+(S.topup.amount===100000?"on":"")+'">100k</button>'
+    +'<button data-chip="200000" class="'+(S.topup.amount===200000?"on":"")+'">200k</button>'
+    +'<button data-chip="500000" class="'+(S.topup.amount===500000?"on":"")+'">500k</button></div>'
+    +'</div>';
+  html+='<div class="paybox"><label style="margin-top:0">'+esc(t("pay_method"))+'</label><div class="methods">';
+  for(var i=0;i<CARDS.length;i++){
+    var c=CARDS[i];
+    var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
+    html+='<button class="method'+(S.topup.method===c.id?" on":"")+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
+      +'<span class="ic">'+c.icon+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
+  }
+  html+='</div><div style="height:12px"></div>'
+    +'<button class="btn big" id="topupGo">'+esc(t("continue_btn"))+'</button></div>';
+  return html;
+}
+function createTopup(){
+  var el=document.getElementById("payAmount");
+  var amount=Math.round(Number(el&&el.value)||0);
+  if(!amount||amount<MIN_AMOUNT){toast(t("amount_low"));return;}
+  if(!S.topup.method){toast(t("choose_method"));return;}
+  api("/api/topup","POST",{amount:amount,method:S.topup.method}).then(function(r){
+    S.activePay={id:r.payment.id,pay:r.payment.pay,amount:r.payment.amount,method:r.payment.method,expiresAt:r.expiresAt};
+    persist();haptic("ok");toast(t("topup_created"));render();
+  }).catch(function(){toast(t("srv_off"));});
+}
+function markPaid(){
+  var ap=S.activePay;if(!ap)return;
+  api("/api/paid","POST",{id:ap.id}).then(function(){
+    S.activePay=null;persist();haptic("ok");
+    loadMe(function(){go("orders");});
+  }).catch(function(){
+    S.activePay=null;persist();loadMe(function(){go("orders");});
+  });
+}
+function tickTimer(){
+  var ap=S.activePay;if(!ap)return;
+  var el=document.getElementById("pwTimer");
+  var left=Math.floor((ap.expiresAt-Date.now())/1000);
+  if(left<=0){S.activePay=null;persist();toast(t("pw_expired"));if(S.screen==="pay")render();return;}
+  if(el)el.textContent=("0"+Math.floor(left/60)).slice(-2)+":"+("0"+(left%60)).slice(-2);
+}
+</script>
+<script>
+"use strict";
+/* ===== orders (from server) ===== */
+var PAY_BADGE={waiting:["pend","st_pending"],checking:["chk","st_checking"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
+var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
+function ordersHTML(){
+  var html='<div class="sect">'+esc(t("orders_title"))+'</div>';
+  if(!tgUser())return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
+  var rows=[];
+  for(var i=0;i<ME.orders.length;i++){var o=ME.orders[i];rows.push({ts:o.ts,ic:"🛒",title:o.item,id:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending});}
+  for(var j=0;j<ME.payments.length;j++){
+    var p=ME.payments[j];
+    if(p.type==="manual"){rows.push({ts:p.ts,ic:"⚙️",title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
+    rows.push({ts:p.ts,ic:"💳",title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
+  }
+  rows.sort(function(a,b){return b.ts-a.ts;});
+  if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
+  for(var r=0;r<rows.length;r++){
+    var x=rows[r];
+    html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
+      +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
+      +'<div class="d">'+esc(money(x.amt))+'</div></div>'
+      +'<div class="r"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div></div></div>';
+  }
+  return html;
+}
+
+/* ===== profile ===== */
+function profileHTML(){
+  var name=tgName(),u=tgUser();
+  var av=u&&u.photo_url?'<img src="'+esc(u.photo_url)+'" alt="" onerror="this.remove()">':esc(initials());
+  var cnt=0,sum=0;
+  for(var i=0;i<ME.orders.length;i++){if(ME.orders[i].status!=="cancelled"){cnt++;sum+=ME.orders[i].price;}}
+  var html='<div class="sect">'+esc(t("profile_title"))+'</div>'
+    +'<div class="card"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
+    +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px">'
+    +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+(u?esc(u.id):"—")+'</div></div></div></div>'
+    +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
+    +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
+    +'<div class="stat"><div class="v">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
+    +'<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))
+    +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
+    +'<button class="btn sm gray" data-support="1">→</button></div></div>'
+    +'<div class="sect">'+esc(t("language"))+'</div>'
+    +'<div class="card"><div class="seg" id="langSeg">'
+    +'<button data-setlang="uz" class="'+(S.lang==="uz"?"on":"")+'">O‘zbekcha</button>'
+    +'<button data-setlang="ru" class="'+(S.lang==="ru"?"on":"")+'">Русский</button>'
+    +'<button data-setlang="en" class="'+(S.lang==="en"?"on":"")+'">English</button>'
+    +'</div></div>';
+  if(isAdmin()){
+    html+='<div class="sect">'+esc(t("owner"))+'</div>'
+      +'<div class="card"><div class="row"><div class="l">🛠 '+esc(t("a_panel"))
+      +'<div class="d">'+esc(t("a_panel_sub"))+'</div></div>'
+      +'<button class="btn sm" id="adminBtn">→</button></div></div>';
+  }
+  return html;
+}
+
+/* ===== admin ===== */
+function openAdmin(){
+  var html='<h2>'+esc(t("a_panel"))+'</h2>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn" id="aMoney">'+esc(t("adm_money"))+'</button>'
+    +'<div style="height:10px"></div>'
+    +'<button class="btn green" id="aPub">'+esc(t("a_publish"))+'</button>'
+    +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
+    +'<button class="btn" id="aNew">'+esc(t("a_new"))+'</button>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_current"))+'</div><div id="aList"></div>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_export"))+'</div>'
+    +'<div class="paynote" style="margin-top:0">'+esc(t("a_export_hint"))+'</div>'
+    +'<textarea id="aExp" class="exta" readonly></textarea>'
+    +'<div style="height:8px"></div><button class="btn gray" id="aCopy">'+esc(t("a_copy"))+'</button>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_import"))+'</div>'
+    +'<div class="paynote" style="margin-top:0">'+esc(t("a_import_hint"))+'</div>'
+    +'<textarea id="aImp" class="exta" placeholder="[ ... ]"></textarea>'
+    +'<div style="height:8px"></div><button class="btn gray" id="aImpBtn">'+esc(t("a_import"))+'</button>'
+    +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>';
+  var sh=openSheet(html);
+  sh.querySelector("#aMoney").addEventListener("click",openAdminMoney);
+  sh.querySelector("#aPub").addEventListener("click",publishCatalog);
+  sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
+  sh.querySelector("#aExp").value=JSON.stringify(catalog());
+  sh.querySelector("#aCopy").addEventListener("click",function(){copyText(sh.querySelector("#aExp").value);});
+  sh.querySelector("#aImpBtn").addEventListener("click",function(){
+    try{
+      var arr=JSON.parse(sh.querySelector("#aImp").value);
+      if(!Array.isArray(arr)||!arr.length)throw new Error("x");
+      S.imported=arr;persist();toast(t("a_import_done"));haptic("ok");closeSheet();render();
+    }catch(e){toast(t("a_import_bad"));}
+  });
+  sh.querySelector("#aReset").addEventListener("click",function(){
+    S.custom=[];S.over={};S.removed=[];S.imported=null;persist();toast(t("a_reset_done"));haptic();closeSheet();render();
+  });
+  renderAdminList(sh);
+}
+function renderAdminList(sh){
+  var c=catalog(),html="";
+  for(var i=0;i<c.length;i++){
+    var it=c[i],off=it.active===false;
+    html+='<div class="itemrow'+(off?" offi":"")+'"><div><div class="nm">'+esc(loc(it.title))+'</div>'
+      +'<div class="meta">'+esc(t("tab_"+(it.kind==="product"?"products":it.kind)))+' · '+esc(money(it.price))+' · '+it.stock+' dona</div></div>'
+      +'<div class="acts">'
+      +'<button data-aedit="'+esc(it.id)+'">✏️</button>'
+      +'<button data-atoggle="'+esc(it.id)+'">'+(off?"🚫":"👁")+'</button>'
+      +'<button data-adel="'+esc(it.id)+'">🗑</button>'
+      +'</div></div>';
+  }
+  var list=sh.querySelector("#aList");
+  list.innerHTML=html||('<div class="paynote">'+esc(t("empty_section"))+'</div>');
+  var eds=sh.querySelectorAll("[data-aedit]");
+  for(var a=0;a<eds.length;a++)eds[a].addEventListener("click",function(){openAdminForm(this.getAttribute("data-aedit"));});
+  var tgs=sh.querySelectorAll("[data-atoggle]");
+  for(var b=0;b<tgs.length;b++)tgs[b].addEventListener("click",function(){
+    var id=this.getAttribute("data-atoggle"),it=byId(id);if(!it)return;
+    patchItem(id,{active:it.active===false});
+    persist();renderAdminList(sh);render();
+  });
+  var dls=sh.querySelectorAll("[data-adel]");
+  for(var d=0;d<dls.length;d++)dls[d].addEventListener("click",function(){
+    var id=this.getAttribute("data-adel");
+    deleteItem(id);persist();toast(t("a_del_done"));haptic();renderAdminList(sh);render();
+  });
+}
+function isCustom(id){for(var i=0;i<S.custom.length;i++)if(S.custom[i].id===id)return true;return false;}
+function patchItem(id,patch){
+  if(S.imported){for(var i=0;i<S.imported.length;i++)if(S.imported[i].id===id){for(var k in patch)S.imported[i][k]=patch[k];}return;}
+  if(isCustom(id)){for(var j=0;j<S.custom.length;j++)if(S.custom[j].id===id){for(var k2 in patch)S.custom[j][k2]=patch[k2];}return;}
+  var p=S.over[id]||{};for(var k3 in patch)p[k3]=patch[k3];S.over[id]=p;
+}
+function deleteItem(id){
+  if(S.imported){S.imported=S.imported.filter(function(x){return x.id!==id;});return;}
+  if(isCustom(id)){S.custom=S.custom.filter(function(x){return x.id!==id;});return;}
+  if(S.removed.indexOf(id)===-1)S.removed.push(id);
+}
+
+/* ===== admin: payments & clients ===== */
+function openAdminMoney(){
+  var sh=openSheet('<h2>'+esc(t("adm_money"))+'</h2>'
+    +'<div class="sect" style="margin:12px 0 8px">'+esc(t("adm_pending"))+'</div><div id="amPay">…</div>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_orders_p"))+'</div><div id="amOrd">…</div>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_search"))+'</div>'
+    +'<div class="arow"><input id="admQ" placeholder="ID / @username"><button class="btn sm" id="admFind">'+esc(t("adm_find"))+'</button></div>'
+    +'<div id="admRes" style="margin-top:10px"></div>');
+  function reload(){
+    api("/api/admin/list").then(function(r){
+      var hp="";
+      for(var i=0;i<r.payments.length;i++){
+        var p=r.payments[i];
+        hp+='<div class="itemrow"><div><div class="nm">'+esc(money(p.pay))+' · '+esc(p.method||"")+'</div>'
+          +'<div class="meta">'+(p.uname?'@'+esc(p.uname)+' · ':'')+'ID '+esc(p.uid)+' · '+esc(fmtDate(p.ts))+' · '+esc(t(PAY_BADGE[p.status][1]))+'</div></div>'
+          +'<div class="acts"><button data-apc="'+esc(p.id)+'">✅</button><button data-apx="'+esc(p.id)+'">❌</button></div></div>';
+      }
+      sh.querySelector("#amPay").innerHTML=hp||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      var ho="";
+      for(var j=0;j<r.orders.length;j++){
+        var o=r.orders[j];
+        ho+='<div class="itemrow"><div><div class="nm">'+esc(o.item)+' · '+esc(money(o.price))+'</div>'
+          +'<div class="meta">'+(o.uname?'@'+esc(o.uname)+' · ':'')+'ID '+esc(o.uid)+' · <span class="code">'+esc(o.id)+'</span></div></div>'
+          +'<div class="acts"><button data-aoc="'+esc(o.id)+'">✅</button><button data-aox="'+esc(o.id)+'">❌</button></div></div>';
+      }
+      sh.querySelector("#amOrd").innerHTML=ho||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      function wire(sel,fn){var els=sh.querySelectorAll(sel);for(var k=0;k<els.length;k++)els[k].addEventListener("click",fn);}
+      wire("[data-apc]",function(){payAct(this.getAttribute("data-apc"),"confirm");});
+      wire("[data-apx]",function(){payAct(this.getAttribute("data-apx"),"cancel");});
+      wire("[data-aoc]",function(){ordAct(this.getAttribute("data-aoc"),"done");});
+      wire("[data-aox]",function(){ordAct(this.getAttribute("data-aox"),"cancel");});
+    }).catch(function(){sh.querySelector("#amPay").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+  }
+  function payAct(id,action){api("/api/admin/payment","POST",{id:id,action:action}).then(function(){toast(t("adm_done"));haptic("ok");reload();}).catch(function(){toast(t("srv_off"));});}
+  function ordAct(id,action){api("/api/admin/order","POST",{id:id,action:action}).then(function(){toast(t("adm_done"));haptic("ok");reload();}).catch(function(){toast(t("srv_off"));});}
+  sh.querySelector("#admFind").addEventListener("click",function(){
+    var q=sh.querySelector("#admQ").value.trim();if(!q)return;
+    api("/api/admin/user?q="+encodeURIComponent(q)).then(function(list){
+      var h="";
+      for(var i=0;i<list.length;i++){
+        var u=list[i];
+        h+='<div class="itemrow"><div><div class="nm">'+esc(u.name||"—")+(u.uname?' @'+esc(u.uname):'')+'</div>'
+          +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div></div>'
+          +'<div class="arow" style="margin:6px 0 12px"><input type="number" inputmode="numeric" placeholder="'+esc(t("adm_amountph"))+'" data-amt="'+u.uid+'">'
+          +'<button class="btn sm green" data-badd="'+u.uid+'">＋</button><button class="btn sm red" data-bsub="'+u.uid+'">−</button></div>';
+      }
+      sh.querySelector("#admRes").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      function adj(uid,sign){
+        var inp=sh.querySelector('[data-amt="'+uid+'"]');
+        var v=Math.round(Number(inp&&inp.value)||0);
+        if(!v)return;
+        api("/api/admin/balance","POST",{uid:Number(uid),delta:sign*v}).then(function(){toast(t("adm_done"));haptic("ok");sh.querySelector("#admFind").click();}).catch(function(){toast(t("srv_off"));});
+      }
+      var ad=sh.querySelectorAll("[data-badd]");for(var a=0;a<ad.length;a++)ad[a].addEventListener("click",function(){adj(this.getAttribute("data-badd"),1);});
+      var su=sh.querySelectorAll("[data-bsub]");for(var s=0;s<su.length;s++)su[s].addEventListener("click",function(){adj(this.getAttribute("data-bsub"),-1);});
+    }).catch(function(){toast(t("srv_off"));});
+  });
+  reload();
+}
+
+/* ===== shared catalog: publish + load ===== */
+function publishCatalog(){
+  var initData=(TG&&TG.initData)?TG.initData:"";
+  if(!initData||typeof fetch!=="function"){toast(t("a_publish_err"));return;}
+  var arr=catalog();
+  fetch("/api/catalog",{method:"POST",
+    headers:{"Content-Type":"application/json","X-Init-Data":initData},
+    body:JSON.stringify(arr)})
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(){
+    S.serverCat=arr;S.custom=[];S.over={};S.removed=[];S.imported=null;
+    persist();haptic("ok");toast(t("a_publish_ok"));closeSheet();S.screen="home";render();
+  })
+  .catch(function(){toast(t("a_publish_err"));});
+}
+function loadServerCatalog(){
+  try{
+    if(typeof fetch!=="function")return;
+    fetch("/api/catalog",{cache:"no-store"})
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(arr){
+      if(Array.isArray(arr)&&arr.length){S.serverCat=arr;persist();if(S.lang)render();}
+    })
+    .catch(function(){});
+  }catch(e){}
+}
+</script>
+<script>
+"use strict";
+/* ===== admin form (add / edit) ===== */
+function openAdminForm(editId){
+  var it=editId?byId(editId):null;
+  var F={
+    id:it?it.id:null, kind:it?it.kind:"product",
+    title:it?loc(it.title):"", cat:it?(it.cat||""):"",
+    price:it?it.price:"", stock:it?it.stock:10,
+    label:it?(it.tile&&it.tile.label||""):"NEW", sub:it?(it.tile&&it.tile.sub||""):"",
+    bg:it?(it.tile&&it.tile.bg||"#2b1a5e"):"#2b1a5e", fg:it?(it.tile&&it.tile.fg||"#ffffff"):"#ffffff",
+    img:it?(it.tile&&it.tile.img||""):"",
+    den:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.en)||""):"",
+    duz:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.uz)||""):"",
+    dru:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.ru)||""):"",
+    active:it?it.active!==false:true
+  };
+  function kindBtn(k,key){return '<button data-kind="'+k+'" class="'+(F.kind===k?"on":"")+'">'+esc(t(key))+'</button>';}
+  var html='<h2>'+esc(editId?t("a_edit"):t("a_new"))+'</h2>'
+    +'<label>'+esc(t("a_section"))+'</label>'
+    +'<div class="seg" id="kindSeg">'+kindBtn("product","tab_products")+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
+    +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
+    +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
+    +'<div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
+    +'<div><label>'+esc(t("a_stock"))+'</label><input id="f_stock" type="number" inputmode="numeric" value="'+esc(F.stock)+'"></div></div>'
+    +'<div class="arow"><div><label>'+esc(t("a_label"))+'</label><input id="f_label" value="'+esc(F.label)+'"></div>'
+    +'<div><label>'+esc(t("a_sublabel"))+'</label><input id="f_sub" value="'+esc(F.sub)+'"></div></div>'
+    +'<div class="colors">'
+    +'<div><label>'+esc(t("a_bg"))+'</label><input id="f_bg" type="color" value="'+esc(F.bg)+'" style="height:42px;padding:4px"></div>'
+    +'<div><label>'+esc(t("a_fg"))+'</label><input id="f_fg" type="color" value="'+esc(F.fg)+'" style="height:42px;padding:4px"></div></div>'
+    +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
+    +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
+    +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="2">'+esc(F.duz)+'</textarea>'
+    +'<label>'+esc(t("a_desc_ru"))+'</label><textarea id="f_dru" rows="2">'+esc(F.dru)+'</textarea>'
+    +'<label>'+esc(t("a_desc_en"))+'</label><textarea id="f_den" rows="2">'+esc(F.den)+'</textarea>'
+    +'<label>'+esc(t("a_preview"))+'</label><div id="prevBox" style="max-width:210px"></div>'
+    +'<div style="height:10px"></div>'
+    +'<button class="btn big" id="fSave">'+esc(editId?t("a_save"):t("a_add"))+'</button>';
+  var sh=openSheet(html);
+  function g(sel){return sh.querySelector(sel);}
+  function readForm(){
+    F.title=g("#f_title").value.trim();F.cat=g("#f_cat").value.trim();
+    F.price=g("#f_price").value;F.stock=g("#f_stock").value;
+    F.label=g("#f_label").value;F.sub=g("#f_sub").value;
+    F.bg=g("#f_bg").value;F.fg=g("#f_fg").value;
+    F.den=g("#f_den").value;F.duz=g("#f_duz").value;F.dru=g("#f_dru").value;
+  }
+  function preview(){
+    readForm();
+    var fake={tile:{label:F.label||F.title||"NEW",sub:F.sub,bg:F.bg,fg:F.fg,img:F.img},
+      title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:Number(F.stock)||0};
+    var out=fake.stock<=0;
+    g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
+      +'<div class="pbody"><div class="nm">'+esc(fake.title)+'</div><div class="ct">'+esc(fake.cat)+'</div>'
+      +'<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span><span class="stkb'+(out?" out":"")+'">'
+      +(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span></div></div></div>';
+  }
+  var ks=sh.querySelectorAll("#kindSeg [data-kind]");
+  for(var i=0;i<ks.length;i++)ks[i].addEventListener("click",function(){
+    F.kind=this.getAttribute("data-kind");
+    var all=sh.querySelectorAll("#kindSeg [data-kind]");
+    for(var j=0;j<all.length;j++)all[j].classList.toggle("on",all[j]===this);
+  });
+  g("#f_active").addEventListener("click",function(){F.active=!F.active;this.classList.toggle("on",F.active);});
+  var file=g("#f_file");
+  if(file)file.addEventListener("change",function(){
+    try{
+      var f=this.files&&this.files[0];if(!f)return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var im=new Image();
+        im.onload=function(){
+          try{
+            var MAX=600,w=im.width,h=im.height;
+            if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+            if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+            var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+            cv.getContext("2d").drawImage(im,0,0,w,h);
+            F.img=cv.toDataURL("image/jpeg",0.8);
+            preview();toast("📷 OK");
+          }catch(e){toast("Rasm xatosi");}
+        };
+        im.src=rd.result;
+      };
+      rd.readAsDataURL(f);
+    }catch(e){toast("Rasm xatosi");}
+  });
+  var inputs=sh.querySelectorAll("input,textarea");
+  for(var n=0;n<inputs.length;n++)inputs[n].addEventListener("input",preview);
+  g("#fSave").addEventListener("click",function(){
+    readForm();
+    if(!F.title||!Number(F.price)){toast(t("a_need"));return;}
+    var data={
+      kind:F.kind,cat:F.cat,price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
+      tile:{label:F.label||F.title,sub:F.sub,bg:F.bg,fg:F.fg,img:F.img},
+      title:F.title,
+      desc:{en:F.den||F.duz,uz:F.duz||F.den,ru:F.dru||F.duz||F.den}
+    };
+    if(F.id){patchItem(F.id,data);toast(t("a_saved"));}
+    else{data.id="c"+Date.now();S.custom.push(data);toast(t("a_added"));}
+    persist();haptic("ok");closeSheet();
+    S.screen="home";S.tab=F.kind;render();
+  });
+  preview();
+}
+
+/* ===== events ===== */
+function bind(){
+  var i,els;
+  els=document.querySelectorAll("[data-nav]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
+  els=document.querySelectorAll("[data-gotopay]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go("pay");});
+  els=document.querySelectorAll("[data-tab]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.tab=this.getAttribute("data-tab");render();});
+  els=document.querySelectorAll("[data-open]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openProduct(this.getAttribute("data-open"));});
+  els=document.querySelectorAll("[data-support]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
+  els=document.querySelectorAll("[data-copy]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
+  els=document.querySelectorAll("[data-setlang]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
+  els=document.querySelectorAll("[data-chip]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+    S.topup.amount=Number(this.getAttribute("data-chip"));render();
+  });
+  els=document.querySelectorAll("[data-method]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+    var amtEl=document.getElementById("payAmount");
+    if(amtEl)S.topup.amount=Math.round(Number(amtEl.value))||S.topup.amount;
+    S.topup.method=this.getAttribute("data-method");haptic();render();
+  });
+  var tg1=document.getElementById("topupGo");
+  if(tg1)tg1.addEventListener("click",createTopup);
+  var pw=document.getElementById("pwPaid");
+  if(pw)pw.addEventListener("click",markPaid);
+  var pa=document.getElementById("pwAbort");
+  if(pa)pa.addEventListener("click",function(){S.activePay=null;persist();toast(t("cancelled_toast"));render();});
+  var ab=document.getElementById("adminBtn");
+  if(ab)ab.addEventListener("click",openAdmin);
+  tickTimer();
+}
+
+/* ===== boot ===== */
+function boot(){
+  render();
+  loadServerCatalog();
+  loadMe();
+  setInterval(tickTimer,1000);
+  setInterval(function(){
+    if(tgUser()&&(S.screen==="orders"||S.screen==="home"))loadMe();
+  },20000);
+  setTimeout(function(){
+    var sp=document.getElementById("splash");
+    if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},500);}
+  },700);
+}
+document.addEventListener("DOMContentLoaded",boot);
+if(document.readyState!=="loading")boot();
+</script>
+</body>
+</html>
