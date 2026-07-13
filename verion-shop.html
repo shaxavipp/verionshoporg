@@ -23,7 +23,7 @@ body{
   background:var(--bg);color:var(--txt);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:15px;line-height:1.45;overflow-x:hidden;
-  padding-bottom:calc(74px + env(safe-area-inset-bottom));
+  padding-bottom:calc(110px + env(safe-area-inset-bottom));
   transition:background .25s ease,color .25s ease;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
@@ -110,8 +110,8 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;opacity:0;transition:opacity .22s}
 .dim.on{opacity:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;background:var(--card);
-  border-radius:22px 22px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom));
-  max-height:82vh;top:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  border-radius:22px 22px 0 0;padding:10px 16px calc(50px + env(safe-area-inset-bottom));
+  max-height:calc(var(--vh, 1vh) * 90);top:auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   transform:translateY(105%);transition:transform .28s cubic-bezier(.3,1,.4,1);}
 .sheet.on{transform:translateY(0)}
 .grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
@@ -299,6 +299,23 @@ try{
     if(TG.disableVerticalSwipes)TG.disableVerticalSwipes();
   }
 }catch(e){}
+
+/* ===== real visible height (telefonda oynalar pastga to'liq tushishi uchun) =====
+   Telegram ilovasi ichida window.innerHeight/100vh ba'zan haqiqiy ko'rinadigan
+   balandlikdan farq qiladi — shu sabab bottom sheet/panel pastki qismi
+   ekrandan tashqarida qolib, foydalanuvchi unga yetib bora olmaydi.
+   Shu funksiya haqiqiy balandlikni --vh CSS o'zgaruvchisiga yozib turadi. */
+function updateVH(){
+  try{
+    var h=(TG&&TG.viewportStableHeight)?TG.viewportStableHeight:
+          (TG&&TG.viewportHeight)?TG.viewportHeight:window.innerHeight;
+    document.documentElement.style.setProperty("--vh",(h*0.01)+"px");
+  }catch(e){document.documentElement.style.setProperty("--vh",(window.innerHeight*0.01)+"px");}
+}
+updateVH();
+window.addEventListener("resize",updateVH);
+window.addEventListener("orientationchange",function(){setTimeout(updateVH,150);});
+try{if(TG&&TG.onEvent){TG.onEvent("viewportChanged",updateVH);TG.onEvent("safeAreaChanged",updateVH);}}catch(e){}
 function haptic(kind){try{if(TG&&TG.HapticFeedback){kind==="ok"?TG.HapticFeedback.notificationOccurred("success"):TG.HapticFeedback.impactOccurred("light");}}catch(e){}}
 function tgUser(){try{var u=TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user;return u||null;}catch(e){return null;}}
 function isAdmin(){if(!ADMIN_IDS||ADMIN_IDS.length===0)return true;var u=tgUser();return !!u&&ADMIN_IDS.indexOf(u.id)!==-1;}
@@ -502,7 +519,7 @@ var DEFAULT_CATALOG=[
 var S={
   lang:Store.get("vn_lang",null),
   screen:"home",
-  tab:"product",
+  tab:"obuna",
   orders:Store.get("vn_orders",[]),
   custom:Store.get("vn_custom",[]),     // admin-added items (this device)
   over:Store.get("vn_over",{}),         // admin edits to default items {id:patch}
@@ -511,7 +528,7 @@ var S={
   serverCat:Store.get("vn_srv",null),    // catalog published on the server (shared with everyone)
   activePay:Store.get("vn_actpay",null), // current top-up payment window {id,pay,amount,method,expiresAt}
   theme:Store.get("vn_theme","dark"),
-  topup:{amount:50000,method:null}
+  topup:{amount:0,method:null}
 };
 var ME={balance:null,payments:[],orders:[]}; // server account (loaded via /api/me)
 function persist(){
@@ -632,25 +649,15 @@ function navHTML(){
 var LANG_FLAG={uz:"🇺🇿",ru:"🇷🇺",en:"🇬🇧"};
 var LANG_NAME={uz:"O‘zbekcha",ru:"Русский",en:"English"};
 var LANG_ORDER=["uz","ru","en"];
-var TABS=[["product","tab_products"],["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"]];
+var TABS=[["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"]];
 function tileHTML(it,big){
   var st=it.tile||{};
   var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img
     +'<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div></div>';
 }
-function homeHTML(){
-  var html='';
-  if(tgUser()){
-    html+='<div class="balcard"><div class="bl">💎 '+esc(t("bal_title"))+'</div>'
-      +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
-      +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
-      +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
-  }
-  html+='<div class="tabs">';
-  for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
-  html+='</div><div class="grid">';
-  var items=activeItems(S.tab);
+function productGridHTML(items){
+  var html='<div class="grid">';
   if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   for(var j=0;j<items.length;j++){
     var it=items[j];
@@ -662,6 +669,35 @@ function homeHTML(){
       +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):realStk+" "+esc(t("in_stock")))+'</span>')+'</div></div></button>';
   }
   return html+'</div>';
+}
+/* Har bir bo'lim sarlavhasi + o'sha bo'lim mahsulotlari birgalikda bitta blok */
+function categoryBlockHTML(kind,labelKey){
+  return '<div class="sect" style="margin-top:16px">'+esc(t(labelKey))+'</div>'+productGridHTML(activeItems(kind));
+}
+function homeHTML(){
+  var html='';
+  if(tgUser()){
+    html+='<div class="balcard"><div class="bl">💎 '+esc(t("bal_title"))+'</div>'
+      +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
+      +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
+      +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
+  }
+  html+='<div class="tabs">';
+  for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
+  html+='</div>';
+  /* Tanlangan (bosilgan) bo'lim birinchi bo'lib chiqadi, undan keyin qolganlari
+     ro'yxat tartibida — har biri o'z sarlavhasi va mahsulotlari bilan davom etadi. */
+  var selected=null;
+  for(var s=0;s<TABS.length;s++)if(TABS[s][0]===S.tab)selected=S.tab;
+  if(!selected)selected=TABS[0][0];
+  var order=[selected];
+  for(var k=0;k<TABS.length;k++)if(TABS[k][0]!==selected)order.push(TABS[k][0]);
+  for(var m=0;m<order.length;m++){
+    var kind=order[m],label=null;
+    for(var n=0;n<TABS.length;n++)if(TABS[n][0]===kind)label=TABS[n][1];
+    if(label)html+=categoryBlockHTML(kind,label);
+  }
+  return html;
 }
 
 /* ===== sheets ===== */
@@ -879,8 +915,8 @@ function ordersHTML(){
       html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
         +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
         +'<div class="d">'+esc(money(x.amt))+'</div></div>'
-        +'<div class="r"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span>'
-        +(x.delivered?'<div style="margin-top:6px"><button class="btn sm" data-viewdeliv="'+esc(x.oid)+'">🔑 '+esc(t("delivered_view"))+'</button></div>':'')
+        +'<div class="r" style="display:flex;flex-direction:column;align-items:flex-end;gap:10px"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span>'
+        +(x.delivered?'<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'">🔑 '+esc(t("delivered_view"))+'</button>':'')
         +'</div></div></div>';
     }
   } else {
@@ -935,6 +971,7 @@ function profileHTML(){
       +'<div class="d">'+esc(t("a_panel_sub"))+'</div></div>'
       +'<button class="btn sm" id="adminBtn">→</button></div></div>';
   }
+  html+='<div style="height:24px"></div>';
   return html;
 }
 
@@ -965,7 +1002,8 @@ function openAdmin(){
     +'<div class="paynote" style="margin-top:0">'+esc(t("a_import_hint"))+'</div>'
     +'<textarea id="aImp" class="exta" placeholder="[ ... ]"></textarea>'
     +'<div style="height:8px"></div><button class="btn gray" id="aImpBtn">'+esc(t("a_import"))+'</button>'
-    +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>';
+    +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>'
+    +'<div style="height:30px"></div>';
   var sh=openSheet(html);
   api("/api/admin/stats").then(function(s){
     sh.querySelector("#stUsers").textContent=s.users;
@@ -1196,7 +1234,8 @@ function openAdminForm(editId){
       +'<div style="height:8px"></div>'
       +'<div class="arow"><button class="btn sm" id="stkAddBtn">➕ '+esc(t("a_stock_addbtn"))+'</button>'
       +'<button class="btn sm red" id="stkClearBtn">🗑 '+esc(t("a_stock_clear"))+'</button></div></div>'
-    ):"");
+    ):"")
+    +'<div style="height:30px"></div>';
   var sh=openSheet(html);
   function g(sel){return sh.querySelector(sel);}
   function readForm(){
@@ -1348,7 +1387,7 @@ function bind(){
   });
   els=document.querySelectorAll("[data-chip]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    S.topup.amount=Number(this.getAttribute("data-chip"));render();
+    S.topup.amount=Number(this.getAttribute("data-chip"));haptic();render();
   });
   els=document.querySelectorAll("[data-method]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
