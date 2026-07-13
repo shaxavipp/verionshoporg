@@ -102,7 +102,8 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .dim.on{opacity:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;background:var(--card);
   border-radius:22px 22px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom));
-  max-height:90vh;overflow-y:auto;transform:translateY(105%);transition:transform .28s cubic-bezier(.3,1,.4,1);}
+  max-height:82vh;top:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  transform:translateY(105%);transition:transform .28s cubic-bezier(.3,1,.4,1);}
 .sheet.on{transform:translateY(0)}
 .grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
 .sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
@@ -170,7 +171,7 @@ nav button svg{width:22px;height:22px}
   padding:13px;box-shadow:0 5px 16px rgba(0,0,0,.18);}
 .amount{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);
   border-radius:12px;padding:3px 12px 3px 4px;}
-.amount input{border:none;background:transparent;font-size:17px;font-weight:800;padding:9px}
+.amount input{border:none;background:transparent;font-size:16px;font-weight:600;padding:9px;color:var(--txt)}
 .amount .cur{color:var(--mut);font-size:13px;font-weight:700}
 .minnote{font-size:11px;color:var(--mut);margin-top:6px}
 .chips{display:flex;gap:7px;margin-top:9px}
@@ -266,7 +267,7 @@ var HIDE_STOCK_KINDS=["games","telegram"]; /* shu kategoriyalarda "N dona qoldi"
 var CARDS=[
   {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
   {id:"uzcard",name:"UZCARD",number:"5614 6873 0780 6340", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
-  {id:"bank",  name:"BANKOMAT", number:"", holder:"", icon:"🏧", enabled:false},
+  {id:"bank",  name:"BANKOMAT", number:"", holder:"", icon:"🏧", enabled:true},
   {id:"intl",  name:"INTERNATIONAL", number:"", holder:"", icon:"🌐", enabled:false}
 ];
 /* ============================================================
@@ -318,10 +319,10 @@ en:{
   orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Finance",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
-  profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER",
-  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon",
+  profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
+  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance",
   stat_orders:"Orders",stat_spent:"Total paid",
-  a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product",
+  a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product", a_stats_title:"Overview",a_st_users:"Users",a_st_orders:"Orders",a_st_revenue:"Revenue",a_st_topup:"Top-ups",a_st_pending:"Pending",a_st_balances:"Total balances",a_users_title:"Users",a_users_recent:"Recent",a_users_bybalance:"By balance",
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
   a_img:"Image from gallery",a_active:"Active (visible in store)",
@@ -363,10 +364,10 @@ uz:{
   orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"Moliya",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
-  profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI",
-  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada",
+  profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing",
   stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
-  a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot",
+  a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot", a_stats_title:"Umumiy ko'rinish",a_st_users:"Foydalanuvchilar",a_st_orders:"Buyurtmalar",a_st_revenue:"Tushum",a_st_topup:"To'ldirishlar",a_st_pending:"Kutilmoqda",a_st_balances:"Jami balanslar",a_users_title:"Foydalanuvchilar",a_users_recent:"Yaqinda",a_users_bybalance:"Balans bo'yicha",
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
   a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
@@ -408,10 +409,10 @@ ru:{
   orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Финансы",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
-  profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ",
-  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро",
+  profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
+  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему",
   stat_orders:"Заказы",stat_spent:"Всего оплачено",
-  a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар",
+  a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар", a_stats_title:"Обзор",a_st_users:"Пользователи",a_st_orders:"Заказы",a_st_revenue:"Выручка",a_st_topup:"Пополнения",a_st_pending:"В ожидании",a_st_balances:"Всего балансов",a_users_title:"Пользователи",a_users_recent:"Недавние",a_users_bybalance:"По балансу",
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
   a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
@@ -612,6 +613,9 @@ function navHTML(){
 }
 
 /* ===== home ===== */
+var LANG_FLAG={uz:"🇺🇿",ru:"🇷🇺",en:"🇬🇧"};
+var LANG_NAME={uz:"O‘zbekcha",ru:"Русский",en:"English"};
+var LANG_ORDER=["uz","ru","en"];
 var TABS=[["product","tab_products"],["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"]];
 function tileHTML(it,big){
   var st=it.tile||{};
@@ -651,11 +655,12 @@ function openSheet(inner){
   var sh=document.createElement("div");sh.className="sheet";sh.id="sheetEl";
   sh.innerHTML='<div class="grab"></div>'+inner;
   document.body.appendChild(dim);document.body.appendChild(sh);
+  document.body.style.overflow="hidden";
   requestAnimationFrame(function(){dim.classList.add("on");sh.classList.add("on");});
   dim.addEventListener("click",closeSheet);
   return sh;
 }
-function closeSheet(){var d=document.getElementById("dim"),s=document.getElementById("sheetEl");if(d)d.remove();if(s)s.remove();}
+function closeSheet(){var d=document.getElementById("dim"),s=document.getElementById("sheetEl");if(d)d.remove();if(s)s.remove();document.body.style.overflow="";}
 
 function openProduct(id){
   var it=byId(id);if(!it)return;
@@ -781,7 +786,7 @@ function payHTML(){
       +'<span class="ic">'+c.icon+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
   }
   html+='</div><div style="height:12px"></div>'
-    +'<button class="btn big" id="topupGo">'+esc(t("continue_btn"))+'</button></div>';
+    +'<button class="btn big" id="topupGo">'+(S.topup.method==="bank"?esc(t("contact_support_btn")):esc(t("continue_btn")))+'</button></div>';
   return html;
 }
 function createTopup(){
@@ -789,6 +794,11 @@ function createTopup(){
   var amount=Math.round(Number(el&&el.value)||0);
   if(!amount||amount<MIN_AMOUNT){toast(t("amount_low"));return;}
   if(!S.topup.method){toast(t("choose_method"));return;}
+  if(S.topup.method==="bank"){
+    var msg=t("bank_support_msg").replace("{amount}",money(amount));
+    openLink("https://t.me/"+SUPPORT_USERNAME+"?text="+encodeURIComponent(msg));
+    return;
+  }
   api("/api/topup","POST",{amount:amount,method:S.topup.method}).then(function(r){
     S.activePay={id:r.payment.id,pay:r.payment.pay,amount:r.payment.amount,method:r.payment.method,expiresAt:r.expiresAt};
     persist();haptic("ok");toast(t("topup_created"));render();
@@ -887,17 +897,13 @@ function profileHTML(){
     +'<div class="card"><div class="row"><div class="l">🎁 '+esc(t("invite_title"))
     +'<div class="d">'+esc(t("invite_soon"))+'</div></div>'
     +'<span class="badge pend">'+esc(t("soon_badge"))+'</span></div></div>'
-    +'<div class="sect">'+esc(t("language"))+'</div>'
-    +'<div class="card"><div class="seg" id="langSeg">'
-    +'<button data-setlang="uz" class="'+(S.lang==="uz"?"on":"")+'">O‘zbekcha</button>'
-    +'<button data-setlang="ru" class="'+(S.lang==="ru"?"on":"")+'">Русский</button>'
-    +'<button data-setlang="en" class="'+(S.lang==="en"?"on":"")+'">English</button>'
-    +'</div></div>'
-    +'<div class="sect">'+esc(t("theme_title"))+'</div>'
-    +'<div class="card"><div class="seg" id="themeSeg">'
-    +'<button data-settheme="dark" class="'+(S.theme!=="light"?"on":"")+'">🌙 '+esc(t("theme_dark"))+'</button>'
-    +'<button data-settheme="light" class="'+(S.theme==="light"?"on":"")+'">☀️ '+esc(t("theme_light"))+'</button>'
-    +'</div></div>';
+    +'<div class="sect">'+esc(t("language"))+' / '+esc(t("theme_title"))+'</div>'
+    +'<div class="card"><div class="row"><div class="l">🌐 '+esc(t("language"))
+    +'<div class="d">'+esc(t("lang_tap_hint"))+'</div></div>'
+    +'<button class="btn sm" id="langCycle">'+LANG_FLAG[S.lang]+' '+LANG_NAME[S.lang]+'</button></div>'
+    +'<div class="row"><div class="l">'+(S.theme==="light"?"💡":"🌙")+' '+esc(t("theme_title"))
+    +'<div class="d">'+esc(t("theme_tap_hint"))+'</div></div>'
+    +'<button class="btn sm" id="themeToggle">'+(S.theme==="light"?esc(t("theme_light")):esc(t("theme_dark")))+'</button></div></div>';
   if(isAdmin()){
     html+='<div class="sect">'+esc(t("owner"))+'</div>'
       +'<div class="card"><div class="row"><div class="l">🛠 '+esc(t("a_panel"))
@@ -911,7 +917,16 @@ function profileHTML(){
 function openAdmin(){
   var html='<h2>'+esc(t("a_panel"))+'</h2>'
     +'<div style="height:8px"></div>'
+    +'<div class="sect" style="margin:0 0 6px">'+esc(t("a_stats_title"))+'</div>'
+    +'<div class="stats" style="margin:0 0 10px"><div class="stat"><div class="v" id="stUsers">…</div><div class="k">'+esc(t("a_st_users"))+'</div></div>'
+    +'<div class="stat"><div class="v" id="stOrders">…</div><div class="k">'+esc(t("a_st_orders"))+'</div></div>'
+    +'<div class="stat"><div class="v" id="stRevenue">…</div><div class="k">'+esc(t("a_st_revenue"))+'</div></div></div>'
+    +'<div class="stats" style="margin:0 0 6px"><div class="stat"><div class="v" id="stTopup">…</div><div class="k">'+esc(t("a_st_topup"))+'</div></div>'
+    +'<div class="stat"><div class="v" id="stPending">…</div><div class="k">'+esc(t("a_st_pending"))+'</div></div>'
+    +'<div class="stat"><div class="v" id="stBalances">…</div><div class="k">'+esc(t("a_st_balances"))+'</div></div></div>'
     +'<button class="btn" id="aMoney">'+esc(t("adm_money"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aUsersBtn">👥 '+esc(t("a_users_title"))+'</button>'
     +'<div style="height:10px"></div>'
     +'<button class="btn green" id="aPub">'+esc(t("a_publish"))+'</button>'
     +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
@@ -927,7 +942,16 @@ function openAdmin(){
     +'<div style="height:8px"></div><button class="btn gray" id="aImpBtn">'+esc(t("a_import"))+'</button>'
     +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>';
   var sh=openSheet(html);
+  api("/api/admin/stats").then(function(s){
+    sh.querySelector("#stUsers").textContent=s.users;
+    sh.querySelector("#stOrders").textContent=s.ordersCount;
+    sh.querySelector("#stRevenue").textContent=money(s.revenue);
+    sh.querySelector("#stTopup").textContent=money(s.topupSum);
+    sh.querySelector("#stPending").textContent=s.pendingPayments;
+    sh.querySelector("#stBalances").textContent=money(s.totalBalance);
+  }).catch(function(){});
   sh.querySelector("#aMoney").addEventListener("click",openAdminMoney);
+  sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
   sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
   sh.querySelector("#aExp").value=JSON.stringify(catalog());
@@ -985,12 +1009,12 @@ function deleteItem(id){
 }
 
 /* ===== admin: payments & clients ===== */
-function openAdminMoney(){
+function openAdminMoney(prefillQ){
   var sh=openSheet('<h2>'+esc(t("adm_money"))+'</h2>'
     +'<div class="sect" style="margin:12px 0 8px">'+esc(t("adm_pending"))+'</div><div id="amPay">…</div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_orders_p"))+'</div><div id="amOrd">…</div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_search"))+'</div>'
-    +'<div class="arow"><input id="admQ" placeholder="ID / @username"><button class="btn sm" id="admFind">'+esc(t("adm_find"))+'</button></div>'
+    +'<div class="arow"><input id="admQ" placeholder="ID / @username" value="'+esc(prefillQ||"")+'"><button class="btn sm" id="admFind">'+esc(t("adm_find"))+'</button></div>'
     +'<div id="admRes" style="margin-top:10px"></div>');
   function reload(){
     api("/api/admin/list").then(function(r){
@@ -1042,6 +1066,35 @@ function openAdminMoney(){
     }).catch(function(){toast(t("srv_off"));});
   });
   reload();
+  if(prefillQ)sh.querySelector("#admFind").click();
+}
+function openAdminUsers(){
+  var sh=openSheet('<h2>'+esc(t("a_users_title"))+'</h2>'
+    +'<div class="seg" id="usersSortSeg"><button data-usort="recent" class="on">'+esc(t("a_users_recent"))+'</button>'
+    +'<button data-usort="balance">'+esc(t("a_users_bybalance"))+'</button></div>'
+    +'<div id="usersList" style="margin-top:10px">…</div>');
+  function load(sort){
+    api("/api/admin/users?sort="+sort).then(function(list){
+      var h="";
+      for(var i=0;i<list.length;i++){
+        var u=list[i];
+        h+='<div class="itemrow"><div><div class="nm">'+esc(u.name||"—")+(u.uname?' @'+esc(u.uname):'')+'</div>'
+          +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div>'
+          +'<div class="acts"><button data-uopen="'+esc(u.uid)+'">💰</button></div></div>';
+      }
+      sh.querySelector("#usersList").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+      var ops=sh.querySelectorAll("[data-uopen]");
+      for(var k=0;k<ops.length;k++)ops[k].addEventListener("click",function(){
+        var uid=this.getAttribute("data-uopen");closeSheet();openAdminMoney(uid);
+      });
+    }).catch(function(){sh.querySelector("#usersList").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+  }
+  var segs=sh.querySelectorAll("[data-usort]");
+  for(var s=0;s<segs.length;s++)segs[s].addEventListener("click",function(){
+    for(var k2=0;k2<segs.length;k2++)segs[k2].classList.remove("on");
+    this.classList.add("on");load(this.getAttribute("data-usort"));
+  });
+  load("recent");
 }
 
 /* ===== shared catalog: publish + load ===== */
@@ -1227,6 +1280,19 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
   els=document.querySelectorAll("[data-setlang]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
+  var lc=document.getElementById("langCycle");
+  if(lc)lc.addEventListener("click",function(){
+    var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
+    persist();haptic();render();
+  });
+  var tc=document.getElementById("themeToggle");
+  if(tc)tc.addEventListener("click",function(){
+    S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
+  });
+  els=document.querySelectorAll("[data-ordtab]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.ordTab=this.getAttribute("data-ordtab");haptic();render();});
+  els=document.querySelectorAll("[data-ordfilter]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.ordFilter=this.getAttribute("data-ordfilter");haptic();render();});
   els=document.querySelectorAll("[data-viewdeliv]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     var oid=this.getAttribute("data-viewdeliv");

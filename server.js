@@ -335,6 +335,29 @@ const server = http.createServer((req, res) => {
         return send(res, 200, { ok: true, count: 0 });
       });
     }
+    if (url === "/api/admin/stats" && m === "GET") {
+      const users = Object.keys(DB.users).length;
+      const totalBalance = Object.values(DB.users).reduce((s, v) => s + (v.balance || 0), 0);
+      const doneOrders = DB.orders.filter(o => o.status === "done");
+      const revenue = doneOrders.reduce((s, o) => s + (o.price || 0), 0);
+      const donePays = DB.payments.filter(p => p.status === "done");
+      const topupSum = donePays.reduce((s, p) => s + (p.amount || 0), 0);
+      const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+      const todayOrders = doneOrders.filter(o => o.ts >= today0.getTime()).length;
+      const todayTopup = donePays.filter(p => p.ts >= today0.getTime()).reduce((s, p) => s + (p.amount || 0), 0);
+      return send(res, 200, {
+        users, totalBalance, ordersCount: doneOrders.length, revenue,
+        topupSum, pendingPayments: DB.payments.filter(p => p.status === "waiting" || p.status === "checking").length,
+        todayOrders, todayTopup
+      });
+    }
+    if (url === "/api/admin/users" && m === "GET") {
+      const sortBy = q.get("sort") || "recent"; // recent | balance
+      let list = Object.keys(DB.users).map(k => ({ uid: Number(k), uname: DB.users[k].uname,
+        name: DB.users[k].name, balance: DB.users[k].balance || 0, ts: DB.users[k].ts || 0 }));
+      list.sort((a, b) => sortBy === "balance" ? b.balance - a.balance : b.ts - a.ts);
+      return send(res, 200, list.slice(0, 60));
+    }
     if (url === "/api/admin/balance" && m === "POST") {
       return readBody(req, res, b => {
         const k = String(Number(b.uid) || 0);
