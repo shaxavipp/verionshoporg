@@ -244,7 +244,7 @@ nav button svg{width:22px;height:22px}
 .itemrow .acts{display:flex;gap:6px}
 .itemrow .acts button{padding:7px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px}
 .itemrow.offi .nm{opacity:.45;text-decoration:line-through}
-.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;margin-bottom:14px}
 .seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
 .seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
@@ -375,6 +375,8 @@ en:{
   adm_money:"💰 Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
   adm_confirm:"Confirm",adm_cancel:"Cancel",adm_none:"Nothing pending",
   adm_search:"Client (ID or @username)",adm_find:"Find",adm_amountph:"Amount (sum)",adm_done:"Done ✓",
+  a_history:"📜 Full history",a_hist_title:"Client history",a_hist_topups:"Top-ups",a_hist_orders:"Purchases",
+  a_hist_delivered:"Delivered to client",a_hist_none:"No history yet",a_hist_back:"← Back",
   onb_sub:"Choose your language",
   guest_note:"Open the shop through the Telegram bot to place orders."
 },
@@ -420,6 +422,8 @@ uz:{
   adm_money:"💰 To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
   adm_confirm:"Tasdiqlash",adm_cancel:"Bekor",adm_none:"Hozircha bo'sh",
   adm_search:"Mijoz (ID yoki @username)",adm_find:"Qidirish",adm_amountph:"Summa (so'm)",adm_done:"Bajarildi ✓",
+  a_history:"📜 To'liq tarix",a_hist_title:"Mijoz tarixi",a_hist_topups:"To'ldirishlar",a_hist_orders:"Xaridlar",
+  a_hist_delivered:"Mijozga yetkazilgan",a_hist_none:"Hozircha tarix yo'q",a_hist_back:"← Orqaga",
   onb_sub:"Tilni tanlang",
   guest_note:"Buyurtma berish uchun do'konni Telegram bot orqali oching."
 },
@@ -465,6 +469,8 @@ ru:{
   adm_money:"💰 Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
   adm_confirm:"Подтвердить",adm_cancel:"Отмена",adm_none:"Пока пусто",
   adm_search:"Клиент (ID или @username)",adm_find:"Найти",adm_amountph:"Сумма (сум)",adm_done:"Готово ✓",
+  a_history:"📜 Полная история",a_hist_title:"История клиента",a_hist_topups:"Пополнения",a_hist_orders:"Покупки",
+  a_hist_delivered:"Выдано клиенту",a_hist_none:"Пока нет истории",a_hist_back:"← Назад",
   onb_sub:"Выберите язык",
   guest_note:"Чтобы заказывать, откройте магазин через Telegram-бота."
 }
@@ -1114,8 +1120,9 @@ function openAdminMoney(prefillQ){
         var u=list[i];
         h+='<div class="itemrow"><div><div class="nm">'+esc(u.name||"—")+(u.uname?' @'+esc(u.uname):'')+'</div>'
           +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div></div>'
-          +'<div class="arow" style="margin:6px 0 12px"><input type="number" inputmode="numeric" placeholder="'+esc(t("adm_amountph"))+'" data-amt="'+u.uid+'">'
-          +'<button class="btn sm green" data-badd="'+u.uid+'">＋</button><button class="btn sm red" data-bsub="'+u.uid+'">−</button></div>';
+          +'<div class="arow" style="margin:6px 0 8px"><input type="number" inputmode="numeric" placeholder="'+esc(t("adm_amountph"))+'" data-amt="'+u.uid+'">'
+          +'<button class="btn sm green" data-badd="'+u.uid+'">＋</button><button class="btn sm red" data-bsub="'+u.uid+'">−</button></div>'
+          +'<button class="btn sm gray" data-uhist="'+u.uid+'" style="margin-bottom:16px;width:100%">'+esc(t("a_history"))+'</button>';
       }
       sh.querySelector("#admRes").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       function adj(uid,sign){
@@ -1126,10 +1133,49 @@ function openAdminMoney(prefillQ){
       }
       var ad=sh.querySelectorAll("[data-badd]");for(var a=0;a<ad.length;a++)ad[a].addEventListener("click",function(){adj(this.getAttribute("data-badd"),1);});
       var su=sh.querySelectorAll("[data-bsub]");for(var s=0;s<su.length;s++)su[s].addEventListener("click",function(){adj(this.getAttribute("data-bsub"),-1);});
+      var hb=sh.querySelectorAll("[data-uhist]");for(var hh=0;hh<hb.length;hh++)hb[hh].addEventListener("click",function(){openAdminHistory(this.getAttribute("data-uhist"));});
     }).catch(function(){toast(t("srv_off"));});
   });
   reload();
   if(prefillQ)sh.querySelector("#admFind").click();
+}
+
+/* Mijozning to'liq tarixi: barcha to'ldirishlar + barcha xaridlar + yetkazilgan mahsulot (login/parol/promokod) */
+function openAdminHistory(uid){
+  var sh2=openSheet('<h2>'+esc(t("a_hist_title"))+'</h2><div id="histBody" style="padding-top:6px">…</div><div style="height:20px"></div>');
+  api("/api/admin/history?uid="+encodeURIComponent(uid)).then(function(r){
+    var html='<div class="card"><div class="row"><div class="l">'+esc(r.name||"—")+(r.uname?' · @'+esc(r.uname):'')
+      +'<div class="d">ID '+esc(r.uid)+'</div></div><div class="r"><b>'+esc(money(r.balance))+'</b></div></div></div>';
+
+    html+='<div class="sect" style="margin:14px 0 6px">'+esc(t("a_hist_topups"))+'</div>';
+    if(!r.payments.length)html+='<div class="card" style="color:var(--mut);font-size:13px">'+esc(t("a_hist_none"))+'</div>';
+    for(var i=0;i<r.payments.length;i++){
+      var p=r.payments[i];
+      var pb=p.type==="manual"?["ok","st_done"]:(PAY_BADGE[p.status]||PAY_BADGE.waiting);
+      html+='<div class="card"><div class="row"><div class="l">'+(p.type==="manual"?"⚙️ "+esc(t("owner")):"💳 "+esc(p.method||""))
+        +'<div class="d">'+esc(money(p.pay||p.amount))+' · '+esc(fmtDate(p.ts))+'</div></div>'
+        +'<div class="r"><span class="badge '+pb[0]+'">'+esc(t(pb[1]))+'</span></div></div></div>';
+    }
+
+    html+='<div class="sect" style="margin:14px 0 6px">'+esc(t("a_hist_orders"))+'</div>';
+    if(!r.orders.length)html+='<div class="card" style="color:var(--mut);font-size:13px">'+esc(t("a_hist_none"))+'</div>';
+    for(var j=0;j<r.orders.length;j++){
+      var o=r.orders[j];
+      var ob=ORD_BADGE[o.status]||ORD_BADGE.pending;
+      html+='<div class="card"><div class="row"><div class="l">🛒 '+esc(o.item)
+        +'<div class="d"><span class="code">'+esc(o.id)+'</span> · '+esc(fmtDate(o.ts))+'</div>'
+        +'<div class="d">'+esc(money(o.price))+'</div></div>'
+        +'<div class="r"><span class="badge '+ob[0]+'">'+esc(t(ob[1]))+'</span></div></div>'
+        +(o.delivered?('<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">'
+          +'<div style="font-size:11px;color:var(--mut);margin-bottom:6px">🔑 '+esc(t("a_hist_delivered"))+'</div>'
+          +'<div class="cardbox" style="margin:0"><div class="crow"><div style="word-break:break-all;font-size:13px;font-weight:700">'+esc(o.delivered)+'</div>'
+          +'<button class="cpy" data-copy="'+esc(o.delivered)+'">'+esc(t("copy"))+'</button></div></div></div>'):'')
+        +'</div>';
+    }
+    sh2.querySelector("#histBody").innerHTML=html;
+    var cps=sh2.querySelectorAll("[data-copy]");
+    for(var c=0;c<cps.length;c++)cps[c].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
+  }).catch(function(){sh2.querySelector("#histBody").innerHTML='<div class="card" style="color:var(--mut);font-size:13px">'+esc(t("srv_off"))+'</div>';});
 }
 function openAdminUsers(){
   var sh=openSheet('<h2>'+esc(t("a_users_title"))+'</h2>'
@@ -1143,12 +1189,16 @@ function openAdminUsers(){
         var u=list[i];
         h+='<div class="itemrow"><div><div class="nm">'+esc(u.name||"—")+(u.uname?' @'+esc(u.uname):'')+'</div>'
           +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div>'
-          +'<div class="acts"><button data-uopen="'+esc(u.uid)+'">💰</button></div></div>';
+          +'<div class="acts"><button data-uhist2="'+esc(u.uid)+'">📜</button><button data-uopen="'+esc(u.uid)+'">💰</button></div></div>';
       }
       sh.querySelector("#usersList").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       var ops=sh.querySelectorAll("[data-uopen]");
       for(var k=0;k<ops.length;k++)ops[k].addEventListener("click",function(){
         var uid=this.getAttribute("data-uopen");closeSheet();openAdminMoney(uid);
+      });
+      var hs=sh.querySelectorAll("[data-uhist2]");
+      for(var hh2=0;hh2<hs.length;hh2++)hs[hh2].addEventListener("click",function(){
+        openAdminHistory(this.getAttribute("data-uhist2"));
       });
     }).catch(function(){sh.querySelector("#usersList").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
   }

@@ -285,6 +285,17 @@ const server = http.createServer((req, res) => {
         save(); return send(res, 200, { ok: true });
       });
     }
+    if (url === "/api/admin/history" && m === "GET") {
+      const uid = Number(q.get("uid") || 0);
+      if (!uid) return send(res, 400, { error: "uid" });
+      const acc = DB.users[String(uid)] || { balance: 0 };
+      const payments = DB.payments.filter(p => p.uid === uid).sort((x, y) => y.ts - x.ts);
+      const orders = DB.orders.filter(o => o.uid === uid).sort((x, y) => y.ts - x.ts);
+      return send(res, 200, {
+        uid, uname: acc.uname || null, name: acc.name || null, balance: acc.balance || 0,
+        payments, orders
+      });
+    }
     if (url === "/api/admin/user" && m === "GET") {
       const s = (q.get("q") || "").trim().toLowerCase().replace(/^@/, "");
       if (!s) return send(res, 400, { error: "q" });
