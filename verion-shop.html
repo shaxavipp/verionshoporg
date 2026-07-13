@@ -7,15 +7,15 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
-  --bg:#0c0c11; --card:#15151d; --card2:#1d1d27; --line:#2a2a38;
-  --txt:#f3f3f8; --mut:#8d8d9a; --acc:#7c5cff; --acc2:#c9a6ff; --grad:linear-gradient(135deg,#6a3dff 0%,#9d5cff 55%,#e0a6ff 100%);
-  --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a; --gold:#ffd479;
+  --bg:#0a0e14; --card:#121821; --card2:#1a2230; --line:#28323f;
+  --txt:#eef3f8; --mut:#87939f; --acc:#2f8fff; --acc2:#8fc2ff; --grad:linear-gradient(135deg,#0f6fe0 0%,#3ea0ff 55%,#c7dcf5 100%);
+  --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a; --gold:#c7d4e0;
   --r:18px;
 }
 [data-theme="light"]{
-  --bg:#f4f4f9; --card:#ffffff; --card2:#f0eefb; --line:#e4e2f1;
-  --txt:#1b1b25; --mut:#75758a; --acc:#7c5cff; --acc2:#5c33e6; --grad:linear-gradient(135deg,#6a3dff 0%,#9d5cff 55%,#e0a6ff 100%);
-  --ok:#1fa84c; --warn:#b8860b; --blue:#2a7fe0; --err:#e0342a; --gold:#c8922e;
+  --bg:#f3f6fa; --card:#ffffff; --card2:#eaf1fa; --line:#dbe6f0;
+  --txt:#101820; --mut:#5c6b78; --acc:#1f7ae0; --acc2:#0c56b8; --grad:linear-gradient(135deg,#0f6fe0 0%,#3ea0ff 55%,#c7dcf5 100%);
+  --ok:#1fa84c; --warn:#b8860b; --blue:#1f7ae0; --err:#e0342a; --gold:#7c8b99;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -71,6 +71,15 @@ header .hav img{width:100%;height:100%;object-fit:cover}
 header .htx{min-width:0}
 header .hn{font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
 header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
+.hctrl{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.hbtn{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;
+  font-size:11.5px;font-weight:800;color:var(--txt);white-space:nowrap}
+.hbtn-ic{padding:6px 9px;font-size:14px}
+.rowicon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;flex:0 0 auto;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.ric-red{background:linear-gradient(135deg,#ff5b4d,#e0342a)}
+.ric-green{background:linear-gradient(135deg,#34d17a,#1fa84c)}
+.ric-blue{background:var(--grad)}
 
 /* tabs */
 .tabs{display:flex;gap:8px;padding:12px 16px 4px;overflow-x:auto;scrollbar-width:none}
@@ -123,7 +132,7 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .btn.sm{width:auto;padding:7px 12px;font-size:12px;border-radius:10px}
 
 /* cards & rows */
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin:0 16px 9px;
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin:0 16px 12px;
   padding:11px 14px;box-shadow:0 5px 16px rgba(0,0,0,.18);}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:none}
@@ -175,17 +184,20 @@ nav button svg{width:22px;height:22px}
 .amount .cur{color:var(--mut);font-size:13px;font-weight:700}
 .minnote{font-size:11px;color:var(--mut);margin-top:6px}
 .chips{display:flex;gap:7px;margin-top:9px}
-.chips button{flex:1;padding:8px 4px;border-radius:11px;background:var(--card2);border:1px solid var(--line);
-  font-size:12.5px;font-weight:700;color:var(--mut);}
-.chips button.on{border-color:var(--acc);color:var(--acc2);background:rgba(124,92,255,.1)}
+.chips button{flex:1;padding:9px 4px;border-radius:11px;background:transparent;border:1px dashed var(--line);
+  font-size:12.5px;font-weight:600;color:var(--mut);transition:all .15s ease;}
+.chips button.on{border:1px solid transparent;color:#fff;background:var(--grad);font-weight:800;
+  box-shadow:0 4px 14px rgba(47,143,255,.35)}
 .methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.method{display:flex;align-items:center;gap:8px;padding:10px 11px;border-radius:12px;background:var(--card2);
+.method{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:12px;background:var(--card2);
   border:1px solid var(--line);text-align:left;}
-.method .ic{font-size:16px}
+.method .ic{font-size:16px;width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:var(--grad);flex:0 0 auto;box-shadow:0 3px 10px rgba(47,143,255,.3)}
 .method .mn{font-size:12.5px;font-weight:800}
 .method .md{font-size:10px;color:var(--mut)}
-.method.on{border-color:var(--acc);background:rgba(124,92,255,.1);box-shadow:0 0 0 1px var(--acc)}
+.method.on{border-color:var(--acc);background:rgba(47,143,255,.1);box-shadow:0 0 0 1px var(--acc)}
 .method.dis{opacity:.42}
+.method.dis .ic{background:var(--card2);box-shadow:none}
 .cardbox{margin-top:10px;background:var(--grad);border-radius:14px;padding:12px 14px;color:#fff;
   box-shadow:0 8px 22px rgba(124,92,255,.32);animation:fadeUp .25s ease}
 .cardbox .cnum{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:16.5px;font-weight:800;letter-spacing:.04em}
@@ -320,7 +332,7 @@ en:{
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
-  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance",
+  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide",
   stat_orders:"Orders",stat_spent:"Total paid",
   a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product", a_stats_title:"Overview",a_st_users:"Users",a_st_orders:"Orders",a_st_revenue:"Revenue",a_st_topup:"Top-ups",a_st_pending:"Pending",a_st_balances:"Total balances",a_users_title:"Users",a_users_recent:"Recent",a_users_bybalance:"By balance",
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
@@ -365,7 +377,7 @@ uz:{
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
-  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish",
   stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
   a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot", a_stats_title:"Umumiy ko'rinish",a_st_users:"Foydalanuvchilar",a_st_orders:"Buyurtmalar",a_st_revenue:"Tushum",a_st_topup:"To'ldirishlar",a_st_pending:"Kutilmoqda",a_st_balances:"Jami balanslar",a_users_title:"Foydalanuvchilar",a_users_recent:"Yaqinda",a_users_bybalance:"Balans bo'yicha",
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
@@ -410,7 +422,7 @@ ru:{
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
-  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему",
+  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию",
   stat_orders:"Заказы",stat_spent:"Всего оплачено",
   a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар", a_stats_title:"Обзор",a_st_users:"Пользователи",a_st_orders:"Заказы",a_st_revenue:"Выручка",a_st_topup:"Пополнения",a_st_pending:"В ожидании",a_st_balances:"Всего балансов",a_users_title:"Пользователи",a_users_recent:"Недавние",a_users_bybalance:"По балансу",
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
@@ -605,7 +617,11 @@ function headerHTML(){
   return '<header><div class="hu"><div class="hav">'+av+'</div><div class="htx">'
     +'<div class="hn">'+esc(name||t("guest"))+'</div>'
     +'<div class="hun">'+(u&&u.username?'@'+esc(u.username):'')+'</div>'
-    +'</div></div><div></div></header>';
+    +'</div></div>'
+    +'<div class="hctrl">'
+    +'<button id="hLangBtn" class="hbtn">'+LANG_FLAG[S.lang]+' '+S.lang.toUpperCase()+'</button>'
+    +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?"💡":"🌙")+'</button>'
+    +'</div></header>';
 }
 function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
@@ -736,7 +752,16 @@ function showDeliveredSheet(it,order){
 /* ===== top-up (payment window with unique amount + timer) ===== */
 function payHTML(){
   var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
-  html+='<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))+'<div class="d">@'+esc(SUPPORT_USERNAME)+'</div></div><button class="btn sm gray" data-support="1">→</button></div></div>';
+  if(SHOW_VIDEO_ROW&&VIDEO_URL){
+    html+='<div class="card"><div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
+      +'<span class="rowicon ric-red">▶️</span><div><div>'+esc(t("video_guide"))+'</div>'
+      +'<div class="d" style="color:var(--err)">'+esc(t("video_guide_sub"))+'</div></div></div>'
+      +'<button class="btn sm gray" data-openvid="1">→</button></div></div>';
+  }
+  html+='<div class="card"><div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
+    +'<span class="rowicon ric-green">🎧</span><div><div>'+esc(t("support"))+'</div>'
+    +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
+    +'<button class="btn sm gray" data-support="1">→</button></div></div>';
   if(!tgUser()){
     return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
   }
@@ -1276,6 +1301,8 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openProduct(this.getAttribute("data-open"));});
   els=document.querySelectorAll("[data-support]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
+  els=document.querySelectorAll("[data-openvid]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){if(VIDEO_URL)openLink(VIDEO_URL);});
   els=document.querySelectorAll("[data-copy]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
   els=document.querySelectorAll("[data-setlang]");
@@ -1284,6 +1311,15 @@ function bind(){
   if(lc)lc.addEventListener("click",function(){
     var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
     persist();haptic();render();
+  });
+  var hlc=document.getElementById("hLangBtn");
+  if(hlc)hlc.addEventListener("click",function(){
+    var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
+    persist();haptic();render();
+  });
+  var htc=document.getElementById("hThemeBtn");
+  if(htc)htc.addEventListener("click",function(){
+    S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
   });
   var tc=document.getElementById("themeToggle");
   if(tc)tc.addEventListener("click",function(){
