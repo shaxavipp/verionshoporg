@@ -915,8 +915,8 @@ function ordersHTML(){
       html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
         +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
         +'<div class="d">'+esc(money(x.amt))+'</div></div>'
-        +'<div class="r" style="display:flex;flex-direction:column;align-items:flex-end;gap:10px"><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span>'
-        +(x.delivered?'<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'">🔑 '+esc(t("delivered_view"))+'</button>':'')
+        +'<div class="r" style="display:flex;flex-direction:column;align-items:flex-end"><span class="badge '+x.b[0]+'" style="display:inline-block">'+esc(t(x.b[1]))+'</span>'
+        +(x.delivered?'<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'" style="margin-top:14px">🔑 '+esc(t("delivered_view"))+'</button>':'')
         +'</div></div></div>';
     }
   } else {
