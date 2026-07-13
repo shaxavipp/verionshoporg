@@ -72,6 +72,33 @@ function tgSend(chatId, text) {
     req.write(data); req.end();
   } catch (e) {}
 }
+// Rasmiy Bot API: giftPremiumSubscription — bot o'zining Stars balansidan foydalanib
+// foydalanuvchiga Telegram Premium sovg'a qiladi. Seed/hamyon KERAK EMAS — faqat BOT_TOKEN.
+// https://core.telegram.org/bots/api#giftpremiumsubscription
+const PREMIUM_STAR_COST = { 3: 1000, 6: 1500, 12: 2500 };
+function tgGiftPremium(userId, months, cb) {
+  const starCount = PREMIUM_STAR_COST[months];
+  if (!BOT_TOKEN) return cb(false, "BOT_TOKEN yo'q");
+  if (!starCount) return cb(false, "months noto'g'ri (3/6/12 bo'lishi kerak)");
+  try {
+    const data = JSON.stringify({ user_id: userId, month_count: months, star_count: starCount });
+    const req = https.request({
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/giftPremiumSubscription", method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+    }, r => {
+      let body = "";
+      r.on("data", c => { body += c; });
+      r.on("end", () => {
+        try {
+          const j = JSON.parse(body);
+          if (j.ok) cb(true); else cb(false, j.description || "telegram_error");
+        } catch (e) { cb(false, "javobni o'qishda xato"); }
+      });
+    });
+    req.on("error", e => cb(false, e.message));
+    req.write(data); req.end();
+  } catch (e) { cb(false, e.message); }
+}
 // SMS/xabar matnidan pul summasini o'qib olish (Humo/Uzcard bildirishnomalari uchun)
 // Masalan: "Kartangizga 50 038 so'm tushdi" yoki "+50,038 UZS" kabi matnlardan 50038 ni topadi.
 function parseAmount(text) {
@@ -229,6 +256,29 @@ const server = http.createServer((req, res) => {
       if (!it) return send(res, 404, { error: "no item" });
       const price = Math.round(Number(it.price) || 0);
       const acc = user(u);
+      const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
+
+      /* ----- Avto-Premium: rasmiy Bot API orqali, seed/hamyon kerak emas ----- */
+      if (it.auto && it.auto.type === "premium") {
+        if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+        acc.balance -= price;
+        const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+          item: title, price, status: "processing", ts: Date.now(), auto: "premium", months: it.auto.months };
+        DB.orders.push(o); save();
+        send(res, 200, { ok: true, order: o, balance: acc.balance });
+        tgGiftPremium(u.id, it.auto.months, (ok, err) => {
+          if (ok) {
+            o.status = "done"; o.doneTs = Date.now(); save();
+            tgSend(u.id, "✅ Telegram Premium (" + it.auto.months + " oy) yuborildi!");
+          } else {
+            acc.balance += price; o.status = "cancelled"; o.failReason = err; save();
+            tgSend(u.id, "❌ Premium yuborishda xatolik: " + err + ". Mablag' balansingizga qaytarildi.");
+            for (const aid of ADMIN_IDS) tgSend(aid, "⚠️ Avto-premium xato (" + o.id + "): " + err);
+          }
+        });
+        return;
+      }
+
       // Agar bu mahsulot uchun inventar (aniq zaxira ro'yxati) yuritilayotgan bo'lsa va u tugagan bo'lsa — sotib bo'lmaydi
       const listCheck = DB.stock[it.id];
       if (Array.isArray(listCheck) && listCheck.length === 0)
@@ -239,7 +289,6 @@ const server = http.createServer((req, res) => {
       const list = DB.stock[it.id];
       const delivered = (Array.isArray(list) && list.length) ? list.shift() : null;
       acc.balance -= price;
-      const title = typeof it.title === "string" ? it.title : (it.title.uz || it.title.en || "");
       const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
         item: title, price, status: delivered ? "done" : "pending", ts: Date.now(),
         delivered: delivered || null, doneTs: delivered ? Date.now() : null };
@@ -258,7 +307,7 @@ const server = http.createServer((req, res) => {
       expireOld();
       return send(res, 200, {
         payments: DB.payments.filter(p => p.status === "checking" || p.status === "waiting").reverse(),
-        orders: DB.orders.filter(o => o.status === "pending").reverse()
+        orders: DB.orders.filter(o => o.status === "pending" || o.status === "processing").reverse()
       });
     }
     if (url === "/api/admin/payment" && m === "POST") {

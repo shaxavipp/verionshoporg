@@ -1243,31 +1243,26 @@ function loadServerCatalog(){
 function openAdminForm(editId){
   var it=editId?byId(editId):null;
   var F={
-    id:it?it.id:null, kind:it?it.kind:"product",
+    id:it?it.id:null, kind:it?it.kind:"obuna",
     title:it?loc(it.title):"", cat:it?(it.cat||""):"",
     price:it?it.price:"", stock:it?it.stock:10,
-    label:it?(it.tile&&it.tile.label||""):"NEW", sub:it?(it.tile&&it.tile.sub||""):"",
-    bg:it?(it.tile&&it.tile.bg||"#2b1a5e"):"#2b1a5e", fg:it?(it.tile&&it.tile.fg||"#ffffff"):"#ffffff",
     img:it?(it.tile&&it.tile.img||""):"",
     den:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.en)||""):"",
     duz:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.uz)||""):"",
     dru:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.ru)||""):"",
     note:it?(loc(it.note)||""):"",
-    active:it?it.active!==false:true
+    active:it?it.active!==false:true,
+    autoPremium:!!(it&&it.auto&&it.auto.type==="premium"),
+    autoMonths:(it&&it.auto&&it.auto.months)||3
   };
   function kindBtn(k,key){return '<button data-kind="'+k+'" class="'+(F.kind===k?"on":"")+'">'+esc(t(key))+'</button>';}
   var html='<h2>'+esc(editId?t("a_edit"):t("a_new"))+'</h2>'
     +'<label>'+esc(t("a_section"))+'</label>'
-    +'<div class="seg" id="kindSeg">'+kindBtn("product","tab_products")+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
+    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
     +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
     +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
     +'<div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
-    +'<div><label>'+esc(t("a_stock"))+'</label><input id="f_stock" type="number" inputmode="numeric" value="'+esc(F.stock)+'"></div></div>'
-    +'<div class="arow"><div><label>'+esc(t("a_label"))+'</label><input id="f_label" value="'+esc(F.label)+'"></div>'
-    +'<div><label>'+esc(t("a_sublabel"))+'</label><input id="f_sub" value="'+esc(F.sub)+'"></div></div>'
-    +'<div class="colors">'
-    +'<div><label>'+esc(t("a_bg"))+'</label><input id="f_bg" type="color" value="'+esc(F.bg)+'" style="height:42px;padding:4px"></div>'
-    +'<div><label>'+esc(t("a_fg"))+'</label><input id="f_fg" type="color" value="'+esc(F.fg)+'" style="height:42px;padding:4px"></div></div>'
+    +'<div id="stockWrap"><label>'+esc(t("a_stock"))+'</label><input id="f_stock" type="number" inputmode="numeric" value="'+esc(F.stock)+'"></div></div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
     +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="2">'+esc(F.duz)+'</textarea>'
@@ -1291,26 +1286,35 @@ function openAdminForm(editId){
   function readForm(){
     F.title=g("#f_title").value.trim();F.cat=g("#f_cat").value.trim();
     F.price=g("#f_price").value;F.stock=g("#f_stock").value;
-    F.label=g("#f_label").value;F.sub=g("#f_sub").value;
-    F.bg=g("#f_bg").value;F.fg=g("#f_fg").value;
     F.den=g("#f_den").value;F.duz=g("#f_duz").value;F.dru=g("#f_dru").value;
     F.note=g("#f_note").value;
   }
   function preview(){
     readForm();
-    var fake={tile:{label:F.label||F.title||"NEW",sub:F.sub,bg:F.bg,fg:F.fg,img:F.img},
-      title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:Number(F.stock)||0};
+    var hideStock=(F.kind==="telegram"||F.kind==="games");
+    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
+      title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
     var out=fake.stock<=0;
     g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
       +'<div class="pbody"><div class="nm">'+esc(fake.title)+'</div><div class="ct">'+esc(fake.cat)+'</div>'
-      +'<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span><span class="stkb'+(out?" out":"")+'">'
-      +(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span></div></div></div>';
+      +'<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span>'
+      +(hideStock?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span>')
+      +'</div></div></div>';
   }
+  function syncStockVisibility(){
+    var hide=(F.kind==="telegram"||F.kind==="games");
+    var wrap=g("#stockWrap");
+    if(wrap)wrap.classList.toggle("hide",hide);
+    var si=g("#f_stock");
+    if(si&&hide&&(!si.value||Number(si.value)===10))si.value=999;
+  }
+  syncStockVisibility();
   var ks=sh.querySelectorAll("#kindSeg [data-kind]");
   for(var i=0;i<ks.length;i++)ks[i].addEventListener("click",function(){
     F.kind=this.getAttribute("data-kind");
     var all=sh.querySelectorAll("#kindSeg [data-kind]");
     for(var j=0;j<all.length;j++)all[j].classList.toggle("on",all[j]===this);
+    syncStockVisibility();preview();
   });
   g("#f_active").addEventListener("click",function(){F.active=!F.active;this.classList.toggle("on",F.active);});
   var file=g("#f_file");
@@ -1343,7 +1347,7 @@ function openAdminForm(editId){
     if(!F.title||!Number(F.price)){toast(t("a_need"));return;}
     var data={
       kind:F.kind,cat:F.cat,price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-      tile:{label:F.label||F.title,sub:F.sub,bg:F.bg,fg:F.fg,img:F.img},
+      tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
       title:F.title,
       desc:{en:F.den||F.duz,uz:F.duz||F.den,ru:F.dru||F.duz||F.den},
       note:F.note||""
