@@ -125,7 +125,7 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .sheet-x svg{width:15px;height:15px}
 .sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
 .sheet .cat{font-size:12px;color:var(--mut);margin-bottom:10px}
-.sheet .desc{font-size:14px;color:#cfcfda;margin:10px 0 14px;white-space:pre-wrap}
+.sheet .desc{font-size:14px;color:var(--txt);opacity:.88;margin:10px 0 14px;white-space:pre-wrap}
 .bigtile{height:118px;border-radius:16px;margin-bottom:12px}
 
 /* buttons */
@@ -190,6 +190,7 @@ nav button svg{width:22px;height:22px}
 .amount{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);
   border-radius:12px;padding:3px 12px 3px 4px;}
 .amount input{border:none;background:transparent;font-size:16px;font-weight:600;padding:9px;color:var(--txt)}
+.amount input::placeholder{color:var(--mut);font-weight:600;opacity:1}
 .amount .cur{color:var(--mut);font-size:13px;font-weight:700}
 .minnote{font-size:11px;color:var(--mut);margin-top:6px}
 .chips{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
@@ -364,7 +365,7 @@ en:{
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
   a_img:"Image from gallery",a_active:"Active (visible in store)",
-  a_desc_en:"Description — English",a_desc_uz:"Description — Uzbek",a_desc_ru:"Description — Russian", a_note:"Delivery instructions (shown to buyer)",a_note_ph:"e.g. login and password format, or activation steps",a_stock_title:"Inventory",a_stock_count:"Available in stock",a_stock_unit:"pcs",a_stock_add:"Add new stock (one per line)",a_stock_ph:"login1:pass1\nlogin2:pass2\nor promo codes, one per line",a_stock_addbtn:"Add",a_stock_clear:"Clear all",a_stock_added:"Stock added",a_stock_cleared:"Stock cleared",
+  a_desc_en:"Description — English",a_desc_uz:"Description",a_desc_ru:"Description — Russian",a_desc_autotr:"Automatically translated to Russian and English when saved",a_translating:"Translating...", a_note:"Delivery instructions (shown to buyer)",a_note_ph:"e.g. login and password format, or activation steps",a_stock_title:"Inventory",a_stock_count:"Available in stock",a_stock_unit:"pcs",a_stock_add:"Add new stock (one per line)",a_stock_ph:"login1:pass1\nlogin2:pass2\nor promo codes, one per line",a_stock_addbtn:"Add",a_stock_clear:"Clear all",a_stock_added:"Stock added",a_stock_cleared:"Stock cleared",
   a_fulfill:"Fulfillment",a_fulfill_normal:"Manual / stock",a_fulfill_fragstars:"Auto-Stars (Fragment)",a_fulfill_fragpremium:"Auto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — any amount (Fragment)",
   a_months:"Months",a_stars_amount:"Stars amount",a_price_per_star:"Price per Star (sum)",a_min_stars:"Minimum Stars",a_fulfill_note:"Delivered automatically to the buyer's own Telegram account — no manual delivery needed.",a_fulfill_note_custom:"Buyer enters any @username and amount themselves — delivered automatically via Fragment.",
   a_preview:"Preview",a_save:"Save",a_add:"Add product",a_added:"Added ✓",a_saved:"Saved ✓",
@@ -378,7 +379,7 @@ en:{
   bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
   buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
   need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
-  pw_exact:"Transfer EXACTLY this amount",pw_rule1:"Do not change the amount even by 1 sum",
+  pw_exact:"Transfer EXACTLY this amount",pw_timer_hint:"Pay before the time runs out",pw_rule1:"Do not change the amount even by 1 sum",
   pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
   pw_paid:"I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
   pw_expired_title:"Time's up",pw_expired_body:"If you haven't transferred the money, nothing was charged — just create a new payment. If you already paid, contact support with a screenshot of the receipt.",pw_expired_new:"Create new payment",
@@ -414,7 +415,7 @@ uz:{
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
   a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
-  a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif — O'zbekcha",a_desc_ru:"Tavsif — Ruscha", a_note:"Yetkazish yo'riqnomasi (xaridorga ko'rsatiladi)",a_note_ph:"masalan login-parol formati, yoki faollashtirish qadamlari",a_stock_title:"Zaxira (inventar)",a_stock_count:"Mavjud zaxira",a_stock_unit:"dona",a_stock_add:"Yangi zaxira qo'shish (har biri alohida qatorda)",a_stock_ph:"login1:parol1\nlogin2:parol2\nyoki promokodlar, har biri alohida qatorda",a_stock_addbtn:"Qo'shish",a_stock_clear:"Hammasini tozalash",a_stock_added:"Zaxira qo'shildi",a_stock_cleared:"Zaxira tozalandi",
+  a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif (o'zbekcha yozing)",a_desc_ru:"Tavsif — Ruscha",a_desc_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_translating:"Tarjima qilinmoqda...", a_note:"Yetkazish yo'riqnomasi (xaridorga ko'rsatiladi)",a_note_ph:"masalan login-parol formati, yoki faollashtirish qadamlari",a_stock_title:"Zaxira (inventar)",a_stock_count:"Mavjud zaxira",a_stock_unit:"dona",a_stock_add:"Yangi zaxira qo'shish (har biri alohida qatorda)",a_stock_ph:"login1:parol1\nlogin2:parol2\nyoki promokodlar, har biri alohida qatorda",a_stock_addbtn:"Qo'shish",a_stock_clear:"Hammasini tozalash",a_stock_added:"Zaxira qo'shildi",a_stock_cleared:"Zaxira tozalandi",
   a_fulfill:"Yetkazish turi",a_fulfill_normal:"Qo'lda / zaxiradan",a_fulfill_fragstars:"Avto-Stars (Fragment)",a_fulfill_fragpremium:"Avto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — istalgan miqdor (Fragment)",
   a_months:"Oy soni",a_stars_amount:"Stars miqdori",a_price_per_star:"1 Star narxi (so'm)",a_min_stars:"Eng kam Stars",a_fulfill_note:"Xaridorning o'z Telegram akkauntiga avtomatik yetkaziladi — qo'lda berish shart emas.",a_fulfill_note_custom:"Xaridor o'zi @username va miqdorni kiritadi — Fragment orqali avtomatik yetkaziladi.",
   a_preview:"Ko'rinish",a_save:"Saqlash",a_add:"Qo'shish",a_added:"Qo'shildi ✓",a_saved:"Saqlandi ✓",
@@ -428,7 +429,7 @@ uz:{
   bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
   buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
   need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
-  pw_exact:"AYNAN shu summani o'tkazing",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
+  pw_exact:"AYNAN shu summani o'tkazing",pw_timer_hint:"Shu vaqt tugaguncha to'lovni amalga oshiring",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
   pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
   pw_paid:"To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
   pw_expired_title:"Vaqt tugadi",pw_expired_body:"Agar hali pul o'tkazmagan bo'lsangiz — hech narsa yechilmadi, shunchaki yangi to'lov yarating. Agar allaqachon to'lagan bo'lsangiz — chek skrinshoti bilan yordamga yozing.",pw_expired_new:"Yangi to'lov yaratish",
@@ -464,7 +465,7 @@ ru:{
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
   a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
-  a_desc_en:"Описание — Английский",a_desc_uz:"Описание — Узбекский",a_desc_ru:"Описание — Русский", a_note:"Инструкция по выдаче (видна покупателю)",a_note_ph:"например формат логина и пароля, или шаги активации",a_stock_title:"Запас (инвентарь)",a_stock_count:"Доступно на складе",a_stock_unit:"шт",a_stock_add:"Добавить новый запас (по одному в строке)",a_stock_ph:"логин1:пароль1\nлогин2:пароль2\nили промокоды, по одному в строке",a_stock_addbtn:"Добавить",a_stock_clear:"Очистить всё",a_stock_added:"Запас добавлен",a_stock_cleared:"Запас очищен",
+  a_desc_en:"Описание — Английский",a_desc_uz:"Описание",a_desc_ru:"Описание — Русский",a_desc_autotr:"При сохранении автоматически переводится на русский и английский",a_translating:"Перевод...", a_note:"Инструкция по выдаче (видна покупателю)",a_note_ph:"например формат логина и пароля, или шаги активации",a_stock_title:"Запас (инвентарь)",a_stock_count:"Доступно на складе",a_stock_unit:"шт",a_stock_add:"Добавить новый запас (по одному в строке)",a_stock_ph:"логин1:пароль1\nлогин2:пароль2\nили промокоды, по одному в строке",a_stock_addbtn:"Добавить",a_stock_clear:"Очистить всё",a_stock_added:"Запас добавлен",a_stock_cleared:"Запас очищен",
   a_fulfill:"Способ выдачи",a_fulfill_normal:"Вручную / со склада",a_fulfill_fragstars:"Авто-Stars (Fragment)",a_fulfill_fragpremium:"Авто-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — любое количество (Fragment)",
   a_months:"Кол-во месяцев",a_stars_amount:"Кол-во Stars",a_price_per_star:"Цена за 1 Star (сум)",a_min_stars:"Минимум Stars",a_fulfill_note:"Доставляется автоматически на аккаунт покупателя — ручная выдача не нужна.",a_fulfill_note_custom:"Покупатель сам вводит @username и количество — доставка автоматическая через Fragment.",
   a_preview:"Предпросмотр",a_save:"Сохранить",a_add:"Добавить",a_added:"Добавлено ✓",a_saved:"Сохранено ✓",
@@ -478,7 +479,7 @@ ru:{
   bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
   buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
   need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
-  pw_exact:"Переведите РОВНО эту сумму",pw_rule1:"Не меняйте сумму даже на 1 сум",
+  pw_exact:"Переведите РОВНО эту сумму",pw_timer_hint:"Оплатите до истечения времени",pw_rule1:"Не меняйте сумму даже на 1 сум",
   pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
   pw_paid:"Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
   pw_expired_title:"Время вышло",pw_expired_body:"Если вы ещё не перевели деньги — ничего не списано, просто создайте новый платёж. Если уже оплатили — напишите в поддержку со скриншотом чека.",pw_expired_new:"Создать новый платёж",
@@ -571,6 +572,26 @@ function api(path,method,body){
   .then(function(r){return r.json().then(function(j){j.__code=r.status;if(!r.ok){var e=new Error("http");e.resp=j;throw e;}return j;});});
 }
 var ME_ERROR=false;
+/* Admin bitta (o'zbekcha) tavsif yozadi — saqlaganda shu funksiya orqali
+   ruscha/inglizchaga avtomatik tarjima qilinadi. Qator-qator tarjima qilinadi,
+   shunda ✅/⚠️/📌 kabi belgilar va matn tuzilishi (satrlar) buzilmaydi.
+   Agar tarjima xizmati javob bermasa — asl (o'zbekcha) matn o'zi qo'yiladi,
+   saqlashning o'zi hech qachon to'xtab qolmaydi. */
+function translateLine(line,target){
+  var trimmed=line.trim();
+  if(!trimmed)return Promise.resolve(line);
+  if(typeof fetch!=="function")return Promise.resolve(line);
+  var url="https://api.mymemory.translated.net/get?q="+encodeURIComponent(trimmed)+"&langpair=uz|"+target;
+  return fetch(url).then(function(r){return r.json();}).then(function(j){
+    var out=j&&j.responseData&&j.responseData.translatedText;
+    return out?String(out):line;
+  }).catch(function(){return line;});
+}
+function translateText(text,target){
+  if(!text||!text.trim())return Promise.resolve(text||"");
+  var lines=text.split("\n");
+  return Promise.all(lines.map(function(l){return translateLine(l,target);})).then(function(arr){return arr.join("\n");});
+}
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"){if(cb)cb();return;}
   api("/api/me").then(function(r){
@@ -675,9 +696,19 @@ function ic(name,size,cls){
 }
 
 /* ===== shell ===== */
+function applyTGChrome(){
+  try{
+    if(!TG)return;
+    var bg=S.theme==="light"?"#f3f6fa":"#0c0c11";
+    if(TG.setHeaderColor)TG.setHeaderColor(bg);
+    if(TG.setBackgroundColor)TG.setBackgroundColor(bg);
+    if(TG.setBottomBarColor)TG.setBottomBarColor(bg);
+  }catch(e){}
+}
 function render(){
   var app=document.getElementById("app");
   document.documentElement.setAttribute("data-theme",S.theme==="light"?"light":"dark");
+  applyTGChrome();
   if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
   var html=headerHTML()+'<div class="screen">';
   if(S.screen==="home")html+=homeHTML();
@@ -728,8 +759,8 @@ var TABS=[["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_tel
 function tileHTML(it,big){
   var st=it.tile||{};
   var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
-  return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img
-    +'<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div></div>';
+  var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
+  return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
 }
 function productGridHTML(items){
   var html='<div class="grid">';
@@ -965,6 +996,7 @@ function payHTML(){
       +'<div class="refline"><span class="payhuge">'+esc(money(ap.pay))+'</span>'
       +'<button class="btn sm gray" data-copy="'+ap.pay+'">'+esc(t("copy"))+'</button></div>'
       +'<div class="refline"><span>'+ic("clock",15)+'</span><span class="timer" id="pwTimer">--:--</span></div>'
+      +'<div class="minnote" style="text-align:center;margin-top:4px">'+esc(t("pw_timer_hint"))+'</div>'
       +'</div>';
     if(card){
       html+='<div class="cardbox"><div class="crow"><div><div class="cnum">'+esc(card.number)+'</div>'
@@ -987,7 +1019,7 @@ function payHTML(){
   html+='<div class="paybox">'
     +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+balHTML()+'</b></div>'
     +'<label>'+esc(t("enter_amount"))+'</label>'
-    +'<div class="amount"><input id="payAmount" type="number" inputmode="numeric" value="'+S.topup.amount+'"><span class="cur">so\'m</span></div>'
+    +'<div class="amount"><input id="payAmount" type="number" inputmode="numeric" placeholder="0" value="'+(S.topup.amount?S.topup.amount:"")+'"><span class="cur">so\'m</span></div>'
     +'<div class="minnote">'+esc(t("min_note"))+'</div>'
     +'<div class="chips">'
     +'<button data-chip="50000" class="'+(S.topup.amount===50000?"on":"")+'">50k</button>'
@@ -1474,9 +1506,8 @@ function openAdminForm(editId){
     +'<div id="ffNote" class="paynote hide"></div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
-    +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="2">'+esc(F.duz)+'</textarea>'
-    +'<label>'+esc(t("a_desc_ru"))+'</label><textarea id="f_dru" rows="2">'+esc(F.dru)+'</textarea>'
-    +'<label>'+esc(t("a_desc_en"))+'</label><textarea id="f_den" rows="2">'+esc(F.den)+'</textarea>'
+    +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="4">'+esc(F.duz)+'</textarea>'
+    +'<div class="minnote">'+ic("wand",12)+' '+esc(t("a_desc_autotr"))+'</div>'
     +'<label>'+esc(t("a_note"))+'</label><textarea id="f_note" rows="2" placeholder="'+esc(t("a_note_ph"))+'">'+esc(F.note)+'</textarea>'
     +'<label>'+esc(t("a_preview"))+'</label><div id="prevBox" style="max-width:210px"></div>'
     +'<div style="height:10px"></div>'
@@ -1495,7 +1526,7 @@ function openAdminForm(editId){
   function readForm(){
     F.title=g("#f_title").value.trim();F.cat=g("#f_cat").value.trim();
     F.price=g("#f_price").value;F.stock=g("#f_stock").value;
-    F.den=g("#f_den").value;F.duz=g("#f_duz").value;F.dru=g("#f_dru").value;
+    F.duz=g("#f_duz").value;
     F.note=g("#f_note").value;
     var mw=g("#f_months");if(mw)F.months=mw.value;
     var sw=g("#f_starsAmount");if(sw)F.starsAmount=sw.value;
@@ -1576,21 +1607,31 @@ function openAdminForm(editId){
     readForm();
     if(!F.title||(F.fulfillType!=="fragstarscustom"&&!Number(F.price))){toast(t("a_need"));return;}
     if(F.fulfillType==="fragstarscustom"&&!F.price)F.price=0;
-    var data={
-      kind:F.kind,cat:F.cat,price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-      tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
-      title:F.title,
-      desc:{en:F.den||F.duz,uz:F.duz||F.den,ru:F.dru||F.duz||F.den},
-      note:F.note||"",
-      fulfill:null,starsAmount:null,premiumMonths:null,pricePerStar:null,minStars:null
-    };
-    if(F.fulfillType==="fragstars"){data.fulfill="fragment_stars";data.starsAmount=Number(F.starsAmount)||0;}
-    else if(F.fulfillType==="fragpremium"){data.fulfill="fragment_premium";data.premiumMonths=Number(F.months)||3;}
-    else if(F.fulfillType==="fragstarscustom"){data.fulfill="fragment_stars_custom";data.pricePerStar=Number(F.pricePerStar)||0;data.minStars=Number(F.minStars)||50;}
-    if(F.id){patchItem(F.id,data);toast(t("a_saved"));}
-    else{data.id="c"+Date.now();S.custom.push(data);toast(t("a_added"));}
-    persist();haptic("ok");closeSheet();
-    S.screen="home";S.tab=F.kind;render();
+    var saveBtn=g("#fSave");
+    var origLabel=saveBtn.textContent;
+    saveBtn.disabled=true;saveBtn.textContent=t("a_translating");
+    Promise.all([translateText(F.duz,"ru"),translateText(F.duz,"en")]).then(function(res){
+      finishSave({uz:F.duz,ru:res[0]||F.duz,en:res[1]||F.duz});
+    }).catch(function(){
+      finishSave({uz:F.duz,ru:F.duz,en:F.duz});
+    });
+    function finishSave(descObj){
+      var data={
+        kind:F.kind,cat:F.cat,price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
+        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
+        title:F.title,
+        desc:descObj,
+        note:F.note||"",
+        fulfill:null,starsAmount:null,premiumMonths:null,pricePerStar:null,minStars:null
+      };
+      if(F.fulfillType==="fragstars"){data.fulfill="fragment_stars";data.starsAmount=Number(F.starsAmount)||0;}
+      else if(F.fulfillType==="fragpremium"){data.fulfill="fragment_premium";data.premiumMonths=Number(F.months)||3;}
+      else if(F.fulfillType==="fragstarscustom"){data.fulfill="fragment_stars_custom";data.pricePerStar=Number(F.pricePerStar)||0;data.minStars=Number(F.minStars)||50;}
+      if(F.id){patchItem(F.id,data);toast(t("a_saved"));}
+      else{data.id="c"+Date.now();S.custom.push(data);toast(t("a_added"));}
+      persist();haptic("ok");closeSheet();
+      S.screen="home";S.tab=F.kind;render();
+    }
   });
   if(editId){
     function reloadStk(){

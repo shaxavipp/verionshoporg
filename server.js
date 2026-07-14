@@ -11,7 +11,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
-const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
+const TOPUP_TTL = 5 * 60 * 1000;           // payment window: 5 minutes
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
 
 /* ---------- SMS auto-confirm (humocard / cardxabar orqali) ---------- */
