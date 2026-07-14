@@ -380,6 +380,7 @@ en:{
   pw_exact:"Transfer EXACTLY this amount",pw_rule1:"Do not change the amount even by 1 sum",
   pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
   pw_paid:"I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
+  pw_expired_title:"Time's up",pw_expired_body:"If you haven't transferred the money, nothing was charged — just create a new payment. If you already paid, contact support with a screenshot of the receipt.",pw_expired_new:"Create new payment",
   continue_btn:"Continue",st_done:"Completed",st_deliver:"Being delivered",
   topup_created:"Now transfer the exact amount",srv_off:"Couldn't connect — check your internet and try again",
   adm_money:"Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
@@ -429,6 +430,7 @@ uz:{
   pw_exact:"AYNAN shu summani o'tkazing",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
   pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
   pw_paid:"To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
+  pw_expired_title:"Vaqt tugadi",pw_expired_body:"Agar hali pul o'tkazmagan bo'lsangiz — hech narsa yechilmadi, shunchaki yangi to'lov yarating. Agar allaqachon to'lagan bo'lsangiz — chek skrinshoti bilan yordamga yozing.",pw_expired_new:"Yangi to'lov yaratish",
   continue_btn:"Davom etish",st_done:"Bajarildi",st_deliver:"Yetkazilmoqda",
   topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Ulanib bo'lmadi — internetni tekshirib, qayta urinib ko'ring",
   adm_money:"To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
@@ -478,6 +480,7 @@ ru:{
   pw_exact:"Переведите РОВНО эту сумму",pw_rule1:"Не меняйте сумму даже на 1 сум",
   pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
   pw_paid:"Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
+  pw_expired_title:"Время вышло",pw_expired_body:"Если вы ещё не перевели деньги — ничего не списано, просто создайте новый платёж. Если уже оплатили — напишите в поддержку со скриншотом чека.",pw_expired_new:"Создать новый платёж",
   continue_btn:"Продолжить",st_done:"Выполнено",st_deliver:"Доставляется",
   topup_created:"Теперь переведите ровно эту сумму",srv_off:"Не удалось подключиться — проверьте интернет и попробуйте снова",
   adm_money:"Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
@@ -988,9 +991,11 @@ function payHTML(){
   html+='</div><div style="height:12px"></div>'
     +'<button class="btn big'+(noMethod?" dis":"")+'" id="topupGo"'+(noMethod?" disabled":"")+'>'+(S.topup.method==="bank"?esc(t("contact_support_btn")):esc(t("continue_btn")))+'</button>'
     +(noMethod?'<div class="minnote" style="text-align:center;margin-top:8px">'+esc(t("method_hint"))+'</div>':'')
+    +(TOPUP_ERR&&!noMethod?'<div class="paynote" style="color:var(--err)">'+ic("warning",13)+' '+esc(t("srv_off"))+'</div>':'')
     +'</div>';
   return html;
 }
+var TOPUP_ERR=false;
 function createTopup(){
   var el=document.getElementById("payAmount");
   var amount=Math.round(Number(el&&el.value)||0);
@@ -1001,10 +1006,15 @@ function createTopup(){
     openLink("https://t.me/"+SUPPORT_USERNAME+"?text="+encodeURIComponent(msg));
     return;
   }
+  TOPUP_ERR=false;
+  var btn=document.getElementById("topupGo");
+  if(btn){btn.disabled=true;btn.textContent=t("processing");}
   api("/api/topup","POST",{amount:amount,method:S.topup.method}).then(function(r){
     S.activePay={id:r.payment.id,pay:r.payment.pay,amount:r.payment.amount,method:r.payment.method,expiresAt:r.expiresAt};
     persist();haptic("ok");toast(t("topup_created"));render();
-  }).catch(function(){toast(t("srv_off"));});
+  }).catch(function(){
+    TOPUP_ERR=true;haptic();render();
+  });
 }
 function markPaid(){
   var ap=S.activePay;if(!ap)return;
@@ -1019,8 +1029,25 @@ function tickTimer(){
   var ap=S.activePay;if(!ap)return;
   var el=document.getElementById("pwTimer");
   var left=Math.floor((ap.expiresAt-Date.now())/1000);
-  if(left<=0){S.activePay=null;persist();toast(t("pw_expired"));if(S.screen==="pay")render();return;}
+  if(left<=0){
+    S.activePay=null;persist();
+    if(S.screen==="pay"){render();showExpiredSheet();}
+    return;
+  }
   if(el)el.textContent=("0"+Math.floor(left/60)).slice(-2)+":"+("0"+(left%60)).slice(-2);
+}
+function showExpiredSheet(){
+  var sh=openSheet(
+    '<h2>'+ic("clock",19)+' '+esc(t("pw_expired_title"))+'</h2>'
+    +'<div class="desc">'+esc(t("pw_expired_body"))+'</div>'
+    +'<button class="btn big" id="pwExpNew">'+esc(t("pw_expired_new"))+'</button>'
+    +'<div style="height:10px"></div>'
+    +'<button class="btn" id="pwExpSupport">'+ic("headset",15)+' '+esc(t("contact_support_btn"))+'</button>'
+  );
+  var b1=sh.querySelector("#pwExpNew");
+  if(b1)b1.addEventListener("click",closeSheet);
+  var b2=sh.querySelector("#pwExpSupport");
+  if(b2)b2.addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
 }
 </script>
 <script>
