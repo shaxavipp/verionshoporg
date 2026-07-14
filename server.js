@@ -72,32 +72,31 @@ function tgSend(chatId, text) {
     req.write(data); req.end();
   } catch (e) {}
 }
-// Rasmiy Bot API: giftPremiumSubscription — bot o'zining Stars balansidan foydalanib
-// foydalanuvchiga Telegram Premium sovg'a qiladi. Seed/hamyon KERAK EMAS — faqat BOT_TOKEN.
-// https://core.telegram.org/bots/api#giftpremiumsubscription
-const PREMIUM_STAR_COST = { 3: 1000, 6: 1500, 12: 2500 };
-function tgGiftPremium(userId, months, cb) {
-  const starCount = PREMIUM_STAR_COST[months];
-  if (!BOT_TOKEN) return cb(false, "BOT_TOKEN yo'q");
-  if (!starCount) return cb(false, "months noto'g'ri (3/6/12 bo'lishi kerak)");
-  try {
-    const data = JSON.stringify({ user_id: userId, month_count: months, star_count: starCount });
+// fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni avtomatik sotib olish.
+// FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
+const FRAGMENT_API_KEY = process.env.FRAGMENT_API_KEY || "";
+const FRAGMENT_HOST = "fragment-api.uz";
+function fragmentCall(path, body) {
+  return new Promise((resolve, reject) => {
+    if (!FRAGMENT_API_KEY) return reject(new Error("FRAGMENT_API_KEY sozlanmagan"));
+    const data = JSON.stringify(body || {});
     const req = https.request({
-      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/giftPremiumSubscription", method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+      hostname: FRAGMENT_HOST, path: "/api/v1" + path, method: "POST",
+      headers: { "Content-Type": "application/json", "X-API-Key": FRAGMENT_API_KEY,
+        "Content-Length": Buffer.byteLength(data) },
+      timeout: 25000
     }, r => {
-      let body = "";
-      r.on("data", c => { body += c; });
+      let buf = "";
+      r.on("data", c => buf += c);
       r.on("end", () => {
-        try {
-          const j = JSON.parse(body);
-          if (j.ok) cb(true); else cb(false, j.description || "telegram_error");
-        } catch (e) { cb(false, "javobni o'qishda xato"); }
+        try { resolve({ status: r.statusCode, json: JSON.parse(buf || "{}") }); }
+        catch (e) { resolve({ status: r.statusCode, json: null, raw: buf }); }
       });
     });
-    req.on("error", e => cb(false, e.message));
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
     req.write(data); req.end();
-  } catch (e) { cb(false, e.message); }
+  });
 }
 // SMS/xabar matnidan pul summasini o'qib olish (Humo/Uzcard bildirishnomalari uchun)
 // Masalan: "Kartangizga 50 038 so'm tushdi" yoki "+50,038 UZS" kabi matnlardan 50038 ni topadi.
@@ -246,6 +245,51 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  if (url === "/api/fragment/check-user" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    return readBody(req, res, b => {
+      const uname = String(b.username || "").trim().replace(/^@/, "");
+      if (!uname) return send(res, 400, { error: "username" });
+      fragmentCall("/getInfo", { username: uname }).then(r => {
+        const j = r.json;
+        if (!j || j.ok !== true) return send(res, 404, { ok: false, message: (j && j.message) || "Topilmadi" });
+        send(res, 200, { ok: true, result: j.result });
+      }).catch(e => send(res, 502, { ok: false, message: String(e.message || e) }));
+    });
+  }
+  if (url === "/api/buy-stars-custom" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    return readBody(req, res, b => {
+      const cat = catalogArr();
+      if (!cat) return send(res, 409, { error: "catalog not published" });
+      const it = cat.find(x => x.id === b.itemId && x.active !== false && x.fulfill === "fragment_stars_custom");
+      if (!it) return send(res, 404, { error: "no item" });
+      const uname = String(b.username || "").trim().replace(/^@/, "");
+      const amount = Math.round(Number(b.amount) || 0);
+      const minS = Number(it.minStars) || 50;
+      if (!uname) return send(res, 400, { error: "username" });
+      if (amount < minS) return send(res, 400, { error: "min_amount", min: minS });
+      const price = Math.round(amount * (Number(it.pricePerStar) || 0));
+      const acc = user(u);
+      if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+      fragmentCall("/stars/buy", { amount, username: uname }).then(r => {
+        const j = r.json;
+        if (!j || j.ok !== true) {
+          const msg = (j && j.message) || "Fragment xatosi";
+          return send(res, 502, { error: "fragment_failed", message: msg });
+        }
+        acc.balance -= price;
+        const summary = "⭐ " + amount + " Stars @" + uname + " ga yuborildi";
+        const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+          item: "Telegram Stars (" + amount + ")", price, status: "done", ts: Date.now(),
+          delivered: summary, doneTs: Date.now(), fragment: j.result || null };
+        DB.orders.push(o); save();
+        send(res, 200, { ok: true, order: o, balance: acc.balance });
+      }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
+    });
+  }
   if (url === "/api/buy" && m === "POST") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
@@ -256,26 +300,32 @@ const server = http.createServer((req, res) => {
       if (!it) return send(res, 404, { error: "no item" });
       const price = Math.round(Number(it.price) || 0);
       const acc = user(u);
-      const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
+      const title = typeof it.title === "string" ? it.title : (it.title.uz || it.title.en || "");
 
-      /* ----- Avto-Premium: rasmiy Bot API orqali, seed/hamyon kerak emas ----- */
-      if (it.auto && it.auto.type === "premium") {
+      /* ---- Fragment orqali avtomatik Stars/Premium yetkazish ---- */
+      if (it.fulfill === "fragment_stars" || it.fulfill === "fragment_premium") {
+        if (!u.username) return send(res, 409, { error: "no_username" });
         if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
-        acc.balance -= price;
-        const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
-          item: title, price, status: "processing", ts: Date.now(), auto: "premium", months: it.auto.months };
-        DB.orders.push(o); save();
-        send(res, 200, { ok: true, order: o, balance: acc.balance });
-        tgGiftPremium(u.id, it.auto.months, (ok, err) => {
-          if (ok) {
-            o.status = "done"; o.doneTs = Date.now(); save();
-            tgSend(u.id, "✅ Telegram Premium (" + it.auto.months + " oy) yuborildi!");
-          } else {
-            acc.balance += price; o.status = "cancelled"; o.failReason = err; save();
-            tgSend(u.id, "❌ Premium yuborishda xatolik: " + err + ". Mablag' balansingizga qaytarildi.");
-            for (const aid of ADMIN_IDS) tgSend(aid, "⚠️ Avto-premium xato (" + o.id + "): " + err);
+        const isStars = it.fulfill === "fragment_stars";
+        const path = isStars ? "/stars/buy" : "/premium/buy";
+        const body = isStars ? { amount: Number(it.starsAmount) || 0, username: u.username }
+                              : { duration: Number(it.premiumMonths) || 3, username: u.username };
+        fragmentCall(path, body).then(r => {
+          const j = r.json;
+          if (!j || j.ok !== true) {
+            const msg = (j && j.message) || "Fragment xatosi";
+            return send(res, 502, { error: "fragment_failed", message: msg });
           }
-        });
+          acc.balance -= price;
+          const summary = isStars
+            ? "⭐ " + body.amount + " Stars @" + u.username + " ga yuborildi"
+            : "💎 Premium " + body.duration + " oy @" + u.username + " ga yuborildi";
+          const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+            item: title, price, status: "done", ts: Date.now(),
+            delivered: summary, doneTs: Date.now(), fragment: j.result || null };
+          DB.orders.push(o); save();
+          send(res, 200, { ok: true, order: o, balance: acc.balance });
+        }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
         return;
       }
 
@@ -307,7 +357,7 @@ const server = http.createServer((req, res) => {
       expireOld();
       return send(res, 200, {
         payments: DB.payments.filter(p => p.status === "checking" || p.status === "waiting").reverse(),
-        orders: DB.orders.filter(o => o.status === "pending" || o.status === "processing").reverse()
+        orders: DB.orders.filter(o => o.status === "pending").reverse()
       });
     }
     if (url === "/api/admin/payment" && m === "POST") {
@@ -334,17 +384,6 @@ const server = http.createServer((req, res) => {
         save(); return send(res, 200, { ok: true });
       });
     }
-    if (url === "/api/admin/history" && m === "GET") {
-      const uid = Number(q.get("uid") || 0);
-      if (!uid) return send(res, 400, { error: "uid" });
-      const acc = DB.users[String(uid)] || { balance: 0 };
-      const payments = DB.payments.filter(p => p.uid === uid).sort((x, y) => y.ts - x.ts);
-      const orders = DB.orders.filter(o => o.uid === uid).sort((x, y) => y.ts - x.ts);
-      return send(res, 200, {
-        uid, uname: acc.uname || null, name: acc.name || null, balance: acc.balance || 0,
-        payments, orders
-      });
-    }
     if (url === "/api/admin/user" && m === "GET") {
       const s = (q.get("q") || "").trim().toLowerCase().replace(/^@/, "");
       if (!s) return send(res, 400, { error: "q" });
@@ -358,6 +397,18 @@ const server = http.createServer((req, res) => {
         if (out.length >= 10) break;
       }
       return send(res, 200, out);
+    }
+    if (url === "/api/admin/fragment-balance" && m === "GET") {
+      return fragmentCall("/wallet/balance", {}).then(r => {
+        send(res, 200, r.json || { ok: false });
+      }).catch(e => send(res, 200, { ok: false, message: String(e.message || e) }));
+    }
+    if (url === "/api/admin/fragment-pricing" && m === "GET") {
+      const kind = q.get("kind") || "stars";
+      const p = kind === "premium" ? fragmentCall("/premium/pricing", {}) :
+        fragmentCall("/stars/pricing", { amount: Number(q.get("amount")) || 50 });
+      return p.then(r => send(res, 200, r.json || { ok: false }))
+        .catch(e => send(res, 200, { ok: false, message: String(e.message || e) }));
     }
     if (url === "/api/admin/stock" && m === "GET") {
       const itemId = q.get("itemId") || "";
@@ -493,9 +544,7 @@ const server = http.createServer((req, res) => {
   /* ----- Telegram webhook: humocard/cardxabar guruhidagi SMS xabarlarni tinglash ----- */
   if (url === "/api/tg-webhook" && m === "POST") {
     // Telegram setWebhook'da berilgan secret_token shu yerga header sifatida keladi — soxta so'rovlarni blok qiladi
-    // MUHIM: agar TG_WEBHOOK_SECRET sozlanmagan bo'lsa ham endpoint YOPIQ turishi kerak (fail-closed),
-    // aks holda har kim soxta "to'lov SMS"i yuborib, balansni bepul to'ldirib olishi mumkin edi.
-    if (!TG_WEBHOOK_SECRET || req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
+    if (TG_WEBHOOK_SECRET && req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
       return send(res, 401, { error: "bad secret" });
     return readBody(req, res, upd => {
       send(res, 200, { ok: true }); // Telegram'ga darhol javob (u tezkor ACK kutadi)
