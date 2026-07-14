@@ -23,7 +23,7 @@ body{
   background:var(--bg);color:var(--txt);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:15px;line-height:1.45;overflow-x:hidden;
-  padding-bottom:calc(110px + env(safe-area-inset-bottom));
+  padding-bottom:calc(130px + env(safe-area-inset-bottom));
   transition:background .25s ease,color .25s ease;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
@@ -244,7 +244,7 @@ nav button svg{width:22px;height:22px}
 .itemrow .acts{display:flex;gap:6px}
 .itemrow .acts button{padding:7px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px}
 .itemrow.offi .nm{opacity:.45;text-decoration:line-through}
-.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
 .seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
 .seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
@@ -940,13 +940,14 @@ function ordersHTML(){
   if(!S.ordFilter)S.ordFilter="all";
   html+='<div class="seg" id="ordTabSeg">'
     +'<button data-ordtab="orders" class="'+(S.ordTab==="orders"?"on":"")+'">'+esc(t("tab_orders"))+'</button>'
-    +'<button data-ordtab="finance" class="'+(S.ordTab==="finance"?"on":"")+'">'+esc(t("tab_finance"))+'</button></div>';
+    +'<button data-ordtab="finance" class="'+(S.ordTab==="finance"?"on":"")+'">'+esc(t("tab_finance"))+'</button></div>'
+    +'<div style="height:14px"></div>';
 
   if(S.ordTab==="orders"){
     var filters=[["all","f_all"],["done","f_done"],["pending","f_pending"],["cancelled","f_cancelled"]];
-    html+='<div class="chips" id="ordFilterChips">';
+    html+='<div class="chips" id="ordFilterChips" style="margin-top:0">';
     for(var f=0;f<filters.length;f++)html+='<button data-ordfilter="'+filters[f][0]+'" class="'+(S.ordFilter===filters[f][0]?"on":"")+'">'+esc(t(filters[f][1]))+'</button>';
-    html+='</div>';
+    html+='</div><div style="height:14px"></div>';
     var rows=[];
     for(var i=0;i<ME.orders.length;i++){
       var o=ME.orders[i];
