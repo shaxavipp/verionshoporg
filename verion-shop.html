@@ -110,11 +110,19 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;opacity:0;transition:opacity .22s}
 .dim.on{opacity:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;background:var(--card);
-  border-radius:22px 22px 0 0;padding:10px 16px calc(90px + env(safe-area-inset-bottom));
-  max-height:calc(var(--vh, 1vh) * 90);top:auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  border-radius:22px 22px 0 0;padding:0;display:flex;flex-direction:column;
+  max-height:calc(var(--vh, 1vh) * 90);top:auto;overflow:hidden;
   transform:translateY(105%);transition:transform .28s cubic-bezier(.3,1,.4,1);}
 .sheet.on{transform:translateY(0)}
+.sheet-head{position:relative;flex:0 0 auto;padding:10px 16px 0}
+.sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:0 16px calc(90px + env(safe-area-inset-bottom));}
 .grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.bal-retry{color:var(--acc2);text-decoration:underline;font-size:.85em;cursor:pointer}
+.sheet-x{position:absolute;top:0;right:12px;width:30px;height:30px;border-radius:50%;
+  background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;color:var(--txt);flex-shrink:0}
+.sheet-x:active{opacity:.7}
+.sheet-x svg{width:15px;height:15px}
 .sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
 .sheet .cat{font-size:12px;color:var(--mut);margin-bottom:10px}
 .sheet .desc{font-size:14px;color:#cfcfda;margin:10px 0 14px;white-space:pre-wrap}
@@ -344,7 +352,7 @@ en:{
   copy:"Copy",copied:"Copied",send_receipt:"Send receipt",order_ref:"Order ID",pay_for:"Paying for",
   paynote:"Transfer the exact amount to the card above, take a screenshot of the receipt, then press “Send receipt” — the chat opens with your Order ID, attach the screenshot there.",
   cancel_order:"Cancel order",cancelled_toast:"Order cancelled",amount_low:"Amount is below the minimum",
-  choose_method:"Choose a payment method",custom_pay:"Payment",
+  choose_method:"Choose a payment method",custom_pay:"Payment",method_hint:"Select a payment method above to continue",retry_load:"Couldn't load — tap to retry",
   orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Finance",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
@@ -373,7 +381,7 @@ en:{
   pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
   pw_paid:"I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
   continue_btn:"Continue",st_done:"Completed",st_deliver:"Being delivered",
-  topup_created:"Now transfer the exact amount",srv_off:"Server unavailable — try again later",
+  topup_created:"Now transfer the exact amount",srv_off:"Couldn't connect — check your internet and try again",
   adm_money:"Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
   adm_confirm:"Confirm",adm_cancel:"Cancel",adm_none:"Nothing pending",
   adm_search:"Client (ID or @username)",adm_find:"Find",adm_amountph:"Amount (sum)",adm_done:"Done ✓",
@@ -393,7 +401,7 @@ uz:{
   copy:"Nusxalash",copied:"Nusxalandi",send_receipt:"Chek yuborish",order_ref:"Buyurtma ID",pay_for:"To'lov uchun",
   paynote:"Yuqoridagi kartaga aynan shu summani o'tkazing, chek skrinshotini oling, so'ng “Chek yuborish” tugmasini bosing — chat Buyurtma ID bilan ochiladi, skrinshotni o'sha yerga yuboring.",
   cancel_order:"Buyurtmani bekor qilish",cancelled_toast:"Buyurtma bekor qilindi",amount_low:"Summa eng kam miqdordan past",
-  choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",
+  choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",method_hint:"Davom etish uchun yuqoridan to'lov usulini tanlang",retry_load:"Yuklanmadi — qayta urinish uchun bosing",
   orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"Moliya",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
@@ -422,7 +430,7 @@ uz:{
   pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
   pw_paid:"To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
   continue_btn:"Davom etish",st_done:"Bajarildi",st_deliver:"Yetkazilmoqda",
-  topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Server ishlamayapti — keyinroq urinib ko'ring",
+  topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Ulanib bo'lmadi — internetni tekshirib, qayta urinib ko'ring",
   adm_money:"To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
   adm_confirm:"Tasdiqlash",adm_cancel:"Bekor",adm_none:"Hozircha bo'sh",
   adm_search:"Mijoz (ID yoki @username)",adm_find:"Qidirish",adm_amountph:"Summa (so'm)",adm_done:"Bajarildi ✓",
@@ -442,7 +450,7 @@ ru:{
   copy:"Копировать",copied:"Скопировано",send_receipt:"Отправить чек",order_ref:"ID заказа",pay_for:"Оплата за",
   paynote:"Переведите точную сумму на карту выше, сделайте скриншот чека и нажмите «Отправить чек» — откроется чат с ID заказа, приложите туда скриншот.",
   cancel_order:"Отменить заказ",cancelled_toast:"Заказ отменён",amount_low:"Сумма меньше минимальной",
-  choose_method:"Выберите способ оплаты",custom_pay:"Оплата",
+  choose_method:"Выберите способ оплаты",custom_pay:"Оплата",method_hint:"Выберите способ оплаты выше, чтобы продолжить",retry_load:"Не удалось загрузить — нажмите, чтобы повторить",
   orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Финансы",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
@@ -471,7 +479,7 @@ ru:{
   pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
   pw_paid:"Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
   continue_btn:"Продолжить",st_done:"Выполнено",st_deliver:"Доставляется",
-  topup_created:"Теперь переведите ровно эту сумму",srv_off:"Сервер недоступен — попробуйте позже",
+  topup_created:"Теперь переведите ровно эту сумму",srv_off:"Не удалось подключиться — проверьте интернет и попробуйте снова",
   adm_money:"Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
   adm_confirm:"Подтвердить",adm_cancel:"Отмена",adm_none:"Пока пусто",
   adm_search:"Клиент (ID или @username)",adm_find:"Найти",adm_amountph:"Сумма (сум)",adm_done:"Готово ✓",
@@ -558,12 +566,22 @@ function api(path,method,body){
     body:body?JSON.stringify(body):undefined})
   .then(function(r){return r.json().then(function(j){j.__code=r.status;if(!r.ok){var e=new Error("http");e.resp=j;throw e;}return j;});});
 }
+var ME_ERROR=false;
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"){if(cb)cb();return;}
   api("/api/me").then(function(r){
     ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[]};
+    ME_ERROR=false;
     if(cb)cb();else if(S.lang)render();
-  }).catch(function(){if(cb)cb();});
+  }).catch(function(){
+    ME_ERROR=true;
+    if(cb)cb();else if(S.lang)render();
+  });
+}
+function balHTML(){
+  if(ME.balance!==null)return esc(money(ME.balance));
+  if(ME_ERROR)return '<span class="bal-retry" data-retrybal="1">'+esc(t("retry_load"))+'</span>';
+  return "…";
 }
 
 /* ===== catalog ===== */
@@ -731,7 +749,7 @@ function homeHTML(){
   var html='';
   if(tgUser()){
     html+='<div class="balcard"><div class="bl">'+ic("diamond",14)+' '+esc(t("bal_title"))+'</div>'
-      +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
+      +'<div class="bv">'+balHTML()+'</div>'
       +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
   }
@@ -758,11 +776,14 @@ function openSheet(inner){
   closeSheet();
   var dim=document.createElement("div");dim.className="dim";dim.id="dim";
   var sh=document.createElement("div");sh.className="sheet";sh.id="sheetEl";
-  sh.innerHTML='<div class="grab"></div>'+inner;
+  sh.innerHTML='<div class="sheet-head"><div class="grab"></div>'
+    +'<button class="sheet-x" id="sheetXBtn" type="button" aria-label="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
+    +'<div class="sheet-body">'+inner+'</div>';
   document.body.appendChild(dim);document.body.appendChild(sh);
   document.body.style.overflow="hidden";
   requestAnimationFrame(function(){dim.classList.add("on");sh.classList.add("on");});
   dim.addEventListener("click",closeSheet);
+  sh.querySelector("#sheetXBtn").addEventListener("click",closeSheet);
   return sh;
 }
 function closeSheet(){var d=document.getElementById("dim"),s=document.getElementById("sheetEl");if(d)d.remove();if(s)s.remove();document.body.style.overflow="";}
@@ -946,7 +967,7 @@ function payHTML(){
     return html;
   }
   html+='<div class="paybox">'
-    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(ME.balance===null?"…":esc(money(ME.balance)))+'</b></div>'
+    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+balHTML()+'</b></div>'
     +'<label>'+esc(t("enter_amount"))+'</label>'
     +'<div class="amount"><input id="payAmount" type="number" inputmode="numeric" value="'+S.topup.amount+'"><span class="cur">so\'m</span></div>'
     +'<div class="minnote">'+esc(t("min_note"))+'</div>'
@@ -963,8 +984,11 @@ function payHTML(){
     html+='<button class="method'+(S.topup.method===c.id?" on":"")+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
       +'<span class="ic">'+ic(c.icon,20)+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
   }
+  var noMethod=!S.topup.method;
   html+='</div><div style="height:12px"></div>'
-    +'<button class="btn big" id="topupGo">'+(S.topup.method==="bank"?esc(t("contact_support_btn")):esc(t("continue_btn")))+'</button></div>';
+    +'<button class="btn big'+(noMethod?" dis":"")+'" id="topupGo"'+(noMethod?" disabled":"")+'>'+(S.topup.method==="bank"?esc(t("contact_support_btn")):esc(t("continue_btn")))+'</button>'
+    +(noMethod?'<div class="minnote" style="text-align:center;margin-top:8px">'+esc(t("method_hint"))+'</div>':'')
+    +'</div>';
   return html;
 }
 function createTopup(){
@@ -1069,7 +1093,7 @@ function profileHTML(){
     +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+(u?esc(u.id):"—")+'</div></div></div></div>'
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
-    +'<div class="stat"><div class="v">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
+    +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     +'<div class="card"><div class="row"><div class="l">'+ic("headset",16)+' '+esc(t("support"))
     +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
     +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div></div>'
@@ -1551,6 +1575,8 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openProduct(this.getAttribute("data-open"));});
   els=document.querySelectorAll("[data-support]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
+  els=document.querySelectorAll("[data-retrybal]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();loadMe();});
   els=document.querySelectorAll("[data-openvid]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){if(VIDEO_URL)openLink(VIDEO_URL);});
   els=document.querySelectorAll("[data-copy]");
