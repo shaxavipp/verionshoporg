@@ -34,7 +34,9 @@ let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {} };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => {
-  fs.writeFile(DB_FILE, JSON.stringify(DB), () => {}); }, 100); }
+  fs.writeFile(DB_FILE, JSON.stringify(DB), err => {
+    if (err) alertAdmin("db_save", "Ma'lumotlar bazasiga yozib bo'lmadi (balans/buyurtma yo'qolishi mumkin!)\n" + String(err));
+  }); }, 100); }
 function user(u) {
   const k = String(u.id);
   if (!DB.users[k]) DB.users[k] = { balance: 0, ts: Date.now() };
@@ -71,6 +73,19 @@ function tgSend(chatId, text) {
     req.on("error", () => {});
     req.write(data); req.end();
   } catch (e) {}
+}
+/* ---------- adminlarga avtomatik xatolik xabari ---------- */
+// Har bir "key" uchun kamida 5 daqiqa oralig'ida bittadan yuboriladi — bitta xato ketma-ket
+// yuz bergani uchun adminni xabar bilan "bombardimon" qilmaslik uchun (masalan Fragment API vaqtincha ishlamasa).
+const ALERT_THROTTLE_MS = 5 * 60 * 1000;
+const alertedAt = {};
+function alertAdmin(key, text) {
+  const now = Date.now();
+  if (alertedAt[key] && now - alertedAt[key] < ALERT_THROTTLE_MS) return;
+  alertedAt[key] = now;
+  console.error("[ALERT:" + key + "] " + text);
+  const full = "\u26A0\uFE0F Verion Shop — xatolik\n\n" + text;
+  for (const id of ADMIN_IDS) tgSend(id, full);
 }
 // fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni istalgan @username'ga avtomatik sotib olish.
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
@@ -177,6 +192,7 @@ function myView(uid) {
 
 /* ---------- server ---------- */
 const server = http.createServer((req, res) => {
+ try {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
@@ -278,6 +294,7 @@ const server = http.createServer((req, res) => {
         const j = r.json;
         if (!j || j.ok !== true) {
           const msg = (j && j.message) || "Fragment xatosi";
+          alertAdmin("fragment_api", "Fragment orqali Stars yuborib bo'lmadi (uid " + u.id + ", " + amount + " Stars @" + uname + "):\n" + msg);
           return send(res, 502, { error: "fragment_failed", message: msg });
         }
         acc.balance -= price;
@@ -287,7 +304,10 @@ const server = http.createServer((req, res) => {
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
         DB.orders.push(o); save();
         send(res, 200, { ok: true, order: o, balance: acc.balance });
-      }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
+      }).catch(e => {
+        alertAdmin("fragment_api", "Fragment API bilan bog'lanib bo'lmadi (Stars, uid " + u.id + "):\n" + String(e.message || e));
+        send(res, 502, { error: "fragment_failed", message: String(e.message || e) });
+      });
     });
   }
   if (url === "/api/buy" && m === "POST") {
@@ -314,6 +334,7 @@ const server = http.createServer((req, res) => {
           const j = r.json;
           if (!j || j.ok !== true) {
             const msg = (j && j.message) || "Fragment xatosi";
+            alertAdmin("fragment_api", "Fragment orqali " + (isStars ? "Stars" : "Premium") + " yuborib bo'lmadi (uid " + u.id + ", @" + u.username + "):\n" + msg);
             return send(res, 502, { error: "fragment_failed", message: msg });
           }
           acc.balance -= price;
@@ -325,7 +346,10 @@ const server = http.createServer((req, res) => {
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
           DB.orders.push(o); save();
           send(res, 200, { ok: true, order: o, balance: acc.balance });
-        }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
+        }).catch(e => {
+          alertAdmin("fragment_api", "Fragment API bilan bog'lanib bo'lmadi (" + (isStars ? "Stars" : "Premium") + ", uid " + u.id + "):\n" + String(e.message || e));
+          send(res, 502, { error: "fragment_failed", message: String(e.message || e) });
+        });
         return;
       }
 
@@ -610,6 +634,19 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
     res.end(data);
   });
+ } catch (e) {
+  // Kutilmagan xato — mijozga tushunarli javob, adminga darhol Telegram xabari
+  alertAdmin("http_" + ((req.url || "").split("?")[0]),
+    "So'rovda kutilmagan xato:\n" + req.method + " " + req.url + "\n" + String((e && e.stack) || e));
+  try { if (!res.headersSent) send(res, 500, { error: "server" }); } catch (e2) {}
+ }
+});
+
+process.on("uncaughtException", e => {
+  alertAdmin("uncaught_exception", "Serverda kutilmagan (uncaught) xato:\n" + String((e && e.stack) || e));
+});
+process.on("unhandledRejection", e => {
+  alertAdmin("unhandled_rejection", "Serverda ushlanmagan Promise xatosi:\n" + String((e && e.stack) || e));
 });
 
 server.listen(PORT, "0.0.0.0", () => {
