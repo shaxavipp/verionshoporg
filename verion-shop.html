@@ -92,14 +92,14 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
 .pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
   text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);}
-.ptile{height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+.ptile{height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;padding:6px;position:relative;overflow:hidden;}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ptile .tl{font-size:13px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
-.ptile .ts{font-size:9px;opacity:.9;position:relative;z-index:1;text-align:center}
-.pbody{padding:5px 7px 6px;display:flex;flex-direction:column;gap:2px;flex:1}
-.pbody .nm{font-size:10.5px;font-weight:650;min-height:1.3em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
-.pbody .ct{font-size:8.5px;color:var(--mut)}
+.ptile .tl{font-size:12px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.ptile .ts{font-size:8px;opacity:.9;position:relative;z-index:1;text-align:center}
+.pbody{padding:7px 8px 8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.pbody .nm{font-size:11px;font-weight:650;min-height:2.4em}
+.pbody .ct{font-size:9px;color:var(--mut)}
 .prow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:4px;flex-wrap:wrap}
 .prc{font-size:11.5px;font-weight:800;color:var(--acc2)}
 .stkb{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(48,209,88,.14);color:var(--ok);white-space:nowrap}
@@ -244,7 +244,7 @@ nav button svg{width:22px;height:22px}
 .itemrow .acts{display:flex;gap:6px}
 .itemrow .acts button{padding:7px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px}
 .itemrow.offi .nm{opacity:.45;text-decoration:line-through}
-.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
 .seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
 .seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
@@ -277,10 +277,10 @@ var VIDEO_URL="";
 var MIN_AMOUNT=1000;
 var HIDE_STOCK_KINDS=["games","telegram"]; /* shu kategoriyalarda "N dona qoldi" ko'rsatilmaydi */
 var CARDS=[
-  {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
-  {id:"uzcard",name:"UZCARD",number:"5614 6873 0780 6340", holder:"Asatullayev Shaxzod", icon:"💳", enabled:true},
-  {id:"bank",  name:"BANKOMAT", number:"", holder:"", icon:"🏧", enabled:true},
-  {id:"intl",  name:"INTERNATIONAL", number:"", holder:"", icon:"🌐", enabled:false}
+  {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"card", enabled:true},
+  {id:"uzcard",name:"UZCARD",number:"5614 6873 0780 6340", holder:"Asatullayev Shaxzod", icon:"card", enabled:true},
+  {id:"bank",  name:"BANKOMAT", number:"", holder:"", icon:"atm", enabled:true},
+  {id:"intl",  name:"INTERNATIONAL", number:"", holder:"", icon:"globe", enabled:false}
 ];
 /* ============================================================
    ADMIN ACCESS — EDIT THIS LINE
@@ -362,20 +362,20 @@ en:{
   a_import:"Import catalog",a_import_hint:"Paste a catalog JSON and press Import (syncs another admin's export).",
   a_import_done:"Catalog imported",a_import_bad:"Invalid JSON",a_copy:"Copy JSON",
   a_reset:"Reset to file defaults",a_reset_done:"Catalog reset",
-  a_publish:"🌍 Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
+  a_publish:"Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
   a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
   bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
   buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
   need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
   pw_exact:"Transfer EXACTLY this amount",pw_rule1:"Do not change the amount even by 1 sum",
   pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
-  pw_paid:"✅ I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
+  pw_paid:"I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
   continue_btn:"Continue",st_done:"Completed",st_deliver:"Being delivered",
   topup_created:"Now transfer the exact amount",srv_off:"Server unavailable — try again later",
-  adm_money:"💰 Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
+  adm_money:"Payments & clients",adm_pending:"Pending payments",adm_orders_p:"Orders to deliver",
   adm_confirm:"Confirm",adm_cancel:"Cancel",adm_none:"Nothing pending",
   adm_search:"Client (ID or @username)",adm_find:"Find",adm_amountph:"Amount (sum)",adm_done:"Done ✓",
-  a_history:"📜 Full history",a_hist_title:"Client history",a_hist_topups:"Top-ups",a_hist_orders:"Purchases",
+  a_history:"Full history",a_hist_title:"Client history",a_hist_topups:"Top-ups",a_hist_orders:"Purchases",
   a_hist_delivered:"Delivered to client",a_hist_none:"No history yet",a_hist_back:"← Back",
   onb_sub:"Choose your language",
   guest_note:"Open the shop through the Telegram bot to place orders."
@@ -409,20 +409,20 @@ uz:{
   a_import:"Katalogni import qilish",a_import_hint:"Katalog JSON'ini shu yerga qo'yib Import bosing (ikkinchi adminning eksportini sinxronlaydi).",
   a_import_done:"Katalog import qilindi",a_import_bad:"JSON noto'g'ri",a_copy:"JSON nusxalash",
   a_reset:"Fayl holatiga qaytarish",a_reset_done:"Katalog tiklandi",
-  a_publish:"🌍 Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
+  a_publish:"Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
   a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
   bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
   buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
   need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
   pw_exact:"AYNAN shu summani o'tkazing",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
   pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
-  pw_paid:"✅ To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
+  pw_paid:"To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
   continue_btn:"Davom etish",st_done:"Bajarildi",st_deliver:"Yetkazilmoqda",
   topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Server ishlamayapti — keyinroq urinib ko'ring",
-  adm_money:"💰 To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
+  adm_money:"To'lovlar va mijozlar",adm_pending:"Kutilayotgan to'lovlar",adm_orders_p:"Yetkaziladigan buyurtmalar",
   adm_confirm:"Tasdiqlash",adm_cancel:"Bekor",adm_none:"Hozircha bo'sh",
   adm_search:"Mijoz (ID yoki @username)",adm_find:"Qidirish",adm_amountph:"Summa (so'm)",adm_done:"Bajarildi ✓",
-  a_history:"📜 To'liq tarix",a_hist_title:"Mijoz tarixi",a_hist_topups:"To'ldirishlar",a_hist_orders:"Xaridlar",
+  a_history:"To'liq tarix",a_hist_title:"Mijoz tarixi",a_hist_topups:"To'ldirishlar",a_hist_orders:"Xaridlar",
   a_hist_delivered:"Mijozga yetkazilgan",a_hist_none:"Hozircha tarix yo'q",a_hist_back:"← Orqaga",
   onb_sub:"Tilni tanlang",
   guest_note:"Buyurtma berish uchun do'konni Telegram bot orqali oching."
@@ -456,20 +456,20 @@ ru:{
   a_import:"Импорт каталога",a_import_hint:"Вставьте JSON каталога и нажмите Импорт (синхронизация экспорта другого админа).",
   a_import_done:"Каталог импортирован",a_import_bad:"Неверный JSON",a_copy:"Копировать JSON",
   a_reset:"Сбросить к файлу",a_reset_done:"Каталог сброшен",
-  a_publish:"🌍 Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
+  a_publish:"Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
   a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
   bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
   buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
   need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
   pw_exact:"Переведите РОВНО эту сумму",pw_rule1:"Не меняйте сумму даже на 1 сум",
   pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
-  pw_paid:"✅ Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
+  pw_paid:"Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
   continue_btn:"Продолжить",st_done:"Выполнено",st_deliver:"Доставляется",
   topup_created:"Теперь переведите ровно эту сумму",srv_off:"Сервер недоступен — попробуйте позже",
-  adm_money:"💰 Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
+  adm_money:"Платежи и клиенты",adm_pending:"Ожидающие платежи",adm_orders_p:"Заказы к выдаче",
   adm_confirm:"Подтвердить",adm_cancel:"Отмена",adm_none:"Пока пусто",
   adm_search:"Клиент (ID или @username)",adm_find:"Найти",adm_amountph:"Сумма (сум)",adm_done:"Готово ✓",
-  a_history:"📜 Полная история",a_hist_title:"История клиента",a_hist_topups:"Пополнения",a_hist_orders:"Покупки",
+  a_history:"Полная история",a_hist_title:"История клиента",a_hist_topups:"Пополнения",a_hist_orders:"Покупки",
   a_hist_delivered:"Выдано клиенту",a_hist_none:"Пока нет истории",a_hist_back:"← Назад",
   onb_sub:"Выберите язык",
   guest_note:"Чтобы заказывать, откройте магазин через Telegram-бота."
@@ -605,6 +605,46 @@ var IC={
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>'
 };
 
+/* ===== premium SVG icons (emoji o'rniga — har doim bir xil va tekis ko'rinadi) ===== */
+var ICON={
+  diamond:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 6 3-6M12 9l-3 12M12 9l3 12"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  headset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="2.6" y="13" width="4.8" height="7" rx="2"/><rect x="16.6" y="13" width="4.8" height="7" rx="2"/><path d="M20 20a4 4 0 0 1-4 4h-2"/></svg>',
+  cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7H6"/></svg>',
+  key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5 20 3M16 7l3 3M13 10l2.3 2.3"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.6 2.6L16 9"/></svg>',
+  cross:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
+  warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>',
+  gift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4"/><rect x="4" y="12" width="16" height="9"/><path d="M12 8v13"/><path d="M12 8c-1.6-3.3-6-3-6 0s4.4 0 6 0zM12 8c1.6-3.3 6-3 6 0s-4.4 0-6 0z"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2 12h2.2M19.8 12H22M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5"/></svg>',
+  tools:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 1 5.4-5.4L21 6l-3-3z"/></svg>',
+  users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5"/><circle cx="17" cy="8.5" r="2.6"/><path d="M15.5 14.6c2.2.3 4 2 4.8 5.4"/></svg>',
+  wallet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="6" width="19.2" height="13" rx="2"/><path d="M2.4 10h19.2"/><circle cx="17" cy="14" r="1.1" fill="currentColor" stroke="none"/></svg>',
+  history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></svg>',
+  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.4" y="5" width="19.2" height="14" rx="2.2"/><path d="M2.4 9.5h19.2"/><path d="M6 14.5h4"/></svg>',
+  atm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="6.4" y="6.4" width="6" height="4.6" rx="0.6"/><path d="M6.4 14.6h11M6.4 17.6h6"/><circle cx="17.4" cy="14.8" r="0.9" fill="currentColor" stroke="none"/></svg>',
+  arrowRight:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  arrowLeft:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V7M6 7l1 13a2 2 0 0 0 2 1.9h6a2 2 0 0 0 2-1.9l1-13"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.3 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1L9 20.5h4l.3-2.5a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4z"/></svg>',
+  clipboard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2.4" width="6" height="3" rx="1"/><path d="M9 11h6M9 15h6"/></svg>',
+  pencil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.9-4L16 4.9a2 2 0 0 1 2.8 0l.3.3a2 2 0 0 1 0 2.8L8 19l-4 1z"/><path d="M14 6.9L17.1 10"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.4 4.3M6.7 6.7C4 8.5 2 12 2 12s3.6 7 10 7c1.4 0 2.6-.3 3.7-.8"/><path d="M9.9 10a3 3 0 0 0 4.1 4.1"/></svg>',
+  camera:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2.4h7L17 8h3a1.5 1.5 0 0 1 1.5 1.5V18A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9.5A1.5 1.5 0 0 1 4 8z"/><circle cx="12" cy="13.5" r="3.5"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  wand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L16 8"/><path d="M13.5 5.5l1.2 1.2M9 4v2.4M9 4h2.4M4 12h2.4M4 12v2.4"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
+};
+function ic(name,size,cls){
+  size=size||16;
+  var svg=ICON[name]||"";
+  if(!svg)return "";
+  return svg.replace("<svg ",'<svg class="isvg'+(cls?" "+cls:"")+'" width="'+size+'" height="'+size+'" style="vertical-align:-'+(Math.round(size*0.18))+'px;flex:0 0 auto" ');
+}
+
 /* ===== shell ===== */
 function render(){
   var app=document.getElementById("app");
@@ -643,7 +683,7 @@ function headerHTML(){
     +'</div></div>'
     +'<div class="hctrl">'
     +'<button id="hLangBtn" class="hbtn">'+LANG_FLAG[S.lang]+' '+S.lang.toUpperCase()+'</button>'
-    +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?"💡":"🌙")+'</button>'
+    +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?ic("sun",15):ic("moon",15))+'</button>'
     +'</div></header>';
 }
 function navHTML(){
@@ -683,10 +723,10 @@ function categoryBlockHTML(kind,labelKey){
 function homeHTML(){
   var html='';
   if(tgUser()){
-    html+='<div class="balcard"><div class="bl">💎 '+esc(t("bal_title"))+'</div>'
+    html+='<div class="balcard"><div class="bl">'+ic("diamond",14)+' '+esc(t("bal_title"))+'</div>'
       +'<div class="bv">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div>'
-      +'<div class="brow"><button data-gotopay="1">➕ '+esc(t("bal_topup"))+'</button>'
-      +'<button data-support="1">🎧 '+esc(t("bal_support"))+'</button></div></div>';
+      +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
+      +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
   }
   html+='<div class="tabs">';
   for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
@@ -727,7 +767,7 @@ function openProduct(id){
     tileHTML(it,true)
     +'<h2>'+esc(loc(it.title))+'</h2><div class="cat">'+esc(it.cat||"")+' · '+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</div>'
     +'<div class="desc">'+esc(loc(it.desc))+'</div>'
-    +(guest?'<div class="paynote">⚠️ '+esc(t("guest_note"))+'</div>':"")
+    +(guest?'<div class="paynote">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>':"")
     +'<button class="btn big" id="buyBtn" '+((out||guest)?"disabled":"")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — '+esc(money(it.price))+'</button>'
   );
   var btn=sh.querySelector("#buyBtn");
@@ -747,7 +787,7 @@ function openBuyConfirm(it){
     +'<div style="height:12px"></div>'
     +(enough
       ?'<button class="btn big green" id="doBuy">'+esc(t("pay_from_balance"))+'</button>'
-      :'<div class="paynote">⚠️ '+esc(t("need_more"))+'</div><button class="btn big" id="goTopup">➕ '+esc(t("bal_topup"))+'</button>')
+      :'<div class="paynote">'+ic("warning",13)+' '+esc(t("need_more"))+'</div><button class="btn big" id="goTopup">'+ic("plus",15)+' '+esc(t("bal_topup"))+'</button>')
   );
   var b=sh.querySelector("#doBuy");
   if(b)b.addEventListener("click",function(){
@@ -774,9 +814,9 @@ function openBuyConfirm(it){
 }
 /* mijozga xarid qilinganidan so'ng darhol chiqadigan mahsulot (login/parol/promokod) oynasi */
 function showDeliveredSheet(it,order){
-  var guide=it.note?('<div class="paynote">📋 '+esc(loc(it.note))+'</div>'):"";
+  var guide=it.note?('<div class="paynote">'+ic("clipboard",13)+' '+esc(loc(it.note))+'</div>'):"";
   var sh=openSheet(
-    '<h2>✅ '+esc(t("delivered_title"))+'</h2>'
+    '<h2>'+ic("check",19)+' '+esc(t("delivered_title"))+'</h2>'
     +'<div class="refline"><span>'+esc(loc(it.title))+'</span></div>'
     +'<div class="cardbox" style="margin-top:10px"><div class="crow"><div style="word-break:break-all;font-size:14px;font-weight:700">'
     +esc(order.delivered)+'</div>'
@@ -796,16 +836,16 @@ function payHTML(){
   var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
   if(SHOW_VIDEO_ROW&&VIDEO_URL){
     html+='<div class="card"><div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
-      +'<span class="rowicon ric-red">▶️</span><div><div>'+esc(t("video_guide"))+'</div>'
+      +'<span class="rowicon ric-red">'+ic("play",16,"")+'</span><div><div>'+esc(t("video_guide"))+'</div>'
       +'<div class="d" style="color:var(--err)">'+esc(t("video_guide_sub"))+'</div></div></div>'
-      +'<button class="btn sm gray" data-openvid="1">→</button></div></div>';
+      +'<button class="btn sm gray" data-openvid="1">'+ic("arrowRight",14)+'</button></div></div>';
   }
   html+='<div class="card"><div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
-    +'<span class="rowicon ric-green">🎧</span><div><div>'+esc(t("support"))+'</div>'
+    +'<span class="rowicon ric-green">'+ic("headset",16)+'</span><div><div>'+esc(t("support"))+'</div>'
     +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
-    +'<button class="btn sm gray" data-support="1">→</button></div></div>';
+    +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div></div>';
   if(!tgUser()){
-    return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
+    return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
   }
   var ap=S.activePay;
   if(ap){
@@ -815,7 +855,7 @@ function payHTML(){
       +'<label style="margin-top:0">'+esc(t("pw_exact"))+'</label>'
       +'<div class="refline"><span class="payhuge">'+esc(money(ap.pay))+'</span>'
       +'<button class="btn sm gray" data-copy="'+ap.pay+'">'+esc(t("copy"))+'</button></div>'
-      +'<div class="refline"><span>⏳</span><span class="timer" id="pwTimer">--:--</span></div>'
+      +'<div class="refline"><span>'+ic("clock",15)+'</span><span class="timer" id="pwTimer">--:--</span></div>'
       +'</div>';
     if(card){
       html+='<div class="cardbox"><div class="crow"><div><div class="cnum">'+esc(card.number)+'</div>'
@@ -823,12 +863,12 @@ function payHTML(){
         +'<button class="cpy" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+esc(t("copy"))+'</button></div></div>';
     }
     html+='<div class="paybox">'
-      +'<div class="rule">✅ '+esc(t("pw_rule1"))+'</div>'
-      +'<div class="rule">✅ '+esc(t("pw_rule2"))+'</div>'
-      +'<div class="rule bad">❌ '+esc(t("pw_rule3"))+'</div>'
-      +'<div class="rule bad">❌ '+esc(t("pw_rule4"))+'</div>'
+      +'<div class="rule">'+ic("check",13)+' '+esc(t("pw_rule1"))+'</div>'
+      +'<div class="rule">'+ic("check",13)+' '+esc(t("pw_rule2"))+'</div>'
+      +'<div class="rule bad">'+ic("cross",13)+' '+esc(t("pw_rule3"))+'</div>'
+      +'<div class="rule bad">'+ic("cross",13)+' '+esc(t("pw_rule4"))+'</div>'
       +'<div style="height:10px"></div>'
-      +'<button class="btn big green" id="pwPaid">'+esc(t("pw_paid"))+'</button>'
+      +'<button class="btn big green" id="pwPaid">'+ic("check",15)+' '+esc(t("pw_paid"))+'</button>'
       +'<div style="height:10px"></div>'
       +'<button class="btn red" id="pwAbort">'+esc(t("pw_abort"))+'</button>'
       +'</div>';
@@ -850,7 +890,7 @@ function payHTML(){
     var c=CARDS[i];
     var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
     html+='<button class="method'+(S.topup.method===c.id?" on":"")+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
-      +'<span class="ic">'+c.icon+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
+      +'<span class="ic">'+ic(c.icon,20)+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
   }
   html+='</div><div style="height:12px"></div>'
     +'<button class="btn big" id="topupGo">'+(S.topup.method==="bank"?esc(t("contact_support_btn")):esc(t("continue_btn")))+'</button></div>';
@@ -895,24 +935,25 @@ var PAY_BADGE={waiting:["pend","st_pending"],checking:["chk","st_checking"],done
 var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
 function ordersHTML(){
   var html='<div class="sect">'+esc(t("orders_title"))+'</div>';
-  if(!tgUser())return html+'<div class="card" style="color:var(--mut);font-size:13.5px">⚠️ '+esc(t("guest_note"))+'</div>';
+  if(!tgUser())return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
   if(!S.ordTab)S.ordTab="orders";
   if(!S.ordFilter)S.ordFilter="all";
   html+='<div class="seg" id="ordTabSeg">'
     +'<button data-ordtab="orders" class="'+(S.ordTab==="orders"?"on":"")+'">'+esc(t("tab_orders"))+'</button>'
-    +'<button data-ordtab="finance" class="'+(S.ordTab==="finance"?"on":"")+'">'+esc(t("tab_finance"))+'</button></div>';
+    +'<button data-ordtab="finance" class="'+(S.ordTab==="finance"?"on":"")+'">'+esc(t("tab_finance"))+'</button></div>'
+    +'<div style="height:14px"></div>';
 
   if(S.ordTab==="orders"){
     var filters=[["all","f_all"],["done","f_done"],["pending","f_pending"],["cancelled","f_cancelled"]];
-    html+='<div class="chips" id="ordFilterChips">';
+    html+='<div class="chips" id="ordFilterChips" style="margin-top:0">';
     for(var f=0;f<filters.length;f++)html+='<button data-ordfilter="'+filters[f][0]+'" class="'+(S.ordFilter===filters[f][0]?"on":"")+'">'+esc(t(filters[f][1]))+'</button>';
-    html+='</div>';
+    html+='</div><div style="height:14px"></div>';
     var rows=[];
     for(var i=0;i<ME.orders.length;i++){
       var o=ME.orders[i];
       var st=o.status==="pending"?"pending":(o.status==="done"?"done":"cancelled");
       if(S.ordFilter!=="all"&&st!==S.ordFilter)continue;
-      rows.push({ts:o.ts,ic:"🛒",title:o.item,id:o.id,oid:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null});
+      rows.push({ts:o.ts,ic:ic("cart",15),title:o.item,id:o.id,oid:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null});
     }
     rows.sort(function(a,b){return b.ts-a.ts;});
     if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
@@ -922,15 +963,15 @@ function ordersHTML(){
         +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
         +'<div class="d">'+esc(money(x.amt))+'</div></div>'
         +'<div class="r" style="display:flex;flex-direction:column;align-items:flex-end"><span class="badge '+x.b[0]+'" style="display:inline-block">'+esc(t(x.b[1]))+'</span>'
-        +(x.delivered?'<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'" style="margin-top:14px">🔑 '+esc(t("delivered_view"))+'</button>':'')
+        +(x.delivered?'<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'" style="margin-top:14px">'+ic("key",13)+' '+esc(t("delivered_view"))+'</button>':'')
         +'</div></div></div>';
     }
   } else {
     var frows=[];
     for(var j=0;j<ME.payments.length;j++){
       var p=ME.payments[j];
-      if(p.type==="manual"){frows.push({ts:p.ts,ic:"⚙️",title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
-      frows.push({ts:p.ts,ic:"💳",title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
+      if(p.type==="manual"){frows.push({ts:p.ts,ic:ic("gear",15),title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
+      frows.push({ts:p.ts,ic:ic("card",15),title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
     }
     frows.sort(function(a,b){return b.ts-a.ts;});
     if(!frows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
@@ -958,24 +999,24 @@ function profileHTML(){
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+(ME.balance===null?"…":esc(money(ME.balance)))+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
-    +'<div class="card"><div class="row"><div class="l">🎧 '+esc(t("support"))
+    +'<div class="card"><div class="row"><div class="l">'+ic("headset",16)+' '+esc(t("support"))
     +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
-    +'<button class="btn sm gray" data-support="1">→</button></div></div>'
-    +'<div class="card"><div class="row"><div class="l">🎁 '+esc(t("invite_title"))
+    +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div></div>'
+    +'<div class="card"><div class="row"><div class="l">'+ic("gift",16)+' '+esc(t("invite_title"))
     +'<div class="d">'+esc(t("invite_soon"))+'</div></div>'
     +'<span class="badge pend">'+esc(t("soon_badge"))+'</span></div></div>'
     +'<div class="sect">'+esc(t("language"))+' / '+esc(t("theme_title"))+'</div>'
-    +'<div class="card"><div class="row"><div class="l">🌐 '+esc(t("language"))
+    +'<div class="card"><div class="row"><div class="l">'+ic("globe",16)+' '+esc(t("language"))
     +'<div class="d">'+esc(t("lang_tap_hint"))+'</div></div>'
     +'<button class="btn sm" id="langCycle">'+LANG_FLAG[S.lang]+' '+LANG_NAME[S.lang]+'</button></div>'
-    +'<div class="row"><div class="l">'+(S.theme==="light"?"💡":"🌙")+' '+esc(t("theme_title"))
+    +'<div class="row"><div class="l">'+(S.theme==="light"?ic("sun",16):ic("moon",16))+' '+esc(t("theme_title"))
     +'<div class="d">'+esc(t("theme_tap_hint"))+'</div></div>'
     +'<button class="btn sm" id="themeToggle">'+(S.theme==="light"?esc(t("theme_light")):esc(t("theme_dark")))+'</button></div></div>';
   if(isAdmin()){
     html+='<div class="sect">'+esc(t("owner"))+'</div>'
-      +'<div class="card"><div class="row"><div class="l">🛠 '+esc(t("a_panel"))
+      +'<div class="card"><div class="row"><div class="l">'+ic("tools",16)+' '+esc(t("a_panel"))
       +'<div class="d">'+esc(t("a_panel_sub"))+'</div></div>'
-      +'<button class="btn sm" id="adminBtn">→</button></div></div>';
+      +'<button class="btn sm" id="adminBtn">'+ic("arrowRight",14)+'</button></div></div>';
   }
   html+='<div style="height:24px"></div>';
   return html;
@@ -992,11 +1033,11 @@ function openAdmin(){
     +'<div class="stats" style="margin:0 0 6px"><div class="stat"><div class="v" id="stTopup">…</div><div class="k">'+esc(t("a_st_topup"))+'</div></div>'
     +'<div class="stat"><div class="v" id="stPending">…</div><div class="k">'+esc(t("a_st_pending"))+'</div></div>'
     +'<div class="stat"><div class="v" id="stBalances">…</div><div class="k">'+esc(t("a_st_balances"))+'</div></div></div>'
-    +'<button class="btn" id="aMoney">'+esc(t("adm_money"))+'</button>'
+    +'<button class="btn" id="aMoney">'+ic("wallet",15)+' '+esc(t("adm_money"))+'</button>'
     +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aUsersBtn">👥 '+esc(t("a_users_title"))+'</button>'
+    +'<button class="btn gray" id="aUsersBtn">'+ic("users",15)+' '+esc(t("a_users_title"))+'</button>'
     +'<div style="height:10px"></div>'
-    +'<button class="btn green" id="aPub">'+esc(t("a_publish"))+'</button>'
+    +'<button class="btn green" id="aPub">'+ic("globe",15)+' '+esc(t("a_publish"))+'</button>'
     +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
     +'<button class="btn" id="aNew">'+esc(t("a_new"))+'</button>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_current"))+'</div><div id="aList"></div>'
@@ -1044,9 +1085,9 @@ function renderAdminList(sh){
     html+='<div class="itemrow'+(off?" offi":"")+'"><div><div class="nm">'+esc(loc(it.title))+'</div>'
       +'<div class="meta">'+esc(t("tab_"+(it.kind==="product"?"products":it.kind)))+' · '+esc(money(it.price))+' · '+it.stock+' dona</div></div>'
       +'<div class="acts">'
-      +'<button data-aedit="'+esc(it.id)+'">✏️</button>'
-      +'<button data-atoggle="'+esc(it.id)+'">'+(off?"🚫":"👁")+'</button>'
-      +'<button data-adel="'+esc(it.id)+'">🗑</button>'
+      +'<button data-aedit="'+esc(it.id)+'">'+ic("pencil",15)+'</button>'
+      +'<button data-atoggle="'+esc(it.id)+'">'+(off?ic("eyeOff",15):ic("eye",15))+'</button>'
+      +'<button data-adel="'+esc(it.id)+'">'+ic("trash",15)+'</button>'
       +'</div></div>';
   }
   var list=sh.querySelector("#aList");
@@ -1092,7 +1133,7 @@ function openAdminMoney(prefillQ){
         var p=r.payments[i];
         hp+='<div class="itemrow"><div><div class="nm">'+esc(money(p.pay))+' · '+esc(p.method||"")+'</div>'
           +'<div class="meta">'+(p.uname?'@'+esc(p.uname)+' · ':'')+'ID '+esc(p.uid)+' · '+esc(fmtDate(p.ts))+' · '+esc(t(PAY_BADGE[p.status][1]))+'</div></div>'
-          +'<div class="acts"><button data-apc="'+esc(p.id)+'">✅</button><button data-apx="'+esc(p.id)+'">❌</button></div></div>';
+          +'<div class="acts"><button data-apc="'+esc(p.id)+'">'+ic("check",15)+'</button><button data-apx="'+esc(p.id)+'">'+ic("cross",15)+'</button></div></div>';
       }
       sh.querySelector("#amPay").innerHTML=hp||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       var ho="";
@@ -1100,7 +1141,7 @@ function openAdminMoney(prefillQ){
         var o=r.orders[j];
         ho+='<div class="itemrow"><div><div class="nm">'+esc(o.item)+' · '+esc(money(o.price))+'</div>'
           +'<div class="meta">'+(o.uname?'@'+esc(o.uname)+' · ':'')+'ID '+esc(o.uid)+' · <span class="code">'+esc(o.id)+'</span></div></div>'
-          +'<div class="acts"><button data-aoc="'+esc(o.id)+'">✅</button><button data-aox="'+esc(o.id)+'">❌</button></div></div>';
+          +'<div class="acts"><button data-aoc="'+esc(o.id)+'">'+ic("check",15)+'</button><button data-aox="'+esc(o.id)+'">'+ic("cross",15)+'</button></div></div>';
       }
       sh.querySelector("#amOrd").innerHTML=ho||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       function wire(sel,fn){var els=sh.querySelectorAll(sel);for(var k=0;k<els.length;k++)els[k].addEventListener("click",fn);}
@@ -1122,7 +1163,7 @@ function openAdminMoney(prefillQ){
           +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div></div>'
           +'<div class="arow" style="margin:6px 0 8px"><input type="number" inputmode="numeric" placeholder="'+esc(t("adm_amountph"))+'" data-amt="'+u.uid+'">'
           +'<button class="btn sm green" data-badd="'+u.uid+'">＋</button><button class="btn sm red" data-bsub="'+u.uid+'">−</button></div>'
-          +'<button class="btn sm gray" data-uhist="'+u.uid+'" style="margin-bottom:16px;width:100%">'+esc(t("a_history"))+'</button>';
+          +'<button class="btn sm gray" data-uhist="'+u.uid+'" style="margin-bottom:16px;width:100%">'+ic("history",14)+' '+esc(t("a_history"))+'</button>';
       }
       sh.querySelector("#admRes").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       function adj(uid,sign){
@@ -1152,7 +1193,7 @@ function openAdminHistory(uid){
     for(var i=0;i<r.payments.length;i++){
       var p=r.payments[i];
       var pb=p.type==="manual"?["ok","st_done"]:(PAY_BADGE[p.status]||PAY_BADGE.waiting);
-      html+='<div class="card"><div class="row"><div class="l">'+(p.type==="manual"?"⚙️ "+esc(t("owner")):"💳 "+esc(p.method||""))
+      html+='<div class="card"><div class="row"><div class="l">'+(p.type==="manual"?ic("gear",15)+" "+esc(t("owner")):ic("card",15)+" "+esc(p.method||""))
         +'<div class="d">'+esc(money(p.pay||p.amount))+' · '+esc(fmtDate(p.ts))+'</div></div>'
         +'<div class="r"><span class="badge '+pb[0]+'">'+esc(t(pb[1]))+'</span></div></div></div>';
     }
@@ -1162,12 +1203,12 @@ function openAdminHistory(uid){
     for(var j=0;j<r.orders.length;j++){
       var o=r.orders[j];
       var ob=ORD_BADGE[o.status]||ORD_BADGE.pending;
-      html+='<div class="card"><div class="row"><div class="l">🛒 '+esc(o.item)
+      html+='<div class="card"><div class="row"><div class="l">'+ic("cart",15)+' '+esc(o.item)
         +'<div class="d"><span class="code">'+esc(o.id)+'</span> · '+esc(fmtDate(o.ts))+'</div>'
         +'<div class="d">'+esc(money(o.price))+'</div></div>'
         +'<div class="r"><span class="badge '+ob[0]+'">'+esc(t(ob[1]))+'</span></div></div>'
         +(o.delivered?('<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">'
-          +'<div style="font-size:11px;color:var(--mut);margin-bottom:6px">🔑 '+esc(t("a_hist_delivered"))+'</div>'
+          +'<div style="font-size:11px;color:var(--mut);margin-bottom:6px">'+ic("key",12)+' '+esc(t("a_hist_delivered"))+'</div>'
           +'<div class="cardbox" style="margin:0"><div class="crow"><div style="word-break:break-all;font-size:13px;font-weight:700">'+esc(o.delivered)+'</div>'
           +'<button class="cpy" data-copy="'+esc(o.delivered)+'">'+esc(t("copy"))+'</button></div></div></div>'):'')
         +'</div>';
@@ -1189,7 +1230,7 @@ function openAdminUsers(){
         var u=list[i];
         h+='<div class="itemrow"><div><div class="nm">'+esc(u.name||"—")+(u.uname?' @'+esc(u.uname):'')+'</div>'
           +'<div class="meta">ID '+esc(u.uid)+' · '+esc(money(u.balance))+'</div></div>'
-          +'<div class="acts"><button data-uhist2="'+esc(u.uid)+'">📜</button><button data-uopen="'+esc(u.uid)+'">💰</button></div></div>';
+          +'<div class="acts"><button data-uhist2="'+esc(u.uid)+'">'+ic("history",16)+'</button><button data-uopen="'+esc(u.uid)+'">'+ic("wallet",16)+'</button></div></div>';
       }
       sh.querySelector("#usersList").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       var ops=sh.querySelectorAll("[data-uopen]");
@@ -1243,26 +1284,31 @@ function loadServerCatalog(){
 function openAdminForm(editId){
   var it=editId?byId(editId):null;
   var F={
-    id:it?it.id:null, kind:it?it.kind:"obuna",
+    id:it?it.id:null, kind:it?it.kind:"product",
     title:it?loc(it.title):"", cat:it?(it.cat||""):"",
     price:it?it.price:"", stock:it?it.stock:10,
+    label:it?(it.tile&&it.tile.label||""):"NEW", sub:it?(it.tile&&it.tile.sub||""):"",
+    bg:it?(it.tile&&it.tile.bg||"#2b1a5e"):"#2b1a5e", fg:it?(it.tile&&it.tile.fg||"#ffffff"):"#ffffff",
     img:it?(it.tile&&it.tile.img||""):"",
     den:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.en)||""):"",
     duz:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.uz)||""):"",
     dru:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.ru)||""):"",
     note:it?(loc(it.note)||""):"",
-    active:it?it.active!==false:true,
-    autoPremium:!!(it&&it.auto&&it.auto.type==="premium"),
-    autoMonths:(it&&it.auto&&it.auto.months)||3
+    active:it?it.active!==false:true
   };
   function kindBtn(k,key){return '<button data-kind="'+k+'" class="'+(F.kind===k?"on":"")+'">'+esc(t(key))+'</button>';}
   var html='<h2>'+esc(editId?t("a_edit"):t("a_new"))+'</h2>'
     +'<label>'+esc(t("a_section"))+'</label>'
-    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
+    +'<div class="seg" id="kindSeg">'+kindBtn("product","tab_products")+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
     +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
     +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
     +'<div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
-    +'<div id="stockWrap"><label>'+esc(t("a_stock"))+'</label><input id="f_stock" type="number" inputmode="numeric" value="'+esc(F.stock)+'"></div></div>'
+    +'<div><label>'+esc(t("a_stock"))+'</label><input id="f_stock" type="number" inputmode="numeric" value="'+esc(F.stock)+'"></div></div>'
+    +'<div class="arow"><div><label>'+esc(t("a_label"))+'</label><input id="f_label" value="'+esc(F.label)+'"></div>'
+    +'<div><label>'+esc(t("a_sublabel"))+'</label><input id="f_sub" value="'+esc(F.sub)+'"></div></div>'
+    +'<div class="colors">'
+    +'<div><label>'+esc(t("a_bg"))+'</label><input id="f_bg" type="color" value="'+esc(F.bg)+'" style="height:42px;padding:4px"></div>'
+    +'<div><label>'+esc(t("a_fg"))+'</label><input id="f_fg" type="color" value="'+esc(F.fg)+'" style="height:42px;padding:4px"></div></div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
     +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="2">'+esc(F.duz)+'</textarea>'
@@ -1277,8 +1323,8 @@ function openAdminForm(editId){
       +'<div class="card"><div class="row"><div class="l">'+esc(t("a_stock_count"))+'<div class="d" id="stkCount">…</div></div></div>'
       +'<label>'+esc(t("a_stock_add"))+'</label><textarea id="f_stockadd" rows="4" placeholder="'+esc(t("a_stock_ph"))+'"></textarea>'
       +'<div style="height:8px"></div>'
-      +'<div class="arow"><button class="btn sm" id="stkAddBtn">➕ '+esc(t("a_stock_addbtn"))+'</button>'
-      +'<button class="btn sm red" id="stkClearBtn">🗑 '+esc(t("a_stock_clear"))+'</button></div></div>'
+      +'<div class="arow"><button class="btn sm" id="stkAddBtn">'+ic("plus",14)+' '+esc(t("a_stock_addbtn"))+'</button>'
+      +'<button class="btn sm red" id="stkClearBtn">'+ic("trash",14)+' '+esc(t("a_stock_clear"))+'</button></div></div>'
     ):"")
     +'<div style="height:30px"></div>';
   var sh=openSheet(html);
@@ -1286,35 +1332,26 @@ function openAdminForm(editId){
   function readForm(){
     F.title=g("#f_title").value.trim();F.cat=g("#f_cat").value.trim();
     F.price=g("#f_price").value;F.stock=g("#f_stock").value;
+    F.label=g("#f_label").value;F.sub=g("#f_sub").value;
+    F.bg=g("#f_bg").value;F.fg=g("#f_fg").value;
     F.den=g("#f_den").value;F.duz=g("#f_duz").value;F.dru=g("#f_dru").value;
     F.note=g("#f_note").value;
   }
   function preview(){
     readForm();
-    var hideStock=(F.kind==="telegram"||F.kind==="games");
-    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
-      title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
+    var fake={tile:{label:F.label||F.title||"NEW",sub:F.sub,bg:F.bg,fg:F.fg,img:F.img},
+      title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:Number(F.stock)||0};
     var out=fake.stock<=0;
     g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
       +'<div class="pbody"><div class="nm">'+esc(fake.title)+'</div><div class="ct">'+esc(fake.cat)+'</div>'
-      +'<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span>'
-      +(hideStock?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span>')
-      +'</div></div></div>';
+      +'<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span><span class="stkb'+(out?" out":"")+'">'
+      +(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span></div></div></div>';
   }
-  function syncStockVisibility(){
-    var hide=(F.kind==="telegram"||F.kind==="games");
-    var wrap=g("#stockWrap");
-    if(wrap)wrap.classList.toggle("hide",hide);
-    var si=g("#f_stock");
-    if(si&&hide&&(!si.value||Number(si.value)===10))si.value=999;
-  }
-  syncStockVisibility();
   var ks=sh.querySelectorAll("#kindSeg [data-kind]");
   for(var i=0;i<ks.length;i++)ks[i].addEventListener("click",function(){
     F.kind=this.getAttribute("data-kind");
     var all=sh.querySelectorAll("#kindSeg [data-kind]");
     for(var j=0;j<all.length;j++)all[j].classList.toggle("on",all[j]===this);
-    syncStockVisibility();preview();
   });
   g("#f_active").addEventListener("click",function(){F.active=!F.active;this.classList.toggle("on",F.active);});
   var file=g("#f_file");
@@ -1332,7 +1369,7 @@ function openAdminForm(editId){
             var cv=document.createElement("canvas");cv.width=w;cv.height=h;
             cv.getContext("2d").drawImage(im,0,0,w,h);
             F.img=cv.toDataURL("image/jpeg",0.8);
-            preview();toast("📷 OK");
+            preview();toast("OK");
           }catch(e){toast("Rasm xatosi");}
         };
         im.src=rd.result;
@@ -1347,7 +1384,7 @@ function openAdminForm(editId){
     if(!F.title||!Number(F.price)){toast(t("a_need"));return;}
     var data={
       kind:F.kind,cat:F.cat,price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-      tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
+      tile:{label:F.label||F.title,sub:F.sub,bg:F.bg,fg:F.fg,img:F.img},
       title:F.title,
       desc:{en:F.den||F.duz,uz:F.duz||F.den,ru:F.dru||F.duz||F.den},
       note:F.note||""
