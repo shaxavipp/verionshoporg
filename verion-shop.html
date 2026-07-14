@@ -859,10 +859,15 @@ function openStarsBuy(it){
       loadMe(function(){ if(r.order&&r.order.delivered){showDeliveredSheet(it,r.order);} go("orders"); });
     }).catch(function(e){
       btn.disabled=false;btn.textContent=t("buy");
-      if(e.resp&&e.resp.error==="balance"){toast(t("need_more"));}
-      else if(e.resp&&e.resp.error==="min_amount"){toast(t("min_amount_note")+": "+e.resp.min);}
-      else if(e.resp&&e.resp.error==="fragment_failed"){toast(e.resp.message||t("fragment_err"));}
-      else toast(t("srv_off"));
+      var msg=null;
+      if(e.resp&&e.resp.error==="balance")msg=t("need_more");
+      else if(e.resp&&e.resp.error==="min_amount")msg=t("min_amount_note")+": "+e.resp.min;
+      else if(e.resp&&e.resp.error==="fragment_failed")msg=e.resp.message||t("fragment_err");
+      else msg=t("srv_off");
+      var note=sh.querySelector("#stBuyErr");
+      if(!note){note=document.createElement("div");note.id="stBuyErr";note.className="paynote";note.style.color="var(--err)";btn.insertAdjacentElement("afterend",note);}
+      note.innerHTML=ic("warning",13)+' '+esc(msg);
+      haptic();
     });
   });
 }
@@ -884,6 +889,7 @@ function openBuyConfirm(it){
   );
   var b=sh.querySelector("#doBuy");
   if(b)b.addEventListener("click",function(){
+    b.disabled=true;b.textContent=t("processing");
     api("/api/buy","POST",{itemId:it.id}).then(function(r){
       ME.balance=r.balance;haptic("ok");closeSheet();
       loadMe(function(){
@@ -892,12 +898,19 @@ function openBuyConfirm(it){
         go("orders");
       });
     }).catch(function(e){
-      closeSheet();
-      if(e.resp&&e.resp.error==="balance"){toast(t("need_more"));go("pay");}
-      else if(e.resp&&e.resp.error==="out_of_stock"){toast(t("out_stock"));render();}
-      else if(e.resp&&e.resp.error==="no_username"){toast(t("need_username"));}
-      else if(e.resp&&e.resp.error==="fragment_failed"){toast((e.resp.message)||t("fragment_err"));}
-      else toast(t("srv_off"));
+      var code=e.resp&&e.resp.error;
+      if(code==="balance"){closeSheet();toast(t("need_more"));go("pay");}
+      else if(code==="out_of_stock"){closeSheet();toast(t("out_stock"));render();}
+      else if(code==="no_username"){closeSheet();toast(t("need_username"));}
+      else if(code==="fragment_failed"){closeSheet();toast((e.resp.message)||t("fragment_err"));}
+      else{
+        /* real network/server failure — keep the sheet open so the buyer can just retry, instead of losing context */
+        b.disabled=false;b.textContent=t("pay_from_balance");
+        var note=sh.querySelector("#doBuyErr");
+        if(!note){note=document.createElement("div");note.id="doBuyErr";note.className="paynote";note.style.color="var(--err)";b.insertAdjacentElement("afterend",note);}
+        note.innerHTML=ic("warning",13)+' '+esc(t("srv_off"));
+        haptic();
+      }
     });
   });
   var g=sh.querySelector("#goTopup");
@@ -964,6 +977,7 @@ function payHTML(){
       +'<div class="rule bad">'+ic("cross",13)+' '+esc(t("pw_rule4"))+'</div>'
       +'<div style="height:10px"></div>'
       +'<button class="btn big green" id="pwPaid">'+ic("check",15)+' '+esc(t("pw_paid"))+'</button>'
+      +(MARKPAID_ERR?'<div class="paynote" style="color:var(--err)">'+ic("warning",13)+' '+esc(t("srv_off"))+'</div>':'')
       +'<div style="height:10px"></div>'
       +'<button class="btn red" id="pwAbort">'+esc(t("pw_abort"))+'</button>'
       +'</div>';
@@ -1011,18 +1025,30 @@ function createTopup(){
   if(btn){btn.disabled=true;btn.textContent=t("processing");}
   api("/api/topup","POST",{amount:amount,method:S.topup.method}).then(function(r){
     S.activePay={id:r.payment.id,pay:r.payment.pay,amount:r.payment.amount,method:r.payment.method,expiresAt:r.expiresAt};
+    MARKPAID_ERR=false;
     persist();haptic("ok");toast(t("topup_created"));render();
   }).catch(function(){
     TOPUP_ERR=true;haptic();render();
   });
 }
+var MARKPAID_ERR=false;
 function markPaid(){
   var ap=S.activePay;if(!ap)return;
+  MARKPAID_ERR=false;
+  var btn=document.getElementById("pwPaid");
+  if(btn){btn.disabled=true;btn.textContent=t("processing");}
   api("/api/paid","POST",{id:ap.id}).then(function(){
     S.activePay=null;persist();haptic("ok");
     loadMe(function(){go("orders");});
-  }).catch(function(){
-    S.activePay=null;persist();loadMe(function(){go("orders");});
+  }).catch(function(e){
+    var code=e.resp&&e.resp.error;
+    if(code==="state"||code==="not found"){
+      /* server already moved past "waiting" (e.g. admin already processed it) — safe to continue */
+      S.activePay=null;persist();loadMe(function(){go("orders");});
+      return;
+    }
+    /* real network/server failure — keep the payment window open so nothing gets lost silently */
+    MARKPAID_ERR=true;haptic();render();
   });
 }
 function tickTimer(){
