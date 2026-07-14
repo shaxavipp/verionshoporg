@@ -72,7 +72,7 @@ function tgSend(chatId, text) {
     req.write(data); req.end();
   } catch (e) {}
 }
-// fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni avtomatik sotib olish.
+// fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni istalgan @username'ga avtomatik sotib olish.
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
 const FRAGMENT_API_KEY = process.env.FRAGMENT_API_KEY || "";
 const FRAGMENT_HOST = "fragment-api.uz";
@@ -300,9 +300,9 @@ const server = http.createServer((req, res) => {
       if (!it) return send(res, 404, { error: "no item" });
       const price = Math.round(Number(it.price) || 0);
       const acc = user(u);
-      const title = typeof it.title === "string" ? it.title : (it.title.uz || it.title.en || "");
+      const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
 
-      /* ---- Fragment orqali avtomatik Stars/Premium yetkazish ---- */
+      /* ----- Fragment orqali avtomatik Stars/Premium yetkazish (istalgan @username'ga) ----- */
       if (it.fulfill === "fragment_stars" || it.fulfill === "fragment_premium") {
         if (!u.username) return send(res, 409, { error: "no_username" });
         if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
@@ -357,7 +357,7 @@ const server = http.createServer((req, res) => {
       expireOld();
       return send(res, 200, {
         payments: DB.payments.filter(p => p.status === "checking" || p.status === "waiting").reverse(),
-        orders: DB.orders.filter(o => o.status === "pending").reverse()
+        orders: DB.orders.filter(o => o.status === "pending" || o.status === "processing").reverse()
       });
     }
     if (url === "/api/admin/payment" && m === "POST") {
@@ -382,6 +382,17 @@ const server = http.createServer((req, res) => {
           const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
           acc.balance += o.price; }
         save(); return send(res, 200, { ok: true });
+      });
+    }
+    if (url === "/api/admin/history" && m === "GET") {
+      const uid = Number(q.get("uid") || 0);
+      if (!uid) return send(res, 400, { error: "uid" });
+      const acc = DB.users[String(uid)] || { balance: 0 };
+      const payments = DB.payments.filter(p => p.uid === uid).sort((x, y) => y.ts - x.ts);
+      const orders = DB.orders.filter(o => o.uid === uid).sort((x, y) => y.ts - x.ts);
+      return send(res, 200, {
+        uid, uname: acc.uname || null, name: acc.name || null, balance: acc.balance || 0,
+        payments, orders
       });
     }
     if (url === "/api/admin/user" && m === "GET") {
@@ -544,7 +555,9 @@ const server = http.createServer((req, res) => {
   /* ----- Telegram webhook: humocard/cardxabar guruhidagi SMS xabarlarni tinglash ----- */
   if (url === "/api/tg-webhook" && m === "POST") {
     // Telegram setWebhook'da berilgan secret_token shu yerga header sifatida keladi — soxta so'rovlarni blok qiladi
-    if (TG_WEBHOOK_SECRET && req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
+    // MUHIM: agar TG_WEBHOOK_SECRET sozlanmagan bo'lsa ham endpoint YOPIQ turishi kerak (fail-closed),
+    // aks holda har kim soxta "to'lov SMS"i yuborib, balansni bepul to'ldirib olishi mumkin edi.
+    if (!TG_WEBHOOK_SECRET || req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
       return send(res, 401, { error: "bad secret" });
     return readBody(req, res, upd => {
       send(res, 200, { ok: true }); // Telegram'ga darhol javob (u tezkor ACK kutadi)
