@@ -493,7 +493,9 @@ const server = http.createServer((req, res) => {
   /* ----- Telegram webhook: humocard/cardxabar guruhidagi SMS xabarlarni tinglash ----- */
   if (url === "/api/tg-webhook" && m === "POST") {
     // Telegram setWebhook'da berilgan secret_token shu yerga header sifatida keladi — soxta so'rovlarni blok qiladi
-    if (TG_WEBHOOK_SECRET && req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
+    // MUHIM: agar TG_WEBHOOK_SECRET sozlanmagan bo'lsa ham endpoint YOPIQ turishi kerak (fail-closed),
+    // aks holda har kim soxta "to'lov SMS"i yuborib, balansni bepul to'ldirib olishi mumkin edi.
+    if (!TG_WEBHOOK_SECRET || req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
       return send(res, 401, { error: "bad secret" });
     return readBody(req, res, upd => {
       send(res, 200, { ok: true }); // Telegram'ga darhol javob (u tezkor ACK kutadi)
