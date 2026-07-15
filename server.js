@@ -33,6 +33,8 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 /* ---------- tiny db ---------- */
 let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [] };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
+// Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
+if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => {
   fs.writeFile(DB_FILE, JSON.stringify(DB), () => {}); }, 100); }
@@ -267,14 +269,14 @@ const server = http.createServer((req, res) => {
       if (DB.reviews.some(r => r.orderId === o.id)) return send(res, 409, { error: "already_reviewed" });
       const acc = user(u);
       const rv = { id: genId("RV"), uid: u.id, name: (acc.name || u.first_name || "Mijoz").split(" ")[0],
-        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now() };
+        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now(), status: "pending" };
       DB.reviews.push(rv); save();
       send(res, 200, { ok: true, review: rv });
     });
   }
-  // Bosh sahifadagi "Mijozlar fikri" uchun ochiq (auth shart emas) — so'nggi sharhlar.
+  // Bosh sahifadagi "Mijozlar fikri" uchun ochiq (auth shart emas) — faqat admin tasdiqlagan sharhlar.
   if (url === "/api/reviews" && m === "GET") {
-    const list = DB.reviews.slice(-40).reverse()
+    const list = DB.reviews.filter(r => r.status === "approved").slice(-40).reverse()
       .map(r => ({ name: r.name, itemTitle: r.itemTitle, stars: r.stars, text: r.text, ts: r.ts }));
     return send(res, 200, { reviews: list });
   }
@@ -282,18 +284,21 @@ const server = http.createServer((req, res) => {
   /* ===== Top donaterlar (reyting) ===== */
   // Faqat "done" buyurtmalar summasi bo'yicha, ochiq (auth shart emas).
   // Ism faqat "Ism F." formatida ko'rsatiladi, username hech qachon chiqmaydi.
+  // Adminlar (ADMIN_IDS) reytingda hech qachon ko'rinmaydi.
   if (url === "/api/leaderboard" && m === "GET") {
-    const totals = {};
+    const totals = {}, counts = {};
     for (const o of DB.orders) {
       if (o.status !== "done") continue;
+      if (ADMIN_IDS.indexOf(Number(o.uid)) !== -1) continue;
       totals[o.uid] = (totals[o.uid] || 0) + (Number(o.price) || 0);
+      counts[o.uid] = (counts[o.uid] || 0) + 1;
     }
     const rows = Object.keys(totals).map(uid => {
       const acc = DB.users[uid] || {};
       const full = (acc.name || "").trim();
       const parts = full.split(/\s+/).filter(Boolean);
       const shown = parts.length > 1 ? (parts[0] + " " + parts[1][0] + ".") : (parts[0] || "Mijoz");
-      return { name: shown, total: totals[uid] };
+      return { name: shown, total: totals[uid], count: counts[uid] || 0 };
     }).filter(r => r.total > 0)
       .sort((a, b) => b.total - a.total)
       .slice(0, 20)
@@ -574,6 +579,15 @@ const server = http.createServer((req, res) => {
     if (url === "/api/admin/reviews" && m === "GET") {
       return send(res, 200, { reviews: DB.reviews.slice().reverse() });
     }
+    if (url === "/api/admin/review-approve" && m === "POST") {
+      return readBody(req, res, b => {
+        const rv = DB.reviews.find(r => r.id === b.id);
+        if (!rv) return send(res, 404, { error: "not_found" });
+        rv.status = "approved"; save();
+        send(res, 200, { ok: true });
+      });
+    }
+    // Rad etish ham, tasdiqlangandan keyin o'chirish ham shu bitta endpoint orqali.
     if (url === "/api/admin/review-delete" && m === "POST") {
       return readBody(req, res, b => {
         const before = DB.reviews.length;

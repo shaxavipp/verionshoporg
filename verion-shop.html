@@ -250,6 +250,40 @@ nav button svg{width:22px;height:22px}
   justify-content:center;font-size:19px;font-weight:800;color:#fff;overflow:hidden;flex:0 0 auto}
 .avatar img{width:100%;height:100%;object-fit:cover}
 .prof{display:flex;align-items:center;gap:11px}
+
+/* leaderboard podium */
+.lb-podium{display:flex;align-items:flex-end;gap:8px;margin:4px 0 16px;padding:0 2px}
+.lb-podium .slot{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.lb-podium .ring-wrap{position:relative}
+.lb-podium .ring{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:19px;color:#fff;background:var(--grad);border:3px solid var(--line)}
+.lb-podium .slot.p1 .ring{width:76px;height:76px;font-size:24px;border-color:#ffd23f}
+.lb-podium .slot.p2 .ring{border-color:#c9d3de}
+.lb-podium .slot.p3 .ring{border-color:#e0a370}
+.lb-podium .crown{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:20px}
+.lb-podium .rankbadge{position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;border-radius:50%;
+  background:var(--card2);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:var(--txt)}
+.lb-podium .slot.p1 .rankbadge{background:#ffd23f;color:#3a2c00}
+.lb-podium .slot.p2 .rankbadge{background:#c9d3de;color:#2b2f36}
+.lb-podium .slot.p3 .rankbadge{background:#e0a370;color:#3a2100}
+.lb-podium .nm2{font-weight:800;font-size:11.5px;margin-top:9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;padding:0 2px}
+.lb-podium .amt{font-weight:800;font-size:12.5px;color:var(--acc2);margin-top:2px}
+.lb-podium .cnt{font-size:10.5px;color:var(--mut);margin-top:1px}
+.lb-podium .bar{width:100%;border-radius:14px 14px 0 0;margin-top:10px;display:flex;align-items:flex-start;
+  justify-content:center;padding-top:8px;font-weight:900;font-size:17px}
+.lb-podium .slot.p1 .bar{height:58px;background:linear-gradient(180deg,#ffe38a,#ffc93f);color:#4a3400}
+.lb-podium .slot.p2 .bar{height:40px;background:linear-gradient(180deg,#eef2f6,#c9d3de);color:#2b2f36}
+.lb-podium .slot.p3 .bar{height:26px;background:linear-gradient(180deg,#f0c197,#e0a370);color:#3a2100}
+.lb-rest{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.lb-rest .row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line)}
+.lb-rest .row:last-child{border-bottom:none}
+.lb-rest .rk{width:18px;font-weight:800;font-size:13px;color:var(--mut);flex:0 0 auto}
+.lb-rest .mini{width:32px;height:32px;border-radius:50%;background:var(--grad);color:#fff;font-weight:800;font-size:12px;
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.lb-rest .nm3{flex:1;min-width:0;font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-rest .amt3{font-weight:800;font-size:13px;color:var(--acc2);flex:0 0 auto}
 .stats{display:flex;gap:8px;margin:0 16px 9px}
 .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;text-align:center}
 .stat .v{font-size:15.5px;font-weight:800;color:var(--acc2)}
@@ -377,9 +411,10 @@ en:{
   review_btn:"⭐ Leave a review",review_done:"✅ Review sent",review_title:"Leave a review",
   review_placeholder:"Your feedback (optional)",review_submit:"Submit",review_thanks:"Thanks for your review!",
   review_err_already:"You've already reviewed this order",
-  leaderboard_title:"Top spenders",leaderboard_empty:"Nothing here yet — be the first!",
+  leaderboard_title:"Top spenders",leaderboard_empty:"Nothing here yet — be the first!",orders_unit:"orders",
   stat_orders:"Orders",stat_spent:"Total paid",
   a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product", a_stats_title:"Overview",a_st_users:"Users",a_st_orders:"Orders",a_st_revenue:"Revenue",a_st_topup:"Top-ups",a_st_pending:"Pending",a_st_balances:"Total balances",a_users_title:"Users",a_users_recent:"Recent",a_users_bybalance:"By balance",
+  a_reviews_title:"Reviews",a_reviews_pending:"Awaiting approval",a_reviews_approved:"Published",a_reviews_none_pending:"No reviews awaiting approval",a_reviews_none_approved:"No published reviews",a_reviews_publish:"Publish",a_reviews_delete:"Delete",a_reviews_published:"Published ✓",a_reviews_deleted:"Deleted",
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
   a_img:"Image from gallery",a_active:"Active (visible in store)",
@@ -433,9 +468,10 @@ uz:{
   review_btn:"⭐ Sharh qoldirish",review_done:"✅ Sharh yuborildi",review_title:"Sharh qoldirish",
   review_placeholder:"Fikringiz (ixtiyoriy)",review_submit:"Yuborish",review_thanks:"Sharhingiz uchun rahmat!",
   review_err_already:"Bu buyurtmaga allaqachon sharh yozilgan",
-  leaderboard_title:"Top donaterlar",leaderboard_empty:"Hozircha bo'sh, birinchi bo'ling!",
+  leaderboard_title:"Top donaterlar",leaderboard_empty:"Hozircha bo'sh, birinchi bo'ling!",orders_unit:"buyurtma",
   stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
   a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot", a_stats_title:"Umumiy ko'rinish",a_st_users:"Foydalanuvchilar",a_st_orders:"Buyurtmalar",a_st_revenue:"Tushum",a_st_topup:"To'ldirishlar",a_st_pending:"Kutilmoqda",a_st_balances:"Jami balanslar",a_users_title:"Foydalanuvchilar",a_users_recent:"Yaqinda",a_users_bybalance:"Balans bo'yicha",
+  a_reviews_title:"Sharhlar",a_reviews_pending:"Tasdiq kutmoqda",a_reviews_approved:"Chop etilgan",a_reviews_none_pending:"Tasdiq kutayotgan sharh yo'q",a_reviews_none_approved:"Chop etilgan sharh yo'q",a_reviews_publish:"Chop etish",a_reviews_delete:"O'chirish",a_reviews_published:"Chop etildi ✓",a_reviews_deleted:"O'chirildi",
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
   a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
@@ -489,9 +525,10 @@ ru:{
   review_btn:"⭐ Оставить отзыв",review_done:"✅ Отзыв отправлен",review_title:"Оставить отзыв",
   review_placeholder:"Ваш отзыв (необязательно)",review_submit:"Отправить",review_thanks:"Спасибо за отзыв!",
   review_err_already:"Вы уже оставили отзыв на этот заказ",
-  leaderboard_title:"Топ покупателей",leaderboard_empty:"Пока пусто — станьте первым!",
+  leaderboard_title:"Топ покупателей",leaderboard_empty:"Пока пусто — станьте первым!",orders_unit:"заказ.",
   stat_orders:"Заказы",stat_spent:"Всего оплачено",
   a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар", a_stats_title:"Обзор",a_st_users:"Пользователи",a_st_orders:"Заказы",a_st_revenue:"Выручка",a_st_topup:"Пополнения",a_st_pending:"В ожидании",a_st_balances:"Всего балансов",a_users_title:"Пользователи",a_users_recent:"Недавние",a_users_bybalance:"По балансу",
+  a_reviews_title:"Отзывы",a_reviews_pending:"Ожидают проверки",a_reviews_approved:"Опубликованные",a_reviews_none_pending:"Нет отзывов на проверке",a_reviews_none_approved:"Нет опубликованных отзывов",a_reviews_publish:"Опубликовать",a_reviews_delete:"Удалить",a_reviews_published:"Опубликовано ✓",a_reviews_deleted:"Удалено",
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
   a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
@@ -1027,11 +1064,37 @@ function openReviewsSheet(){
   openSheet(html);
 }
 /* ----- Top donaterlar (reyting) bloki ----- */
-function leaderboardRowHTML(r){
-  var medal=r.rank===1?"🥇":(r.rank===2?"🥈":(r.rank===3?"🥉":("#"+r.rank)));
-  return '<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
-    +'<span style="min-width:26px;font-weight:800;font-size:13px">'+medal+'</span>'
-    +esc(r.name)+'</div><div class="r" style="font-weight:700;color:var(--acc2)">'+esc(money(r.total))+'</div></div>';
+function lbInitial(name){var s=(name||"?").trim();return s?s[0].toUpperCase():"?";}
+function lbSlotHTML(r,pos){ // pos: 1,2,3
+  var crown=pos===1?'<div class="crown">👑</div>':'';
+  return '<div class="slot p'+pos+'">'
+    +'<div class="ring-wrap">'+crown
+    +'<div class="ring">'+esc(lbInitial(r.name))+'</div>'
+    +'<div class="rankbadge">'+pos+'</div></div>'
+    +'<div class="nm2">'+esc(r.name)+'</div>'
+    +'<div class="amt">'+esc(money(r.total))+'</div>'
+    +(r.count?'<div class="cnt">'+r.count+' '+esc(t("orders_unit"))+'</div>':'')
+    +'<div class="bar">'+pos+'</div>'
+    +'</div>';
+}
+function leaderboardPodiumHTML(list){
+  var top=list.slice(0,3);
+  if(!top.length)return "";
+  var byPos={};for(var i=0;i<top.length;i++)byPos[top[i].rank]=top[i];
+  var order=[2,1,3]; // 2-chap, 1-markaz (baland), 3-o'ng — skrinshotdagidek
+  var html='<div class="lb-podium">';
+  for(var j=0;j<order.length;j++){
+    var pos=order[j],r=byPos[pos];
+    html+=r?lbSlotHTML(r,pos):'<div class="slot p'+pos+'"></div>';
+  }
+  html+='</div>';
+  return html;
+}
+function leaderboardRestRowHTML(r){
+  return '<div class="row"><div class="rk">#'+r.rank+'</div>'
+    +'<div class="mini">'+esc(lbInitial(r.name))+'</div>'
+    +'<div class="nm3">'+esc(r.name)+(r.count?' <span style="color:var(--mut);font-weight:600">· '+r.count+' '+esc(t("orders_unit"))+'</span>':'')+'</div>'
+    +'<div class="amt3">'+esc(money(r.total))+'</div></div>';
 }
 function leaderboardBlockHTML(){
   var html='<div class="sect" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;padding-right:16px">'
@@ -1040,10 +1103,13 @@ function leaderboardBlockHTML(){
     +'</div>';
   if(LEADERBOARD===null)return html+'<div class="card" style="color:var(--mut);font-size:13px;padding:14px 12px">…</div>';
   if(!LEADERBOARD.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px;padding:14px 12px">'+esc(t("leaderboard_empty"))+'</div>';
-  var show=LEADERBOARD.slice(0,5);
-  html+='<div class="card">';
-  for(var i=0;i<show.length;i++)html+=leaderboardRowHTML(show[i]);
-  html+='</div>';
+  html+=leaderboardPodiumHTML(LEADERBOARD);
+  var rest=LEADERBOARD.slice(3,5);
+  if(rest.length){
+    html+='<div class="lb-rest">';
+    for(var i=0;i<rest.length;i++)html+=leaderboardRestRowHTML(rest[i]);
+    html+='</div>';
+  }
   return html;
 }
 function openLeaderboardSheet(){
@@ -1051,9 +1117,13 @@ function openLeaderboardSheet(){
   var list=LEADERBOARD||[];
   if(!list.length)html+='<div class="paynote">'+esc(t("leaderboard_empty"))+'</div>';
   else{
-    html+='<div class="card">';
-    for(var i=0;i<list.length;i++)html+=leaderboardRowHTML(list[i]);
-    html+='</div>';
+    html+=leaderboardPodiumHTML(list);
+    var rest=list.slice(3);
+    if(rest.length){
+      html+='<div class="lb-rest">';
+      for(var i=0;i<rest.length;i++)html+=leaderboardRestRowHTML(rest[i]);
+      html+='</div>';
+    }
   }
   html+='<div style="height:16px"></div>';
   openSheet(html);
@@ -1523,6 +1593,8 @@ function openAdmin(){
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aUsersBtn">'+ic("users",15)+' '+esc(t("a_users_title"))+'</button>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aReviewsBtn">'+ic("star",15)+' '+esc(t("a_reviews_title"))+'</button>'
+    +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
     +'<div style="height:10px"></div>'
     +'<button class="btn green" id="aPub">'+ic("globe",15)+' '+esc(t("a_publish"))+'</button>'
@@ -1550,6 +1622,7 @@ function openAdmin(){
   }).catch(function(){});
   sh.querySelector("#aMoney").addEventListener("click",openAdminMoney);
   sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
+  sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
   var agb=sh.querySelector("#aGroupsBtn");if(agb)agb.addEventListener("click",openAdminGroups);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
@@ -1739,6 +1812,44 @@ function openAdminUsers(){
     this.classList.add("on");load(this.getAttribute("data-usort"));
   });
   load("recent");
+}
+
+/* ===== admin: sharhlarni tasdiqlash (moderatsiya) ===== */
+function adminReviewCardHTML(r){
+  return '<div class="itemrow" style="align-items:flex-start"><div>'
+    +'<div class="nm">'+esc(r.name||"")+'</div>'
+    +'<div style="margin:4px 0 3px">'+starsHTML(r.stars,12)+'</div>'
+    +(r.text?'<div class="meta" style="white-space:normal">'+esc(r.text)+'</div>':'')
+    +(r.itemTitle?'<div class="meta" style="opacity:.75">'+esc(r.itemTitle)+' · '+esc(fmtDate(r.ts))+'</div>':'<div class="meta">'+esc(fmtDate(r.ts))+'</div>')
+    +'</div><div class="acts">'
+    +(r.status==="approved"?'':'<button data-revapprove="'+esc(r.id)+'" style="color:var(--ok)">'+ic("check",15)+'</button>')
+    +'<button data-revdel="'+esc(r.id)+'" style="color:var(--err)">'+ic("trash",15)+'</button>'
+    +'</div></div>';
+}
+function openAdminReviews(){
+  var sh=openSheet('<h2>'+esc(t("a_reviews_title"))+'</h2>'
+    +'<div class="sect" style="margin:12px 0 8px">'+esc(t("a_reviews_pending"))+'</div><div id="revPend">…</div>'
+    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_reviews_approved"))+'</div><div id="revAppr">…</div>');
+  function load(){
+    api("/api/admin/reviews").then(function(r){
+      var list=r.reviews||[],pend=list.filter(function(x){return x.status!=="approved";}),appr=list.filter(function(x){return x.status==="approved";});
+      var hp="";for(var i=0;i<pend.length;i++)hp+=adminReviewCardHTML(pend[i]);
+      sh.querySelector("#revPend").innerHTML=hp||'<div class="paynote">'+esc(t("a_reviews_none_pending"))+'</div>';
+      var ha="";for(var j=0;j<appr.length;j++)ha+=adminReviewCardHTML(appr[j]);
+      sh.querySelector("#revAppr").innerHTML=ha||'<div class="paynote">'+esc(t("a_reviews_none_approved"))+'</div>';
+      var aps=sh.querySelectorAll("[data-revapprove]");
+      for(var a=0;a<aps.length;a++)aps[a].addEventListener("click",function(){
+        var id=this.getAttribute("data-revapprove");
+        api("/api/admin/review-approve","POST",{id:id}).then(function(){toast(t("a_reviews_published"));haptic("ok");load();}).catch(function(){toast(t("srv_off"),true);});
+      });
+      var dls=sh.querySelectorAll("[data-revdel]");
+      for(var d=0;d<dls.length;d++)dls[d].addEventListener("click",function(){
+        var id=this.getAttribute("data-revdel");
+        api("/api/admin/review-delete","POST",{id:id}).then(function(){toast(t("a_reviews_deleted"));haptic();load();}).catch(function(){toast(t("srv_off"),true);});
+      });
+    }).catch(function(){sh.querySelector("#revPend").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+  }
+  load();
 }
 
 /* ===== shared catalog: publish + load ===== */
