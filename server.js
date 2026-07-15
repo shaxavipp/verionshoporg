@@ -27,6 +27,7 @@ let DATA_DIR = process.env.DATA_DIR || "/data";
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.constants.W_OK); }
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
 const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
+const CATMETA_FILE = path.join(DATA_DIR, "catmeta.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
@@ -165,6 +166,11 @@ function readBody(req, res, cb) {
 function catalogArr() {
   try { return JSON.parse(fs.readFileSync(CATALOG_FILE, "utf8")); } catch (e) { return null; }
 }
+// Kategoriya kartochkalari (Obuna/Promokod/Telegram/O'yinlar) uchun admin belgilagan
+// nom va rasm — { obuna: {label:{uz,ru,en}, img:"data:..."}, telegram: {...}, ... }
+function catMetaObj() {
+  try { return JSON.parse(fs.readFileSync(CATMETA_FILE, "utf8")); } catch (e) { return {}; }
+}
 function myView(uid) {
   expireOld();
   const mine = x => x.uid === uid;
@@ -196,6 +202,19 @@ const server = http.createServer((req, res) => {
       if (!Array.isArray(arr) || !arr.length) return send(res, 400, { error: "invalid json" });
       fs.writeFile(CATALOG_FILE, JSON.stringify(arr), err =>
         err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true, items: arr.length }));
+    });
+  }
+
+  if (url === "/api/category-meta" && m === "GET") {
+    return send(res, 200, catMetaObj());
+  }
+  if (url === "/api/admin/category-meta" && m === "POST") {
+    const u = auth(req);
+    if (!isAdm(u)) return send(res, 403, { error: "not admin" });
+    return readBody(req, res, obj => {
+      if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
+      fs.writeFile(CATMETA_FILE, JSON.stringify(obj), err =>
+        err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
     });
   }
 
