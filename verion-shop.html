@@ -649,30 +649,41 @@ function copyText(txt){
 function fmtDate(ts){var d=new Date(ts);return d.toLocaleDateString()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
 function initials(){var n=tgName();if(!n)return "👤";var p=n.trim().split(/\s+/);return (p[0][0]||"")+(p[1]?p[1][0]:"");}
 
-/* ===== profil rasmini BIR MARTA yuklab, localStorage'da abadiy saqlash =====
+/* ===== profil rasmini yuklab, localStorage'da saqlash =====
    Telegram'ning photo_url havolasi vaqtinchalik (keyin ishlamay qolishi mumkin).
-   Shu sabab rasmni serverdan (/api/avatar) bir martagina so'rab olamiz,
-   base64 holida Store'ga yozamiz — shundan keyin hech qachon qayta yuklanmaydi. */
+   Shu sabab rasmni serverdan (/api/avatar) olib, base64 holida Store'ga
+   {dataUrl, ts} qilib yozamiz. Har safar ochilganda ESKI (keshdagi) rasm
+   DARHOL ko'rsatiladi (tez va ishonchli), lekin agar u 7 kundan oshgan bo'lsa,
+   orqa fonda jimgina yangisi so'raladi — shunda foydalanuvchi Telegram'da
+   rasmini o'zgartirsa, bot ham bir necha kun ichida shunga moslashadi,
+   lekin har safar qayta yuklab, tezlikni sekinlashtirmaydi. */
+var AVATAR_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 kun
 function avatarHTML(){
   var u=tgUser();
   if(!u)return esc(initials());
   var key="vn_avatar_"+u.id;
-  var cached=Store.get(key,null);
-  if(cached)return '<img src="'+cached+'" alt="">';
-  ensureAvatarCached();
+  var obj=Store.get(key,null);
+  if(obj&&obj.dataUrl){
+    if(Date.now()-(obj.ts||0)>AVATAR_MAX_AGE)ensureAvatarCached(true);
+    return '<img src="'+obj.dataUrl+'" alt="">';
+  }
+  ensureAvatarCached(false);
   return esc(initials());
 }
 var _avatarFetching=false;
-function ensureAvatarCached(){
+function ensureAvatarCached(isBackgroundRefresh){
   if(_avatarFetching)return;
   var u=tgUser();if(!u)return;
   var key="vn_avatar_"+u.id;
-  if(Store.get(key,null))return;
+  if(!isBackgroundRefresh&&Store.get(key,null))return;
   if(typeof fetch!=="function")return;
   _avatarFetching=true;
   api("/api/avatar").then(function(r){
     _avatarFetching=false;
-    if(r&&r.dataUrl){Store.set(key,r.dataUrl);if(S.lang)render();}
+    if(r&&r.dataUrl){
+      Store.set(key,{dataUrl:r.dataUrl,ts:Date.now()});
+      if(!isBackgroundRefresh&&S.lang)render();
+    }
   }).catch(function(){_avatarFetching=false;});
 }
 
