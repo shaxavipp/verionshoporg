@@ -680,24 +680,40 @@ const server = http.createServer((req, res) => {
       try {
         // Guruhdan: upd.message / upd.channel_post. Telegram Business orqali shaxsiy chatdan: upd.business_message
         const msg = upd.message || upd.channel_post || upd.business_message;
-        if (!msg || !msg.text) return;
+        if (!msg || !msg.text) {
+          if (upd.business_connection) console.log("[tg-webhook] Business ulanish yangilandi (business_connection event) — bu normal, xabar emas.");
+          return;
+        }
         const isBusiness = !!upd.business_message;
         const uname = ((msg.from && msg.from.username) || "").toLowerCase();
+        console.log("[tg-webhook] Xabar keldi: turi=" + (isBusiness ? "business" : (upd.channel_post ? "channel" : "group/DM")) +
+          " kimdan=@" + (uname || "(username yo'q)") + " matn=\"" + msg.text.slice(0, 60) + "\"");
 
         if (isBusiness) {
           // Business rejimida bitta umumiy guruh yo'q — har bir kontakt alohida chat.
           // Shu sabab chat_id bo'yicha emas, faqat yuboruvchi bot nomi (SMS_BOT_USERNAMES) bo'yicha filtrlaymiz.
-          if (!SMS_BOT_USERNAMES.length || SMS_BOT_USERNAMES.indexOf(uname) === -1) return;
+          if (!SMS_BOT_USERNAMES.length || SMS_BOT_USERNAMES.indexOf(uname) === -1) {
+            console.log("[tg-webhook] RAD ETILDI: '@" + uname + "' SMS_BOT_USERNAMES ro'yxatida yo'q (joriy ro'yxat: " +
+              (SMS_BOT_USERNAMES.join(", ") || "(bo'sh — hech kim o'tmaydi)") + ")");
+            return;
+          }
         } else {
           const chatId = String(msg.chat && msg.chat.id);
-          if (SMS_SOURCE_CHAT_ID && chatId !== String(SMS_SOURCE_CHAT_ID)) return;
-          if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(uname) === -1) return;
+          if (SMS_SOURCE_CHAT_ID && chatId !== String(SMS_SOURCE_CHAT_ID)) {
+            console.log("[tg-webhook] RAD ETILDI: chat_id (" + chatId + ") SMS_SOURCE_CHAT_ID (" + SMS_SOURCE_CHAT_ID + ") bilan mos emas");
+            return;
+          }
+          if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(uname) === -1) {
+            console.log("[tg-webhook] RAD ETILDI: '@" + uname + "' SMS_BOT_USERNAMES ro'yxatida yo'q");
+            return;
+          }
         }
 
         const amount = parseAmount(msg.text);
         expireOld();
         const candidates = amount == null ? [] :
           DB.payments.filter(p => (p.status === "waiting" || p.status === "checking") && p.pay === amount);
+        console.log("[tg-webhook] O'qilgan summa=" + amount + " | mos kutilayotgan to'lovlar soni=" + candidates.length);
 
         const entry = { ts: Date.now(), from: uname || null, text: msg.text.slice(0, 300),
           parsedAmount: amount, matched: false, paymentId: null };
@@ -706,11 +722,12 @@ const server = http.createServer((req, res) => {
           const p = candidates[0];
           const balance = confirmPayment(p, "sms");
           entry.matched = true; entry.paymentId = p.id;
+          console.log("[tg-webhook] TASDIQLANDI: to'lov " + p.id + " (" + p.pay + " so'm), yangi balans=" + balance);
           tgSend(p.uid, "✅ To'lovingiz tasdiqlandi!\n+" + p.amount.toLocaleString("ru-RU").replace(/,/g, " ") +
             " so'm balansingizga qo'shildi.\nJoriy balans: " + balance.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm");
         }
         logSms(entry);
-      } catch (e) {}
+      } catch (e) { console.log("[tg-webhook] Xato:", e && e.message); }
     });
   }
   if (url === "/api/admin/sms-log" && m === "GET") {
