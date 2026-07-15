@@ -92,6 +92,12 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 
 /* product grid */
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
+.groupgrid{grid-template-columns:1fr 1fr;gap:12px}
+.groupgrid .ptile{height:172px}
+.groupgrid.grid .pbody{padding:12px 12px 14px}
+.groupgrid.grid .pbody .nm{font-size:16px;-webkit-line-clamp:2}
+.groupgrid.grid .pbody .ct{font-size:13px}
+.groupgrid .ptile .tl{font-size:30px!important}
 .pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
   text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);}
 .ptile{height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -845,7 +851,7 @@ function groupsOf(kind){
 }
 function groupGridHTML(kind){
   var groups=groupsOf(kind);
-  var html='<div class="grid">';
+  var html='<div class="grid groupgrid">';
   for(var i=0;i<groups.length;i++){
     var g=groups[i];
     var img=g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':('<div class="tl">'+esc((g.label||"?").slice(0,2).toUpperCase())+'</div>');
@@ -878,21 +884,8 @@ function homeHTML(){
       +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
   }
-  html+='<div class="tabs">';
-  for(var i=0;i<TABS.length;i++)html+='<button class="tab'+(S.tab===TABS[i][0]?" on":"")+'" data-tab="'+TABS[i][0]+'">'+esc(t(TABS[i][1]))+'</button>';
-  html+='</div>';
-  /* Tanlangan (bosilgan) bo'lim birinchi bo'lib chiqadi, undan keyin qolganlari
-     ro'yxat tartibida — har biri o'z sarlavhasi va mahsulotlari bilan davom etadi. */
-  var selected=null;
-  for(var s=0;s<TABS.length;s++)if(TABS[s][0]===S.tab)selected=S.tab;
-  if(!selected)selected=TABS[0][0];
-  var order=[selected];
-  for(var k=0;k<TABS.length;k++)if(TABS[k][0]!==selected)order.push(TABS[k][0]);
-  for(var m=0;m<order.length;m++){
-    var kind=order[m],label=null;
-    for(var n=0;n<TABS.length;n++)if(TABS[n][0]===kind)label=TABS[n][1];
-    if(label)html+=categoryBlockHTML(kind,label);
-  }
+  /* Tab paneli olib tashlandi — bo'limlar doim belgilangan tartibda ketma-ket chiqadi */
+  for(var m=0;m<TABS.length;m++)html+=categoryBlockHTML(TABS[m][0],TABS[m][1]);
   return html;
 }
 
@@ -1829,8 +1822,6 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
   els=document.querySelectorAll("[data-gotopay]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go("pay");});
-  els=document.querySelectorAll("[data-tab]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.tab=this.getAttribute("data-tab");S.group=null;render();});
   els=document.querySelectorAll("[data-open]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openProduct(this.getAttribute("data-open"));});
   els=document.querySelectorAll("[data-opengroup]");
