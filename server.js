@@ -11,7 +11,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
-const TOPUP_TTL = 5 * 60 * 1000;           // payment window: 5 minutes
+const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
 
 /* ---------- SMS auto-confirm (humocard / cardxabar orqali) ---------- */
@@ -30,13 +30,11 @@ const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
-let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {} };
+let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [] };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => {
-  fs.writeFile(DB_FILE, JSON.stringify(DB), err => {
-    if (err) alertAdmin("db_save", "Ma'lumotlar bazasiga yozib bo'lmadi (balans/buyurtma yo'qolishi mumkin!)\n" + String(err));
-  }); }, 100); }
+  fs.writeFile(DB_FILE, JSON.stringify(DB), () => {}); }, 100); }
 function user(u) {
   const k = String(u.id);
   if (!DB.users[k]) DB.users[k] = { balance: 0, ts: Date.now() };
@@ -73,19 +71,6 @@ function tgSend(chatId, text) {
     req.on("error", () => {});
     req.write(data); req.end();
   } catch (e) {}
-}
-/* ---------- adminlarga avtomatik xatolik xabari ---------- */
-// Har bir "key" uchun kamida 5 daqiqa oralig'ida bittadan yuboriladi — bitta xato ketma-ket
-// yuz bergani uchun adminni xabar bilan "bombardimon" qilmaslik uchun (masalan Fragment API vaqtincha ishlamasa).
-const ALERT_THROTTLE_MS = 5 * 60 * 1000;
-const alertedAt = {};
-function alertAdmin(key, text) {
-  const now = Date.now();
-  if (alertedAt[key] && now - alertedAt[key] < ALERT_THROTTLE_MS) return;
-  alertedAt[key] = now;
-  console.error("[ALERT:" + key + "] " + text);
-  const full = "\u26A0\uFE0F Verion Shop — xatolik\n\n" + text;
-  for (const id of ADMIN_IDS) tgSend(id, full);
 }
 // fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni istalgan @username'ga avtomatik sotib olish.
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
@@ -183,16 +168,17 @@ function catalogArr() {
 function myView(uid) {
   expireOld();
   const mine = x => x.uid === uid;
+  const reviewedIds = new Set(DB.reviews.filter(mine).map(r => r.orderId));
   return {
     balance: (DB.users[String(uid)] || { balance: 0 }).balance,
     payments: DB.payments.filter(mine).slice(-50).reverse(),
     orders: DB.orders.filter(mine).slice(-50).reverse()
+      .map(o => Object.assign({}, o, { reviewed: reviewedIds.has(o.id) }))
   };
 }
 
 /* ---------- server ---------- */
 const server = http.createServer((req, res) => {
- try {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
@@ -224,6 +210,76 @@ const server = http.createServer((req, res) => {
     if (!u) return send(res, 401, { error: "auth" });
     user(u); save();
     return send(res, 200, myView(u.id));
+  }
+
+  // Foydalanuvchining Telegram profil rasmini server orqali olib beradi,
+  // shunda brauzer uni bir marta o'zida (localStorage) saqlab qo'yishi mumkin —
+  // Telegram'ning vaqtinchalik photo_url havolasi keyinchalik ishlamay qolsa ham muammo bo'lmaydi.
+  if (url === "/api/avatar" && m === "GET") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    if (!u.photo_url) return send(res, 404, { error: "no_photo" });
+    try {
+      https.get(u.photo_url, r => {
+        if (r.statusCode !== 200) { r.resume(); return send(res, 502, { error: "fetch_failed" }); }
+        const chunks = [];
+        r.on("data", c => chunks.push(c));
+        r.on("end", () => {
+          const buf = Buffer.concat(chunks);
+          const ctype = r.headers["content-type"] || "image/jpeg";
+          send(res, 200, { ok: true, dataUrl: "data:" + ctype + ";base64," + buf.toString("base64") });
+        });
+      }).on("error", e => send(res, 502, { error: e.message }));
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  /* ===== Mijozlar fikri (sharhlar) ===== */
+  // Xarid "done" bo'lgan buyurtmaga mijoz 1 marta sharh qoldirishi mumkin.
+  if (url === "/api/review" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    return readBody(req, res, b => {
+      const stars = Math.max(1, Math.min(5, Math.round(Number(b.stars) || 0)));
+      const text = String(b.text || "").trim().slice(0, 200);
+      const o = DB.orders.find(x => x.id === b.orderId && x.uid === u.id);
+      if (!o) return send(res, 404, { error: "no_order" });
+      if (o.status !== "done") return send(res, 409, { error: "order_not_done" });
+      if (DB.reviews.some(r => r.orderId === o.id)) return send(res, 409, { error: "already_reviewed" });
+      const acc = user(u);
+      const rv = { id: genId("RV"), uid: u.id, name: (acc.name || u.first_name || "Mijoz").split(" ")[0],
+        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now() };
+      DB.reviews.push(rv); save();
+      send(res, 200, { ok: true, review: rv });
+    });
+  }
+  // Bosh sahifadagi "Mijozlar fikri" uchun ochiq (auth shart emas) — so'nggi sharhlar.
+  if (url === "/api/reviews" && m === "GET") {
+    const list = DB.reviews.slice(-40).reverse()
+      .map(r => ({ name: r.name, itemTitle: r.itemTitle, stars: r.stars, text: r.text, ts: r.ts }));
+    return send(res, 200, { reviews: list });
+  }
+
+  /* ===== Top donaterlar (reyting) ===== */
+  // Faqat "done" buyurtmalar summasi bo'yicha, ochiq (auth shart emas).
+  // Ism faqat "Ism F." formatida ko'rsatiladi, username hech qachon chiqmaydi.
+  if (url === "/api/leaderboard" && m === "GET") {
+    const totals = {};
+    for (const o of DB.orders) {
+      if (o.status !== "done") continue;
+      totals[o.uid] = (totals[o.uid] || 0) + (Number(o.price) || 0);
+    }
+    const rows = Object.keys(totals).map(uid => {
+      const acc = DB.users[uid] || {};
+      const full = (acc.name || "").trim();
+      const parts = full.split(/\s+/).filter(Boolean);
+      const shown = parts.length > 1 ? (parts[0] + " " + parts[1][0] + ".") : (parts[0] || "Mijoz");
+      return { name: shown, total: totals[uid] };
+    }).filter(r => r.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 20)
+      .map((r, i) => Object.assign({ rank: i + 1 }, r));
+    return send(res, 200, { leaderboard: rows });
   }
 
   if (url === "/api/topup" && m === "POST") {
@@ -294,7 +350,6 @@ const server = http.createServer((req, res) => {
         const j = r.json;
         if (!j || j.ok !== true) {
           const msg = (j && j.message) || "Fragment xatosi";
-          alertAdmin("fragment_api", "Fragment orqali Stars yuborib bo'lmadi (uid " + u.id + ", " + amount + " Stars @" + uname + "):\n" + msg);
           return send(res, 502, { error: "fragment_failed", message: msg });
         }
         acc.balance -= price;
@@ -304,10 +359,7 @@ const server = http.createServer((req, res) => {
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
         DB.orders.push(o); save();
         send(res, 200, { ok: true, order: o, balance: acc.balance });
-      }).catch(e => {
-        alertAdmin("fragment_api", "Fragment API bilan bog'lanib bo'lmadi (Stars, uid " + u.id + "):\n" + String(e.message || e));
-        send(res, 502, { error: "fragment_failed", message: String(e.message || e) });
-      });
+      }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
     });
   }
   if (url === "/api/buy" && m === "POST") {
@@ -334,7 +386,6 @@ const server = http.createServer((req, res) => {
           const j = r.json;
           if (!j || j.ok !== true) {
             const msg = (j && j.message) || "Fragment xatosi";
-            alertAdmin("fragment_api", "Fragment orqali " + (isStars ? "Stars" : "Premium") + " yuborib bo'lmadi (uid " + u.id + ", @" + u.username + "):\n" + msg);
             return send(res, 502, { error: "fragment_failed", message: msg });
           }
           acc.balance -= price;
@@ -346,10 +397,7 @@ const server = http.createServer((req, res) => {
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
           DB.orders.push(o); save();
           send(res, 200, { ok: true, order: o, balance: acc.balance });
-        }).catch(e => {
-          alertAdmin("fragment_api", "Fragment API bilan bog'lanib bo'lmadi (" + (isStars ? "Stars" : "Premium") + ", uid " + u.id + "):\n" + String(e.message || e));
-          send(res, 502, { error: "fragment_failed", message: String(e.message || e) });
-        });
+        }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
         return;
       }
 
@@ -504,6 +552,17 @@ const server = http.createServer((req, res) => {
       list.sort((a, b) => sortBy === "balance" ? b.balance - a.balance : b.ts - a.ts);
       return send(res, 200, list.slice(0, 60));
     }
+    if (url === "/api/admin/reviews" && m === "GET") {
+      return send(res, 200, { reviews: DB.reviews.slice().reverse() });
+    }
+    if (url === "/api/admin/review-delete" && m === "POST") {
+      return readBody(req, res, b => {
+        const before = DB.reviews.length;
+        DB.reviews = DB.reviews.filter(r => r.id !== b.id);
+        save();
+        send(res, 200, { ok: true, removed: before - DB.reviews.length });
+      });
+    }
     if (url === "/api/admin/balance" && m === "POST") {
       return readBody(req, res, b => {
         const k = String(Number(b.uid) || 0);
@@ -634,19 +693,6 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
     res.end(data);
   });
- } catch (e) {
-  // Kutilmagan xato — mijozga tushunarli javob, adminga darhol Telegram xabari
-  alertAdmin("http_" + ((req.url || "").split("?")[0]),
-    "So'rovda kutilmagan xato:\n" + req.method + " " + req.url + "\n" + String((e && e.stack) || e));
-  try { if (!res.headersSent) send(res, 500, { error: "server" }); } catch (e2) {}
- }
-});
-
-process.on("uncaughtException", e => {
-  alertAdmin("uncaught_exception", "Serverda kutilmagan (uncaught) xato:\n" + String((e && e.stack) || e));
-});
-process.on("unhandledRejection", e => {
-  alertAdmin("unhandled_rejection", "Serverda ushlanmagan Promise xatosi:\n" + String((e && e.stack) || e));
 });
 
 server.listen(PORT, "0.0.0.0", () => {

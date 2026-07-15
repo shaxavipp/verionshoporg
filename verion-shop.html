@@ -649,6 +649,33 @@ function copyText(txt){
 function fmtDate(ts){var d=new Date(ts);return d.toLocaleDateString()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
 function initials(){var n=tgName();if(!n)return "👤";var p=n.trim().split(/\s+/);return (p[0][0]||"")+(p[1]?p[1][0]:"");}
 
+/* ===== profil rasmini BIR MARTA yuklab, localStorage'da abadiy saqlash =====
+   Telegram'ning photo_url havolasi vaqtinchalik (keyin ishlamay qolishi mumkin).
+   Shu sabab rasmni serverdan (/api/avatar) bir martagina so'rab olamiz,
+   base64 holida Store'ga yozamiz — shundan keyin hech qachon qayta yuklanmaydi. */
+function avatarHTML(){
+  var u=tgUser();
+  if(!u)return esc(initials());
+  var key="vn_avatar_"+u.id;
+  var cached=Store.get(key,null);
+  if(cached)return '<img src="'+cached+'" alt="">';
+  ensureAvatarCached();
+  return esc(initials());
+}
+var _avatarFetching=false;
+function ensureAvatarCached(){
+  if(_avatarFetching)return;
+  var u=tgUser();if(!u)return;
+  var key="vn_avatar_"+u.id;
+  if(Store.get(key,null))return;
+  if(typeof fetch!=="function")return;
+  _avatarFetching=true;
+  api("/api/avatar").then(function(r){
+    _avatarFetching=false;
+    if(r&&r.dataUrl){Store.set(key,r.dataUrl);if(S.lang)render();}
+  }).catch(function(){_avatarFetching=false;});
+}
+
 var IC={
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5M5 9.5V21h14V9.5M9 21v-6h6v6"/></svg>',
   orders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3zM9 8h6M9 12h6"/></svg>',
@@ -738,7 +765,7 @@ function bindOnboarding(){
 }
 function headerHTML(){
   var u=tgUser(),name=tgName();
-  var av=u&&u.photo_url?'<img src="'+esc(u.photo_url)+'" alt="" onerror="this.parentNode.textContent=\''+esc(initials())+'\'">':esc(initials());
+  var av=avatarHTML();
   return '<header><div class="hu"><div class="hav">'+av+'</div><div class="htx">'
     +'<div class="hn">'+esc(name||t("guest"))+'</div>'
     +'<div class="hun">'+(u&&u.username?'@'+esc(u.username):'')+'</div>'
@@ -1179,7 +1206,7 @@ function ordersHTML(){
 /* ===== profile ===== */
 function profileHTML(){
   var name=tgName(),u=tgUser();
-  var av=u&&u.photo_url?'<img src="'+esc(u.photo_url)+'" alt="" onerror="this.parentNode.textContent=\''+esc(initials())+'\'">':esc(initials());
+  var av=avatarHTML();
   var cnt=0,sum=0;
   for(var i=0;i<ME.orders.length;i++){if(ME.orders[i].status!=="cancelled"){cnt++;sum+=ME.orders[i].price;}}
   var html='<div class="sect">'+esc(t("profile_title"))+'</div>'
