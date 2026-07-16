@@ -259,7 +259,8 @@ nav button svg{width:22px;height:22px}
 .lb-podium .slot{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
 .lb-podium .ring-wrap{position:relative}
 .lb-podium .ring{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:19px;color:#fff;background:var(--grad);border:3px solid var(--line)}
+  font-weight:800;font-size:19px;color:#fff;background:var(--grad);border:3px solid var(--line);overflow:hidden;position:relative}
+.lb-podium .ring img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .lb-podium .slot.p1 .ring{width:76px;height:76px;font-size:24px;border-color:#ffd23f}
 .lb-podium .slot.p2 .ring{border-color:#c9d3de}
 .lb-podium .slot.p3 .ring{border-color:#e0a370}
@@ -284,7 +285,8 @@ nav button svg{width:22px;height:22px}
 .lb-rest .row:last-child{border-bottom:none}
 .lb-rest .rk{width:18px;font-weight:800;font-size:13px;color:var(--mut);flex:0 0 auto}
 .lb-rest .mini{width:32px;height:32px;border-radius:50%;background:var(--grad);color:#fff;font-weight:800;font-size:12px;
-  display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden;position:relative}
+.lb-rest .mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .lb-rest .nm3{flex:1;min-width:0;font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-rest .amt3{font-weight:800;font-size:13px;color:var(--acc2);flex:0 0 auto}
 .stats{display:flex;gap:8px;margin:0 16px 9px}
@@ -1074,11 +1076,15 @@ function openReviewsSheet(){
 }
 /* ----- Top donaterlar (reyting) bloki ----- */
 function lbInitial(name){var s=(name||"?").trim();return s?s[0].toUpperCase():"?";}
+function lbAvatarHTML(r){
+  return r.photo?('<img src="'+esc(r.photo)+'" alt="" onerror="this.parentNode.textContent=\''+esc(lbInitial(r.name))+'\'">')
+    :esc(lbInitial(r.name));
+}
 function lbSlotHTML(r,pos){ // pos: 1,2,3
   var crown=pos===1?'<div class="crown">👑</div>':'';
   return '<div class="slot p'+pos+'">'
     +'<div class="ring-wrap">'+crown
-    +'<div class="ring">'+esc(lbInitial(r.name))+'</div>'
+    +'<div class="ring">'+lbAvatarHTML(r)+'</div>'
     +'<div class="rankbadge">'+pos+'</div></div>'
     +'<div class="nm2">'+esc(r.name)+'</div>'
     +'<div class="amt">'+esc(money(r.total))+'</div>'
@@ -1101,7 +1107,7 @@ function leaderboardPodiumHTML(list){
 }
 function leaderboardRestRowHTML(r){
   return '<div class="row"><div class="rk">#'+r.rank+'</div>'
-    +'<div class="mini">'+esc(lbInitial(r.name))+'</div>'
+    +'<div class="mini">'+lbAvatarHTML(r)+'</div>'
     +'<div class="nm3">'+esc(r.name)+(r.count?' <span style="color:var(--mut);font-weight:600">· '+r.count+' '+esc(t("orders_unit"))+'</span>':'')+'</div>'
     +'<div class="amt3">'+esc(money(r.total))+'</div></div>';
 }

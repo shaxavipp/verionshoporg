@@ -46,6 +46,7 @@ function user(u) {
   if (!DB.users[k]) DB.users[k] = { balance: 0, ts: Date.now() };
   DB.users[k].uname = u.username || DB.users[k].uname || null;
   DB.users[k].name = ((u.first_name || "") + " " + (u.last_name || "")).trim() || DB.users[k].name;
+  if (u.photo_url) DB.users[k].photo = u.photo_url;
   return DB.users[k];
 }
 function genId(p) {
@@ -55,17 +56,11 @@ function genId(p) {
 }
 // "today" | "week" | "month" | "all" -> shu davr boshlanishining vaqt belgisi (ms).
 // "week" — joriy hafta dushanbadan, "month" — joriy oyning 1-sanasidan.
+// Foydalanuvchi aniq tasdiqladi: "kun"/"hafta"/"oy"/"hammasi" — barchasi bot
+// ochilgandan hozirgacha bo'lgan TO'LIQ (cheksiz) ma'lumot bo'yicha hisoblanadi,
+// hech biri sanaga cheklanmaydi. Shu sabab period parametridan qat'iy nazar 0 qaytariladi.
 function periodStart(period) {
-  const now = new Date();
-  if (period === "today") { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); }
-  if (period === "week") {
-    const d = new Date(now); d.setHours(0, 0, 0, 0);
-    const day = (d.getDay() + 6) % 7; // 0=Dushanba
-    d.setDate(d.getDate() - day);
-    return d.getTime();
-  }
-  if (period === "month") { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); }
-  return 0; // all
+  return 0;
 }
 
 /* ---------- referal dasturi ---------- */
@@ -396,7 +391,7 @@ const server = http.createServer((req, res) => {
       const full = (acc.name || "").trim();
       const parts = full.split(/\s+/).filter(Boolean);
       const shown = parts.length > 1 ? (parts[0] + " " + parts[1][0] + ".") : (parts[0] || "Mijoz");
-      return { name: shown, total: totals[uid], count: counts[uid] || 0 };
+      return { name: shown, total: totals[uid], count: counts[uid] || 0, photo: acc.photo || null };
     }).filter(r => r.total > 0)
       .sort((a, b) => b.total - a.total)
       .slice(0, 20)
