@@ -99,7 +99,10 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .groupgrid.grid .pbody .ct{font-size:13px}
 .groupgrid .ptile .tl{font-size:30px!important}
 .pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
-  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);}
+  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);position:relative;}
+.favbtn{position:absolute;top:6px;right:6px;z-index:5;width:26px;height:26px;border-radius:50%;
+  background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#fff;backdrop-filter:blur(2px)}
+.favbtn.on{color:#ff4d6d}
 .ptile{height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;padding:6px;position:relative;overflow:hidden;}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -406,6 +409,12 @@ en:{
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
   support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Check",amount_optional:"ENTER AMOUNT",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing...",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
+  period_today:"Today",period_week:"Week",period_month:"Month",period_all:"All time",
+  fav_add:"Add to favorites",fav_remove:"Remove from favorites",fav_title:"Favorites",fav_empty:"No favorites yet — tap the heart on any product.",
+  invite_link_label:"Your invite link",invite_share_btn:"Share",invite_copy_btn:"Copy",
+  invite_bonus_hint:"Get {b} for every friend who buys at least {m}",invite_stats:"{n} invited · {e} earned bonus",
+  invite_disabled:"Referral program is not active yet.",
+  a_referral_title:"Referral settings",a_referral_enabled:"Enabled",a_referral_bonus:"Bonus amount (so'm)",a_referral_min:"Minimum friend purchase (so'm)",
   a_groups:"Groups",a_groups_new:"+ New group",a_groups_empty:"No groups yet",a_groups_del_confirm:"Delete this group? Its products will move to \"Other\".",a_groups_del_done:"Group deleted",a_groups_saved:"Group saved ✓", a_categories:"Categories",a_categories_hint:"Edit the name and image of each category card shown on the home screen.",a_cat_name_uz:"Name (Uzbek)",a_cat_name_ru:"Name (Russian)",a_cat_name_en:"Name (English)",a_cat_has_img:"Custom image set.",a_img_selected:"Image selected, press Save",a_img_will_clear:"Image will be removed after Save",
   reviews_title:"Customer reviews",reviews_empty:"No reviews yet.",view_all_btn:"View all",
   review_btn:"⭐ Leave a review",review_done:"✅ Review sent",review_title:"Leave a review",
@@ -463,6 +472,12 @@ uz:{
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
   support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
+  period_today:"Bugun",period_week:"Hafta",period_month:"Oy",period_all:"Hammasi",
+  fav_add:"Sevimlilarga qo'shish",fav_remove:"Sevimlilardan olib tashlash",fav_title:"Sevimlilar",fav_empty:"Hozircha sevimli mahsulot yo'q — istalgan mahsulotdagi yurak belgisini bosing.",
+  invite_link_label:"Sizning taklif havolangiz",invite_share_btn:"Ulashish",invite_copy_btn:"Nusxalash",
+  invite_bonus_hint:"Har bir do'stingiz kamida {m} xarid qilsa, sizga {b} bonus",invite_stats:"{n} ta taklif qilindi · {e} tasi bonus berdi",
+  invite_disabled:"Referal dasturi hozircha faol emas.",
+  a_referral_title:"Referal sozlamalari",a_referral_enabled:"Yoqilgan",a_referral_bonus:"Bonus miqdori (so'm)",a_referral_min:"Do'stning minimal xaridi (so'm)",
   a_groups:"Guruhlar",a_groups_new:"+ Yangi guruh",a_groups_empty:"Hozircha guruh yo'q",a_groups_del_confirm:"Bu guruhni o'chirasizmi? Mahsulotlari \"Boshqa\" guruhiga o'tadi.",a_groups_del_done:"Guruh o'chirildi",a_groups_saved:"Guruh saqlandi ✓", a_categories:"Kategoriyalar",a_categories_hint:"Bosh sahifadagi har bir kategoriya kartochkasining nomi va rasmini tahrirlang.",a_cat_name_uz:"Nomi (O'zbekcha)",a_cat_name_ru:"Nomi (Ruscha)",a_cat_name_en:"Nomi (Inglizcha)",a_cat_has_img:"Maxsus rasm o'rnatilgan.",a_img_selected:"Rasm tanlandi, Saqlashni bosing",a_img_will_clear:"Rasm Saqlashdan keyin olib tashlanadi",
   reviews_title:"Mijozlar fikri",reviews_empty:"Hozircha sharh yo'q.",view_all_btn:"Barchasini ko'rish",
   review_btn:"⭐ Sharh qoldirish",review_done:"✅ Sharh yuborildi",review_title:"Sharh qoldirish",
@@ -520,6 +535,12 @@ ru:{
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
   support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Проверить",amount_optional:"ВВЕДИТЕ СУММУ",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка...",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
+  period_today:"Сегодня",period_week:"Неделя",period_month:"Месяц",period_all:"Всё время",
+  fav_add:"В избранное",fav_remove:"Убрать из избранного",fav_title:"Избранное",fav_empty:"Пока нет избранного — нажмите на сердечко у товара.",
+  invite_link_label:"Ваша реферальная ссылка",invite_share_btn:"Поделиться",invite_copy_btn:"Копировать",
+  invite_bonus_hint:"Получайте {b} за каждого друга, купившего от {m}",invite_stats:"{n} приглашено · {e} принесли бонус",
+  invite_disabled:"Реферальная программа пока не активна.",
+  a_referral_title:"Настройки рефералов",a_referral_enabled:"Включено",a_referral_bonus:"Сумма бонуса (сум)",a_referral_min:"Мин. покупка друга (сум)",
   a_groups:"Группы",a_groups_new:"+ Новая группа",a_groups_empty:"Групп пока нет",a_groups_del_confirm:"Удалить эту группу? Товары перейдут в \"Другое\".",a_groups_del_done:"Группа удалена",a_groups_saved:"Группа сохранена ✓", a_categories:"Категории",a_categories_hint:"Отредактируйте название и изображение каждой карточки категории на главной странице.",a_cat_name_uz:"Название (узб.)",a_cat_name_ru:"Название (рус.)",a_cat_name_en:"Название (англ.)",a_cat_has_img:"Установлено своё изображение.",a_img_selected:"Изображение выбрано, нажмите Сохранить",a_img_will_clear:"Изображение будет удалено после Сохранения",
   reviews_title:"Отзывы клиентов",reviews_empty:"Отзывов пока нет.",view_all_btn:"Смотреть все",
   review_btn:"⭐ Оставить отзыв",review_done:"✅ Отзыв отправлен",review_title:"Оставить отзыв",
@@ -625,7 +646,7 @@ var S={
   category:null, // kind — asosiy sahifada hozir ochiq turgan kategoriya (bosh sahifa endi faqat kategoriya kartochkalarini ko'rsatadi)
   groupDefs:Store.get("vn_groupdefs",[]) // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
 };
-var ME={balance:null,payments:[],orders:[]}; // server account (loaded via /api/me)
+var ME={balance:null,payments:[],orders:[],favorites:[]}; // server account (loaded via /api/me)
 function persist(){
   Store.set("vn_lang",S.lang);Store.set("vn_orders",S.orders);Store.set("vn_custom",S.custom);
   Store.set("vn_over",S.over);Store.set("vn_removed",S.removed);Store.set("vn_imported",S.imported);
@@ -666,13 +687,29 @@ function translateText(text,target){
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"){if(cb)cb();return;}
   api("/api/me").then(function(r){
-    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[]};
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[]};
     ME_ERROR=false;
     if(cb)cb();else if(S.lang)render();
   }).catch(function(){
     ME_ERROR=true;
     if(cb)cb();else if(S.lang)render();
   });
+}
+var REFERRAL=null;
+function loadReferral(){
+  if(!tgUser()||typeof fetch!=="function")return;
+  api("/api/referral").then(function(r){
+    REFERRAL=r;
+    if(S.lang&&S.screen==="profile")render();
+  }).catch(function(){});
+}
+function toggleFavorite(itemId){
+  var i=ME.favorites.indexOf(itemId);
+  if(i===-1)ME.favorites.push(itemId);else ME.favorites.splice(i,1);
+  render();
+  api("/api/favorite","POST",{itemId:itemId}).then(function(r){
+    if(r&&r.favorites)ME.favorites=r.favorites;
+  }).catch(function(){});
 }
 function balHTML(){
   if(ME.balance!==null)return esc(money(ME.balance));
@@ -762,6 +799,9 @@ var ICON={
   wand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L16 8"/><path d="M13.5 5.5l1.2 1.2M9 4v2.4M9 4h2.4M4 12h2.4M4 12v2.4"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
   star:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.7l-6.1 3.5 1.5-6.9-5.2-4.7 6.9-.7z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-10-9.3C.5 7.8 2.3 4 6 4c2.1 0 3.6 1.1 4.5 2.4C11.4 5.1 12.9 4 15 4c3.7 0 5.5 3.8 4 7.2-2.5 4.7-7 9.3-7 9.3z"/></svg>',
+  heartFill:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 20.5s-7.5-4.6-10-9.3C.5 7.8 2.3 4 6 4c2.1 0 3.6 1.1 4.5 2.4C11.4 5.1 12.9 4 15 4c3.7 0 5.5 3.8 4 7.2-2.5 4.7-7 9.3-7 9.3z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 21 3l-6 18-4-7-7-2.5z"/><path d="M11 14l3-3"/></svg>',
   gamepad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="19" height="10" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1" fill="currentColor" stroke="none"/></svg>'
 };
@@ -796,7 +836,7 @@ function render(){
   app.innerHTML=html;
   bind();
 }
-function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();}
+function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();if(screen==="profile"&&REFERRAL===null)loadReferral();}
 
 function onboardingHTML(){
   return '<div id="onb">'
@@ -846,7 +886,10 @@ function productGridHTML(items){
     var it=items[j];
     var realStk=StockCounts.hasOwnProperty(it.id)?StockCounts[it.id]:it.stock;
     var out=realStk<=0,hideStk=HIDE_STOCK_KINDS.indexOf(it.kind)!==-1;
-    html+='<button class="pcard" data-open="'+esc(it.id)+'">'+tileHTML(it)
+    var isFav=ME.favorites&&ME.favorites.indexOf(it.id)!==-1;
+    html+='<button class="pcard" data-open="'+esc(it.id)+'">'
+      +(tgUser()?('<span class="favbtn'+(isFav?" on":"")+'" data-fav="'+esc(it.id)+'">'+ic(isFav?"heartFill":"heart",15)+'</span>'):"")
+      +tileHTML(it)
       +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div><div class="ct">'+esc(it.cat||"")+'</div>'
       +'<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
       +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):realStk+" "+esc(t("in_stock")))+'</span>')+'</div></div></button>';
@@ -1079,20 +1122,35 @@ function leaderboardBlockHTML(){
   return html;
 }
 function openLeaderboardSheet(){
-  var html='<h2>'+esc(t("leaderboard_title"))+'</h2>';
-  var list=LEADERBOARD||[];
-  if(!list.length)html+='<div class="paynote">'+esc(t("leaderboard_empty"))+'</div>';
-  else{
-    html+=leaderboardPodiumHTML(list);
+  var html='<h2>'+esc(t("leaderboard_title"))+'</h2>'
+    +'<div class="seg" id="lbPeriodSeg">'
+    +'<button data-period="today">'+esc(t("period_today"))+'</button>'
+    +'<button data-period="week">'+esc(t("period_week"))+'</button>'
+    +'<button data-period="month">'+esc(t("period_month"))+'</button>'
+    +'<button data-period="all" class="on">'+esc(t("period_all"))+'</button>'
+    +'</div><div id="lbBody"></div><div style="height:16px"></div>';
+  var sh=openSheet(html);
+  function renderList(list){
+    var body=sh.querySelector("#lbBody");
+    if(!list.length){body.innerHTML='<div class="paynote">'+esc(t("leaderboard_empty"))+'</div>';return;}
+    var h=leaderboardPodiumHTML(list);
     var rest=list.slice(3);
     if(rest.length){
-      html+='<div class="lb-rest">';
-      for(var i=0;i<rest.length;i++)html+=leaderboardRestRowHTML(rest[i]);
-      html+='</div>';
+      h+='<div class="lb-rest">';
+      for(var i=0;i<rest.length;i++)h+=leaderboardRestRowHTML(rest[i]);
+      h+='</div>';
     }
+    body.innerHTML=h;
   }
-  html+='<div style="height:16px"></div>';
-  openSheet(html);
+  renderList(LEADERBOARD||[]);
+  var pbtns=sh.querySelectorAll("#lbPeriodSeg [data-period]");
+  for(var pi=0;pi<pbtns.length;pi++)pbtns[pi].addEventListener("click",function(){
+    var all=sh.querySelectorAll("#lbPeriodSeg [data-period]");
+    for(var pj=0;pj<all.length;pj++)all[pj].classList.toggle("on",all[pj]===this);
+    var period=this.getAttribute("data-period");
+    sh.querySelector("#lbBody").innerHTML='<div class="paynote">…</div>';
+    loadLeaderboardPeriod(period,renderList);
+  });
 }
 /* ----- sharh yozish oynasi (buyurtma "Bajarildi" bo'lgach) ----- */
 function openReviewForm(orderId,itemTitle){
@@ -1508,6 +1566,41 @@ function ordersHTML(){
   return html;
 }
 
+function openFavoritesSheet(){
+  var favIds=ME.favorites||[];
+  var items=catalog().filter(function(x){return favIds.indexOf(x.id)!==-1&&x.active!==false;});
+  var html='<h2>'+esc(t("fav_title"))+'</h2>';
+  html+=items.length?productGridHTML(items):('<div class="paynote">'+esc(t("fav_empty"))+'</div>');
+  html+='<div style="height:16px"></div>';
+  var sh=openSheet(html);
+  var opens=sh.querySelectorAll("[data-open]");
+  for(var i=0;i<opens.length;i++)opens[i].addEventListener("click",function(){
+    var id=this.getAttribute("data-open");closeSheet();openProduct(id);
+  });
+  var favs=sh.querySelectorAll("[data-fav]");
+  for(var j=0;j<favs.length;j++)favs[j].addEventListener("click",function(e){
+    e.stopPropagation();
+    var id=this.getAttribute("data-fav");toggleFavorite(id);
+    // sheetni yangilaymiz (element sevimlilardan olib tashlangan bo'lishi mumkin)
+    closeSheet();openFavoritesSheet();
+  });
+}
+/* ===== referal kartochkasi (profil) ===== */
+function referralCardHTML(){
+  if(!tgUser())return "";
+  if(REFERRAL===null)return '<div class="card" style="color:var(--mut);font-size:13px">…</div>';
+  if(!REFERRAL.enabled)return "";
+  var bonus=esc(money(REFERRAL.bonusAmount)),min=esc(money(REFERRAL.minPurchase));
+  return '<div class="card">'
+    +'<div class="row"><div class="l">'+ic("gift",16)+' '+esc(t("invite_title"))
+    +'<div class="d">'+t("invite_bonus_hint").replace("{b}",bonus).replace("{m}",min)+'</div></div></div>'
+    +(REFERRAL.link?('<div class="cardbox" style="margin-top:10px"><div class="crow">'
+      +'<div style="word-break:break-all;font-size:12.5px;font-weight:700">'+esc(REFERRAL.link)+'</div>'
+      +'<button class="cpy" data-copy="'+esc(REFERRAL.link)+'">'+esc(t("invite_copy_btn"))+'</button></div></div>'
+      +'<button class="btn sm" style="margin-top:10px" data-shareref="'+esc(REFERRAL.link)+'">'+ic("share",14)+' '+esc(t("invite_share_btn"))+'</button>'):'')
+    +'<div class="minnote" style="margin-top:8px">'+t("invite_stats").replace("{n}",REFERRAL.invitedCount||0).replace("{e}",REFERRAL.earnedCount||0)+'</div>'
+    +'</div>';
+}
 /* ===== profile ===== */
 function profileHTML(){
   var name=tgName(),u=tgUser();
@@ -1521,12 +1614,13 @@ function profileHTML(){
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
+    +'<div class="card"><div class="row" data-openfavs="1">'+ic("heart",16)+' '+esc(t("fav_title"))
+    +'<div class="d">'+(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):esc(t("fav_empty")))+'</div></div>'
+    +'<button class="btn sm gray" data-openfavs="1">'+ic("arrowRight",14)+'</button></div></div>'
     +'<div class="card"><div class="row"><div class="l">'+ic("headset",16)+' '+esc(t("support"))
     +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
     +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div></div>'
-    +'<div class="card"><div class="row"><div class="l">'+ic("gift",16)+' '+esc(t("invite_title"))
-    +'<div class="d">'+esc(t("invite_soon"))+'</div></div>'
-    +'<span class="badge pend">'+esc(t("soon_badge"))+'</span></div></div>'
+    +referralCardHTML()
     +'<div class="sect">'+esc(t("language"))+' / '+esc(t("theme_title"))+'</div>'
     +'<div class="card"><div class="row"><div class="l">'+ic("globe",16)+' '+esc(t("language"))
     +'<div class="d">'+esc(t("lang_tap_hint"))+'</div></div>'
@@ -1549,6 +1643,12 @@ function openAdmin(){
   var html='<h2>'+esc(t("a_panel"))+'</h2>'
     +'<div style="height:8px"></div>'
     +'<div class="sect" style="margin:0 0 6px">'+esc(t("a_stats_title"))+'</div>'
+    +'<div class="seg" id="statsPeriodSeg">'
+    +'<button data-period="today" class="on">'+esc(t("period_today"))+'</button>'
+    +'<button data-period="week">'+esc(t("period_week"))+'</button>'
+    +'<button data-period="month">'+esc(t("period_month"))+'</button>'
+    +'<button data-period="all">'+esc(t("period_all"))+'</button>'
+    +'</div>'
     +'<div class="stats" style="margin:0 0 10px"><div class="stat"><div class="v" id="stUsers">…</div><div class="k">'+esc(t("a_st_users"))+'</div></div>'
     +'<div class="stat"><div class="v" id="stOrders">…</div><div class="k">'+esc(t("a_st_orders"))+'</div></div>'
     +'<div class="stat"><div class="v" id="stRevenue">…</div><div class="k">'+esc(t("a_st_revenue"))+'</div></div></div>'
@@ -1560,6 +1660,8 @@ function openAdmin(){
     +'<button class="btn gray" id="aUsersBtn">'+ic("users",15)+' '+esc(t("a_users_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aReviewsBtn">'+ic("star",15)+' '+esc(t("a_reviews_title"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aReferralBtn">'+ic("gift",15)+' '+esc(t("a_referral_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
     +'<div style="height:10px"></div>'
@@ -1578,17 +1680,27 @@ function openAdmin(){
     +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>'
     +'<div style="height:30px"></div>';
   var sh=openSheet(html);
-  api("/api/admin/stats").then(function(s){
-    sh.querySelector("#stUsers").textContent=s.users;
-    sh.querySelector("#stOrders").textContent=s.ordersCount;
-    sh.querySelector("#stRevenue").textContent=money(s.revenue);
-    sh.querySelector("#stTopup").textContent=money(s.topupSum);
-    sh.querySelector("#stPending").textContent=s.pendingPayments;
-    sh.querySelector("#stBalances").textContent=money(s.totalBalance);
-  }).catch(function(){});
+  function loadStatsPeriod(period){
+    api("/api/admin/stats?period="+encodeURIComponent(period)).then(function(s){
+      sh.querySelector("#stUsers").textContent=s.users;
+      sh.querySelector("#stOrders").textContent=s.ordersCount;
+      sh.querySelector("#stRevenue").textContent=money(s.revenue);
+      sh.querySelector("#stTopup").textContent=money(s.topupSum);
+      sh.querySelector("#stPending").textContent=s.pendingPayments;
+      sh.querySelector("#stBalances").textContent=money(s.totalBalance);
+    }).catch(function(){});
+  }
+  loadStatsPeriod("today");
+  var pbtns=sh.querySelectorAll("#statsPeriodSeg [data-period]");
+  for(var pi=0;pi<pbtns.length;pi++)pbtns[pi].addEventListener("click",function(){
+    var all=sh.querySelectorAll("#statsPeriodSeg [data-period]");
+    for(var pj=0;pj<all.length;pj++)all[pj].classList.toggle("on",all[pj]===this);
+    loadStatsPeriod(this.getAttribute("data-period"));
+  });
   sh.querySelector("#aMoney").addEventListener("click",openAdminMoney);
   sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
+  sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
   var agb=sh.querySelector("#aGroupsBtn");if(agb)agb.addEventListener("click",openAdminGroups);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
@@ -1606,6 +1718,32 @@ function openAdmin(){
     S.custom=[];S.over={};S.removed=[];S.imported=null;persist();toast(t("a_reset_done"));haptic();closeSheet();render();
   });
   renderAdminList(sh);
+}
+function openAdminReferral(){
+  var html='<h2>'+esc(t("a_referral_title"))+'</h2>'
+    +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_referral_enabled"))+'</span><button class="swbtn" id="refEnabled"><i></i></button></div>'
+    +'<label>'+esc(t("a_referral_bonus"))+'</label><input id="refBonus" type="number" inputmode="numeric">'
+    +'<label>'+esc(t("a_referral_min"))+'</label><input id="refMin" type="number" inputmode="numeric">'
+    +'<div style="height:12px"></div><button class="btn" id="refSaveBtn">'+esc(t("a_save"))+'</button>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html);
+  var enabled=false;
+  api("/api/admin/referral-settings").then(function(r){
+    enabled=!!r.enabled;
+    sh.querySelector("#refEnabled").classList.toggle("on",enabled);
+    sh.querySelector("#refBonus").value=r.bonusAmount||5000;
+    sh.querySelector("#refMin").value=r.minPurchase||20000;
+  }).catch(function(){});
+  sh.querySelector("#refEnabled").addEventListener("click",function(){enabled=!enabled;this.classList.toggle("on",enabled);});
+  sh.querySelector("#refSaveBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    api("/api/admin/referral-settings","POST",{
+      enabled:enabled,
+      bonusAmount:Number(sh.querySelector("#refBonus").value)||0,
+      minPurchase:Number(sh.querySelector("#refMin").value)||0
+    }).then(function(){haptic("ok");toast(t("a_saved"));btn.disabled=false;})
+      .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
 }
 function renderAdminList(sh){
   var c=catalog(),html="";
@@ -1855,6 +1993,9 @@ function loadLeaderboard(){
   if(typeof fetch!=="function"){LEADERBOARD=[];return;}
   api("/api/leaderboard").then(function(r){LEADERBOARD=r.leaderboard||[];if(S.lang&&S.screen==="home"&&!S.group&&!S.category)render();})
     .catch(function(){if(LEADERBOARD===null)LEADERBOARD=[];});
+}
+function loadLeaderboardPeriod(period,cb){
+  api("/api/leaderboard?period="+encodeURIComponent(period)).then(function(r){cb(r.leaderboard||[]);}).catch(function(){cb([]);});
 }
 </script>
 <script>
@@ -2279,6 +2420,17 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){if(VIDEO_URL)openLink(VIDEO_URL);});
   els=document.querySelectorAll("[data-copy]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
+  els=document.querySelectorAll("[data-shareref]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+    var link=this.getAttribute("data-shareref");
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(t("invite_share_text"));
+    try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(shareUrl);return;}}catch(e){}
+    openLink(shareUrl);
+  });
+  els=document.querySelectorAll("[data-fav]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();toggleFavorite(this.getAttribute("data-fav"));});
+  els=document.querySelectorAll("[data-openfavs]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",openFavoritesSheet);
   els=document.querySelectorAll("[data-setlang]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
   var lc=document.getElementById("langCycle");
@@ -2366,6 +2518,7 @@ function boot(){
   loadStockCounts();
   loadReviews();
   loadLeaderboard();
+  if(S.screen==="profile")loadReferral();
   setInterval(tickTimer,1000);
   setInterval(function(){
     if(tgUser()&&(S.screen==="orders"||S.screen==="home"))loadMe();

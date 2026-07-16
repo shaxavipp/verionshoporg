@@ -31,8 +31,11 @@ const CATMETA_FILE = path.join(DATA_DIR, "catmeta.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
-let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [] };
+let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [],
+  settings: { referral: { enabled: false, bonusAmount: 5000, minPurchase: 20000 } } };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
+if (!DB.settings) DB.settings = {};
+if (!DB.settings.referral) DB.settings.referral = { enabled: false, bonusAmount: 5000, minPurchase: 20000 };
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
@@ -49,6 +52,55 @@ function genId(p) {
   const a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let s = "";
   for (let i = 0; i < 6; i++) s += a[Math.floor(Math.random() * a.length)];
   return p + "-" + s;
+}
+// "today" | "week" | "month" | "all" -> shu davr boshlanishining vaqt belgisi (ms).
+// "week" — joriy hafta dushanbadan, "month" — joriy oyning 1-sanasidan.
+function periodStart(period) {
+  const now = new Date();
+  if (period === "today") { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  if (period === "week") {
+    const d = new Date(now); d.setHours(0, 0, 0, 0);
+    const day = (d.getDay() + 6) % 7; // 0=Dushanba
+    d.setDate(d.getDate() - day);
+    return d.getTime();
+  }
+  if (period === "month") { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); }
+  return 0; // all
+}
+
+/* ---------- referal dasturi ---------- */
+// Bot username'ni Telegram'dan bir marta so'rab olamiz (referal havolasi t.me/<username>?start=ref_<uid>
+// qurish uchun kerak) — alohida ENV o'zgaruvchi talab qilmaslik uchun.
+let BOT_USERNAME = "";
+(function fetchBotUsername() {
+  if (!BOT_TOKEN) return;
+  try {
+    https.get("https://api.telegram.org/bot" + BOT_TOKEN + "/getMe", r => {
+      let body = ""; r.on("data", c => body += c);
+      r.on("end", () => { try { const j = JSON.parse(body); if (j.ok) BOT_USERNAME = j.result.username; } catch (e) {} });
+    }).on("error", () => {});
+  } catch (e) {}
+})();
+
+// Taklif qilingan foydalanuvchi birinchi marta yetarli summaga xarid qilganda,
+// taklif qilgan foydalanuvchiga bir martalik bonus beriladi.
+function creditReferralIfEligible(uid) {
+  try {
+    const settings = DB.settings.referral || {};
+    if (!settings.enabled) return;
+    const acc = DB.users[String(uid)];
+    if (!acc || !acc.referredBy || acc.referralCredited) return;
+    const total = DB.orders.filter(o => o.uid === uid && o.status === "done")
+      .reduce((s, o) => s + (Number(o.price) || 0), 0);
+    if (total < (Number(settings.minPurchase) || 0)) return;
+    const refAcc = DB.users[String(acc.referredBy)];
+    if (!refAcc) return;
+    refAcc.balance = (refAcc.balance || 0) + (Number(settings.bonusAmount) || 0);
+    acc.referralCredited = true;
+    save();
+    tgSend(acc.referredBy, "🎉 Taklif qilgan do'stingiz birinchi xaridni amalga oshirdi! Balansingizga " +
+      (Number(settings.bonusAmount) || 0).toLocaleString("ru-RU") + " so'm qo'shildi.");
+  } catch (e) {}
 }
 function expireOld() {
   const now = Date.now();
@@ -143,7 +195,9 @@ function checkInitData(initData) {
     if (crypto.createHmac("sha256", secret).update(dcs).digest("hex") !== hash) return null;
     const authDate = Number(params.get("auth_date") || 0);
     if (!authDate || (Date.now() / 1000 - authDate) > 259200) return null;
-    return JSON.parse(params.get("user") || "null");
+    const u = JSON.parse(params.get("user") || "null");
+    if (u) u._startParam = params.get("start_param") || "";
+    return u;
   } catch (e) { return null; }
 }
 function auth(req) { return checkInitData(req.headers["x-init-data"] || ""); }
@@ -177,8 +231,10 @@ function myView(uid) {
   expireOld();
   const mine = x => x.uid === uid;
   const reviewedIds = new Set(DB.reviews.filter(mine).map(r => r.orderId));
+  const acc = DB.users[String(uid)] || { balance: 0 };
   return {
-    balance: (DB.users[String(uid)] || { balance: 0 }).balance,
+    balance: acc.balance,
+    favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     payments: DB.payments.filter(mine).slice(-50).reverse(),
     orders: DB.orders.filter(mine).slice(-50).reverse()
       .map(o => Object.assign({}, o, { reviewed: reviewedIds.has(o.id) }))
@@ -229,7 +285,13 @@ const server = http.createServer((req, res) => {
   if (url === "/api/me" && m === "GET") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
-    user(u); save();
+    const isNew = !DB.users[String(u.id)];
+    const acc = user(u);
+    if (isNew && u._startParam && /^ref_\d+$/.test(u._startParam)) {
+      const refUid = Number(u._startParam.slice(4));
+      if (refUid && refUid !== u.id) acc.referredBy = refUid;
+    }
+    save();
     return send(res, 200, myView(u.id));
   }
 
@@ -255,7 +317,40 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  /* ===== Mijozlar fikri (sharhlar) ===== */
+  /* ===== Referal dasturi ===== */
+  if (url === "/api/referral" && m === "GET") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    const settings = DB.settings.referral || {};
+    const invited = Object.keys(DB.users).filter(k => DB.users[k].referredBy === u.id);
+    const earned = invited.filter(k => DB.users[k].referralCredited).length;
+    return send(res, 200, {
+      enabled: !!settings.enabled,
+      bonusAmount: Number(settings.bonusAmount) || 0,
+      minPurchase: Number(settings.minPurchase) || 0,
+      link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?start=ref_" + u.id) : "",
+      invitedCount: invited.length,
+      earnedCount: earned
+    });
+  }
+
+  /* ===== Sevimlilar (wishlist) ===== */
+  if (url === "/api/favorite" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    return readBody(req, res, b => {
+      const acc = user(u);
+      if (!Array.isArray(acc.favorites)) acc.favorites = [];
+      const id = String(b.itemId || "");
+      if (!id) return send(res, 400, { error: "itemId" });
+      const i = acc.favorites.indexOf(id);
+      if (i === -1) acc.favorites.push(id); else acc.favorites.splice(i, 1);
+      save();
+      send(res, 200, { ok: true, favorites: acc.favorites });
+    });
+  }
+
+
   // Xarid "done" bo'lgan buyurtmaga mijoz 1 marta sharh qoldirishi mumkin.
   if (url === "/api/review" && m === "POST") {
     const u = auth(req);
@@ -286,9 +381,12 @@ const server = http.createServer((req, res) => {
   // Ism faqat "Ism F." formatida ko'rsatiladi, username hech qachon chiqmaydi.
   // Adminlar (ADMIN_IDS) reytingda hech qachon ko'rinmaydi.
   if (url === "/api/leaderboard" && m === "GET") {
+    const period = q.get("period") || "all"; // today | week | month | all
+    const cutoff = periodStart(period);
     const totals = {}, counts = {};
     for (const o of DB.orders) {
       if (o.status !== "done") continue;
+      if (o.ts < cutoff) continue;
       if (ADMIN_IDS.indexOf(Number(o.uid)) !== -1) continue;
       totals[o.uid] = (totals[o.uid] || 0) + (Number(o.price) || 0);
       counts[o.uid] = (counts[o.uid] || 0) + 1;
@@ -303,7 +401,7 @@ const server = http.createServer((req, res) => {
       .sort((a, b) => b.total - a.total)
       .slice(0, 20)
       .map((r, i) => Object.assign({ rank: i + 1 }, r));
-    return send(res, 200, { leaderboard: rows });
+    return send(res, 200, { period, leaderboard: rows });
   }
 
   if (url === "/api/topup" && m === "POST") {
@@ -382,6 +480,7 @@ const server = http.createServer((req, res) => {
           item: "Telegram Stars (" + amount + ")", price, status: "done", ts: Date.now(),
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
         DB.orders.push(o); save();
+        creditReferralIfEligible(u.id);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
     });
@@ -420,6 +519,7 @@ const server = http.createServer((req, res) => {
             item: title, price, status: "done", ts: Date.now(),
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
           DB.orders.push(o); save();
+          creditReferralIfEligible(u.id);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
         return;
@@ -439,6 +539,7 @@ const server = http.createServer((req, res) => {
         item: title, price, status: delivered ? "done" : "pending", ts: Date.now(),
         delivered: delivered || null, doneTs: delivered ? Date.now() : null };
       DB.orders.push(o); save();
+      if (delivered) creditReferralIfEligible(u.id);
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
   }
@@ -473,11 +574,19 @@ const server = http.createServer((req, res) => {
         const o = DB.orders.find(x => x.id === b.id);
         if (!o) return send(res, 404, { error: "not found" });
         if (o.status !== "pending") return send(res, 409, { error: "state" });
-        if (b.action === "done") { o.status = "done"; o.doneTs = Date.now(); }
+        if (b.action === "done") {
+          o.status = "done"; o.doneTs = Date.now();
+          save();
+          creditReferralIfEligible(o.uid);
+          tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
+        }
         else { o.status = "cancelled"; // refund
           const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
-          acc.balance += o.price; }
-        save(); return send(res, 200, { ok: true });
+          acc.balance += o.price;
+          save();
+          tgSend(o.uid, "❌ Buyurtmangiz bekor qilindi, mablag' balansingizga qaytarildi: " + o.item);
+        }
+        return send(res, 200, { ok: true });
       });
     }
     if (url === "/api/admin/history" && m === "GET") {
@@ -554,19 +663,31 @@ const server = http.createServer((req, res) => {
       });
     }
     if (url === "/api/admin/stats" && m === "GET") {
+      const period = q.get("period") || "all"; // today | week | month | all
+      const cutoff = periodStart(period);
       const users = Object.keys(DB.users).length;
       const totalBalance = Object.values(DB.users).reduce((s, v) => s + (v.balance || 0), 0);
-      const doneOrders = DB.orders.filter(o => o.status === "done");
+      const doneOrders = DB.orders.filter(o => o.status === "done" && o.ts >= cutoff);
       const revenue = doneOrders.reduce((s, o) => s + (o.price || 0), 0);
-      const donePays = DB.payments.filter(p => p.status === "done");
+      const donePays = DB.payments.filter(p => p.status === "done" && p.ts >= cutoff);
       const topupSum = donePays.reduce((s, p) => s + (p.amount || 0), 0);
-      const today0 = new Date(); today0.setHours(0, 0, 0, 0);
-      const todayOrders = doneOrders.filter(o => o.ts >= today0.getTime()).length;
-      const todayTopup = donePays.filter(p => p.ts >= today0.getTime()).reduce((s, p) => s + (p.amount || 0), 0);
       return send(res, 200, {
-        users, totalBalance, ordersCount: doneOrders.length, revenue,
-        topupSum, pendingPayments: DB.payments.filter(p => p.status === "waiting" || p.status === "checking").length,
-        todayOrders, todayTopup
+        period, users, totalBalance, ordersCount: doneOrders.length, revenue, topupSum,
+        pendingPayments: DB.payments.filter(p => p.status === "waiting" || p.status === "checking").length
+      });
+    }
+    if (url === "/api/admin/referral-settings" && m === "GET") {
+      return send(res, 200, DB.settings.referral || {});
+    }
+    if (url === "/api/admin/referral-settings" && m === "POST") {
+      return readBody(req, res, b => {
+        DB.settings.referral = {
+          enabled: !!b.enabled,
+          bonusAmount: Math.max(0, Number(b.bonusAmount) || 0),
+          minPurchase: Math.max(0, Number(b.minPurchase) || 0)
+        };
+        save();
+        send(res, 200, { ok: true, referral: DB.settings.referral });
       });
     }
     if (url === "/api/admin/users" && m === "GET") {
