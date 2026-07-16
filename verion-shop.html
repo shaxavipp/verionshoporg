@@ -12,13 +12,6 @@
   --hdrbg:rgba(12,12,17,.85);
   --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a; --gold:#c7d4e0;
   --r:18px;
-  /* rangli palitra — kategoriya kartalari, sharh avatarlari va animatsiyalar uchun */
-  --gA:linear-gradient(135deg,#ff5f8f 0%,#ff8a65 100%);
-  --gB:linear-gradient(135deg,#7b5cff 0%,#3ea0ff 100%);
-  --gC:linear-gradient(135deg,#00c9a7 0%,#3ea0ff 100%);
-  --gD:linear-gradient(135deg,#ffb020 0%,#ff5f8f 100%);
-  --gE:linear-gradient(135deg,#3ea0ff 0%,#00e0c6 100%);
-  --gF:linear-gradient(135deg,#c86dff 0%,#ff5f8f 100%);
 }
 [data-theme="light"]{
   --bg:#f3f6fa; --card:#ffffff; --card2:#eaf1fa; --line:#dbe6f0;
@@ -26,14 +19,6 @@
   --hdrbg:rgba(255,255,255,.85);
   --ok:#1fa84c; --warn:#b8860b; --blue:#1f7ae0; --err:#e0342a; --gold:#7c8b99;
 }
-@keyframes cardIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes popIn{0%{opacity:0;transform:scale(.4) rotate(-10deg)}70%{transform:scale(1.15) rotate(4deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
-@keyframes twinkle{0%,100%{filter:drop-shadow(0 0 0 rgba(255,176,32,0))}50%{filter:drop-shadow(0 0 5px rgba(255,176,32,.85))}}
-@keyframes shimmerMove{0%{background-position:-200% 0}100%{background-position:200% 0}}
-@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.rv-card,.pcard{animation:cardIn .45s cubic-bezier(.22,1,.36,1) both}
-.rv-card .stars-pop span{display:inline-flex;animation:popIn .4s cubic-bezier(.22,1,.36,1) both}
-.rv-card .stars-pop span.full{animation:popIn .4s cubic-bezier(.22,1,.36,1) both,twinkle 2.4s ease-in-out .5s infinite}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
@@ -104,8 +89,6 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .tab{flex:0 0 auto;padding:9px 16px;border-radius:999px;background:var(--card);
   border:1px solid var(--line);font-size:13.5px;color:var(--mut);font-weight:700;}
 .tab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(124,92,255,.35)}
-.tab,.pcard,.card{transition:transform .15s ease}
-.pcard:active,.tab:active{transform:scale(.95)}
 
 /* product grid */
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
@@ -962,9 +945,8 @@ var CAT_ICON={obuna:"diamond",promokod:"gift",telegram:"send",games:"gamepad"};
 /* Bosh sahifa — endi faqat kategoriya kartochkalari (4-6 ta) ko'rsatiladi.
    Bosilganda o'sha kategoriyaning tarkibi (guruhlar yoki, guruh yo'q bo'lsa,
    to'g'ridan-to'g'ri mahsulotlar) alohida "ekran" sifatida ochiladi. */
-var CAT_GRADS=["var(--gA)","var(--gB)","var(--gC)","var(--gD)","var(--gE)","var(--gF)"];
 function categoryCardsHTML(){
-  var html='<div class="grid groupgrid">',any=false,idx=0;
+  var html='<div class="grid groupgrid">',any=false;
   for(var m=0;m<TABS.length;m++){
     var kind=TABS[m][0],labelKey=TABS[m][1];
     var items=activeItems(kind);
@@ -973,12 +955,10 @@ function categoryCardsHTML(){
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
     var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",32);
-    var grad=CAT_GRADS[idx%CAT_GRADS.length];
-    html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="animation-delay:'+(idx*.05)+'s">'
-      +'<div class="ptile" style="background:'+grad+';color:#fff">'+tile+'</div>'
+    html+='<button class="pcard" data-opencat="'+esc(kind)+'">'
+      +'<div class="ptile" style="background:#22304a;color:#fff">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
       +'<div class="ct">'+items.length+' '+esc(t("group_count_unit"))+'</div></div></button>';
-    idx++;
   }
   if(!any)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   return html+'</div>';
@@ -1061,42 +1041,17 @@ function homeHTML(){
 
 /* ----- Mijozlar fikri bloki ----- */
 function starsHTML(n,size){
-  size=size||12;var h='<span class="stars-pop">';
-  for(var i=1;i<=5;i++)h+='<span'+(i<=n?' class="full"':'')+' style="color:'+(i<=n?"#ffb020":"var(--line)")+';animation-delay:'+((i-1)*.06)+'s">'+ic("star",size)+'</span>';
-  return h+'</span>';
+  size=size||12;var h="";
+  for(var i=1;i<=5;i++)h+='<span style="display:inline-flex;color:'+(i<=n?"#ffb020":"var(--line)")+'">'+ic("star",size)+'</span>';
+  return h;
 }
-// Ism harfidan barqaror rangli gradient tanlash (har bir foydalanuvchi doim bir xil rangda bo'lishi uchun)
-function nameGrad(name){
-  var s=String(name||"?"),h=0;
-  for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;
-  return CAT_GRADS[h%CAT_GRADS.length];
-}
-function avgRating(list){
-  if(!list||!list.length)return 0;
-  var sum=0;for(var i=0;i<list.length;i++)sum+=Number(list[i].stars)||0;
-  return sum/list.length;
-}
-function reviewsSummaryHTML(list){
-  var avg=avgRating(list),n=list.length;
-  var full=Math.round(avg);
-  return '<div class="card" style="margin:0 16px 12px;display:flex;align-items:center;gap:14px;background:var(--gB);color:#fff;border:none;box-shadow:0 10px 26px rgba(123,92,255,.32);animation:cardIn .4s cubic-bezier(.22,1,.36,1) both">'
-    +'<div style="font-size:34px;font-weight:800;line-height:1;animation:floatY 2.6s ease-in-out infinite">'+avg.toFixed(1)+'</div>'
-    +'<div><div style="margin-bottom:4px">'+starsHTML(full,15)+'</div>'
-    +'<div style="font-size:11.5px;opacity:.92;font-weight:600">'+n+' '+esc(t("reviews_title"))+'</div></div></div>';
-}
-function reviewCardHTML(r,idx){
-  var grad=nameGrad(r.name);
-  var initial=(String(r.name||"?").trim()[0]||"?").toUpperCase();
-  return '<div class="card rv-card" style="border-left:3px solid transparent;border-image:'+grad+' 1;animation-delay:'+((idx||0)*.06)+'s"><div style="padding:9px 0">'
-    +'<div style="display:flex;align-items:center;gap:9px">'
-    +'<div style="width:34px;height:34px;border-radius:50%;background:'+grad+';display:flex;align-items:center;justify-content:center;'
-    +'color:#fff;font-weight:800;font-size:14px;flex:0 0 auto;box-shadow:0 3px 10px rgba(0,0,0,.25)">'+esc(initial)+'</div>'
-    +'<div style="flex:1;min-width:0">'
+function reviewCardHTML(r){
+  return '<div class="card"><div style="padding:9px 0">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
     +'<b style="font-size:13.5px">'+esc(r.name||"")+'</b>'
     +'<span style="font-size:10px;color:var(--mut);white-space:nowrap">'+esc(fmtDate(r.ts))+'</span></div>'
-    +'<div style="margin:3px 0 0">'+starsHTML(r.stars,12)+'</div></div></div>'
-    +(r.text?'<div style="font-size:12.5px;color:var(--mut);margin-top:6px">'+esc(r.text)+'</div>':'')
+    +'<div style="margin:5px 0 3px">'+starsHTML(r.stars,12)+'</div>'
+    +(r.text?'<div style="font-size:12.5px;color:var(--mut)">'+esc(r.text)+'</div>':'')
     +(r.itemTitle?'<div style="font-size:10.5px;color:var(--mut);margin-top:4px;opacity:.8">'+esc(r.itemTitle)+'</div>':'')
     +'</div></div>';
 }
@@ -1107,19 +1062,15 @@ function reviewsBlockHTML(){
     +'</div>';
   if(REVIEWS===null)return html+'<div class="card" style="color:var(--mut);font-size:13px;padding:14px 12px">…</div>';
   if(!REVIEWS.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px;padding:14px 12px">'+esc(t("reviews_empty"))+'</div>';
-  html+=reviewsSummaryHTML(REVIEWS);
   var show=REVIEWS.slice(0,3);
-  for(var i=0;i<show.length;i++)html+=reviewCardHTML(show[i],i);
+  for(var i=0;i<show.length;i++)html+=reviewCardHTML(show[i]);
   return html;
 }
 function openReviewsSheet(){
   var html='<h2>'+esc(t("reviews_title"))+'</h2>';
   var list=REVIEWS||[];
   if(!list.length)html+='<div class="paynote">'+esc(t("reviews_empty"))+'</div>';
-  else{
-    html+='<div style="margin:2px 0 4px">'+reviewsSummaryHTML(list)+'</div>';
-    for(var i=0;i<list.length;i++)html+=reviewCardHTML(list[i],i);
-  }
+  else for(var i=0;i<list.length;i++)html+=reviewCardHTML(list[i]);
   html+='<div style="height:16px"></div>';
   openSheet(html);
 }
