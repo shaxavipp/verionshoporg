@@ -1192,8 +1192,8 @@ function openReviewForm(orderId,itemTitle){
   var st=0,txt="";
   function bodyHTML(){
     var stars="";
-    for(var i=1;i<=5;i++)stars+='<button type="button" data-star="'+i+'" style="background:none;border:none;padding:3px;cursor:pointer;color:'+(i<=st?"#ffb020":"var(--line)")+'">'+ic("star",30)+'</button>';
-    return '<h2>'+esc(t("review_title"))+'</h2>'
+    for(var i=1;i<=5;i++)stars+='<button type="button" data-star="'+i+'" class="starbtn'+(i<=st?" on":"")+'" style="background:none;border:none;padding:3px;cursor:pointer;color:'+(i<=st?"#ffb020":"var(--line)")+'">'+ic("star",30)+'</button>';
+    return '<h2>'+ic("star",19)+' '+esc(t("review_title"))+'</h2>'
       +'<div class="cat" style="margin-bottom:12px">'+esc(itemTitle||"")+'</div>'
       +'<div id="starsRow" style="display:flex;gap:2px;margin-bottom:12px">'+stars+'</div>'
       +'<textarea id="revText" rows="3" maxlength="200" placeholder="'+esc(t("review_placeholder"))+'"></textarea>'
@@ -1205,9 +1205,13 @@ function openReviewForm(orderId,itemTitle){
     var btns=sh.querySelectorAll("[data-star]");
     for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){
       st=Number(this.getAttribute("data-star"));
+      haptic("ok");
       sh.querySelector(".sheet-body").innerHTML=bodyHTML();
       bindInner();
       var ta=sh.querySelector("#revText");if(ta)ta.value=txt;
+      var rows=sh.querySelectorAll("[data-star]");
+      for(var k=0;k<rows.length;k++)if(Number(rows[k].getAttribute("data-star"))<=st)
+        rows[k].animate([{transform:"scale(.5)"},{transform:"scale(1.25)"},{transform:"scale(1)"}],{duration:280,easing:"ease-out",delay:k*40});
     });
     var ta=sh.querySelector("#revText");
     if(ta){ta.value=txt;ta.addEventListener("input",function(){txt=this.value;});}
@@ -1398,7 +1402,10 @@ function showDeliveredSheet(it,order){
   var cb=sh.querySelector("[data-copy]");
   if(cb)cb.addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
   var cl=sh.querySelector("#delivClose");
-  if(cl)cl.addEventListener("click",closeSheet);
+  if(cl)cl.addEventListener("click",function(){
+    closeSheet();
+    setTimeout(function(){openReviewForm(order.id,loc(it.title));},450);
+  });
 }
 
 /* ===== top-up (payment window with unique amount + timer) ===== */
