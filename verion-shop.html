@@ -208,12 +208,30 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
   background:var(--hdrbg);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
   border-top:1px solid var(--glassline);box-shadow:0 -1px 0 rgba(255,255,255,.05) inset;padding:7px 0 calc(7px + env(safe-area-inset-bottom));}
-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
+nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
   color:var(--mut);font-size:10.5px;font-weight:700;transition:transform .22s var(--spring),color .2s ease}
 nav button:active{transform:scale(.88)}
 nav button.on{color:var(--acc2)}
-nav button svg{width:22px;height:22px;transition:filter .25s ease}
-nav button.on svg{filter:drop-shadow(0 0 6px rgba(124,92,255,.85));animation:navGlow 2.2s ease-in-out infinite}
+nav button svg{width:24px;height:24px;transition:filter .25s ease}
+nav button.on svg{filter:drop-shadow(0 0 6px rgba(124,92,255,.85));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .42s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes navSelectPop{
+  0%{transform:scale(.5) translateY(10px) rotate(-8deg)}
+  40%{transform:scale(1.2) translateY(-4px) rotate(6deg)}
+  70%{transform:scale(.94) translateY(1px) rotate(-2deg)}
+  100%{transform:scale(1) translateY(0) rotate(0)}
+}
+/* sirg'anuvchi "glass" belgi — qaysi bo'lim tanlangan bo'lsa, o'sha tugma (ikonka+yorliq) ustiga sirpanib o'tadi */
+.navpill{position:absolute;left:0;top:0;width:64px;height:64px;border-radius:18px;z-index:0;
+  background:linear-gradient(155deg,rgba(139,147,255,.42),rgba(58,78,230,.42));
+  border:1px solid rgba(190,198,255,.55);
+  backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);
+  box-shadow:0 12px 28px rgba(70,90,255,.5),inset 0 1px 0 rgba(255,255,255,.45);
+  opacity:0;pointer-events:none;
+  transition:left .5s cubic-bezier(.34,1.56,.64,1),top .5s cubic-bezier(.34,1.56,.64,1),
+    width .5s cubic-bezier(.34,1.56,.64,1),height .5s cubic-bezier(.34,1.56,.64,1),
+    opacity .3s ease}
+.navpill.show{opacity:1}
+[data-reduce-motion="1"] .navpill{transition:opacity .2s ease}
 nav.navintro{animation:navSlideIn .55s cubic-bezier(.22,1,.36,1) both}
 nav.navintro button{opacity:0;animation:navPopIn .5s cubic-bezier(.22,1,.36,1) both}
 nav.navintro button:nth-child(1){animation-delay:.16s}
@@ -921,6 +939,7 @@ function render(){
   html+='<div style="height:80px"></div></div>'+navHTML();
   app.innerHTML=html;
   bind();
+  positionNavPill();
 }
 function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();if(screen==="profile"&&REFERRAL===null)loadReferral();}
 
@@ -954,8 +973,52 @@ function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
   var introClass=NAV_INTRO_PLAYED?"":" navintro";
   NAV_INTRO_PLAYED=true;
-  return '<nav class="'+introClass.trim()+'">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("orders","orders",t("nav_orders"))+b("pay","pay",t("nav_pay"))+b("profile","user",t("nav_profile"))+'</nav>';
+  return '<nav class="'+introClass.trim()+'">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'<span class="navpill" id="navPill"></span></nav>';
 }
+var NAV_PILL_LAST=null;
+function positionNavPill(){
+  try{
+    var nav=document.querySelector("nav"); if(!nav)return;
+    var pill=nav.querySelector("#navPill"); if(!pill)return;
+    var activeBtn=nav.querySelector("button.on");
+    if(!activeBtn){pill.classList.remove("show");NAV_PILL_LAST=null;return;}
+    var navRect=nav.getBoundingClientRect();
+    var btnRect=activeBtn.getBoundingClientRect();
+    var padX=3,padY=10;
+    var target={
+      left: Math.round(btnRect.left-navRect.left+padX),
+      top: Math.round(btnRect.top-navRect.top+padY),
+      w: Math.round(btnRect.width-padX*2),
+      h: Math.round(btnRect.height-padY*2)
+    };
+    pill.classList.add("show");
+    if(NAV_PILL_LAST){
+      // avval eski joyga (animatsiyasiz) qo'yamiz, keyin yangi joyga sirpanib boradi (FLIP usuli)
+      pill.style.transition="none";
+      pill.style.left=NAV_PILL_LAST.left+"px";
+      pill.style.top=NAV_PILL_LAST.top+"px";
+      pill.style.width=NAV_PILL_LAST.w+"px";
+      pill.style.height=NAV_PILL_LAST.h+"px";
+      pill.classList.add("show");
+      void pill.offsetWidth; // reflow
+      pill.style.transition="";
+      requestAnimationFrame(function(){
+        pill.style.left=target.left+"px";
+        pill.style.top=target.top+"px";
+        pill.style.width=target.w+"px";
+        pill.style.height=target.h+"px";
+      });
+    }else{
+      pill.style.left=target.left+"px";
+      pill.style.top=target.top+"px";
+      pill.style.width=target.w+"px";
+      pill.style.height=target.h+"px";
+      pill.classList.add("show");
+    }
+    NAV_PILL_LAST=target;
+  }catch(e){}
+}
+window.addEventListener("resize",function(){NAV_PILL_LAST=null;positionNavPill();});
 
 /* ===== Mahsulotlar (qidiruv + filtr) ===== */
 var PRODUCTS_ALL_PILL=["all","tab_all"];
