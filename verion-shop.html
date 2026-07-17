@@ -98,8 +98,24 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .groupgrid.grid .pbody .nm{font-size:16px;-webkit-line-clamp:2}
 .groupgrid.grid .pbody .ct{font-size:13px}
 .groupgrid .ptile .tl{font-size:30px!important}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
-  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);position:relative;}
+.pcard{
+    position:relative;
+    overflow:hidden;
+    border-radius:18px;
+    background:rgba(255,255,255,.05);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08);
+    text-align:left;display:flex;flex-direction:column;
+    transition:.35s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px rgba(255,255,255,.08);
+}
+.pcard:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 25px 60px rgba(0,132,255,.28),0 0 25px rgba(0,132,255,.2);}
+.pcard:active{transform:scale(.97);}
+.pcard::before{content:"";position:absolute;inset:-2px;border-radius:20px;background:linear-gradient(130deg,#009dff,#6d5cff,#00d4ff,#009dff);background-size:300% 300%;animation:borderMove 6s linear infinite;z-index:-2;}
+.pcard::after{content:"";position:absolute;inset:1px;border-radius:18px;background:var(--card);z-index:-1;}
+@keyframes borderMove{0%{background-position:0 50%;}100%{background-position:300% 50%;}}
+.premium-badge{position:absolute;top:10px;left:10px;padding:5px 10px;border-radius:20px;background:linear-gradient(90deg,#00b8ff,#6d5cff);color:#fff;font-size:11px;font-weight:700;letter-spacing:.5px;animation:premiumGlow 2s infinite;z-index:6}
+@keyframes premiumGlow{0%,100%{box-shadow:0 0 8px #3ca8ff;}50%{box-shadow:0 0 18px #6d5cff,0 0 35px #00b8ff;}}
 .favbtn{position:absolute;top:6px;right:6px;z-index:5;width:26px;height:26px;border-radius:50%;
   background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#fff;backdrop-filter:blur(2px)}
 .favbtn.on{color:#ff4d6d}
@@ -346,6 +362,50 @@ nav.navintro button:nth-child(5){animation-delay:.44s}
 .swbtn.on{background:var(--acc);border-color:var(--acc)}
 .swbtn.on i{left:21px;background:#fff}
 .exta{font-family:ui-monospace,Menlo,monospace;font-size:11px;min-height:90px}
+
+/* PART2 */
+.shine-sweep{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.shine-sweep:before{content:"";position:absolute;top:-30%;left:-120%;width:60%;height:160%;transform:rotate(25deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shineSweep 3.5s infinite}
+@keyframes shineSweep{to{left:180%}}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:ripple .7s ease-out}
+@keyframes ripple{to{transform:scale(10);opacity:0}}
+.like-pop{animation:likePop .4s ease}
+@keyframes likePop{0%{transform:scale(.5)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.float-star{position:absolute;font-size:12px;color:#ffd54a;animation:floatStar 4s linear infinite;pointer-events:none}
+@keyframes floatStar{0%{transform:translateY(12px);opacity:0}20%{opacity:1}100%{transform:translateY(-70px);opacity:0}}
+
+
+/* PART3 Premium */
+body::before{
+content:"";
+position:fixed;
+inset:-20%;
+background:
+radial-gradient(circle at 20% 20%,rgba(0,153,255,.12),transparent 35%),
+radial-gradient(circle at 80% 30%,rgba(109,92,255,.10),transparent 35%),
+radial-gradient(circle at 50% 80%,rgba(0,212,255,.08),transparent 40%);
+animation:bgMove 16s ease-in-out infinite alternate;
+pointer-events:none;
+z-index:-1}
+@keyframes bgMove{
+from{transform:translate(-2%,-2%) scale(1)}
+to{transform:translate(2%,2%) scale(1.08)}
+}
+.sheet{
+backdrop-filter:blur(24px)!important;
+border:1px solid rgba(255,255,255,.08)!important;
+box-shadow:0 -20px 60px rgba(0,0,0,.45)!important;
+}
+.toast{
+backdrop-filter:blur(16px);
+border:1px solid rgba(255,255,255,.08);
+animation:toastFloat .35s ease;
+}
+@keyframes toastFloat{
+from{transform:translateX(-50%) translateY(40px);opacity:0}
+to{transform:translateX(-50%) translateY(0);opacity:1}
+}
+
 </style>
 </head>
 <body>
@@ -2703,5 +2763,34 @@ function boot(){
 document.addEventListener("DOMContentLoaded",boot);
 if(document.readyState!=="loading")boot();
 </script>
+
+<script>
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button,.btn,.pcard');
+ if(!b)return;
+ const r=b.getBoundingClientRect();
+ const s=document.createElement('span');
+ s.className='ripple';
+ s.style.left=(e.clientX-r.left)+'px';
+ s.style.top=(e.clientY-r.top)+'px';
+ b.appendChild(s);
+ setTimeout(()=>s.remove(),700);
+});
+function premiumConfetti(){
+ for(let i=0;i<30;i++){
+  const c=document.createElement('div');
+  c.textContent=['⭐','💎','✨','🎉'][i%4];
+  c.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-20px;font-size:${14+Math.random()*12}px;z-index:9999;transition:2.8s linear;`;
+  document.body.appendChild(c);
+  requestAnimationFrame(()=>{
+    c.style.transform=`translateY(${window.innerHeight+80}px) rotate(${720*Math.random()}deg)`;
+    c.style.opacity='0';
+  });
+  setTimeout(()=>c.remove(),3000);
+ }
+}
+window.premiumConfetti=premiumConfetti;
+</script>
+
 </body>
 </html>
