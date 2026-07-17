@@ -32,10 +32,14 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
 let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [],
-  settings: { referral: { enabled: false, bonusAmount: 5000, minPurchase: 20000 } } };
+  settings: { referral: { enabled: true, percent: 1 } } };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 if (!DB.settings) DB.settings = {};
-if (!DB.settings.referral) DB.settings.referral = { enabled: false, bonusAmount: 5000, minPurchase: 20000 };
+if (!DB.settings.referral) DB.settings.referral = { enabled: true, percent: 1 };
+if (DB.settings.referral.percent === undefined) {
+  // eski (bir martalik bonus) sozlamadan yangi (har xariddan foiz) sozlamaga o'tish
+  DB.settings.referral = { enabled: DB.settings.referral.enabled !== false, percent: 1 };
+}
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
@@ -64,6 +68,13 @@ function periodStart(period) {
 }
 
 /* ---------- referal dasturi ---------- */
+// Mini-App'ning BotFather'da belgilangan "short name"i (masalan "app" yoki "shop") —
+// bu botga tegishli mini-ilovani TO'G'RIDAN-TO'G'RI ochadigan havola qurish uchun kerak:
+// https://t.me/<bot_username>/<MINIAPP_NAME>?startapp=... — shu format orqaligina
+// start_param mini-ilova ichiga to'g'ri yetib boradi (oddiy ?start= chatni ochadi, ilovani emas).
+// Railway Variables'da MINIAPP_NAME o'rnatilmagan bo'lsa, pastdagi standart qiymat ishlatiladi —
+// buni BotFather > Bot Settings > Menu Button / Mini Apps bo'limidagi haqiqiy nomga moslang.
+const MINIAPP_NAME = process.env.MINIAPP_NAME || "app";
 // Bot username'ni Telegram'dan bir marta so'rab olamiz (referal havolasi t.me/<username>?start=ref_<uid>
 // qurish uchun kerak) — alohida ENV o'zgaruvchi talab qilmaslik uchun.
 let BOT_USERNAME = "";
@@ -77,24 +88,29 @@ let BOT_USERNAME = "";
   } catch (e) {}
 })();
 
-// Taklif qilingan foydalanuvchi birinchi marta yetarli summaga xarid qilganda,
-// taklif qilgan foydalanuvchiga bir martalik bonus beriladi.
-function creditReferralIfEligible(uid) {
+// Taklif qilingan foydalanuvchi HAR safar xaridni yakunlaganda (status "done" bo'lganda),
+// uni taklif qilgan foydalanuvchiga shu xariddan foiz (masalan 1%) bonus beriladi — bir martalik emas, doimiy.
+function creditReferralOnOrder(order) {
   try {
+    if (!order || order.status !== "done") return;
     const settings = DB.settings.referral || {};
     if (!settings.enabled) return;
-    const acc = DB.users[String(uid)];
-    if (!acc || !acc.referredBy || acc.referralCredited) return;
-    const total = DB.orders.filter(o => o.uid === uid && o.status === "done")
-      .reduce((s, o) => s + (Number(o.price) || 0), 0);
-    if (total < (Number(settings.minPurchase) || 0)) return;
+    const acc = DB.users[String(order.uid)];
+    if (!acc || !acc.referredBy) return;
     const refAcc = DB.users[String(acc.referredBy)];
     if (!refAcc) return;
-    refAcc.balance = (refAcc.balance || 0) + (Number(settings.bonusAmount) || 0);
-    acc.referralCredited = true;
+    const pct = Number(settings.percent) || 0;
+    if (pct <= 0) return;
+    const already = acc.referralCreditedOrders || (acc.referralCreditedOrders = []);
+    if (already.indexOf(order.id) !== -1) return; // shu buyurtma uchun bonus allaqachon berilgan
+    const bonus = Math.floor((Number(order.price) || 0) * pct / 100);
+    if (bonus <= 0) return;
+    refAcc.balance = (refAcc.balance || 0) + bonus;
+    refAcc.referralEarnedTotal = (refAcc.referralEarnedTotal || 0) + bonus;
+    already.push(order.id);
     save();
-    tgSend(acc.referredBy, "🎉 Taklif qilgan do'stingiz birinchi xaridni amalga oshirdi! Balansingizga " +
-      (Number(settings.bonusAmount) || 0).toLocaleString("ru-RU") + " so'm qo'shildi.");
+    tgSend(acc.referredBy, "🎉 Taklif qilgan do'stingiz xarid qildi! Balansingizga " +
+      bonus.toLocaleString("ru-RU") + " so'm bonus qo'shildi.");
   } catch (e) {}
 }
 function expireOld() {
@@ -317,15 +333,19 @@ const server = http.createServer((req, res) => {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
     const settings = DB.settings.referral || {};
-    const invited = Object.keys(DB.users).filter(k => DB.users[k].referredBy === u.id);
-    const earned = invited.filter(k => DB.users[k].referralCredited).length;
+    const invitedKeys = Object.keys(DB.users).filter(k => DB.users[k].referredBy === u.id);
+    const friends = invitedKeys
+      .map(k => ({ name: DB.users[k].name || "", uname: DB.users[k].uname || null, ts: DB.users[k].ts || 0 }))
+      .sort((a, b) => b.ts - a.ts);
+    const myAcc = DB.users[String(u.id)] || {};
+    const appPart = MINIAPP_NAME ? ("/" + MINIAPP_NAME) : "";
     return send(res, 200, {
       enabled: !!settings.enabled,
-      bonusAmount: Number(settings.bonusAmount) || 0,
-      minPurchase: Number(settings.minPurchase) || 0,
-      link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + "?start=ref_" + u.id) : "",
-      invitedCount: invited.length,
-      earnedCount: earned
+      percent: Number(settings.percent) || 0,
+      link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + appPart + "?startapp=ref_" + u.id) : "",
+      invitedCount: invitedKeys.length,
+      totalEarned: Number(myAcc.referralEarnedTotal) || 0,
+      friends
     });
   }
 
@@ -475,7 +495,7 @@ const server = http.createServer((req, res) => {
           item: "Telegram Stars (" + amount + ")", price, status: "done", ts: Date.now(),
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
         DB.orders.push(o); save();
-        creditReferralIfEligible(u.id);
+        creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
     });
@@ -514,7 +534,7 @@ const server = http.createServer((req, res) => {
             item: title, price, status: "done", ts: Date.now(),
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
           DB.orders.push(o); save();
-          creditReferralIfEligible(u.id);
+          creditReferralOnOrder(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
         return;
@@ -534,7 +554,7 @@ const server = http.createServer((req, res) => {
         item: title, price, status: delivered ? "done" : "pending", ts: Date.now(),
         delivered: delivered || null, doneTs: delivered ? Date.now() : null };
       DB.orders.push(o); save();
-      if (delivered) creditReferralIfEligible(u.id);
+      if (delivered) creditReferralOnOrder(o);
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
   }
@@ -572,7 +592,7 @@ const server = http.createServer((req, res) => {
         if (b.action === "done") {
           o.status = "done"; o.doneTs = Date.now();
           save();
-          creditReferralIfEligible(o.uid);
+          creditReferralOnOrder(o);
           tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
         }
         else { o.status = "cancelled"; // refund
@@ -678,8 +698,7 @@ const server = http.createServer((req, res) => {
       return readBody(req, res, b => {
         DB.settings.referral = {
           enabled: !!b.enabled,
-          bonusAmount: Math.max(0, Number(b.bonusAmount) || 0),
-          minPurchase: Math.max(0, Number(b.minPurchase) || 0)
+          percent: Math.max(0, Math.min(100, Number(b.percent) || 0))
         };
         save();
         send(res, 200, { ok: true, referral: DB.settings.referral });
