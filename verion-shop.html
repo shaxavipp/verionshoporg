@@ -418,7 +418,7 @@ en:{
   invite_disabled:"Referral program is not active yet.",
   a_referral_title:"Referral settings",a_referral_enabled:"Enabled",a_referral_bonus:"Bonus amount (so'm)",a_referral_min:"Minimum friend purchase (so'm)",
   a_groups:"Groups",a_groups_new:"+ New group",a_groups_empty:"No groups yet",a_groups_del_confirm:"Delete this group? Its products will move to \"Other\".",a_groups_del_done:"Group deleted",a_groups_saved:"Group saved ✓", a_categories:"Categories",a_categories_hint:"Edit the name and image of each category card shown on the home screen.",a_cat_name_uz:"Name (Uzbek)",a_cat_name_ru:"Name (Russian)",a_cat_name_en:"Name (English)",a_cat_has_img:"Custom image set.",a_img_selected:"Image selected, press Save",a_img_will_clear:"Image will be removed after Save",
-  reviews_title:"Customer reviews",reviews_empty:"No reviews yet.",view_all_btn:"View all",
+  reviews_title:"Customer reviews",reviews_empty:"No reviews yet.",view_all_btn:"View all", reviews_count_unit:"reviews",
   review_btn:"⭐ Leave a review",review_done:"✅ Review sent",review_title:"Leave a review",
   review_placeholder:"Your feedback (optional)",review_submit:"Submit",review_thanks:"Thanks for your review!",
   review_err_already:"You've already reviewed this order",
@@ -481,7 +481,7 @@ uz:{
   invite_disabled:"Referal dasturi hozircha faol emas.",
   a_referral_title:"Referal sozlamalari",a_referral_enabled:"Yoqilgan",a_referral_bonus:"Bonus miqdori (so'm)",a_referral_min:"Do'stning minimal xaridi (so'm)",
   a_groups:"Guruhlar",a_groups_new:"+ Yangi guruh",a_groups_empty:"Hozircha guruh yo'q",a_groups_del_confirm:"Bu guruhni o'chirasizmi? Mahsulotlari \"Boshqa\" guruhiga o'tadi.",a_groups_del_done:"Guruh o'chirildi",a_groups_saved:"Guruh saqlandi ✓", a_categories:"Kategoriyalar",a_categories_hint:"Bosh sahifadagi har bir kategoriya kartochkasining nomi va rasmini tahrirlang.",a_cat_name_uz:"Nomi (O'zbekcha)",a_cat_name_ru:"Nomi (Ruscha)",a_cat_name_en:"Nomi (Inglizcha)",a_cat_has_img:"Maxsus rasm o'rnatilgan.",a_img_selected:"Rasm tanlandi, Saqlashni bosing",a_img_will_clear:"Rasm Saqlashdan keyin olib tashlanadi",
-  reviews_title:"Mijozlar fikri",reviews_empty:"Hozircha sharh yo'q.",view_all_btn:"Barchasini ko'rish",
+  reviews_title:"Mijozlar fikri",reviews_empty:"Hozircha sharh yo'q.",view_all_btn:"Barchasini ko'rish", reviews_count_unit:"baho",
   review_btn:"⭐ Sharh qoldirish",review_done:"✅ Sharh yuborildi",review_title:"Sharh qoldirish",
   review_placeholder:"Fikringiz (ixtiyoriy)",review_submit:"Yuborish",review_thanks:"Sharhingiz uchun rahmat!",
   review_err_already:"Bu buyurtmaga allaqachon sharh yozilgan",
@@ -544,7 +544,7 @@ ru:{
   invite_disabled:"Реферальная программа пока не активна.",
   a_referral_title:"Настройки рефералов",a_referral_enabled:"Включено",a_referral_bonus:"Сумма бонуса (сум)",a_referral_min:"Мин. покупка друга (сум)",
   a_groups:"Группы",a_groups_new:"+ Новая группа",a_groups_empty:"Групп пока нет",a_groups_del_confirm:"Удалить эту группу? Товары перейдут в \"Другое\".",a_groups_del_done:"Группа удалена",a_groups_saved:"Группа сохранена ✓", a_categories:"Категории",a_categories_hint:"Отредактируйте название и изображение каждой карточки категории на главной странице.",a_cat_name_uz:"Название (узб.)",a_cat_name_ru:"Название (рус.)",a_cat_name_en:"Название (англ.)",a_cat_has_img:"Установлено своё изображение.",a_img_selected:"Изображение выбрано, нажмите Сохранить",a_img_will_clear:"Изображение будет удалено после Сохранения",
-  reviews_title:"Отзывы клиентов",reviews_empty:"Отзывов пока нет.",view_all_btn:"Смотреть все",
+  reviews_title:"Отзывы клиентов",reviews_empty:"Отзывов пока нет.",view_all_btn:"Смотреть все", reviews_count_unit:"оценок",
   review_btn:"⭐ Оставить отзыв",review_done:"✅ Отзыв отправлен",review_title:"Оставить отзыв",
   review_placeholder:"Ваш отзыв (необязательно)",review_submit:"Отправить",review_thanks:"Спасибо за отзыв!",
   review_err_already:"Вы уже оставили отзыв на этот заказ",
@@ -1039,10 +1039,10 @@ function homeHTML(){
   return html;
 }
 
-/* ----- Mijozlar fikri bloki ----- */
+/* ----- Mijozlar fikri bloki (reyting + har 4.5s da aylanadigan sharh) ----- */
 function starsHTML(n,size){
   size=size||12;var h="";
-  for(var i=1;i<=5;i++)h+='<span style="display:inline-flex;color:'+(i<=n?"#ffb020":"var(--line)")+'">'+ic("star",size)+'</span>';
+  for(var i=1;i<=5;i++)h+='<span style="display:inline-flex;color:'+(i<=Math.round(n)?"#ffb020":"var(--line)")+'">'+ic("star",size)+'</span>';
   return h;
 }
 function reviewCardHTML(r){
@@ -1055,6 +1055,14 @@ function reviewCardHTML(r){
     +(r.itemTitle?'<div style="font-size:10.5px;color:var(--mut);margin-top:4px;opacity:.8">'+esc(r.itemTitle)+'</div>':'')
     +'</div></div>';
 }
+function reviewRotatorInnerHTML(r){
+  var initial=(r.name||"?").trim().charAt(0).toUpperCase();
+  return '<div class="avatar" style="width:26px;height:26px;font-size:11px;flex:0 0 auto">'+esc(initial)+'</div>'
+    +'<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px">'
+    +'<b style="font-size:12px">'+esc(r.name||"")+'</b><span style="font-size:10px">'+starsHTML(r.stars,10)+'</span></div>'
+    +(r.text?'<div style="font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.text)+'</div>':'')
+    +'</div>';
+}
 function reviewsBlockHTML(){
   var html='<div class="sect" style="margin-top:18px;display:flex;align-items:center;justify-content:space-between;padding-right:16px">'
     +'<span>'+esc(t("reviews_title"))+'</span>'
@@ -1062,9 +1070,30 @@ function reviewsBlockHTML(){
     +'</div>';
   if(REVIEWS===null)return html+'<div class="card" style="color:var(--mut);font-size:13px;padding:14px 12px">…</div>';
   if(!REVIEWS.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px;padding:14px 12px">'+esc(t("reviews_empty"))+'</div>';
-  var show=REVIEWS.slice(0,3);
-  for(var i=0;i<show.length;i++)html+=reviewCardHTML(show[i]);
+  var sum=0;for(var s=0;s<REVIEWS.length;s++)sum+=(REVIEWS[s].stars||0);
+  var avg=sum/REVIEWS.length;
+  html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
+    +'<div style="flex:0 0 auto;text-align:center;padding-right:12px;border-right:1px solid var(--line)">'
+    +'<div style="font-size:22px;font-weight:800">'+avg.toFixed(1)+'</div>'
+    +'<div style="margin:2px 0">'+starsHTML(avg,11)+'</div>'
+    +'<div style="font-size:9.5px;color:var(--mut);white-space:nowrap">'+REVIEWS.length+' '+esc(t("reviews_count_unit"))+'</div></div>'
+    +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
+    +reviewRotatorInnerHTML(REVIEWS[0])+'</div></div>';
   return html;
+}
+var REV_ROT_IDX=0;
+function rotateReviewWidget(){
+  if(!REVIEWS||REVIEWS.length<2)return;
+  var el=document.getElementById("revCurrent");
+  if(!el)return;
+  REV_ROT_IDX=(REV_ROT_IDX+1)%REVIEWS.length;
+  el.style.opacity="0";
+  setTimeout(function(){
+    var el2=document.getElementById("revCurrent");
+    if(!el2)return;
+    el2.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
+    el2.style.opacity="1";
+  },280);
 }
 function openReviewsSheet(){
   var html='<h2>'+esc(t("reviews_title"))+'</h2>';
@@ -2526,6 +2555,7 @@ function boot(){
   loadLeaderboard();
   if(S.screen==="profile")loadReferral();
   setInterval(tickTimer,1000);
+  setInterval(rotateReviewWidget,4500);
   setInterval(function(){
     if(tgUser()&&(S.screen==="orders"||S.screen==="home"))loadMe();
     if(S.screen==="home")loadStockCounts();
