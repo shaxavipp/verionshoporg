@@ -32,14 +32,15 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
 let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [],
-  settings: { referral: { enabled: true, percent: 1 } } };
+  settings: { referral: { enabled: true, percent: 1, shareText: "" } } };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 if (!DB.settings) DB.settings = {};
-if (!DB.settings.referral) DB.settings.referral = { enabled: true, percent: 1 };
+if (!DB.settings.referral) DB.settings.referral = { enabled: true, percent: 1, shareText: "" };
 if (DB.settings.referral.percent === undefined) {
   // eski (bir martalik bonus) sozlamadan yangi (har xariddan foiz) sozlamaga o'tish
-  DB.settings.referral = { enabled: DB.settings.referral.enabled !== false, percent: 1 };
+  DB.settings.referral = { enabled: DB.settings.referral.enabled !== false, percent: 1, shareText: DB.settings.referral.shareText || "" };
 }
+if (DB.settings.referral.shareText === undefined) DB.settings.referral.shareText = "";
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
@@ -350,6 +351,7 @@ const server = http.createServer((req, res) => {
       enabled: !!settings.enabled,
       percent: Number(settings.percent) || 0,
       link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + appPart + "?startapp=ref_" + u.id) : "",
+      shareText: settings.shareText || "",
       invitedCount: invitedKeys.length,
       totalEarned: Number(myAcc.referralEarnedTotal) || 0,
       friends
@@ -705,7 +707,8 @@ const server = http.createServer((req, res) => {
       return readBody(req, res, b => {
         DB.settings.referral = {
           enabled: !!b.enabled,
-          percent: Math.max(0, Math.min(100, Number(b.percent) || 0))
+          percent: Math.max(0, Math.min(100, Number(b.percent) || 0)),
+          shareText: String(b.shareText || "").slice(0, 500)
         };
         save();
         send(res, 200, { ok: true, referral: DB.settings.referral });

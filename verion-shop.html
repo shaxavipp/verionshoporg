@@ -424,7 +424,7 @@ en:{
   invite_bonus_hint:"Invite your friends and get {p}% bonus from their purchases",invite_stats:"{n} invited · {e} earned",
   invite_disabled:"Referral program is not active yet.",
   invite_screen_title:"Invite friends",invite_friends_title:"Invited friends",invite_empty_title:"You haven't invited anyone yet",invite_empty_sub:"Invite your friends and get {p}% bonus from their purchases",invite_joined:"Joined",
-  a_referral_title:"Referral settings",a_referral_enabled:"Enabled",a_referral_percent:"Bonus percent (%)",
+  a_referral_title:"Referral settings",a_referral_enabled:"Enabled",a_referral_percent:"Bonus percent (%)",a_referral_sharetext:"Share message (optional)",
   a_groups:"Groups",a_groups_new:"+ New group",a_groups_empty:"No groups yet",a_groups_del_confirm:"Delete this group? Its products will move to \"Other\".",a_groups_del_done:"Group deleted",a_groups_saved:"Group saved ✓", a_categories:"Categories",a_categories_hint:"Edit the name and image of each category card shown on the home screen.",a_cat_name_uz:"Name (Uzbek)",a_cat_name_ru:"Name (Russian)",a_cat_name_en:"Name (English)",a_cat_has_img:"Custom image set.",a_img_selected:"Image selected, press Save",a_img_will_clear:"Image will be removed after Save",
   reviews_title:"Customer reviews",reviews_empty:"No reviews yet.",view_all_btn:"View all", reviews_count_unit:"reviews",
   review_btn:"⭐ Leave a review",review_done:"✅ Review sent",review_title:"Leave a review",
@@ -489,7 +489,7 @@ uz:{
   invite_bonus_hint:"Do'stlaringizni taklif qiling va xaridlaridan {p}% bonus oling",invite_stats:"{n} ta taklif qilindi · {e} ishlandi",
   invite_disabled:"Referal dasturi hozircha faol emas.",
   invite_screen_title:"Do'stlarni taklif qilish",invite_friends_title:"Taklif qilinganlar",invite_empty_title:"Hali hech kimni taklif qilmadingiz",invite_empty_sub:"Do'stlaringizni taklif qiling va xaridlaridan {p}% bonus oling",invite_joined:"Qo'shildi",
-  a_referral_title:"Referal sozlamalari",a_referral_enabled:"Yoqilgan",a_referral_percent:"Bonus foizi (%)",
+  a_referral_title:"Referal sozlamalari",a_referral_enabled:"Yoqilgan",a_referral_percent:"Bonus foizi (%)",a_referral_sharetext:"Ulashish matni (ixtiyoriy)",
   a_groups:"Guruhlar",a_groups_new:"+ Yangi guruh",a_groups_empty:"Hozircha guruh yo'q",a_groups_del_confirm:"Bu guruhni o'chirasizmi? Mahsulotlari \"Boshqa\" guruhiga o'tadi.",a_groups_del_done:"Guruh o'chirildi",a_groups_saved:"Guruh saqlandi ✓", a_categories:"Kategoriyalar",a_categories_hint:"Bosh sahifadagi har bir kategoriya kartochkasining nomi va rasmini tahrirlang.",a_cat_name_uz:"Nomi (O'zbekcha)",a_cat_name_ru:"Nomi (Ruscha)",a_cat_name_en:"Nomi (Inglizcha)",a_cat_has_img:"Maxsus rasm o'rnatilgan.",a_img_selected:"Rasm tanlandi, Saqlashni bosing",a_img_will_clear:"Rasm Saqlashdan keyin olib tashlanadi",
   reviews_title:"Mijozlar fikri",reviews_empty:"Hozircha sharh yo'q.",view_all_btn:"Barchasini ko'rish", reviews_count_unit:"baho",
   review_btn:"⭐ Sharh qoldirish",review_done:"✅ Sharh yuborildi",review_title:"Sharh qoldirish",
@@ -554,7 +554,7 @@ ru:{
   invite_bonus_hint:"Приглашайте друзей и получайте {p}% от их покупок",invite_stats:"{n} приглашено · {e} заработано",
   invite_disabled:"Реферальная программа пока не активна.",
   invite_screen_title:"Пригласить друзей",invite_friends_title:"Приглашённые",invite_empty_title:"Вы пока никого не пригласили",invite_empty_sub:"Приглашайте друзей и получайте {p}% от их покупок",invite_joined:"Присоединился",
-  a_referral_title:"Настройки рефералов",a_referral_enabled:"Включено",a_referral_percent:"Процент бонуса (%)",
+  a_referral_title:"Настройки рефералов",a_referral_enabled:"Включено",a_referral_percent:"Процент бонуса (%)",a_referral_sharetext:"Текст для отправки (необязательно)",
   a_groups:"Группы",a_groups_new:"+ Новая группа",a_groups_empty:"Групп пока нет",a_groups_del_confirm:"Удалить эту группу? Товары перейдут в \"Другое\".",a_groups_del_done:"Группа удалена",a_groups_saved:"Группа сохранена ✓", a_categories:"Категории",a_categories_hint:"Отредактируйте название и изображение каждой карточки категории на главной странице.",a_cat_name_uz:"Название (узб.)",a_cat_name_ru:"Название (рус.)",a_cat_name_en:"Название (англ.)",a_cat_has_img:"Установлено своё изображение.",a_img_selected:"Изображение выбрано, нажмите Сохранить",a_img_will_clear:"Изображение будет удалено после Сохранения",
   reviews_title:"Отзывы клиентов",reviews_empty:"Отзывов пока нет.",view_all_btn:"Смотреть все", reviews_count_unit:"оценок",
   review_btn:"⭐ Оставить отзыв",review_done:"✅ Отзыв отправлен",review_title:"Оставить отзыв",
@@ -888,7 +888,8 @@ function navHTML(){
 }
 
 /* ===== Mahsulotlar (qidiruv + filtr) ===== */
-var PRODUCTS_PILLS=[["all","tab_all"],["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"]];
+var PRODUCTS_ALL_PILL=["all","tab_all"];
+var PRODUCTS_PILLS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"]];
 function productsScreenHTML(){
   var q=(S.products.search||"").trim().toLowerCase();
   var filter=S.products.filter||"all";
@@ -899,6 +900,9 @@ function productsScreenHTML(){
   });
   var html='<div class="searchbar"><span class="sic">'+ic("search",16)+'</span>'
     +'<input id="prodSearch" placeholder="'+esc(t("search_ph"))+'" value="'+esc(S.products.search||"")+'"></div>';
+  html+='<div class="seg" id="prodAllSeg" style="margin:10px 16px 6px">'
+    +'<button data-pfilter="'+PRODUCTS_ALL_PILL[0]+'" class="'+(filter===PRODUCTS_ALL_PILL[0]?"on":"")+'">'+esc(t(PRODUCTS_ALL_PILL[1]))+'</button>'
+    +'</div>';
   html+='<div class="seg" id="prodPills">';
   for(var i=0;i<PRODUCTS_PILLS.length;i++){
     var p=PRODUCTS_PILLS[i];
@@ -1718,7 +1722,8 @@ function openReferralSheet(){
   var shr=sh.querySelector("[data-shareref]");
   if(shr)shr.addEventListener("click",function(){
     var link=this.getAttribute("data-shareref");
-    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(t("invite_share_text"));
+    var txt=(REFERRAL&&REFERRAL.shareText)?REFERRAL.shareText:t("invite_share_text");
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(txt);
     try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(shareUrl);return;}}catch(e){}
     openLink(shareUrl);
   });
@@ -1845,6 +1850,7 @@ function openAdminReferral(){
   var html='<h2>'+esc(t("a_referral_title"))+'</h2>'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_referral_enabled"))+'</span><button class="swbtn" id="refEnabled"><i></i></button></div>'
     +'<label>'+esc(t("a_referral_percent"))+'</label><input id="refPercent" type="number" inputmode="numeric" min="0" max="100">'
+    +'<label>'+esc(t("a_referral_sharetext"))+'</label><textarea id="refShareText" style="min-height:70px"></textarea>'
     +'<div style="height:12px"></div><button class="btn" id="refSaveBtn">'+esc(t("a_save"))+'</button>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html);
@@ -1853,13 +1859,15 @@ function openAdminReferral(){
     enabled=!!r.enabled;
     sh.querySelector("#refEnabled").classList.toggle("on",enabled);
     sh.querySelector("#refPercent").value=(r.percent===undefined?1:r.percent);
+    sh.querySelector("#refShareText").value=r.shareText||"";
   }).catch(function(){});
   sh.querySelector("#refEnabled").addEventListener("click",function(){enabled=!enabled;this.classList.toggle("on",enabled);});
   sh.querySelector("#refSaveBtn").addEventListener("click",function(){
     var btn=this;btn.disabled=true;
     api("/api/admin/referral-settings","POST",{
       enabled:enabled,
-      percent:Number(sh.querySelector("#refPercent").value)||0
+      percent:Number(sh.querySelector("#refPercent").value)||0,
+      shareText:String(sh.querySelector("#refShareText").value||"").slice(0,500)
     }).then(function(){haptic("ok");toast(t("a_saved"));btn.disabled=false;loadReferral();})
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
@@ -2542,7 +2550,8 @@ function bind(){
   els=document.querySelectorAll("[data-shareref]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     var link=this.getAttribute("data-shareref");
-    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(t("invite_share_text"));
+    var txt=(REFERRAL&&REFERRAL.shareText)?REFERRAL.shareText:t("invite_share_text");
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(txt);
     try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(shareUrl);return;}}catch(e){}
     openLink(shareUrl);
   });
