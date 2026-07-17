@@ -60,19 +60,12 @@ function genId(p) {
   return p + "-" + s;
 }
 // "today" | "week" | "month" | "all" -> shu davr boshlanishining vaqt belgisi (ms).
-// Kun = bugun (00:00dan), Hafta = shu haftaning dushanbasidan, Oy = shu oyning
-// 1-sanasidan, Hammasi = bot ochilganidan buyon cheksiz. Har biri bir-biridan farqli.
+// "week" — joriy hafta dushanbadan, "month" — joriy oyning 1-sanasidan.
+// Foydalanuvchi aniq tasdiqladi: "kun"/"hafta"/"oy"/"hammasi" — barchasi bot
+// ochilgandan hozirgacha bo'lgan TO'LIQ (cheksiz) ma'lumot bo'yicha hisoblanadi,
+// hech biri sanaga cheklanmaydi. Shu sabab period parametridan qat'iy nazar 0 qaytariladi.
 function periodStart(period) {
-  const now = new Date();
-  if (period === "today") { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); }
-  if (period === "week") {
-    const d = new Date(now); d.setHours(0, 0, 0, 0);
-    const day = (d.getDay() + 6) % 7; // 0=Dushanba
-    d.setDate(d.getDate() - day);
-    return d.getTime();
-  }
-  if (period === "month") { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); }
-  return 0; // all
+  return 0;
 }
 
 /* ---------- referal dasturi ---------- */
@@ -350,8 +343,8 @@ const server = http.createServer((req, res) => {
     return send(res, 200, {
       enabled: !!settings.enabled,
       percent: Number(settings.percent) || 0,
-      link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + appPart + "?startapp=ref_" + u.id) : "",
       shareText: settings.shareText || "",
+      link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + appPart + "?startapp=ref_" + u.id) : "",
       invitedCount: invitedKeys.length,
       totalEarned: Number(myAcc.referralEarnedTotal) || 0,
       friends

@@ -12,9 +12,6 @@
   --hdrbg:rgba(12,12,17,.85);
   --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a; --gold:#c7d4e0;
   --r:18px;
-  --spring:cubic-bezier(.34,1.56,.64,1);
-  --ease:cubic-bezier(.22,1,.36,1);
-  --glass:blur(20px) saturate(180%);
 }
 [data-theme="light"]{
   --bg:#f3f6fa; --card:#ffffff; --card2:#eaf1fa; --line:#dbe6f0;
@@ -66,7 +63,7 @@ img{max-width:100%}
 
 /* header */
 header{position:sticky;top:0;z-index:50;background:var(--hdrbg);
-  backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   padding:9px 16px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;justify-content:space-between;gap:8px;}
 header .hu{display:flex;align-items:center;gap:9px;min-width:0}
@@ -78,8 +75,7 @@ header .hn{font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;ove
 header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .hctrl{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .hbtn{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;
-  font-size:11.5px;font-weight:800;color:var(--txt);white-space:nowrap;transition:transform .18s var(--spring)}
-.hbtn:active{transform:scale(.9)}
+  font-size:11.5px;font-weight:800;color:var(--txt);white-space:nowrap}
 .hbtn-ic{padding:6px 9px;font-size:14px}
 .rowicon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
   font-size:17px;flex:0 0 auto;box-shadow:0 4px 12px rgba(0,0,0,.25)}
@@ -91,9 +87,8 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .tabs{display:flex;gap:8px;padding:12px 16px 4px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:0 0 auto;padding:9px 16px;border-radius:999px;background:var(--card);
-  border:1px solid var(--line);font-size:13.5px;color:var(--mut);font-weight:700;transition:transform .22s var(--spring),background .2s ease}
-.tab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(124,92,255,.35);transform:scale(1.04)}
-.tab:active{transform:scale(.94)}
+  border:1px solid var(--line);font-size:13.5px;color:var(--mut);font-weight:700;}
+.tab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(124,92,255,.35)}
 
 /* product grid */
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
@@ -103,14 +98,10 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .groupgrid.grid .pbody .nm{font-size:16px;-webkit-line-clamp:2}
 .groupgrid.grid .pbody .ct{font-size:13px}
 .groupgrid .ptile .tl{font-size:30px!important}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;
-  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05);
-  position:relative;transition:transform .28s var(--spring),box-shadow .28s ease;}
-.pcard:active{transform:scale(.955);box-shadow:0 2px 8px rgba(0,0,0,.22)}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;
+  text-align:left;display:flex;flex-direction:column;box-shadow:0 4px 14px rgba(0,0,0,.22);position:relative;}
 .favbtn{position:absolute;top:6px;right:6px;z-index:5;width:26px;height:26px;border-radius:50%;
-  background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#fff;
-  backdrop-filter:blur(6px) saturate(150%);transition:transform .22s var(--spring)}
-.favbtn:active{transform:scale(.8)}
+  background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#fff;backdrop-filter:blur(2px)}
 .favbtn.on{color:#ff4d6d}
 .ptile{height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;padding:6px;position:relative;overflow:hidden;}
@@ -127,14 +118,12 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .empty{padding:40px 20px;text-align:center;color:var(--mut);font-size:13.5px;grid-column:1/-1}
 
 /* sheet */
-.dim{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:100;opacity:0;transition:opacity .28s var(--ease)}
+.dim{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;opacity:0;transition:opacity .22s}
 .dim.on{opacity:1}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;
-  background:var(--hdrbg);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
-  border-radius:24px 24px 0 0;padding:0;display:flex;flex-direction:column;
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;background:var(--card);
+  border-radius:22px 22px 0 0;padding:0;display:flex;flex-direction:column;
   max-height:calc(var(--vh, 1vh) * 90);top:auto;overflow:hidden;
-  box-shadow:0 -10px 50px rgba(0,0,0,.4);
-  transform:translateY(105%);transition:transform .42s var(--spring);}
+  transform:translateY(105%);transition:transform .28s cubic-bezier(.3,1,.4,1);}
 .sheet.on{transform:translateY(0)}
 .sheet-head{position:relative;flex:0 0 auto;padding:10px 16px 0}
 .sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
@@ -142,9 +131,8 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
 .bal-retry{color:var(--acc2);text-decoration:underline;font-size:.85em;cursor:pointer}
 .sheet-x{position:absolute;top:0;right:12px;width:30px;height:30px;border-radius:50%;
-  background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;color:var(--txt);flex-shrink:0;
-  transition:transform .2s var(--spring)}
-.sheet-x:active{transform:scale(.82)}
+  background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;color:var(--txt);flex-shrink:0}
+.sheet-x:active{opacity:.7}
 .sheet-x svg{width:15px;height:15px}
 .sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
 .sheet .cat{font-size:12px;color:var(--mut);margin-bottom:10px}
@@ -153,30 +141,27 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 
 /* buttons */
 .btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
-  padding:12px;border-radius:14px;font-weight:800;font-size:14px;background:var(--grad);color:#fff;
-  box-shadow:0 5px 16px rgba(124,92,255,.32),inset 0 1px 0 rgba(255,255,255,.25);
-  position:relative;overflow:hidden;transition:transform .22s var(--spring),box-shadow .22s ease;}
-.btn:active{transform:scale(.95);box-shadow:0 2px 8px rgba(124,92,255,.25)}
-.btn.big{padding:14px;font-size:15px;border-radius:16px}
+  padding:12px;border-radius:13px;font-weight:800;font-size:14px;background:var(--grad);color:#fff;
+  box-shadow:0 5px 16px rgba(124,92,255,.32);}
+.btn.big{padding:14px;font-size:15px;border-radius:14px}
 .btn.gray{background:var(--card2);border:1px solid var(--line);color:var(--txt);box-shadow:none}
 .btn.red{background:transparent;border:1px solid var(--err);color:var(--err);box-shadow:none}
 .btn.green{background:linear-gradient(135deg,#1fa74a,#30d158)}
-.btn:disabled{opacity:.4;box-shadow:none;transform:none}
+.btn:disabled{opacity:.4;box-shadow:none}
 .btn.sm{width:auto;padding:7px 12px;font-size:12px;border-radius:10px}
 
 /* cards & rows */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin:0 16px 12px;
-  padding:11px 14px;box-shadow:0 5px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04);
-  transition:transform .2s var(--ease)}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  padding:11px 14px;box-shadow:0 5px 16px rgba(0,0,0,.18);}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.ibadge{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .row:last-child{border-bottom:none}
 .row .l{font-size:13.5px;font-weight:600}
 .row .l .d{font-size:11px;color:var(--mut);margin-top:2px;font-weight:400}
 .row .r{font-size:12.5px;color:var(--mut);text-align:right}
 .sect{font-size:11px;font-weight:800;letter-spacing:.07em;color:var(--mut);margin:13px 16px 6px;text-transform:uppercase}
 .backrow{display:flex;align-items:center;gap:8px;margin:6px 16px 14px;background:none;border:none;
-  color:var(--txt);font-size:16px;font-weight:800;padding:6px 0;transition:transform .2s var(--spring)}
-.backrow:active{transform:translateX(-4px)}
+  color:var(--txt);font-size:16px;font-weight:800;padding:6px 0}
 .backrow svg{flex:0 0 auto}
 
 .badge{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:800;white-space:nowrap}
@@ -186,49 +171,21 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .badge.cncl{background:rgba(255,69,58,.14);color:var(--err)}
 .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card2);
   border:1px dashed var(--acc);border-radius:8px;padding:2px 8px;font-size:12px;color:var(--acc2);}
-.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px) scale(.9);
-  background:rgba(30,32,40,.82);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
-  border:1px solid var(--line);color:var(--txt);padding:11px 18px;border-radius:14px;
-  font-size:13.5px;z-index:600;opacity:0;transition:all .38s var(--spring);max-width:86vw;text-align:center;
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+  background:#26262f;border:1px solid var(--line);color:var(--txt);padding:11px 18px;border-radius:13px;
+  font-size:13.5px;z-index:600;opacity:0;transition:all .25s;max-width:86vw;text-align:center;
   box-shadow:0 10px 30px rgba(0,0,0,.45);}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
-.toast.err{background:rgba(58,28,28,.85);border-color:#5c2b2b;color:#ffb4b4;font-weight:700}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:#3a1c1c;border-color:#5c2b2b;color:#ffb4b4;font-weight:700}
 
 /* bottom nav */
 nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
-  background:var(--hdrbg);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
+  background:rgba(17,17,24,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-top:1px solid var(--line);padding:7px 0 calc(7px + env(safe-area-inset-bottom));}
 nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
-  color:var(--mut);font-size:10.5px;font-weight:700;transition:transform .22s var(--spring),color .2s ease}
-nav button:active{transform:scale(.88)}
+  color:var(--mut);font-size:10.5px;font-weight:700;}
 nav button.on{color:var(--acc2)}
-nav button svg{width:22px;height:22px;transition:filter .25s ease}
-nav button.on svg{filter:drop-shadow(0 0 6px rgba(124,92,255,.85));animation:navGlow 2.2s ease-in-out infinite}
-nav.navintro{animation:navSlideIn .55s cubic-bezier(.34,1.56,.64,1) both}
-nav.navintro button{opacity:0;animation:navPopIn .5s cubic-bezier(.34,1.56,.64,1) both}
-nav.navintro button:nth-child(1){animation-delay:.16s}
-nav.navintro button:nth-child(2){animation-delay:.23s}
-nav.navintro button:nth-child(3){animation-delay:.30s}
-nav.navintro button:nth-child(4){animation-delay:.37s}
-nav.navintro button:nth-child(5){animation-delay:.44s}
-@keyframes navSlideIn{
-  from{transform:translateY(100%);opacity:0}
-  to{transform:translateY(0);opacity:1}
-}
-@keyframes navPopIn{
-  0%{opacity:0;transform:translateY(14px) scale(.6)}
-  60%{opacity:1;transform:translateY(-3px) scale(1.08)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
-}
-@keyframes navGlow{
-  0%,100%{filter:drop-shadow(0 0 5px rgba(124,92,255,.7))}
-  50%{filter:drop-shadow(0 0 9px rgba(124,92,255,1))}
-}
-.shine-ic{display:inline-flex;color:#ffb020;filter:drop-shadow(0 0 4px rgba(255,176,32,.55));animation:shineGlow 2.6s ease-in-out infinite}
-@keyframes shineGlow{
-  0%,100%{filter:drop-shadow(0 0 3px rgba(255,176,32,.45));transform:scale(1)}
-  50%{filter:drop-shadow(0 0 8px rgba(255,176,32,.9));transform:scale(1.08)}
-}
+nav button svg{width:22px;height:22px}
 
 /* onboarding */
 #onb{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;
@@ -352,12 +309,6 @@ nav.navintro button:nth-child(5){animation-delay:.44s}
 .seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
 .seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
 .seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
-.searchbar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
-  border-radius:14px;padding:0 12px;margin:10px 16px;height:46px}
-.searchbar .sic{color:var(--mut);display:flex;flex-shrink:0}
-.searchbar input{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:14px;height:100%;font-family:inherit}
-.searchbar input::placeholder{color:var(--mut)}
-#prodPills{margin:0 16px 4px}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
 .swbtn{width:46px;height:27px;border-radius:999px;background:var(--card2);border:1px solid var(--line);position:relative}
 .swbtn i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--mut);transition:all .18s}
@@ -386,7 +337,7 @@ var BOT_USERNAME="verionshopbot";     /* @ belgisisiz, do'st taklif havolasi uch
 var SHOW_VIDEO_ROW=false;             /* set true + put link below when video is ready */
 var VIDEO_URL="";
 var MIN_AMOUNT=1000;
-var HIDE_STOCK_KINDS=["games","telegram","nakrutka"]; /* shu kategoriyalarda "N dona qoldi" ko'rsatilmaydi */
+var HIDE_STOCK_KINDS=["games","telegram"]; /* shu kategoriyalarda "N dona qoldi" ko'rsatilmaydi */
 var CARDS=[
   {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"card", enabled:true},
   {id:"uzcard",name:"UZCARD",number:"5614 6873 0780 6340", holder:"Asatullayev Shaxzod", icon:"card", enabled:true},
@@ -446,8 +397,7 @@ var Store=(function(){
 var I18N={
 en:{
   shop_sub:"Digital goods · fast delivery",
-  nav_home:"Home",nav_products:"Products",nav_orders:"Orders",nav_pay:"Payment",nav_profile:"Profile",
-  tab_nakrutka:"Boosting",search_ph:"Search game or service",tab_all:"All",
+  nav_home:"Home",nav_orders:"Orders",nav_pay:"Payment",nav_profile:"Profile",
   tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",tab_games:"Games",
   buy:"Buy now",in_stock:"in stock",out_stock:"Out of stock",empty_section:"Nothing here yet.",
   open_in_tg:"Open in Telegram to buy",order_created:"Order created — now pay",
@@ -468,7 +418,7 @@ en:{
   invite_bonus_hint:"Invite your friends and get {p}% bonus from their purchases",invite_stats:"{n} invited · {e} earned",
   invite_disabled:"Referral program is not active yet.",
   invite_screen_title:"Invite friends",invite_friends_title:"Invited friends",invite_empty_title:"You haven't invited anyone yet",invite_empty_sub:"Invite your friends and get {p}% bonus from their purchases",invite_joined:"Joined",
-  a_referral_title:"Referral settings",a_referral_enabled:"Enabled",a_referral_percent:"Bonus percent (%)",a_referral_sharetext:"Share message (optional)",
+  a_referral_title:"Referral settings",a_referral_enabled:"Enabled",a_referral_percent:"Bonus percent (%)",a_referral_sharetext:"Share message",a_referral_sharetext_ph:"e.g. Join this shop and get bonuses!",
   a_groups:"Groups",a_groups_new:"+ New group",a_groups_empty:"No groups yet",a_groups_del_confirm:"Delete this group? Its products will move to \"Other\".",a_groups_del_done:"Group deleted",a_groups_saved:"Group saved ✓", a_categories:"Categories",a_categories_hint:"Edit the name and image of each category card shown on the home screen.",a_cat_name_uz:"Name (Uzbek)",a_cat_name_ru:"Name (Russian)",a_cat_name_en:"Name (English)",a_cat_has_img:"Custom image set.",a_img_selected:"Image selected, press Save",a_img_will_clear:"Image will be removed after Save",
   reviews_title:"Customer reviews",reviews_empty:"No reviews yet.",view_all_btn:"View all", reviews_count_unit:"reviews",
   review_btn:"⭐ Leave a review",review_done:"✅ Review sent",review_title:"Leave a review",
@@ -511,8 +461,7 @@ en:{
 },
 uz:{
   shop_sub:"Raqamli tovarlar · tez yetkazish",
-  nav_home:"Asosiy",nav_products:"Mahsulotlar",nav_orders:"Buyurtmalar",nav_pay:"To'lov",nav_profile:"Profil",
-  tab_nakrutka:"Nakrutka",search_ph:"O'yin yoki xizmat qidirish",tab_all:"Barchasi",
+  nav_home:"Asosiy",nav_orders:"Buyurtmalar",nav_pay:"To'lov",nav_profile:"Profil",
   tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",tab_games:"O'yinlar",
   buy:"Sotib olish",in_stock:"dona bor",out_stock:"Tugagan",empty_section:"Hozircha bo'sh.",
   open_in_tg:"Xarid uchun Telegram orqali oching",order_created:"Buyurtma yaratildi — endi to'lang",
@@ -533,7 +482,7 @@ uz:{
   invite_bonus_hint:"Do'stlaringizni taklif qiling va xaridlaridan {p}% bonus oling",invite_stats:"{n} ta taklif qilindi · {e} ishlandi",
   invite_disabled:"Referal dasturi hozircha faol emas.",
   invite_screen_title:"Do'stlarni taklif qilish",invite_friends_title:"Taklif qilinganlar",invite_empty_title:"Hali hech kimni taklif qilmadingiz",invite_empty_sub:"Do'stlaringizni taklif qiling va xaridlaridan {p}% bonus oling",invite_joined:"Qo'shildi",
-  a_referral_title:"Referal sozlamalari",a_referral_enabled:"Yoqilgan",a_referral_percent:"Bonus foizi (%)",a_referral_sharetext:"Ulashish matni (ixtiyoriy)",
+  a_referral_title:"Referal sozlamalari",a_referral_enabled:"Yoqilgan",a_referral_percent:"Bonus foizi (%)",a_referral_sharetext:"Ulashish matni",a_referral_sharetext_ph:"masalan: Shu do'konga qo'shiling va bonus oling!",
   a_groups:"Guruhlar",a_groups_new:"+ Yangi guruh",a_groups_empty:"Hozircha guruh yo'q",a_groups_del_confirm:"Bu guruhni o'chirasizmi? Mahsulotlari \"Boshqa\" guruhiga o'tadi.",a_groups_del_done:"Guruh o'chirildi",a_groups_saved:"Guruh saqlandi ✓", a_categories:"Kategoriyalar",a_categories_hint:"Bosh sahifadagi har bir kategoriya kartochkasining nomi va rasmini tahrirlang.",a_cat_name_uz:"Nomi (O'zbekcha)",a_cat_name_ru:"Nomi (Ruscha)",a_cat_name_en:"Nomi (Inglizcha)",a_cat_has_img:"Maxsus rasm o'rnatilgan.",a_img_selected:"Rasm tanlandi, Saqlashni bosing",a_img_will_clear:"Rasm Saqlashdan keyin olib tashlanadi",
   reviews_title:"Mijozlar fikri",reviews_empty:"Hozircha sharh yo'q.",view_all_btn:"Barchasini ko'rish", reviews_count_unit:"baho",
   review_btn:"⭐ Sharh qoldirish",review_done:"✅ Sharh yuborildi",review_title:"Sharh qoldirish",
@@ -576,8 +525,7 @@ uz:{
 },
 ru:{
   shop_sub:"Цифровые товары · быстрая доставка",
-  nav_home:"Главная",nav_products:"Товары",nav_orders:"Заказы",nav_pay:"Оплата",nav_profile:"Профиль",
-  tab_nakrutka:"Накрутка",search_ph:"Поиск игры или услуги",tab_all:"Все",
+  nav_home:"Главная",nav_orders:"Заказы",nav_pay:"Оплата",nav_profile:"Профиль",
   tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",tab_games:"Игры",
   buy:"Купить",in_stock:"в наличии",out_stock:"Нет в наличии",empty_section:"Пока пусто.",
   open_in_tg:"Для покупки откройте через Telegram",order_created:"Заказ создан — оплатите",
@@ -598,7 +546,7 @@ ru:{
   invite_bonus_hint:"Приглашайте друзей и получайте {p}% от их покупок",invite_stats:"{n} приглашено · {e} заработано",
   invite_disabled:"Реферальная программа пока не активна.",
   invite_screen_title:"Пригласить друзей",invite_friends_title:"Приглашённые",invite_empty_title:"Вы пока никого не пригласили",invite_empty_sub:"Приглашайте друзей и получайте {p}% от их покупок",invite_joined:"Присоединился",
-  a_referral_title:"Настройки рефералов",a_referral_enabled:"Включено",a_referral_percent:"Процент бонуса (%)",a_referral_sharetext:"Текст для отправки (необязательно)",
+  a_referral_title:"Настройки рефералов",a_referral_enabled:"Включено",a_referral_percent:"Процент бонуса (%)",a_referral_sharetext:"Текст для отправки",a_referral_sharetext_ph:"напр. Присоединяйся к магазину и получи бонус!",
   a_groups:"Группы",a_groups_new:"+ Новая группа",a_groups_empty:"Групп пока нет",a_groups_del_confirm:"Удалить эту группу? Товары перейдут в \"Другое\".",a_groups_del_done:"Группа удалена",a_groups_saved:"Группа сохранена ✓", a_categories:"Категории",a_categories_hint:"Отредактируйте название и изображение каждой карточки категории на главной странице.",a_cat_name_uz:"Название (узб.)",a_cat_name_ru:"Название (рус.)",a_cat_name_en:"Название (англ.)",a_cat_has_img:"Установлено своё изображение.",a_img_selected:"Изображение выбрано, нажмите Сохранить",a_img_will_clear:"Изображение будет удалено после Сохранения",
   reviews_title:"Отзывы клиентов",reviews_empty:"Отзывов пока нет.",view_all_btn:"Смотреть все", reviews_count_unit:"оценок",
   review_btn:"⭐ Оставить отзыв",review_done:"✅ Отзыв отправлен",review_title:"Оставить отзыв",
@@ -702,8 +650,7 @@ var S={
   topup:{amount:0,method:null},
   group:null, // {kind,key} — asosiy sahifada hozir ochiq turgan guruh (Kategoriya→Guruh→Mahsulot)
   category:null, // kind — asosiy sahifada hozir ochiq turgan kategoriya (bosh sahifa endi faqat kategoriya kartochkalarini ko'rsatadi)
-  groupDefs:Store.get("vn_groupdefs",[]), // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
-  products:{search:"",filter:"all"} // "Mahsulotlar" bo'limi qidiruv/filtr holati
+  groupDefs:Store.get("vn_groupdefs",[]) // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
 };
 var ME={balance:null,payments:[],orders:[],favorites:[]}; // server account (loaded via /api/me)
 function persist(){
@@ -807,6 +754,9 @@ function loc(v){if(v==null)return"";if(typeof v==="string")return v;return v[S.l
 function orderId(){var a="ABCDEFGHJKMNPQRSTUVWXYZ23456789",s="";for(var i=0;i<6;i++)s+=a.charAt(Math.floor(Math.random()*a.length));return "VN-"+s;}
 function toast(msg,isErr){var el=document.getElementById("toast");el.textContent=msg;el.classList.toggle("err",!!isErr);el.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){el.classList.remove("on");},isErr?4200:2200);}
 function tgName(){var u=tgUser();return u?(u.first_name||"")+(u.last_name?" "+u.last_name:""):null;}
+function referralShareText(){
+  return (REFERRAL&&REFERRAL.shareText)?REFERRAL.shareText:t("invite_share_text");
+}
 function copyText(txt){
   var done=function(){toast(t("copied"));haptic("ok");};
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,function(){});return;}}catch(e){}
@@ -823,7 +773,6 @@ var IC={
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5M5 9.5V21h14V9.5M9 21v-6h6v6"/></svg>',
   orders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3zM9 8h6M9 12h6"/></svg>',
   pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>',
-  products:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg>',
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>'
 };
 
@@ -838,7 +787,6 @@ var ICON={
   cross:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
   warning:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 9.5v4.2"/><circle cx="12" cy="17" r="0.9" fill="currentColor" stroke="none"/></svg>',
   gift:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4"/><rect x="4" y="12" width="16" height="9"/><path d="M12 8v13"/><path d="M12 8c-1.6-3.3-6-3-6 0s4.4 0 6 0zM12 8c1.6-3.3 6-3 6 0s-4.4 0-6 0z"/></svg>',
-  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>',
   globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>',
   moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
   sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M2 12h2.2M19.8 12H22M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5"/></svg>',
@@ -889,9 +837,8 @@ function render(){
   document.documentElement.setAttribute("data-theme",S.theme==="light"?"light":"dark");
   applyTGChrome();
   if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
-  var html=headerHTML()+'<div class="screen">';
+  var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen">';
   if(S.screen==="home")html+=homeHTML();
-  else if(S.screen==="products")html+=productsScreenHTML();
   else if(S.screen==="orders")html+=ordersHTML();
   else if(S.screen==="pay")html+=payHTML();
   else html+=profileHTML();
@@ -926,45 +873,16 @@ function headerHTML(){
     +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?ic("sun",15):ic("moon",15))+'</button>'
     +'</div></header>';
 }
-var NAV_INTRO_PLAYED=false;
 function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
-  var introClass=NAV_INTRO_PLAYED?"":" navintro";
-  NAV_INTRO_PLAYED=true;
-  return '<nav class="'+introClass.trim()+'">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'</nav>';
-}
-
-/* ===== Mahsulotlar (qidiruv + filtr) ===== */
-var PRODUCTS_ALL_PILL=["all","tab_all"];
-var PRODUCTS_PILLS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"]];
-function productsScreenHTML(){
-  var q=(S.products.search||"").trim().toLowerCase();
-  var filter=S.products.filter||"all";
-  var items=catalog().filter(function(x){return x.active!==false;});
-  if(filter!=="all")items=items.filter(function(x){return x.kind===filter;});
-  if(q)items=items.filter(function(x){
-    return (loc(x.title)||"").toLowerCase().indexOf(q)!==-1||(x.cat||"").toLowerCase().indexOf(q)!==-1;
-  });
-  var html='<div class="searchbar"><span class="sic">'+ic("search",16)+'</span>'
-    +'<input id="prodSearch" placeholder="'+esc(t("search_ph"))+'" value="'+esc(S.products.search||"")+'"></div>';
-  html+='<div class="seg" id="prodAllSeg" style="margin:10px 16px 6px">'
-    +'<button data-pfilter="'+PRODUCTS_ALL_PILL[0]+'" class="'+(filter===PRODUCTS_ALL_PILL[0]?"on":"")+'">'+esc(t(PRODUCTS_ALL_PILL[1]))+'</button>'
-    +'</div>';
-  html+='<div class="seg" id="prodPills">';
-  for(var i=0;i<PRODUCTS_PILLS.length;i++){
-    var p=PRODUCTS_PILLS[i];
-    html+='<button data-pfilter="'+p[0]+'" class="'+(filter===p[0]?"on":"")+'">'+esc(t(p[1]))+'</button>';
-  }
-  html+='</div>';
-  html+=productGridHTML(items);
-  return html;
+  return '<nav>'+b("home","home",t("nav_home"))+b("orders","orders",t("nav_orders"))+b("pay","pay",t("nav_pay"))+b("profile","user",t("nav_profile"))+'</nav>';
 }
 
 /* ===== home ===== */
 var LANG_FLAG={uz:"🇺🇿",ru:"🇷🇺",en:"🇬🇧"};
 var LANG_NAME={uz:"O‘zbekcha",ru:"Русский",en:"English"};
 var LANG_ORDER=["uz","ru","en"];
-var TABS=[["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"],["nakrutka","tab_nakrutka"]];
+var TABS=[["obuna","tab_obuna"],["promokod","tab_promokod"],["telegram","tab_telegram"],["games","tab_games"]];
 function tileHTML(it,big){
   var st=it.tile||{};
   var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
@@ -1118,7 +1036,7 @@ function homeHTML(){
   }
   var html='';
   if(tgUser()){
-    html+='<div class="balcard"><div class="bl"><span class="shine-ic">'+ic("diamond",14)+'</span> '+esc(t("bal_title"))+'</div>'
+    html+='<div class="balcard"><div class="bl">'+ic("diamond",14)+' '+esc(t("bal_title"))+'</div>'
       +'<div class="bv">'+balHTML()+'</div>'
       +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
@@ -1165,7 +1083,7 @@ function reviewsBlockHTML(){
   html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
     +'<div style="flex:0 0 auto;text-align:center;padding-right:12px;border-right:1px solid var(--line)">'
     +'<div style="font-size:22px;font-weight:800">'+avg.toFixed(1)+'</div>'
-    +'<div class="shine-ic" style="margin:2px 0">'+starsHTML(avg,11)+'</div>'
+    +'<div style="margin:2px 0">'+starsHTML(avg,11)+'</div>'
     +'<div style="font-size:9.5px;color:var(--mut);white-space:nowrap">'+REVIEWS.length+' '+esc(t("reviews_count_unit"))+'</div></div>'
     +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
     +reviewRotatorInnerHTML(REVIEWS[0])+'</div></div>';
@@ -1717,14 +1635,6 @@ function openFavoritesSheet(){
     closeSheet();openFavoritesSheet();
   });
 }
-/* ===== referal kartochkasi (profil) ===== */
-function referralCardHTML(){
-  if(!tgUser())return "";
-  var sub=(REFERRAL&&REFERRAL.enabled)?t("invite_bonus_hint").replace("{p}",REFERRAL.percent||0):t("invite_sub");
-  return '<div class="card"><div class="row" data-openref="1"><span class="shine-ic">'+ic("gift",16)+'</span> '+esc(t("invite_title"))
-    +'<div class="d">'+esc(sub)+'</div></div>'
-    +'<button class="btn sm gray" data-openref="1">'+ic("arrowRight",14)+'</button></div></div>';
-}
 /* ===== do'stlarni taklif qilish — alohida oyna ===== */
 function openReferralSheet(){
   if(REFERRAL===null){
@@ -1769,44 +1679,46 @@ function openReferralSheet(){
   var shr=sh.querySelector("[data-shareref]");
   if(shr)shr.addEventListener("click",function(){
     var link=this.getAttribute("data-shareref");
-    var txt=(REFERRAL&&REFERRAL.shareText)?REFERRAL.shareText:t("invite_share_text");
-    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(txt);
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(referralShareText());
     try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(shareUrl);return;}}catch(e){}
     openLink(shareUrl);
   });
 }
 /* ===== profile ===== */
+function svcRow(attr,iconName,color,title,sub,rightHTML){
+  return '<div class="row" '+attr+'>'
+    +'<div style="display:flex;align-items:center;gap:11px;flex:1;min-width:0">'
+    +'<div class="ibadge" style="background:'+color+'22;color:'+color+'">'+ic(iconName,17)+'</div>'
+    +'<div class="l" style="min-width:0">'+esc(title)+'<div class="d">'+esc(sub)+'</div></div></div>'
+    +(rightHTML!==undefined?rightHTML:ic("arrowRight",14))
+    +'</div>';
+}
 function profileHTML(){
   var name=tgName(),u=tgUser();
   var av=avatarHTML();
   var cnt=0,sum=0;
   for(var i=0;i<ME.orders.length;i++){if(ME.orders[i].status!=="cancelled"){cnt++;sum+=ME.orders[i].price;}}
-  var html='<div class="sect">'+esc(t("profile_title"))+'</div>'
+  var refSub=(REFERRAL&&REFERRAL.enabled)?t("invite_bonus_hint").replace("{p}",REFERRAL.percent||0):t("invite_sub");
+  var html='<div style="height:6px"></div>'
     +'<div class="card"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
     +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px">'
     +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+(u?esc(u.id):"—")+'</div></div></div></div>'
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
-    +'<div class="card"><div class="row" data-openfavs="1">'+ic("heart",16)+' '+esc(t("fav_title"))
-    +'<div class="d">'+(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):esc(t("fav_empty")))+'</div></div>'
-    +'<button class="btn sm gray" data-openfavs="1">'+ic("arrowRight",14)+'</button></div></div>'
-    +'<div class="card"><div class="row"><div class="l">'+ic("headset",16)+' '+esc(t("support"))
-    +'<div class="d">'+esc(t("support_sub"))+' · @'+esc(SUPPORT_USERNAME)+'</div></div>'
-    +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div></div>'
-    +referralCardHTML()
-    +'<div class="sect">'+esc(t("language"))+' / '+esc(t("theme_title"))+'</div>'
-    +'<div class="card"><div class="row"><div class="l">'+ic("globe",16)+' '+esc(t("language"))
-    +'<div class="d">'+esc(t("lang_tap_hint"))+'</div></div>'
-    +'<button class="btn sm" id="langCycle">'+LANG_FLAG[S.lang]+' '+LANG_NAME[S.lang]+'</button></div>'
-    +'<div class="row"><div class="l">'+(S.theme==="light"?ic("sun",16):ic("moon",16))+' '+esc(t("theme_title"))
-    +'<div class="d">'+esc(t("theme_tap_hint"))+'</div></div>'
-    +'<button class="btn sm" id="themeToggle">'+(S.theme==="light"?esc(t("theme_light")):esc(t("theme_dark")))+'</button></div></div>';
+    +'<div class="card">'
+    +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")))
+    +svcRow('data-openref="1"',"gift","#9b59b6",t("invite_title"),refSub)
+    +svcRow('data-support="1"',"headset","#1abc9c",t("support"),t("support_sub")+' · @'+SUPPORT_USERNAME)
+    +'</div>'
+    +'<div class="card">'
+    +svcRow('id="langCycleRow"',"globe","#2980b9",t("language"),t("lang_tap_hint"),'<button class="btn sm" id="langCycle">'+LANG_FLAG[S.lang]+' '+LANG_NAME[S.lang]+'</button>')
+    +svcRow('id="themeToggleRow"',(S.theme==="light"?"sun":"moon"),"#f39c12",t("theme_title"),t("theme_tap_hint"),'<button class="btn sm" id="themeToggle">'+(S.theme==="light"?esc(t("theme_light")):esc(t("theme_dark")))+'</button>')
+    +'</div>';
   if(isAdmin()){
-    html+='<div class="sect">'+esc(t("owner"))+'</div>'
-      +'<div class="card"><div class="row"><div class="l">'+ic("tools",16)+' '+esc(t("a_panel"))
-      +'<div class="d">'+esc(t("a_panel_sub"))+'</div></div>'
-      +'<button class="btn sm" id="adminBtn">'+ic("arrowRight",14)+'</button></div></div>';
+    html+='<div class="card">'
+      +svcRow('id="adminBtnRow"',"tools","#7f8c8d",t("a_panel"),t("a_panel_sub"))
+      +'</div>';
   }
   html+='<div style="height:24px"></div>';
   return html;
@@ -1897,7 +1809,7 @@ function openAdminReferral(){
   var html='<h2>'+esc(t("a_referral_title"))+'</h2>'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_referral_enabled"))+'</span><button class="swbtn" id="refEnabled"><i></i></button></div>'
     +'<label>'+esc(t("a_referral_percent"))+'</label><input id="refPercent" type="number" inputmode="numeric" min="0" max="100">'
-    +'<label>'+esc(t("a_referral_sharetext"))+'</label><textarea id="refShareText" style="min-height:70px"></textarea>'
+    +'<label>'+esc(t("a_referral_sharetext"))+'</label><textarea id="refShareText" rows="3" placeholder="'+esc(t("a_referral_sharetext_ph"))+'"></textarea>'
     +'<div style="height:12px"></div><button class="btn" id="refSaveBtn">'+esc(t("a_save"))+'</button>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html);
@@ -1914,7 +1826,7 @@ function openAdminReferral(){
     api("/api/admin/referral-settings","POST",{
       enabled:enabled,
       percent:Number(sh.querySelector("#refPercent").value)||0,
-      shareText:String(sh.querySelector("#refShareText").value||"").slice(0,500)
+      shareText:sh.querySelector("#refShareText").value||""
     }).then(function(){haptic("ok");toast(t("a_saved"));btn.disabled=false;loadReferral();})
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
@@ -2349,7 +2261,7 @@ function openAdminForm(editId){
   function kindBtn(k,key){return '<button data-kind="'+k+'" class="'+(F.kind===k?"on":"")+'">'+esc(t(key))+'</button>';}
   var html='<h2>'+esc(editId?t("a_edit"):t("a_new"))+'</h2>'
     +'<label>'+esc(t("a_section"))+'</label>'
-    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+kindBtn("nakrutka","tab_nakrutka")+'</div>'
+    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("promokod","tab_promokod")+kindBtn("telegram","tab_telegram")+kindBtn("games","tab_games")+'</div>'
     +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
     +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
     +'<div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
@@ -2401,7 +2313,7 @@ function openAdminForm(editId){
   function populateGroupSelect(){ /* guruh maydoni olib tashlangan, endi kerak emas */ }
   function preview(){
     readForm();
-    var hideStock=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka");
+    var hideStock=(F.kind==="telegram"||F.kind==="games");
     var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
       title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
     var out=fake.stock<=0;
@@ -2412,7 +2324,7 @@ function openAdminForm(editId){
       +'</div></div></div>';
   }
   function syncStockVisibility(){
-    var hide=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka")||F.fulfillType!=="normal";
+    var hide=(F.kind==="telegram"||F.kind==="games")||F.fulfillType!=="normal";
     var wrap=g("#stockWrap");
     if(wrap)wrap.classList.toggle("hide",hide);
     var si=g("#f_stock");
@@ -2597,8 +2509,7 @@ function bind(){
   els=document.querySelectorAll("[data-shareref]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     var link=this.getAttribute("data-shareref");
-    var txt=(REFERRAL&&REFERRAL.shareText)?REFERRAL.shareText:t("invite_share_text");
-    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(txt);
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(referralShareText());
     try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(shareUrl);return;}}catch(e){}
     openLink(shareUrl);
   });
@@ -2606,24 +2517,9 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();toggleFavorite(this.getAttribute("data-fav"));});
   els=document.querySelectorAll("[data-openfavs]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openFavoritesSheet);
-  var psEl=document.getElementById("prodSearch");
-  if(psEl){
-    psEl.addEventListener("input",function(){
-      S.products.search=this.value;
-      var pos=this.selectionStart;
-      render();
-      var ns=document.getElementById("prodSearch");
-      if(ns){ns.focus();try{ns.setSelectionRange(pos,pos);}catch(e){}}
-    });
-  }
-  els=document.querySelectorAll("[data-pfilter]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    S.products.filter=this.getAttribute("data-pfilter");
-    haptic();render();
-  });
   els=document.querySelectorAll("[data-setlang]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
-  var lc=document.getElementById("langCycle");
+  var lc=document.getElementById("langCycleRow");
   if(lc)lc.addEventListener("click",function(){
     var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
     persist();haptic();render();
@@ -2637,7 +2533,7 @@ function bind(){
   if(htc)htc.addEventListener("click",function(){
     S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
   });
-  var tc=document.getElementById("themeToggle");
+  var tc=document.getElementById("themeToggleRow");
   if(tc)tc.addEventListener("click",function(){
     S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
   });
@@ -2675,7 +2571,7 @@ function bind(){
   if(pw)pw.addEventListener("click",markPaid);
   var pa=document.getElementById("pwAbort");
   if(pa)pa.addEventListener("click",function(){S.activePay=null;persist();toast(t("cancelled_toast"));render();});
-  var ab=document.getElementById("adminBtn");
+  var ab=document.getElementById("adminBtnRow");
   if(ab)ab.addEventListener("click",openAdmin);
   tickTimer();
 }
