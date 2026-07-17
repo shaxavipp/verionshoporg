@@ -317,6 +317,8 @@ nav button svg{width:22px;height:22px}
 .ibadge{transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
 .ibadge svg{animation:ibPulse 2.8s ease-in-out infinite,ibGlow 2.8s ease-in-out infinite}
 .row:active .ibadge{transform:scale(.84) rotate(-4deg)}
+[data-reduce-motion="1"] .ibadge svg{animation:none}
+[data-reduce-motion="1"] .seg.mini button.on{transform:none}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
 .swbtn{width:46px;height:27px;border-radius:999px;background:var(--card2);border:1px solid var(--line);position:relative}
 .swbtn i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--mut);transition:all .18s}
@@ -419,7 +421,7 @@ en:{
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
-  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Check",amount_optional:"ENTER AMOUNT",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing...",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
+  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light",reduce_motion:"Reduce animations",reduce_motion_sub:"Turn off icon animations for speed",leaderboard_row:"Top spenders",leaderboard_row_sub:"See the leaderboard", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Check",amount_optional:"ENTER AMOUNT",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing...",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
   period_today:"Today",period_week:"Week",period_month:"Month",period_all:"All time",
   fav_add:"Add to favorites",fav_remove:"Remove from favorites",fav_title:"Favorites",fav_empty:"No favorites yet — tap the heart on any product.",
   invite_link_label:"Your invite link",invite_share_btn:"Share",invite_copy_btn:"Copy",
@@ -483,7 +485,7 @@ uz:{
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
-  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",leaderboard_row:"Top donaterlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
   period_today:"Bugun",period_week:"Hafta",period_month:"Oy",period_all:"Hammasi",
   fav_add:"Sevimlilarga qo'shish",fav_remove:"Sevimlilardan olib tashlash",fav_title:"Sevimlilar",fav_empty:"Hozircha sevimli mahsulot yo'q — istalgan mahsulotdagi yurak belgisini bosing.",
   invite_link_label:"Sizning taklif havolangiz",invite_share_btn:"Ulashish",invite_copy_btn:"Nusxalash",
@@ -547,7 +549,7 @@ ru:{
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
-  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Проверить",amount_optional:"ВВЕДИТЕ СУММУ",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка...",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
+  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая",reduce_motion:"Уменьшить анимации",reduce_motion_sub:"Отключить анимацию иконок для скорости",leaderboard_row:"Топ покупателей",leaderboard_row_sub:"Смотреть рейтинг", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Проверить",amount_optional:"ВВЕДИТЕ СУММУ",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка...",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
   period_today:"Сегодня",period_week:"Неделя",period_month:"Месяц",period_all:"Всё время",
   fav_add:"В избранное",fav_remove:"Убрать из избранного",fav_title:"Избранное",fav_empty:"Пока нет избранного — нажмите на сердечко у товара.",
   invite_link_label:"Ваша реферальная ссылка",invite_share_btn:"Поделиться",invite_copy_btn:"Копировать",
@@ -655,6 +657,7 @@ var S={
   serverCat:Store.get("vn_srv",null),    // catalog published on the server (shared with everyone)
   activePay:Store.get("vn_actpay",null), // current top-up payment window {id,pay,amount,method,expiresAt}
   theme:Store.get("vn_theme","dark"),
+  reduceMotion:Store.get("vn_reducemotion",false),
   topup:{amount:0,method:null},
   group:null, // {kind,key} — asosiy sahifada hozir ochiq turgan guruh (Kategoriya→Guruh→Mahsulot)
   category:null, // kind — asosiy sahifada hozir ochiq turgan kategoriya (bosh sahifa endi faqat kategoriya kartochkalarini ko'rsatadi)
@@ -821,7 +824,8 @@ var ICON={
   heartFill:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 20.5s-7.5-4.6-10-9.3C.5 7.8 2.3 4 6 4c2.1 0 3.6 1.1 4.5 2.4C11.4 5.1 12.9 4 15 4c3.7 0 5.5 3.8 4 7.2-2.5 4.7-7 9.3-7 9.3z"/></svg>',
   share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 21 3l-6 18-4-7-7-2.5z"/><path d="M11 14l3-3"/></svg>',
-  gamepad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="19" height="10" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1" fill="currentColor" stroke="none"/></svg>'
+  gamepad:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="19" height="10" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="11.5" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1" fill="currentColor" stroke="none"/></svg>',
+  trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 20c0-1.7.8-2.6 1.2-3h2.6c.4.4 1.2 1.3 1.2 3"/></svg>'
 };
 function ic(name,size,cls){
   size=size||16;
@@ -843,6 +847,7 @@ function applyTGChrome(){
 function render(){
   var app=document.getElementById("app");
   document.documentElement.setAttribute("data-theme",S.theme==="light"?"light":"dark");
+  document.documentElement.setAttribute("data-reduce-motion",S.reduceMotion?"1":"0");
   applyTGChrome();
   if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
   var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen">';
@@ -1721,21 +1726,26 @@ function profileHTML(){
   var cnt=0,sum=0;
   for(var i=0;i<ME.orders.length;i++){if(ME.orders[i].status!=="cancelled"){cnt++;sum+=ME.orders[i].price;}}
   var refSub=(REFERRAL&&REFERRAL.enabled)?t("invite_bonus_hint").replace("{p}",REFERRAL.percent||0):t("invite_sub");
+  var idTxt=u?String(u.id):"—";
   var html='<div style="height:6px"></div>'
     +'<div class="card"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
-    +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px">'
-    +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+(u?esc(u.id):"—")+'</div></div></div></div>'
+    +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px;display:flex;align-items:center;gap:5px">'
+    +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+esc(idTxt)
+    +(u?'<button data-copy="'+esc(idTxt)+'" style="background:none;border:none;color:var(--mut);padding:0;display:inline-flex" onclick="event.stopPropagation()">'+ic("clipboard",12)+'</button>':'')
+    +'</div></div></div></div>'
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     +'<div class="card">'
     +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")))
     +svcRow('data-openref="1"',"gift","#9b59b6",t("invite_title"),refSub)
+    +svcRow('data-viewalllb="1"',"trophy","#f1c40f",t("leaderboard_row"),t("leaderboard_row_sub"))
     +svcRow('data-support="1"',"headset","#1abc9c",t("support"),t("support_sub")+' · @'+SUPPORT_USERNAME)
     +'</div>'
     +'<div class="card">'
     +svcRow('',"globe","#2980b9",t("language"),t("lang_tap_hint"),langSegHTML())
     +svcRow('',(S.theme==="light"?"sun":"moon"),"#f39c12",t("theme_title"),t("theme_tap_hint"),themeSegHTML())
+    +svcRow('',"wand","#8e6fef",t("reduce_motion"),t("reduce_motion_sub"),'<button class="swbtn'+(S.reduceMotion?" on":"")+'" id="reduceMotionBtn"><i></i></button>')
     +'</div>';
   if(isAdmin()){
     html+='<div class="card">'
@@ -2549,6 +2559,10 @@ function bind(){
   var htc=document.getElementById("hThemeBtn");
   if(htc)htc.addEventListener("click",function(){
     S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
+  });
+  var rmb=document.getElementById("reduceMotionBtn");
+  if(rmb)rmb.addEventListener("click",function(){
+    S.reduceMotion=!S.reduceMotion;Store.set("vn_reducemotion",S.reduceMotion);haptic();render();
   });
   els=document.querySelectorAll("[data-ordtab]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.ordTab=this.getAttribute("data-ordtab");haptic();render();});
