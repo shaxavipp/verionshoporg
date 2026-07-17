@@ -64,8 +64,26 @@ function genId(p) {
 // Foydalanuvchi aniq tasdiqladi: "kun"/"hafta"/"oy"/"hammasi" — barchasi bot
 // ochilgandan hozirgacha bo'lgan TO'LIQ (cheksiz) ma'lumot bo'yicha hisoblanadi,
 // hech biri sanaga cheklanmaydi. Shu sabab period parametridan qat'iy nazar 0 qaytariladi.
+// Davr chegarasini Toshkent vaqti (UTC+5) bo'yicha hisoblaydi — server qaysi
+// timezone'da ishlashidan qat'i nazar, "Bugun" doim Toshkentdagi yarim tundan boshlanadi.
+// Eslatma: avval bu funksiya har doim 0 qaytarardi — shuning uchun "Bugun/Hafta/Oy"
+// tugmalari amalda hech narsani filtrlamas, har doim "Hammasi" bilan bir xil natija
+// ko'rsatardi. Reyting "ishlamayapti" degan shikoyatning asosiy sababi shu edi.
 function periodStart(period) {
-  return 0;
+  if (period !== "today" && period !== "week" && period !== "month") return 0;
+  const OFFSET_MS = 5 * 60 * 60 * 1000; // UTC+5
+  const local = new Date(Date.now() + OFFSET_MS);
+  let startLocalUTC;
+  if (period === "today") {
+    startLocalUTC = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate());
+  } else if (period === "week") {
+    const day = local.getUTCDay(); // 0=Yak..6=Shan
+    const diffToMonday = day === 0 ? 6 : day - 1;
+    startLocalUTC = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - diffToMonday);
+  } else {
+    startLocalUTC = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1);
+  }
+  return startLocalUTC - OFFSET_MS;
 }
 
 /* ---------- referal dasturi ---------- */
