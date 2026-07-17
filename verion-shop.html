@@ -184,7 +184,17 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
 nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
   color:var(--mut);font-size:10.5px;font-weight:700;}
 nav button.on{color:var(--acc2)}
-nav button svg{width:22px;height:22px}
+nav button svg{width:22px;height:22px;transition:filter .25s ease}
+nav button.on svg{filter:drop-shadow(0 0 6px rgba(124,92,255,.85));animation:navGlow 2.2s ease-in-out infinite}
+@keyframes navGlow{
+  0%,100%{filter:drop-shadow(0 0 5px rgba(124,92,255,.7))}
+  50%{filter:drop-shadow(0 0 9px rgba(124,92,255,1))}
+}
+.shine-ic{display:inline-flex;color:#ffb020;filter:drop-shadow(0 0 4px rgba(255,176,32,.55));animation:shineGlow 2.6s ease-in-out infinite}
+@keyframes shineGlow{
+  0%,100%{filter:drop-shadow(0 0 3px rgba(255,176,32,.45));transform:scale(1)}
+  50%{filter:drop-shadow(0 0 8px rgba(255,176,32,.9));transform:scale(1.08)}
+}
 
 /* onboarding */
 #onb{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;
@@ -1071,7 +1081,7 @@ function homeHTML(){
   }
   var html='';
   if(tgUser()){
-    html+='<div class="balcard"><div class="bl">'+ic("diamond",14)+' '+esc(t("bal_title"))+'</div>'
+    html+='<div class="balcard"><div class="bl"><span class="shine-ic">'+ic("diamond",14)+'</span> '+esc(t("bal_title"))+'</div>'
       +'<div class="bv">'+balHTML()+'</div>'
       +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
@@ -1118,7 +1128,7 @@ function reviewsBlockHTML(){
   html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
     +'<div style="flex:0 0 auto;text-align:center;padding-right:12px;border-right:1px solid var(--line)">'
     +'<div style="font-size:22px;font-weight:800">'+avg.toFixed(1)+'</div>'
-    +'<div style="margin:2px 0">'+starsHTML(avg,11)+'</div>'
+    +'<div class="shine-ic" style="margin:2px 0">'+starsHTML(avg,11)+'</div>'
     +'<div style="font-size:9.5px;color:var(--mut);white-space:nowrap">'+REVIEWS.length+' '+esc(t("reviews_count_unit"))+'</div></div>'
     +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
     +reviewRotatorInnerHTML(REVIEWS[0])+'</div></div>';
@@ -1674,7 +1684,7 @@ function openFavoritesSheet(){
 function referralCardHTML(){
   if(!tgUser())return "";
   var sub=(REFERRAL&&REFERRAL.enabled)?t("invite_bonus_hint").replace("{p}",REFERRAL.percent||0):t("invite_sub");
-  return '<div class="card"><div class="row" data-openref="1">'+ic("gift",16)+' '+esc(t("invite_title"))
+  return '<div class="card"><div class="row" data-openref="1"><span class="shine-ic">'+ic("gift",16)+'</span> '+esc(t("invite_title"))
     +'<div class="d">'+esc(sub)+'</div></div>'
     +'<button class="btn sm gray" data-openref="1">'+ic("arrowRight",14)+'</button></div></div>';
 }
