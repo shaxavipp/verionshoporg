@@ -32,15 +32,14 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
 let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [],
-  settings: { referral: { enabled: true, percent: 1, shareText: "" } } };
+  settings: { referral: { enabled: true, percent: 1 } } };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
 if (!DB.settings) DB.settings = {};
-if (!DB.settings.referral) DB.settings.referral = { enabled: true, percent: 1, shareText: "" };
+if (!DB.settings.referral) DB.settings.referral = { enabled: true, percent: 1 };
 if (DB.settings.referral.percent === undefined) {
   // eski (bir martalik bonus) sozlamadan yangi (har xariddan foiz) sozlamaga o'tish
-  DB.settings.referral = { enabled: DB.settings.referral.enabled !== false, percent: 1, shareText: DB.settings.referral.shareText || "" };
+  DB.settings.referral = { enabled: DB.settings.referral.enabled !== false, percent: 1 };
 }
-if (DB.settings.referral.shareText === undefined) DB.settings.referral.shareText = "";
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
@@ -59,19 +58,13 @@ function genId(p) {
   for (let i = 0; i < 6; i++) s += a[Math.floor(Math.random() * a.length)];
   return p + "-" + s;
 }
-// Kun = bugun (00:00dan), Hafta = shu haftaning dushanbasidan, Oy = shu oyning
-// 1-sanasidan, Hammasi = bot ochilganidan buyon cheksiz. Har biri bir-biridan farqli.
+// "today" | "week" | "month" | "all" -> shu davr boshlanishining vaqt belgisi (ms).
+// "week" — joriy hafta dushanbadan, "month" — joriy oyning 1-sanasidan.
+// Foydalanuvchi aniq tasdiqladi: "kun"/"hafta"/"oy"/"hammasi" — barchasi bot
+// ochilgandan hozirgacha bo'lgan TO'LIQ (cheksiz) ma'lumot bo'yicha hisoblanadi,
+// hech biri sanaga cheklanmaydi. Shu sabab period parametridan qat'iy nazar 0 qaytariladi.
 function periodStart(period) {
-  const now = new Date();
-  if (period === "today") { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); }
-  if (period === "week") {
-    const d = new Date(now); d.setHours(0, 0, 0, 0);
-    const day = (d.getDay() + 6) % 7; // 0=Dushanba
-    d.setDate(d.getDate() - day);
-    return d.getTime();
-  }
-  if (period === "month") { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); }
-  return 0; // all
+  return 0;
 }
 
 /* ---------- referal dasturi ---------- */
@@ -349,7 +342,6 @@ const server = http.createServer((req, res) => {
     return send(res, 200, {
       enabled: !!settings.enabled,
       percent: Number(settings.percent) || 0,
-      shareText: settings.shareText || "",
       link: BOT_USERNAME ? ("https://t.me/" + BOT_USERNAME + appPart + "?startapp=ref_" + u.id) : "",
       invitedCount: invitedKeys.length,
       totalEarned: Number(myAcc.referralEarnedTotal) || 0,
@@ -706,8 +698,7 @@ const server = http.createServer((req, res) => {
       return readBody(req, res, b => {
         DB.settings.referral = {
           enabled: !!b.enabled,
-          percent: Math.max(0, Math.min(100, Number(b.percent) || 0)),
-          shareText: String(b.shareText || "").slice(0, 500)
+          percent: Math.max(0, Math.min(100, Number(b.percent) || 0))
         };
         save();
         send(res, 200, { ok: true, referral: DB.settings.referral });
@@ -809,69 +800,6 @@ const server = http.createServer((req, res) => {
         }
         logSms(entry);
       } catch (e) {}
-    });
-  }
-
-  /* ----- Telegram webhook: humocard/cardxabar guruhidagi SMS xabarlarni tinglash ----- */
-  if (url === "/api/tg-webhook" && m === "POST") {
-    // Telegram setWebhook'da berilgan secret_token shu yerga header sifatida keladi — soxta so'rovlarni blok qiladi
-    // MUHIM: agar TG_WEBHOOK_SECRET sozlanmagan bo'lsa ham endpoint YOPIQ turishi kerak (fail-closed),
-    // aks holda har kim soxta "to'lov SMS"i yuborib, balansni bepul to'ldirib olishi mumkin edi.
-    if (!TG_WEBHOOK_SECRET || req.headers["x-telegram-bot-api-secret-token"] !== TG_WEBHOOK_SECRET)
-      return send(res, 401, { error: "bad secret" });
-    return readBody(req, res, upd => {
-      send(res, 200, { ok: true }); // Telegram'ga darhol javob (u tezkor ACK kutadi)
-      try {
-        // Guruhdan: upd.message / upd.channel_post. Telegram Business orqali shaxsiy chatdan: upd.business_message
-        const msg = upd.message || upd.channel_post || upd.business_message;
-        if (!msg || !msg.text) {
-          if (upd.business_connection) console.log("[tg-webhook] Business ulanish yangilandi (business_connection event) — bu normal, xabar emas.");
-          return;
-        }
-        const isBusiness = !!upd.business_message;
-        const uname = ((msg.from && msg.from.username) || "").toLowerCase();
-        console.log("[tg-webhook] Xabar keldi: turi=" + (isBusiness ? "business" : (upd.channel_post ? "channel" : "group/DM")) +
-          " kimdan=@" + (uname || "(username yo'q)") + " matn=\"" + msg.text.slice(0, 60) + "\"");
-
-        if (isBusiness) {
-          // Business rejimida bitta umumiy guruh yo'q — har bir kontakt alohida chat.
-          // Shu sabab chat_id bo'yicha emas, faqat yuboruvchi bot nomi (SMS_BOT_USERNAMES) bo'yicha filtrlaymiz.
-          if (!SMS_BOT_USERNAMES.length || SMS_BOT_USERNAMES.indexOf(uname) === -1) {
-            console.log("[tg-webhook] RAD ETILDI: '@" + uname + "' SMS_BOT_USERNAMES ro'yxatida yo'q (joriy ro'yxat: " +
-              (SMS_BOT_USERNAMES.join(", ") || "(bo'sh — hech kim o'tmaydi)") + ")");
-            return;
-          }
-        } else {
-          const chatId = String(msg.chat && msg.chat.id);
-          if (SMS_SOURCE_CHAT_ID && chatId !== String(SMS_SOURCE_CHAT_ID)) {
-            console.log("[tg-webhook] RAD ETILDI: chat_id (" + chatId + ") SMS_SOURCE_CHAT_ID (" + SMS_SOURCE_CHAT_ID + ") bilan mos emas");
-            return;
-          }
-          if (SMS_BOT_USERNAMES.length && SMS_BOT_USERNAMES.indexOf(uname) === -1) {
-            console.log("[tg-webhook] RAD ETILDI: '@" + uname + "' SMS_BOT_USERNAMES ro'yxatida yo'q");
-            return;
-          }
-        }
-
-        const amount = parseAmount(msg.text);
-        expireOld();
-        const candidates = amount == null ? [] :
-          DB.payments.filter(p => (p.status === "waiting" || p.status === "checking") && p.pay === amount);
-        console.log("[tg-webhook] O'qilgan summa=" + amount + " | mos kutilayotgan to'lovlar soni=" + candidates.length);
-
-        const entry = { ts: Date.now(), from: uname || null, text: msg.text.slice(0, 300),
-          parsedAmount: amount, matched: false, paymentId: null };
-
-        if (candidates.length === 1) {
-          const p = candidates[0];
-          const balance = confirmPayment(p, "sms");
-          entry.matched = true; entry.paymentId = p.id;
-          console.log("[tg-webhook] TASDIQLANDI: to'lov " + p.id + " (" + p.pay + " so'm), yangi balans=" + balance);
-          tgSend(p.uid, "✅ To'lovingiz tasdiqlandi!\n+" + p.amount.toLocaleString("ru-RU").replace(/,/g, " ") +
-            " so'm balansingizga qo'shildi.\nJoriy balans: " + balance.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm");
-        }
-        logSms(entry);
-      } catch (e) { console.log("[tg-webhook] Xato:", e && e.message); }
     });
   }
 
