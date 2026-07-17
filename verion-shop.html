@@ -32,6 +32,21 @@ body{
   font-size:15px;line-height:1.45;overflow-x:hidden;
   padding-bottom:calc(200px + env(safe-area-inset-bottom));
   transition:background .25s ease,color .25s ease;
+  position:relative;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(760px 540px at 12% -8%, rgba(47,143,255,.24), transparent 60%),
+    radial-gradient(640px 540px at 108% 10%, rgba(143,194,255,.16), transparent 58%),
+    radial-gradient(820px 640px at 50% 118%, rgba(47,143,255,.18), transparent 62%);
+  transition:opacity .25s ease;
+}
+[data-theme="light"] body::before{
+  background:
+    radial-gradient(760px 540px at 12% -8%, rgba(31,122,224,.12), transparent 60%),
+    radial-gradient(640px 540px at 108% 10%, rgba(31,122,224,.09), transparent 58%),
+    radial-gradient(820px 640px at 50% 118%, rgba(31,122,224,.08), transparent 62%);
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
 button:active{transform:scale(.96)}
@@ -330,16 +345,34 @@ nav.navintro button:nth-child(5){animation-delay:.44s}
 .prof{display:flex;align-items:center;gap:11px}
 
 /* leaderboard podium */
+.lb-trophy-ic{display:inline-flex;color:#f1c40f;filter:drop-shadow(0 0 5px rgba(241,196,15,.6));animation:lbTrophySwing 2.4s ease-in-out infinite}
+@keyframes lbTrophySwing{0%,100%{transform:rotate(0deg) scale(1)}25%{transform:rotate(-8deg) scale(1.05)}75%{transform:rotate(8deg) scale(1.05)}}
+[data-reduce-motion="1"] .lb-trophy-ic{animation:none}
+.lb-top9-badge{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.03em;color:#3a2c00;
+  background:linear-gradient(135deg,#ffe38a,#ffc93f);padding:3px 9px;border-radius:999px;
+  box-shadow:0 3px 10px rgba(255,201,63,.4)}
 .lb-podium{display:flex;align-items:flex-end;gap:8px;margin:4px 0 16px;padding:0 2px}
 .lb-podium .slot{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
 .lb-podium .ring-wrap{position:relative}
 .lb-podium .ring{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:19px;color:#fff;background:var(--grad);border:3px solid var(--line);overflow:hidden;position:relative}
 .lb-podium .ring img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.lb-podium .slot.p1 .ring{width:76px;height:76px;font-size:24px;border-color:#ffd23f}
-.lb-podium .slot.p2 .ring{border-color:#c9d3de}
-.lb-podium .slot.p3 .ring{border-color:#e0a370}
-.lb-podium .crown{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:20px}
+.lb-podium .slot.p1 .ring{width:76px;height:76px;font-size:24px;border-color:#ffd23f;animation:lbRingGlow1 2.3s ease-in-out infinite}
+.lb-podium .slot.p2 .ring{border-color:#c9d3de;animation:lbRingGlow2 2.3s ease-in-out infinite .15s}
+.lb-podium .slot.p3 .ring{border-color:#e0a370;animation:lbRingGlow3 2.3s ease-in-out infinite .3s}
+@keyframes lbRingGlow1{0%,100%{box-shadow:0 0 0 0 rgba(255,210,63,0)}50%{box-shadow:0 0 16px 3px rgba(255,210,63,.55)}}
+@keyframes lbRingGlow2{0%,100%{box-shadow:0 0 0 0 rgba(201,211,222,0)}50%{box-shadow:0 0 13px 3px rgba(201,211,222,.5)}}
+@keyframes lbRingGlow3{0%,100%{box-shadow:0 0 0 0 rgba(224,163,112,0)}50%{box-shadow:0 0 13px 3px rgba(224,163,112,.5)}}
+.lb-podium .badge-top{position:absolute;top:-19px;left:50%;transform:translateX(-50%);width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;animation:lbBadgePop .5s cubic-bezier(.34,1.56,.64,1) both}
+.lb-podium .badge-top svg{width:100%;height:100%}
+.lb-podium .slot.p1 .badge-top{width:25px;height:25px;color:#ffd23f;filter:drop-shadow(0 0 6px rgba(255,210,63,.85));animation:lbBadgePop .5s cubic-bezier(.34,1.56,.64,1) both,lbBadgePulse 2.3s ease-in-out .5s infinite}
+.lb-podium .slot.p2 .badge-top{color:#c9d3de;filter:drop-shadow(0 0 5px rgba(201,211,222,.8));animation:lbBadgePop .5s cubic-bezier(.34,1.56,.64,1) both .1s,lbBadgePulse 2.3s ease-in-out .6s infinite}
+.lb-podium .slot.p3 .badge-top{color:#e0a370;filter:drop-shadow(0 0 5px rgba(224,163,112,.8));animation:lbBadgePop .5s cubic-bezier(.34,1.56,.64,1) both .2s,lbBadgePulse 2.3s ease-in-out .7s infinite}
+@keyframes lbBadgePop{0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.4) rotate(-12deg)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1) rotate(0)}}
+@keyframes lbBadgePulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.14)}}
+[data-reduce-motion="1"] .lb-podium .ring{animation:none}
+[data-reduce-motion="1"] .lb-podium .badge-top{animation:none}
 .lb-podium .rankbadge{position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;border-radius:50%;
   background:var(--card2);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:800;color:var(--txt)}
@@ -509,7 +542,7 @@ en:{
   review_btn:"⭐ Leave a review",review_done:"✅ Review sent",review_title:"Leave a review",
   review_placeholder:"Your feedback (optional)",review_submit:"Submit",review_thanks:"Thanks for your review!",
   review_err_already:"You've already reviewed this order",
-  leaderboard_title:"Top spenders",leaderboard_empty:"Nothing here yet — be the first!",orders_unit:"orders",
+  leaderboard_title:"Top spenders",leaderboard_empty:"Nothing here yet — be the first!",orders_unit:"orders",top9_badge:"TOP 9",
   stat_orders:"Orders",stat_spent:"Total paid",
   a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product", a_stats_title:"Overview",a_st_users:"Users",a_st_orders:"Orders",a_st_revenue:"Revenue",a_st_topup:"Top-ups",a_st_pending:"Pending",a_st_balances:"Total balances",a_users_title:"Users",a_users_recent:"Recent",a_users_bybalance:"By balance",
   a_reviews_title:"Reviews",a_reviews_pending:"Awaiting approval",a_reviews_approved:"Published",a_reviews_none_pending:"No reviews awaiting approval",a_reviews_none_approved:"No published reviews",a_reviews_publish:"Publish",a_reviews_delete:"Delete",a_reviews_published:"Published ✓",a_reviews_deleted:"Deleted",
@@ -561,7 +594,7 @@ uz:{
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
-  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",theme_switch_to_light:"Yorug' rejimga o'tkazish",theme_switch_to_dark:"Qorong'u rejimga o'tkazish",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",leaderboard_row:"Top donaterlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",theme_switch_to_light:"Yorug' rejimga o'tkazish",theme_switch_to_dark:"Qorong'u rejimga o'tkazish",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",leaderboard_row:"Top xaridorlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
   period_today:"Bugun",period_week:"Hafta",period_month:"Oy",period_all:"Hammasi",
   fav_add:"Sevimlilarga qo'shish",fav_remove:"Sevimlilardan olib tashlash",fav_title:"Sevimlilar",fav_empty:"Hozircha sevimli mahsulot yo'q — istalgan mahsulotdagi yurak belgisini bosing.",
   invite_link_label:"Sizning taklif havolangiz",invite_share_btn:"Ulashish",invite_copy_btn:"Nusxalash",
@@ -574,7 +607,7 @@ uz:{
   review_btn:"⭐ Sharh qoldirish",review_done:"✅ Sharh yuborildi",review_title:"Sharh qoldirish",
   review_placeholder:"Fikringiz (ixtiyoriy)",review_submit:"Yuborish",review_thanks:"Sharhingiz uchun rahmat!",
   review_err_already:"Bu buyurtmaga allaqachon sharh yozilgan",
-  leaderboard_title:"Top donaterlar",leaderboard_empty:"Hozircha bo'sh, birinchi bo'ling!",orders_unit:"buyurtma",
+  leaderboard_title:"Top xaridorlar",leaderboard_empty:"Hozircha bo'sh, birinchi bo'ling!",orders_unit:"buyurtma",top9_badge:"TOP 9",
   stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
   a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot", a_stats_title:"Umumiy ko'rinish",a_st_users:"Foydalanuvchilar",a_st_orders:"Buyurtmalar",a_st_revenue:"Tushum",a_st_topup:"To'ldirishlar",a_st_pending:"Kutilmoqda",a_st_balances:"Jami balanslar",a_users_title:"Foydalanuvchilar",a_users_recent:"Yaqinda",a_users_bybalance:"Balans bo'yicha",
   a_reviews_title:"Sharhlar",a_reviews_pending:"Tasdiq kutmoqda",a_reviews_approved:"Chop etilgan",a_reviews_none_pending:"Tasdiq kutayotgan sharh yo'q",a_reviews_none_approved:"Chop etilgan sharh yo'q",a_reviews_publish:"Chop etish",a_reviews_delete:"O'chirish",a_reviews_published:"Chop etildi ✓",a_reviews_deleted:"O'chirildi",
@@ -639,7 +672,7 @@ ru:{
   review_btn:"⭐ Оставить отзыв",review_done:"✅ Отзыв отправлен",review_title:"Оставить отзыв",
   review_placeholder:"Ваш отзыв (необязательно)",review_submit:"Отправить",review_thanks:"Спасибо за отзыв!",
   review_err_already:"Вы уже оставили отзыв на этот заказ",
-  leaderboard_title:"Топ покупателей",leaderboard_empty:"Пока пусто — станьте первым!",orders_unit:"заказ.",
+  leaderboard_title:"Топ покупателей",leaderboard_empty:"Пока пусто — станьте первым!",orders_unit:"заказ.",top9_badge:"ТОП 9",
   stat_orders:"Заказы",stat_spent:"Всего оплачено",
   a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар", a_stats_title:"Обзор",a_st_users:"Пользователи",a_st_orders:"Заказы",a_st_revenue:"Выручка",a_st_topup:"Пополнения",a_st_pending:"В ожидании",a_st_balances:"Всего балансов",a_users_title:"Пользователи",a_users_recent:"Недавние",a_users_bybalance:"По балансу",
   a_reviews_title:"Отзывы",a_reviews_pending:"Ожидают проверки",a_reviews_approved:"Опубликованные",a_reviews_none_pending:"Нет отзывов на проверке",a_reviews_none_approved:"Нет опубликованных отзывов",a_reviews_publish:"Опубликовать",a_reviews_delete:"Удалить",a_reviews_published:"Опубликовано ✓",a_reviews_deleted:"Удалено",
@@ -898,6 +931,8 @@ var ICON={
   play:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5.5v13l11-6.5z"/></svg>',
   wand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L16 8"/><path d="M13.5 5.5l1.2 1.2M9 4v2.4M9 4h2.4M4 12h2.4M4 12v2.4"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
+  crownFill:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 9l3.2 2.6L12 5l4.8 6.6L20 9l-1.7 8.5H5.7L4 9z"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="4.2" r="1.5"/><circle cx="20" cy="8" r="1.5"/><path d="M5.7 19.4h12.6v1.6H5.7z"/></svg>',
+  medal:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8.6 3 5 10.2l2.7 1.5L11.3 4.6 8.6 3zM15.4 3l-3.7 1.6 3.6 7.1L18 10.2 15.4 3z" opacity=".55"/><circle cx="12" cy="15" r="6.2"/><path d="M12 11.4l1.1 2.3 2.5.4-1.8 1.8.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.8 2.5-.4z" fill="#fff" opacity=".9"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
   star:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.7l-6.1 3.5 1.5-6.9-5.2-4.7 6.9-.7z"/></svg>',
   heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-10-9.3C.5 7.8 2.3 4 6 4c2.1 0 3.6 1.1 4.5 2.4C11.4 5.1 12.9 4 15 4c3.7 0 5.5 3.8 4 7.2-2.5 4.7-7 9.3-7 9.3z"/></svg>',
@@ -965,7 +1000,7 @@ function headerHTML(){
     +'<div class="hun">'+(u&&u.username?'@'+esc(u.username):'')+'</div>'
     +'</div></div>'
     +'<div class="hctrl">'
-    +'<button id="hLangBtn" class="hbtn">'+LANG_FLAG[S.lang]+' '+S.lang.toUpperCase()+'</button>'
+    +'<button id="hLangBtn" class="hbtn">'+S.lang.toUpperCase()+'</button>'
     +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?ic("sun",15):ic("moon",15))+'</button>'
     +'</div></header>';
 }
@@ -1287,9 +1322,9 @@ function lbAvatarHTML(r){
     :esc(lbInitial(r.name));
 }
 function lbSlotHTML(r,pos){ // pos: 1,2,3
-  var crown=pos===1?'<div class="crown">👑</div>':'';
+  var badge='<div class="badge-top">'+(pos===1?ic("crownFill",22):ic("medal",20))+'</div>';
   return '<div class="slot p'+pos+'">'
-    +'<div class="ring-wrap">'+crown
+    +'<div class="ring-wrap">'+badge
     +'<div class="ring">'+lbAvatarHTML(r)+'</div>'
     +'<div class="rankbadge">'+pos+'</div></div>'
     +'<div class="nm2">'+esc(r.name)+'</div>'
@@ -1334,7 +1369,11 @@ function leaderboardBlockHTML(){
   return html;
 }
 function openLeaderboardSheet(){
-  var html='<h2>'+esc(t("leaderboard_title"))+'</h2>'
+  var html='<h2 style="display:flex;align-items:center;gap:8px">'
+    +'<span class="lb-trophy-ic">'+ic("trophy",20)+'</span>'
+    +'<span>'+esc(t("leaderboard_title"))+'</span>'
+    +'<span class="lb-top9-badge">'+esc(t("top9_badge"))+'</span>'
+    +'</h2>'
     +'<div class="seg" id="lbPeriodSeg">'
     +'<button data-period="today">'+esc(t("period_today"))+'</button>'
     +'<button data-period="week">'+esc(t("period_week"))+'</button>'
@@ -1345,6 +1384,7 @@ function openLeaderboardSheet(){
   function renderList(list){
     var body=sh.querySelector("#lbBody");
     if(!list.length){body.innerHTML='<div class="paynote">'+esc(t("leaderboard_empty"))+'</div>';return;}
+    list=list.slice(0,9);
     var h=leaderboardPodiumHTML(list);
     var rest=list.slice(3);
     if(rest.length){
