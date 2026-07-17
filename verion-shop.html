@@ -186,6 +186,22 @@ nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
 nav button.on{color:var(--acc2)}
 nav button svg{width:22px;height:22px;transition:filter .25s ease}
 nav button.on svg{filter:drop-shadow(0 0 6px rgba(124,92,255,.85));animation:navGlow 2.2s ease-in-out infinite}
+nav.navintro{animation:navSlideIn .55s cubic-bezier(.34,1.56,.64,1) both}
+nav.navintro button{opacity:0;animation:navPopIn .5s cubic-bezier(.34,1.56,.64,1) both}
+nav.navintro button:nth-child(1){animation-delay:.16s}
+nav.navintro button:nth-child(2){animation-delay:.23s}
+nav.navintro button:nth-child(3){animation-delay:.30s}
+nav.navintro button:nth-child(4){animation-delay:.37s}
+nav.navintro button:nth-child(5){animation-delay:.44s}
+@keyframes navSlideIn{
+  from{transform:translateY(100%);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+@keyframes navPopIn{
+  0%{opacity:0;transform:translateY(14px) scale(.6)}
+  60%{opacity:1;transform:translateY(-3px) scale(1.08)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
 @keyframes navGlow{
   0%,100%{filter:drop-shadow(0 0 5px rgba(124,92,255,.7))}
   50%{filter:drop-shadow(0 0 9px rgba(124,92,255,1))}
@@ -892,9 +908,12 @@ function headerHTML(){
     +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?ic("sun",15):ic("moon",15))+'</button>'
     +'</div></header>';
 }
+var NAV_INTRO_PLAYED=false;
 function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
-  return '<nav>'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'</nav>';
+  var introClass=NAV_INTRO_PLAYED?"":" navintro";
+  NAV_INTRO_PLAYED=true;
+  return '<nav class="'+introClass.trim()+'">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'</nav>';
 }
 
 /* ===== Mahsulotlar (qidiruv + filtr) ===== */
