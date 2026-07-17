@@ -309,6 +309,14 @@ nav button svg{width:22px;height:22px}
 .seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
 .seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
 .seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
+.seg.mini{padding:2px;border-radius:10px;flex-wrap:nowrap;width:auto;gap:2px}
+.seg.mini button{flex:none;min-width:30px;padding:6px 9px;font-size:11px;border-radius:8px;transition:transform .12s ease}
+.seg.mini button.on{transform:scale(1.04)}
+@keyframes ibPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+@keyframes ibGlow{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 4px currentColor)}}
+.ibadge{transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
+.ibadge svg{animation:ibPulse 2.8s ease-in-out infinite,ibGlow 2.8s ease-in-out infinite}
+.row:active .ibadge{transform:scale(.84) rotate(-4deg)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
 .swbtn{width:46px;height:27px;border-radius:999px;background:var(--card2);border:1px solid var(--line);position:relative}
 .swbtn i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--mut);transition:all .18s}
@@ -1685,6 +1693,20 @@ function openReferralSheet(){
   });
 }
 /* ===== profile ===== */
+function langSegHTML(){
+  var html='<div class="seg mini">';
+  for(var i=0;i<LANG_ORDER.length;i++){
+    var l=LANG_ORDER[i];
+    html+='<button class="'+(S.lang===l?"on":"")+'" data-setlang="'+l+'">'+LANG_FLAG[l]+' '+l.toUpperCase()+'</button>';
+  }
+  return html+'</div>';
+}
+function themeSegHTML(){
+  return '<div class="seg mini">'
+    +'<button class="'+(S.theme!=="light"?"on":"")+'" data-settheme="dark">'+ic("moon",13)+'</button>'
+    +'<button class="'+(S.theme==="light"?"on":"")+'" data-settheme="light">'+ic("sun",13)+'</button>'
+    +'</div>';
+}
 function svcRow(attr,iconName,color,title,sub,rightHTML){
   return '<div class="row" '+attr+'>'
     +'<div style="display:flex;align-items:center;gap:11px;flex:1;min-width:0">'
@@ -1712,8 +1734,8 @@ function profileHTML(){
     +svcRow('data-support="1"',"headset","#1abc9c",t("support"),t("support_sub")+' · @'+SUPPORT_USERNAME)
     +'</div>'
     +'<div class="card">'
-    +svcRow('id="langCycleRow"',"globe","#2980b9",t("language"),t("lang_tap_hint"),'<button class="btn sm" id="langCycle">'+LANG_FLAG[S.lang]+' '+LANG_NAME[S.lang]+'</button>')
-    +svcRow('id="themeToggleRow"',(S.theme==="light"?"sun":"moon"),"#f39c12",t("theme_title"),t("theme_tap_hint"),'<button class="btn sm" id="themeToggle">'+(S.theme==="light"?esc(t("theme_light")):esc(t("theme_dark")))+'</button>')
+    +svcRow('',"globe","#2980b9",t("language"),t("lang_tap_hint"),langSegHTML())
+    +svcRow('',(S.theme==="light"?"sun":"moon"),"#f39c12",t("theme_title"),t("theme_tap_hint"),themeSegHTML())
     +'</div>';
   if(isAdmin()){
     html+='<div class="card">'
@@ -2518,12 +2540,7 @@ function bind(){
   els=document.querySelectorAll("[data-openfavs]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openFavoritesSheet);
   els=document.querySelectorAll("[data-setlang]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();render();});
-  var lc=document.getElementById("langCycleRow");
-  if(lc)lc.addEventListener("click",function(){
-    var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
-    persist();haptic();render();
-  });
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();haptic();render();});
   var hlc=document.getElementById("hLangBtn");
   if(hlc)hlc.addEventListener("click",function(){
     var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
@@ -2531,10 +2548,6 @@ function bind(){
   });
   var htc=document.getElementById("hThemeBtn");
   if(htc)htc.addEventListener("click",function(){
-    S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
-  });
-  var tc=document.getElementById("themeToggleRow");
-  if(tc)tc.addEventListener("click",function(){
     S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
   });
   els=document.querySelectorAll("[data-ordtab]");
