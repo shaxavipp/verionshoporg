@@ -1677,7 +1677,16 @@ function openReferralSheet(){
     }
     html+='</div>';
   }
-  openSheet(html);
+  var sh=openSheet(html);
+  var cpy=sh.querySelector("[data-copy]");
+  if(cpy)cpy.addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
+  var shr=sh.querySelector("[data-shareref]");
+  if(shr)shr.addEventListener("click",function(){
+    var link=this.getAttribute("data-shareref");
+    var shareUrl="https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent(t("invite_share_text"));
+    try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(shareUrl);return;}}catch(e){}
+    openLink(shareUrl);
+  });
 }
 /* ===== profile ===== */
 function profileHTML(){
