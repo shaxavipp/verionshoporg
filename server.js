@@ -59,12 +59,19 @@ function genId(p) {
   return p + "-" + s;
 }
 // "today" | "week" | "month" | "all" -> shu davr boshlanishining vaqt belgisi (ms).
-// "week" — joriy hafta dushanbadan, "month" — joriy oyning 1-sanasidan.
-// Foydalanuvchi aniq tasdiqladi: "kun"/"hafta"/"oy"/"hammasi" — barchasi bot
-// ochilgandan hozirgacha bo'lgan TO'LIQ (cheksiz) ma'lumot bo'yicha hisoblanadi,
-// hech biri sanaga cheklanmaydi. Shu sabab period parametridan qat'iy nazar 0 qaytariladi.
+// Kun = bugun (00:00dan), Hafta = shu haftaning dushanbasidan, Oy = shu oyning
+// 1-sanasidan, Hammasi = bot ochilganidan buyon cheksiz. Har biri bir-biridan farqli.
 function periodStart(period) {
-  return 0;
+  const now = new Date();
+  if (period === "today") { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  if (period === "week") {
+    const d = new Date(now); d.setHours(0, 0, 0, 0);
+    const day = (d.getDay() + 6) % 7; // 0=Dushanba
+    d.setDate(d.getDate() - day);
+    return d.getTime();
+  }
+  if (period === "month") { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); }
+  return 0; // all
 }
 
 /* ---------- referal dasturi ---------- */
