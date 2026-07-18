@@ -237,6 +237,25 @@ function send(res, code, obj, type) {
   res.writeHead(code, { "Content-Type": type || "application/json; charset=utf-8", "Cache-Control": "no-store" });
   res.end(typeof obj === "string" ? obj : JSON.stringify(obj));
 }
+// Rasm (base64) saqlangan katta javoblar uchun: ma'lumot o'zgarmagan bo'lsa
+// to'liq payload'ni qayta yubormay, faqat "304 Not Modified" qaytaradi (deyarli 0 bayt).
+// Ma'lumot yangilanган zahoti (admin yangi rasm yuklagandan keyin) ETag ham
+// o'zgaradi, shuning uchun brauzer avtomatik eng so'nggi versiyani oladi —
+// hech qanday eski/kesh rasm qolib ketmaydi.
+function sendCached(req, res, obj) {
+  const body = JSON.stringify(obj);
+  const etag = '"' + crypto.createHash("sha1").update(body).digest("hex") + '"';
+  if (req.headers["if-none-match"] === etag) {
+    res.writeHead(304, { "ETag": etag, "Cache-Control": "no-cache" });
+    return res.end();
+  }
+  res.writeHead(200, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-cache", // har doim serverdan so'raladi, lekin o'zgarmagan bo'lsa 304 keladi
+    "ETag": etag
+  });
+  res.end(body);
+}
 function readBody(req, res, cb) {
   let body = "", size = 0, dead = false;
   req.on("data", c => {
@@ -280,7 +299,7 @@ const server = http.createServer((req, res) => {
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {
     const c = catalogArr();
-    return c ? send(res, 200, c) : send(res, 404, { error: "no catalog yet" });
+    return c ? sendCached(req, res, c) : send(res, 404, { error: "no catalog yet" });
   }
   if (url === "/api/catalog" && m === "POST") {
     if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
@@ -294,7 +313,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (url === "/api/category-meta" && m === "GET") {
-    return send(res, 200, catMetaObj());
+    return sendCached(req, res, catMetaObj());
   }
   if (url === "/api/admin/category-meta" && m === "POST") {
     const u = auth(req);

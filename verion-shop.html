@@ -2339,7 +2339,7 @@ function publishCatalog(){
 function loadServerCatalog(){
   try{
     if(typeof fetch!=="function")return;
-    fetch("/api/catalog",{cache:"no-store"})
+    fetch("/api/catalog")
     .then(function(r){if(!r.ok)throw 0;return r.json();})
     .then(function(arr){
       if(Array.isArray(arr)&&arr.length){S.serverCat=arr;persist();if(S.lang)render();}
@@ -2899,7 +2899,7 @@ var CatMeta={};
 function loadCatMeta(){
   try{
     if(typeof fetch!=="function")return;
-    fetch("/api/category-meta",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;})
+    fetch("/api/category-meta").then(function(r){return r.ok?r.json():null;})
     .then(function(j){if(j){CatMeta=j;if(S.lang)render();}}).catch(function(){});
   }catch(e){}
 }
