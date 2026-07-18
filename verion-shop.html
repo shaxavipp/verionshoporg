@@ -236,7 +236,7 @@ nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column
 nav button:active{transform:scale(.88)}
 nav button.on{color:#eaf3ff}
 nav button svg{width:24px;height:24px;transition:filter .25s ease}
-nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .24s cubic-bezier(.34,1.56,.64,1) both}
+nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .24s cubic-bezier(.34,1.56,.64,1) both;animation-delay:0s,0s!important}
 @keyframes navSelectPop{
   0%{transform:scale(.82) translateY(4px)}
   55%{transform:scale(1.08) translateY(-1px)}
@@ -2051,7 +2051,6 @@ function profileHTML(){
       +svcRow('id="adminBtnRow"',"tools","#7f8c8d",t("a_panel"),t("a_panel_sub"))
       +'</div>';
   }
-  html+='<div style="height:10px"></div><div style="text-align:center;font-size:10px;color:var(--mut);opacity:.6">build: '+esc(APP_BUILD)+'</div>';
   html+='<div style="height:24px"></div>';
   return html;
 }
