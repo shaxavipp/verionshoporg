@@ -860,7 +860,16 @@ const server = http.createServer((req, res) => {
   /* everything else → app */
   fs.readFile(HTML_FILE, (err, data) => {
     if (err) return send(res, 500, "verion-shop.html not found", "text/plain");
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
+    // "no-cache" ba'zi WebView'larda (xususan Telegram ilovasi ichidagi) hali ham eski
+    // nusxani ko'rsatib qo'yishi mumkin edi — shu sabab qat'iyroq no-store + eski
+    // brauzerlar uchun Pragma/Expires ham qo'shildi, xar safar server'dan yangi HTML
+    // majburiy yuklansin.
+    res.writeHead(200, {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    });
     res.end(data);
   });
 });

@@ -1374,43 +1374,34 @@ function reviewsBlockHTML(){
     html+='<div class="card" style="display:flex;align-items:center;justify-content:center;padding:14px 14px">'+ratingHTML+'</div>';
     return html;
   }
-  REV_GEN++;
+  REV_ROT_IDX=Math.min(REV_ROT_IDX,REVIEWS.length-1);
   html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
     +ratingHTML
-    +'<div id="revCurrent" data-gen="'+REV_GEN+'" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
+    +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
     +reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]||REVIEWS[0])+'</div></div>';
   return html;
 }
 var REV_ROT_IDX=0;
-// Har safar reviewsBlockHTML() #revCurrent'ni qaytadan chizganda (masalan 20s'da
-// loadReviews() yangi ma'lumot bilan updateHomeWidgets() chaqirganda) shu sonni
-// oshiramiz. rotateReviewWidget()ning 280ms kechikkan fade-in callback'i ishga
-// tushganda, agar shu vaqt ichida panel allaqachon YANGI generatsiya bilan qayta
-// chizilgan bo'lsa (data-gen mos kelmasa), callback hech narsa qilmay to'xtaydi —
-// aks holda eski REV_ROT_IDX yangi (mos kelmaydigan) REVIEWS massiviga solinib,
-// noto'g'ri/"qotgan" sharh ko'rinishi yoki xato paydo bo'lardi.
-var REV_GEN=0;
+// Avvalgi versiya kontentni 280ms KECHIKISH bilan (setTimeout ichida) almashtirardi —
+// shu kechikish oynasida panel boshqa sabab bilan qayta chizilib qolsa (masalan
+// loadReviews() yangilanishi bilan to'qnashsa), ikki sharh ustma-ust chiqib "qotib"
+// qolishi mumkin edi ("kamaytirilgan animatsiya" yoqilganda bu kod yo'li umuman
+// ishlamagani uchun muammo ko'rinmasdi). Endi kechikish umuman yo'q: kontent
+// DARHOL (sinxron) almashtiriladi, faqat opacity animatsiyasi bitta requestAnimationFrame
+// bilan silliqlashtiriladi — hech qanday "ochiq oyna" qolmaydi.
 function rotateReviewWidget(){
   if(!REVIEWS||REVIEWS.length<2)return;
   var el=document.getElementById("revCurrent");
   if(!el)return;
-  var gen=el.getAttribute("data-gen");
   REV_ROT_IDX=(REV_ROT_IDX+1)%REVIEWS.length;
-  if(S.reduceMotion){
-    el.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
-    el.style.opacity="1";
-    return;
-  }
+  el.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
+  if(S.reduceMotion){el.style.opacity="1";return;}
   el.style.opacity="0";
-  setTimeout(function(){
+  void el.offsetWidth; // reflow — brauzer opacity:0'ni "eski" holat sifatida qabul qilishi uchun
+  requestAnimationFrame(function(){
     var el2=document.getElementById("revCurrent");
-    if(!el2)return;
-    if(el2.getAttribute("data-gen")!==gen)return; // panel shu orada qayta chizilgan — tegmaymiz
-    if(!REVIEWS||!REVIEWS.length)return;
-    if(REV_ROT_IDX>=REVIEWS.length)REV_ROT_IDX=0;
-    el2.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
-    el2.style.opacity="1";
-  },280);
+    if(el2)el2.style.opacity="1";
+  });
 }
 function openReviewsSheet(){
   var html='<h2>'+esc(t("reviews_title"))+'</h2>';
