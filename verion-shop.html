@@ -236,12 +236,11 @@ nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column
 nav button:active{transform:scale(.88)}
 nav button.on{color:#eaf3ff}
 nav button svg{width:24px;height:24px;transition:filter .25s ease}
-nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .42s cubic-bezier(.34,1.56,.64,1) both}
+nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .24s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes navSelectPop{
-  0%{transform:scale(.5) translateY(10px) rotate(-8deg)}
-  40%{transform:scale(1.2) translateY(-4px) rotate(6deg)}
-  70%{transform:scale(.94) translateY(1px) rotate(-2deg)}
-  100%{transform:scale(1) translateY(0) rotate(0)}
+  0%{transform:scale(.82) translateY(4px)}
+  55%{transform:scale(1.08) translateY(-1px)}
+  100%{transform:scale(1) translateY(0)}
 }
 /* sirg'anuvchi "glass" belgi — qaysi bo'lim tanlangan bo'lsa, o'sha tugma (ikonka+yorliq) ustiga sirpanib o'tadi */
 .navpill{position:absolute;left:0;top:0;width:64px;height:64px;border-radius:20px;z-index:0;
@@ -250,9 +249,9 @@ nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:na
   backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);
   box-shadow:0 6px 22px rgba(60,130,255,.4),0 0 16px rgba(90,160,255,.28),inset 0 1px 0 rgba(255,255,255,.4);
   opacity:0;pointer-events:none;
-  transition:left .42s cubic-bezier(.22,1,.36,1),top .42s cubic-bezier(.22,1,.36,1),
-    width .42s cubic-bezier(.22,1,.36,1),height .42s cubic-bezier(.22,1,.36,1),
-    opacity .3s ease}
+  transition:left .24s cubic-bezier(.22,1,.36,1),top .24s cubic-bezier(.22,1,.36,1),
+    width .24s cubic-bezier(.22,1,.36,1),height .24s cubic-bezier(.22,1,.36,1),
+    opacity .2s ease}
 .navpill.show{opacity:1}
 [data-reduce-motion="1"] .navpill{transition:opacity .2s ease}
 nav.navintro{animation:navSlideIn .55s cubic-bezier(.22,1,.36,1) both}
@@ -1019,7 +1018,7 @@ function render(){
   requestAnimationFrame(positionNavPill);
 }
 var _navLangBuilt=null;
-function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();if(screen==="profile"&&REFERRAL===null)loadReferral();}
+function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();window.scrollTo(0,0);if(screen==="profile"&&REFERRAL===null)loadReferral();}
 
 function onboardingHTML(){
   return '<div id="onb">'
@@ -1374,43 +1373,34 @@ function reviewsBlockHTML(){
     html+='<div class="card" style="display:flex;align-items:center;justify-content:center;padding:14px 14px">'+ratingHTML+'</div>';
     return html;
   }
-  REV_GEN++;
+  REV_ROT_IDX=Math.min(REV_ROT_IDX,REVIEWS.length-1);
   html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
     +ratingHTML
-    +'<div id="revCurrent" data-gen="'+REV_GEN+'" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
+    +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
     +reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]||REVIEWS[0])+'</div></div>';
   return html;
 }
 var REV_ROT_IDX=0;
-// Har safar reviewsBlockHTML() #revCurrent'ni qaytadan chizganda (masalan 20s'da
-// loadReviews() yangi ma'lumot bilan updateHomeWidgets() chaqirganda) shu sonni
-// oshiramiz. rotateReviewWidget()ning 280ms kechikkan fade-in callback'i ishga
-// tushganda, agar shu vaqt ichida panel allaqachon YANGI generatsiya bilan qayta
-// chizilgan bo'lsa (data-gen mos kelmasa), callback hech narsa qilmay to'xtaydi —
-// aks holda eski REV_ROT_IDX yangi (mos kelmaydigan) REVIEWS massiviga solinib,
-// noto'g'ri/"qotgan" sharh ko'rinishi yoki xato paydo bo'lardi.
-var REV_GEN=0;
+// Avvalgi versiya kontentni 280ms KECHIKISH bilan (setTimeout ichida) almashtirardi —
+// shu kechikish oynasida panel boshqa sabab bilan qayta chizilib qolsa (masalan
+// loadReviews() yangilanishi bilan to'qnashsa), ikki sharh ustma-ust chiqib "qotib"
+// qolishi mumkin edi ("kamaytirilgan animatsiya" yoqilganda bu kod yo'li umuman
+// ishlamagani uchun muammo ko'rinmasdi). Endi kechikish umuman yo'q: kontent
+// DARHOL (sinxron) almashtiriladi, faqat opacity animatsiyasi bitta requestAnimationFrame
+// bilan silliqlashtiriladi — hech qanday "ochiq oyna" qolmaydi.
 function rotateReviewWidget(){
   if(!REVIEWS||REVIEWS.length<2)return;
   var el=document.getElementById("revCurrent");
   if(!el)return;
-  var gen=el.getAttribute("data-gen");
   REV_ROT_IDX=(REV_ROT_IDX+1)%REVIEWS.length;
-  if(S.reduceMotion){
-    el.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
-    el.style.opacity="1";
-    return;
-  }
+  el.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
+  if(S.reduceMotion){el.style.opacity="1";return;}
   el.style.opacity="0";
-  setTimeout(function(){
+  void el.offsetWidth; // reflow — brauzer opacity:0'ni "eski" holat sifatida qabul qilishi uchun
+  requestAnimationFrame(function(){
     var el2=document.getElementById("revCurrent");
-    if(!el2)return;
-    if(el2.getAttribute("data-gen")!==gen)return; // panel shu orada qayta chizilgan — tegmaymiz
-    if(!REVIEWS||!REVIEWS.length)return;
-    if(REV_ROT_IDX>=REVIEWS.length)REV_ROT_IDX=0;
-    el2.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
-    el2.style.opacity="1";
-  },280);
+    if(el2)el2.style.opacity="1";
+  });
 }
 function openReviewsSheet(){
   var html='<h2>'+esc(t("reviews_title"))+'</h2>';
@@ -1870,6 +1860,11 @@ function showExpiredSheet(){
 </script>
 <script>
 "use strict";
+var APP_BUILD="2026-07-19-fix4";
+console.log("[Verion Shop] build:",APP_BUILD);
+</script>
+<script>
+"use strict";
 /* ===== orders (from server) ===== */
 var PAY_BADGE={waiting:["pend","st_pending"],checking:["chk","st_checking"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
 var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
@@ -2056,6 +2051,7 @@ function profileHTML(){
       +svcRow('id="adminBtnRow"',"tools","#7f8c8d",t("a_panel"),t("a_panel_sub"))
       +'</div>';
   }
+  html+='<div style="height:10px"></div><div style="text-align:center;font-size:10px;color:var(--mut);opacity:.6">build: '+esc(APP_BUILD)+'</div>';
   html+='<div style="height:24px"></div>';
   return html;
 }
