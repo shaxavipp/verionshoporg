@@ -2924,8 +2924,22 @@ function boot(){
     if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},500);}
   },700);
 }
-document.addEventListener("DOMContentLoaded",boot);
-if(document.readyState!=="loading")boot();
+var _booted=false;
+function bootOnce(){
+  // "DOMContentLoaded" listener VA quyidagi darhol-tekshiruv ba'zan ikkalasi
+  // ham ishga tushib qolishi mumkin (ayniqsa Telegram WebView sahifani
+  // keshdan tiklaganda) — natijada boot() ikki marta chaqirilib,
+  // setInterval(tickTimer)/setInterval(rotateReviewWidget)/20s so'rov
+  // intervali har safar QO'SHIMCHA ro'yxatdan o'tib, soni ko'payib borardi.
+  // Bu aynan sharhlar (Mijozlar fikri) blokining "qotishi" va ilovaning
+  // umuman muzlab-qayta tiklanishiga sabab bo'lgan. Shu flag orqali
+  // boot() umr bo'yi faqat bir marta ishga tushishini kafolatlaymiz.
+  if(_booted)return;
+  _booted=true;
+  boot();
+}
+document.addEventListener("DOMContentLoaded",bootOnce);
+if(document.readyState!=="loading")bootOnce();
 </script>
 </body>
 </html>
