@@ -236,10 +236,11 @@ nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column
 nav button:active{transform:scale(.88)}
 nav button.on{color:#eaf3ff}
 nav button svg{width:24px;height:24px;transition:filter .25s ease}
-nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .24s cubic-bezier(.34,1.56,.64,1) both;animation-delay:0s,0s!important}
+nav button.on svg{filter:drop-shadow(0 0 5px rgba(143,197,255,.75));animation:navGlow 2.2s ease-in-out infinite,navSelectPop .32s cubic-bezier(.34,1.56,.64,1) both;animation-delay:0s,0s!important}
 @keyframes navSelectPop{
-  0%{transform:scale(.82) translateY(4px)}
-  55%{transform:scale(1.08) translateY(-1px)}
+  0%{transform:scale(.78) translateY(6px)}
+  50%{transform:scale(1.22) translateY(-6px)}
+  75%{transform:scale(.95) translateY(1px)}
   100%{transform:scale(1) translateY(0)}
 }
 /* sirg'anuvchi "glass" belgi — qaysi bo'lim tanlangan bo'lsa, o'sha tugma (ikonka+yorliq) ustiga sirpanib o'tadi */
