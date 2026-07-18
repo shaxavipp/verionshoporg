@@ -1141,7 +1141,7 @@ window.addEventListener("resize",function(){NAV_PILL_LAST=null;positionNavPill()
 
 /* ===== Mahsulotlar (qidiruv + filtr) ===== */
 var PRODUCTS_ALL_PILL=["all","tab_all"];
-var PRODUCTS_PILLS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"]];
+var PRODUCTS_PILLS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"]];
 function productsScreenHTML(){
   var q=(S.products.search||"").trim().toLowerCase();
   var filter=S.products.filter||"all";
@@ -1242,6 +1242,19 @@ var CAT_ICON={obuna:"diamond",promokod:"gift",telegram:"send",games:"gamepad",na
    to'g'ridan-to'g'ri mahsulotlar) alohida "ekran" sifatida ochiladi. */
 function categoryCardsHTML(){
   var html='<div class="grid groupgrid">',any=false;
+  // "Nakrutka" — qo'lda qo'shiladigan katalog mahsuloti shart emas (JAP orqali jonli
+  // xizmatlar), shu sabab PRODUCTS_PILLS'dan mustaqil, doim ko'rsatiladi — admin uni
+  // faqat "Kategoriyalar" sozlamasidan (yoqilgan/o'chirilgan) yashira oladi.
+  var nkMeta=CatMeta.nakrutka||{};
+  if(nkMeta.enabled!==false){
+    any=true;
+    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",32);
+    var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
+    html+='<button class="pcard" data-opennakrutka="1">'
+      +'<div class="ptile" style="background:#22304a;color:#fff">'+nkTile+'</div>'
+      +'<div class="pbody"><div class="nm">'+esc(nkLabel)+'</div>'
+      +'<div class="ct">'+esc(t("nakrutka_sub"))+'</div></div></button>';
+  }
   for(var m=0;m<PRODUCTS_PILLS.length;m++){
     var kind=PRODUCTS_PILLS[m][0],labelKey=PRODUCTS_PILLS[m][1];
     var items=activeItems(kind);
@@ -1995,8 +2008,8 @@ function openNakrutkaPanel(){
     '<h2>🚀 '+esc(t("nakrutka_panel_title"))+'</h2>'
     +'<div id="nkBody" style="min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
   );
-  var appNames={tg:"Telegram",insta:"Instagram",tiktok:"TikTok",yt:"YouTube",other:t("group_other")};
-  var appOrder=["tg","insta","tiktok","yt","other"];
+  var appNames={insta:"Instagram",tg:"Telegram",yt:"YouTube",tiktok:"TikTok",other:t("group_other")};
+  var appOrder=["insta","tg","yt","tiktok","other"];
   api("/api/nakrutka/services").then(function(r){
     var list=r.services||[];
     var curUsdRate=Number(r.usdRate)||NAKRUTKA_USD_RATE; // admin panelidan boshqariladigan joriy kurs
@@ -2976,7 +2989,7 @@ function openAdminForm(editId){
   function kindBtn(k,key){return '<button data-kind="'+k+'" class="'+(F.kind===k?"on":"")+'">'+esc(t(key))+'</button>';}
   var html='<h2>'+esc(editId?t("a_edit"):t("a_new"))+'</h2>'
     +'<label>'+esc(t("a_section"))+'</label>'
-    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("games","tab_games")+kindBtn("telegram","tab_telegram")+kindBtn("nakrutka","tab_nakrutka")+kindBtn("extra1","tab_extra1")+kindBtn("extra2","tab_extra2")+'</div>'
+    +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("games","tab_games")+kindBtn("telegram","tab_telegram")+kindBtn("extra1","tab_extra1")+kindBtn("extra2","tab_extra2")+'</div>'
     +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
     +'<div class="minnote">'+ic("wand",12)+' '+esc(t("a_title_autotr"))+'</div>'
     +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
