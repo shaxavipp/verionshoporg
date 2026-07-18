@@ -829,12 +829,16 @@ function translateText(text,target){
   var lines=text.split("\n");
   return Promise.all(lines.map(function(l){return translateLine(l,target);})).then(function(arr){return arr.join("\n");});
 }
+var _meSig="";
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"){if(cb)cb();return;}
   api("/api/me").then(function(r){
+    var sig=JSON.stringify(r);
+    var changed=sig!==_meSig;
+    _meSig=sig;
     ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[]};
     ME_ERROR=false;
-    if(cb)cb();else if(S.lang)render();
+    if(cb)cb();else if(S.lang&&changed)render(); // balans/buyurtma o'zgarmagan bo'lsa qayta chizmaymiz
   }).catch(function(){
     ME_ERROR=true;
     if(cb)cb();else if(S.lang)render();
@@ -994,7 +998,14 @@ function render(){
   html+='<div style="height:80px"></div></div>'+navHTML();
   app.innerHTML=html;
   bind();
-  positionNavPill();
+  // positionNavPill() getBoundingClientRect/offsetWidth orqali MAJBURIY,
+  // DARHOL layout hisoblashni talab qiladi. Agar buni katta innerHTML
+  // almashtirilgan zahoti (shu tickda) chaqirsak, brauzer yangi ekranni
+  // chizishdan oldin shu og'ir hisob-kitobni tugatishga majbur bo'ladi —
+  // aynan shu narsa nav tugmalari (To'lov/Buyurtmalar/Profil) bosilganda
+  // bir lahza "qotib qolish" hissini beradi. requestAnimationFrame bilan
+  // keyingi frame'ga o'tkazib, brauzerga avval chizib olishga imkon beramiz.
+  requestAnimationFrame(positionNavPill);
 }
 function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();if(screen==="profile"&&REFERRAL===null)loadReferral();}
 
@@ -2367,17 +2378,25 @@ function updateHomeWidgets(){
     for(var j=0;j<lb.length;j++)lb[j].addEventListener("click",openLeaderboardSheet);
   }
 }
+var _reviewsSig="",_leaderboardSig="";
 function loadReviews(){
   if(typeof fetch!=="function"){REVIEWS=[];REVIEW_STATS={count:0,avg:0};return;}
   api("/api/reviews").then(function(r){
+    var sig=JSON.stringify(r);
+    if(sig===_reviewsSig)return; // sharhlar o'zgarmagan — aylanuvchi panelni bekorga uzmaymiz
+    _reviewsSig=sig;
     REVIEWS=r.reviews||[];REVIEW_STATS=r.stats||{count:REVIEWS.length,avg:0};REV_ROT_IDX=0;
     updateHomeWidgets();
   }).catch(function(){if(REVIEWS===null){REVIEWS=[];REVIEW_STATS={count:0,avg:0};}});
 }
 function loadLeaderboard(){
   if(typeof fetch!=="function"){LEADERBOARD=[];return;}
-  api("/api/leaderboard").then(function(r){LEADERBOARD=r.leaderboard||[];updateHomeWidgets();})
-    .catch(function(){if(LEADERBOARD===null)LEADERBOARD=[];});
+  api("/api/leaderboard").then(function(r){
+    var sig=JSON.stringify(r);
+    if(sig===_leaderboardSig)return;
+    _leaderboardSig=sig;
+    LEADERBOARD=r.leaderboard||[];updateHomeWidgets();
+  }).catch(function(){if(LEADERBOARD===null)LEADERBOARD=[];});
 }
 function loadLeaderboardPeriod(period,cb){
   api("/api/leaderboard?period="+encodeURIComponent(period)).then(function(r){cb(r.leaderboard||[]);}).catch(function(){cb([]);});
@@ -2888,19 +2907,35 @@ function bind(){
 
 /* ===== boot ===== */
 var StockCounts={};
+var _stockCountsSig=""; // oxirgi olingan ma'lumot "izi" — o'zgarmagan bo'lsa qayta chizmaslik uchun
 function loadStockCounts(){
   try{
     if(typeof fetch!=="function")return;
     fetch("/api/stock-counts",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;})
-    .then(function(j){if(j){StockCounts=j;if(S.lang)render();}}).catch(function(){});
+    .then(function(j){
+      if(!j)return;
+      var sig=JSON.stringify(j);
+      if(sig===_stockCountsSig)return; // hech narsa o'zgarmagan — qimmat to'liq render()ni tashlab yuboramiz
+      _stockCountsSig=sig;
+      StockCounts=j;
+      if(S.lang)render();
+    }).catch(function(){});
   }catch(e){}
 }
 var CatMeta={};
+var _catMetaSig="";
 function loadCatMeta(){
   try{
     if(typeof fetch!=="function")return;
     fetch("/api/category-meta").then(function(r){return r.ok?r.json():null;})
-    .then(function(j){if(j){CatMeta=j;if(S.lang)render();}}).catch(function(){});
+    .then(function(j){
+      if(!j)return;
+      var sig=JSON.stringify(j);
+      if(sig===_catMetaSig)return; // rasm/nom o'zgarmagan — butun sahifani (barcha rasmlarni) qayta chizib CPU/animatsiyani "qotirmaymiz"
+      _catMetaSig=sig;
+      CatMeta=j;
+      if(S.lang)render();
+    }).catch(function(){});
   }catch(e){}
 }
 function boot(){
