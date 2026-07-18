@@ -1374,17 +1374,27 @@ function reviewsBlockHTML(){
     html+='<div class="card" style="display:flex;align-items:center;justify-content:center;padding:14px 14px">'+ratingHTML+'</div>';
     return html;
   }
+  REV_GEN++;
   html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
     +ratingHTML
-    +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
+    +'<div id="revCurrent" data-gen="'+REV_GEN+'" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
     +reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]||REVIEWS[0])+'</div></div>';
   return html;
 }
 var REV_ROT_IDX=0;
+// Har safar reviewsBlockHTML() #revCurrent'ni qaytadan chizganda (masalan 20s'da
+// loadReviews() yangi ma'lumot bilan updateHomeWidgets() chaqirganda) shu sonni
+// oshiramiz. rotateReviewWidget()ning 280ms kechikkan fade-in callback'i ishga
+// tushganda, agar shu vaqt ichida panel allaqachon YANGI generatsiya bilan qayta
+// chizilgan bo'lsa (data-gen mos kelmasa), callback hech narsa qilmay to'xtaydi —
+// aks holda eski REV_ROT_IDX yangi (mos kelmaydigan) REVIEWS massiviga solinib,
+// noto'g'ri/"qotgan" sharh ko'rinishi yoki xato paydo bo'lardi.
+var REV_GEN=0;
 function rotateReviewWidget(){
   if(!REVIEWS||REVIEWS.length<2)return;
   var el=document.getElementById("revCurrent");
   if(!el)return;
+  var gen=el.getAttribute("data-gen");
   REV_ROT_IDX=(REV_ROT_IDX+1)%REVIEWS.length;
   if(S.reduceMotion){
     el.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
@@ -1395,6 +1405,8 @@ function rotateReviewWidget(){
   setTimeout(function(){
     var el2=document.getElementById("revCurrent");
     if(!el2)return;
+    if(el2.getAttribute("data-gen")!==gen)return; // panel shu orada qayta chizilgan — tegmaymiz
+    if(!REVIEWS||!REVIEWS.length)return;
     if(REV_ROT_IDX>=REVIEWS.length)REV_ROT_IDX=0;
     el2.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
     el2.style.opacity="1";
@@ -2330,23 +2342,36 @@ function openAdminUsers(){
 
 /* ===== admin: sharhlarni tasdiqlash (moderatsiya) ===== */
 function adminReviewCardHTML(r){
+  var pending=r.status!=="approved";
   return '<div class="itemrow" style="align-items:flex-start"><div>'
     +'<div class="nm">'+esc(r.name||"")+'</div>'
     +'<div style="margin:4px 0 3px">'+starsHTML(r.stars,12)+'</div>'
     +(r.text?'<div class="meta" style="white-space:normal">'+esc(r.text)+'</div>':'')
     +(r.itemTitle?'<div class="meta" style="opacity:.75">'+esc(r.itemTitle)+' · '+esc(fmtDate(r.ts))+'</div>':'<div class="meta">'+esc(fmtDate(r.ts))+'</div>')
-    +'</div><div class="acts">'
+    +'</div><div class="acts" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
+    +(pending?'<button data-revapprove="'+esc(r.id)+'" class="btn sm" style="color:var(--ok)">'+ic("check",14)+' '+esc(t("a_reviews_publish"))+'</button>':'')
     +'<button data-revdel="'+esc(r.id)+'" style="color:var(--err)">'+ic("trash",15)+'</button>'
     +'</div></div>';
 }
 function openAdminReviews(){
-  // Sharhlar endi avtomatik chop etiladi — admin faqat kerak bo'lsa o'chira oladi.
-  var sh=openSheet('<h2>'+esc(t("a_reviews_title"))+'</h2><div id="revAll">…</div>');
+  var sh=openSheet('<h2>'+esc(t("a_reviews_title"))+'</h2>'
+    +'<div class="seg" id="revTabSeg" style="margin:0 0 12px">'
+    +'<button data-revtab="pending" class="on">'+esc(t("a_reviews_pending"))+'</button>'
+    +'<button data-revtab="approved">'+esc(t("a_reviews_approved"))+'</button></div>'
+    +'<div id="revAll">…</div>');
+  var tab="pending";
   function load(){
     api("/api/admin/reviews").then(function(r){
-      var list=r.reviews||[];
+      var list=(r.reviews||[]).filter(function(rv){
+        return tab==="pending"?rv.status!=="approved":rv.status==="approved";
+      });
       var h="";for(var i=0;i<list.length;i++)h+=adminReviewCardHTML(list[i]);
-      sh.querySelector("#revAll").innerHTML=h||'<div class="paynote">'+esc(t("a_reviews_none_approved"))+'</div>';
+      sh.querySelector("#revAll").innerHTML=h||'<div class="paynote">'+esc(t(tab==="pending"?"a_reviews_none_pending":"a_reviews_none_approved"))+'</div>';
+      var aps=sh.querySelectorAll("[data-revapprove]");
+      for(var a=0;a<aps.length;a++)aps[a].addEventListener("click",function(){
+        var id=this.getAttribute("data-revapprove");
+        api("/api/admin/review-approve","POST",{id:id}).then(function(){toast(t("a_reviews_published"));haptic("ok");load();}).catch(function(){toast(t("srv_off"),true);});
+      });
       var dls=sh.querySelectorAll("[data-revdel]");
       for(var d=0;d<dls.length;d++)dls[d].addEventListener("click",function(){
         var id=this.getAttribute("data-revdel");
@@ -2354,6 +2379,13 @@ function openAdminReviews(){
       });
     }).catch(function(){sh.querySelector("#revAll").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
   }
+  var tbs=sh.querySelectorAll("[data-revtab]");
+  for(var tI=0;tI<tbs.length;tI++)tbs[tI].addEventListener("click",function(){
+    tab=this.getAttribute("data-revtab");
+    var all=sh.querySelectorAll("[data-revtab]");
+    for(var x=0;x<all.length;x++)all[x].classList.toggle("on",all[x]===this);
+    load();
+  });
   load();
 }
 
@@ -2969,7 +3001,7 @@ function boot(){
   loadStockCounts();
   loadReviews();
   loadLeaderboard();
-  if(S.screen==="profile")loadReferral();
+  loadReferral();
   setInterval(tickTimer,1000);
   setInterval(rotateReviewWidget,4500);
   setInterval(function(){

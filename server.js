@@ -417,9 +417,10 @@ const server = http.createServer((req, res) => {
       if (o.status !== "done") return send(res, 409, { error: "order_not_done" });
       if (DB.reviews.some(r => r.orderId === o.id)) return send(res, 409, { error: "already_reviewed" });
       const acc = user(u);
-      // Sharhlar endi avtomatik chop etiladi (admin tasdig'i shart emas).
+      // Sharh avval "pending" holatida saqlanadi — admin tasdiqlagandan keyingina
+      // /api/reviews orqali sahifada ko'rinadi (moderatsiya qayta yoqildi).
       const rv = { id: genId("RV"), uid: u.id, name: (acc.name || u.first_name || "Mijoz").split(" ")[0],
-        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now(), status: "approved" };
+        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now(), status: "pending" };
       DB.reviews.push(rv); save();
       send(res, 200, { ok: true, review: rv });
     });
