@@ -41,6 +41,10 @@ if (DB.settings.referral.percent === undefined) {
   DB.settings.referral = { enabled: DB.settings.referral.enabled !== false, percent: 1, shareText: DB.settings.referral.shareText || "" };
 }
 if (DB.settings.referral.shareText === undefined) DB.settings.referral.shareText = "";
+// Nakrutka (SMM/JAP) sozlamalari: kurs va ustama admin panelidan boshqariladi,
+// yashirilgan xizmatlar ro'yxati ham shu yerda saqlanadi.
+if (!DB.settings.nakrutka) DB.settings.nakrutka = { usdRate: null, markupPercent: 0, hiddenServices: [] };
+if (!Array.isArray(DB.settings.nakrutka.hiddenServices)) DB.settings.nakrutka.hiddenServices = [];
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
@@ -183,7 +187,121 @@ function fragmentCall(path, body) {
     req.write(data); req.end();
   });
 }
-// SMS/xabar matnidan pul summasini o'qib olish (Humo/Uzcard bildirishnomalari uchun)
+// ---------- SMM "Nakrutka" — JustAnotherPanel (JAP) API integratsiyasi ----------
+// JAP_API_KEY Railway "Variables" orqali beriladi (hisobingiz sahifasida mavjud), kodga yozilmaydi.
+// JAP hujjatiga ko'ra so'rov POST, x-www-form-urlencoded formatida yuboriladi, javob JSON qaytadi.
+const JAP_API_URL = "https://justanotherpanel.com/api/v2";
+const JAP_API_KEY = process.env.JAP_API_KEY || "";
+// JAP narxlari USD'da beriladi — so'mga shu kursda o'giramiz. VAQTINCHALIK qiymat —
+// frontenddagi NAKRUTKA_USD_RATE bilan bir xil bo'lishi shart (keyinroq admin panelidan
+// yoki avtomatik API'dan (masalan CBU.uz) boshqariladigan qilib almashtiriladi).
+const NAKRUTKA_USD_RATE = Number(process.env.NAKRUTKA_USD_RATE) || 12700;
+// ---------- Nakrutka: kurs, ustama (markup) va yashirilgan xizmatlar ----------
+function nkSettings() { return DB.settings.nakrutka || (DB.settings.nakrutka = { usdRate: null, markupPercent: 0, hiddenServices: [] }); }
+// Admin panelidan o'rnatilgan kurs bo'lsa o'shani, bo'lmasa ENV/standart qiymatni ishlatadi.
+function nkUsdRate() { const v = Number(nkSettings().usdRate); return v > 0 ? v : NAKRUTKA_USD_RATE; }
+function nkMarkupPct() { const v = Number(nkSettings().markupPercent); return v > 0 ? Math.min(v, 500) : 0; }
+function nkIsHidden(serviceId) { return (nkSettings().hiddenServices || []).indexOf(serviceId) !== -1; }
+// JAP xom narxiga (USD/1000) ustama qo'shadi — frontendga shu tayyor narx yuboriladi.
+function nkAdjustedRate(rawRate) { return (Number(rawRate) || 0) * (1 + nkMarkupPct() / 100); }
+// Miqdor va JAP xom narxidan yakuniy so'm narxini hisoblaydi (ustama + joriy kurs bilan).
+function nkPriceUZS(rawRate, quantity) { return Math.round(quantity * nkAdjustedRate(rawRate) / 1000 * nkUsdRate()); }
+function japCall(params) {
+  return new Promise((resolve, reject) => {
+    if (!JAP_API_KEY) return reject(new Error("JAP_API_KEY sozlanmagan"));
+    const body = new URLSearchParams(Object.assign({ key: JAP_API_KEY }, params || {})).toString();
+    const u = new URL(JAP_API_URL);
+    const req = https.request({
+      hostname: u.hostname, path: u.pathname, method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(body) },
+      timeout: 20000
+    }, r => {
+      let buf = "";
+      r.on("data", c => buf += c);
+      r.on("end", () => { try { resolve(JSON.parse(buf || "{}")); } catch (e) { reject(new Error("JAP javobini o'qib bo'lmadi")); } });
+    });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
+    req.write(body); req.end();
+  });
+}
+// Xizmatlar ro'yxati tez-tez o'zgarmaydi — har so'rovda JAP'ga murojaat qilmaslik uchun
+// 10 daqiqalik oddiy xotira-kesh (in-memory cache) ishlatamiz.
+let japServicesCache = { ts: 0, data: null };
+const JAP_CACHE_TTL = 10 * 60 * 1000;
+function getJapServices() {
+  const now = Date.now();
+  if (japServicesCache.data && now - japServicesCache.ts < JAP_CACHE_TTL)
+    return Promise.resolve(japServicesCache.data);
+  return japCall({ action: "services" }).then(list => {
+    if (!Array.isArray(list)) throw new Error("JAP xizmatlar ro'yxati noto'g'ri formatda");
+    // Faqat kerakli maydonlarni qoldiramiz (API kalit va boshqa ortiqcha narsa frontendga chiqmaydi)
+    const clean = list.map(s => ({
+      service: s.service, name: s.name, category: s.category,
+      rate: Number(s.rate) || 0, min: Number(s.min) || 0, max: Number(s.max) || 0
+    }));
+    japServicesCache = { ts: now, data: clean };
+    return clean;
+  });
+}
+// JAP'dan kelgan holat obyektini (masalan {status,remains,charge}) buyurtmaga qo'llaydi.
+// "Completed" bo'lsa — referal bonusi beriladi va mijozga xabar yuboriladi;
+// "Canceled/Refunded" bo'lsa — pul balansga bir martagina qaytariladi.
+// Qaytish qiymati: holat "yakunlovchi" (done/cancelled) tomon o'zgargan bo'lsa true.
+function applyJapStatusToOrder(o, j) {
+  o.japStatus = j.status || null;
+  o.japRemains = j.remains != null ? Number(j.remains) : null;
+  o.japCharge = j.charge != null ? j.charge : null;
+  const st = String(j.status || "").toLowerCase();
+  if (st === "completed" && o.status !== "done") {
+    o.status = "done"; o.doneTs = Date.now();
+    creditReferralOnOrder(o);
+    tgSend(o.uid, "✅ Nakrutka buyurtmangiz bajarildi: " + o.item);
+    return true;
+  }
+  if ((st === "canceled" || st === "cancelled" || st === "refunded") && o.status !== "cancelled") {
+    o.status = "cancelled";
+    if (!o.refunded) {
+      const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
+      acc.balance += o.price; o.refunded = true;
+      tgSend(o.uid, "❌ Nakrutka buyurtmangiz bekor qilindi, mablag' balansingizga qaytarildi: " + o.item);
+    }
+    return true;
+  }
+  return false;
+}
+// Har bir foydalanuvchi "Holatni yangilash" tugmasini bosishini kutmasdan,
+// serverning o'zi davriy ravishda barcha "processing" nakrutka buyurtmalarini
+// JAP'dan tekshirib, holatini avtomatik yangilab turadi (JAP ko'p buyurtmani
+// bitta so'rovda ham qaytara oladi — action:"status", orders:"id1,id2,...").
+const NAKRUTKA_AUTO_REFRESH_MS = 7 * 60 * 1000; // har 7 daqiqada
+function autoRefreshNakrutkaOrders() {
+  if (!JAP_API_KEY) return;
+  const pending = DB.orders.filter(o => o.status === "processing" && o.japOrderId);
+  if (!pending.length) return;
+  const byJapId = {};
+  for (const o of pending) byJapId[String(o.japOrderId)] = o;
+  const ids = Object.keys(byJapId);
+  const chunks = [];
+  for (let i = 0; i < ids.length; i += 100) chunks.push(ids.slice(i, i + 100));
+  let p = Promise.resolve();
+  chunks.forEach(chunk => {
+    p = p.then(() => japCall({ action: "status", orders: chunk.join(",") }))
+      .then(resultMap => {
+        if (!resultMap || typeof resultMap !== "object") return;
+        let changed = false;
+        for (const jid of chunk) {
+          const o = byJapId[jid];
+          const j = resultMap[jid];
+          if (!o || !j || j.error) continue;
+          if (applyJapStatusToOrder(o, j)) changed = true;
+        }
+        if (changed) save();
+      })
+      .catch(e => console.log("[nakrutka-cron] xato: " + String((e && e.message) || e)));
+  });
+}
+setInterval(autoRefreshNakrutkaOrders, NAKRUTKA_AUTO_REFRESH_MS);
 // Masalan: "Kartangizga 50 038 so'm tushdi" yoki "+50,038 UZS" kabi matnlardan 50038 ni topadi.
 function parseAmount(text) {
   if (!text) return null;
@@ -386,6 +504,75 @@ const server = http.createServer((req, res) => {
       totalEarned: Number(myAcc.referralEarnedTotal) || 0,
       friends
     });
+  }
+
+  /* ===== Nakrutka (SMM) — xizmatlar ro'yxati + buyurtma berish ===== */
+  // Yashirilgan xizmatlar chiqarib tashlanadi, narxga admin belgilagan ustama (markup)
+  // qo'shiladi — frontendga tayyor (ustama bilan) narx va joriy kurs birga yuboriladi.
+  if (url === "/api/nakrutka/services" && m === "GET") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
+    getJapServices()
+      .then(list => {
+        const visible = list.filter(s => !nkIsHidden(s.service))
+          .map(s => ({ service: s.service, name: s.name, category: s.category,
+            min: s.min, max: s.max, rate: Number(nkAdjustedRate(s.rate).toFixed(4)) }));
+        send(res, 200, { services: visible, usdRate: nkUsdRate() });
+      })
+      .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+    return;
+  }
+  // Buyurtma berish: narx serverda qayta hisoblanadi (frontenddan kelgan narxga ishonilmaydi),
+  // balans yetarli bo'lsagina JAP'ga haqiqiy buyurtma yuboriladi, shundan keyingina balansdan yechiladi.
+  if (url === "/api/nakrutka/buy" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
+    return readBody(req, res, b => {
+      const serviceId = Number(b.service);
+      const link = String(b.link || "").trim();
+      const quantity = Math.round(Number(b.quantity) || 0);
+      if (!serviceId || !link || !quantity) return send(res, 400, { error: "invalid_input" });
+      getJapServices().then(list => {
+        const svc = list.find(s => s.service === serviceId);
+        if (!svc || nkIsHidden(serviceId)) return send(res, 404, { error: "no_service" });
+        if (quantity < svc.min || quantity > svc.max)
+          return send(res, 400, { error: "qty_range", min: svc.min, max: svc.max });
+        const price = nkPriceUZS(svc.rate, quantity);
+        const acc = user(u);
+        if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+        japCall({ action: "add", service: serviceId, link, quantity }).then(j => {
+          if (!j || !j.order) {
+            const msg = (j && j.error) || "JAP xatosi";
+            return send(res, 502, { error: "jap_failed", message: msg });
+          }
+          acc.balance -= price;
+          const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: "nk_" + serviceId,
+            item: svc.name, price, status: "processing", ts: Date.now(),
+            delivered: null, doneTs: null, japOrderId: j.order, japService: serviceId, link, quantity };
+          DB.orders.push(o); save();
+          send(res, 200, { ok: true, order: o, balance: acc.balance });
+        }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+      }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+    });
+  }
+
+  // Bitta nakrutka buyurtmasining joriy holatini JAP'dan so'rab, mahalliy DB'ni yangilaydi.
+  // "Completed" bo'lsa — referal bonusi beriladi; "Canceled/Refunded" bo'lsa — pul balansga qaytariladi (bir marta).
+  if (url === "/api/nakrutka/order-status" && m === "GET") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    const o = DB.orders.find(x => x.id === q.get("id") && x.uid === u.id);
+    if (!o || !o.japOrderId) return send(res, 404, { error: "no_order" });
+    japCall({ action: "status", order: o.japOrderId }).then(j => {
+      if (!j || j.error) return send(res, 502, { error: "jap_failed", message: (j && j.error) || "JAP xatosi" });
+      applyJapStatusToOrder(o, j);
+      save();
+      const acc = user(u);
+      send(res, 200, { ok: true, order: o, balance: acc.balance });
+    }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+    return;
   }
 
   /* ===== Sevimlilar (wishlist) ===== */
@@ -791,6 +978,82 @@ const server = http.createServer((req, res) => {
         save(); return send(res, 200, { ok: true, balance: DB.users[k].balance });
       });
     }
+    /* ----- Nakrutka (SMM/JAP) admin ----- */
+    if (url === "/api/admin/nakrutka/orders" && m === "GET") {
+      const status = q.get("status") || "processing"; // processing | done | cancelled | all
+      let list = DB.orders.filter(o => String(o.itemId || "").indexOf("nk_") === 0);
+      if (status !== "all") list = list.filter(o => o.status === status);
+      list.sort((x, y) => y.ts - x.ts);
+      return send(res, 200, { orders: list.slice(0, 200) });
+    }
+    if (url === "/api/admin/nakrutka/balance" && m === "GET") {
+      if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
+      return japCall({ action: "balance" })
+        .then(j => send(res, 200, j))
+        .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+    }
+    // Bitta buyurtmani qo'lda JAP'dan yangilash yoki bekor qilib pulni qaytarish.
+    if (url === "/api/admin/nakrutka/order" && m === "POST") {
+      return readBody(req, res, b => {
+        const o = DB.orders.find(x => x.id === b.id && String(x.itemId || "").indexOf("nk_") === 0);
+        if (!o) return send(res, 404, { error: "not_found" });
+        if (b.action === "refresh") {
+          if (!o.japOrderId) return send(res, 400, { error: "no_jap_order" });
+          return japCall({ action: "status", order: o.japOrderId }).then(j => {
+            if (!j || j.error) return send(res, 502, { error: "jap_failed", message: (j && j.error) || "JAP xatosi" });
+            applyJapStatusToOrder(o, j); save();
+            send(res, 200, { ok: true, order: o });
+          }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+        }
+        if (b.action === "cancel_refund") {
+          if (o.status === "done" || o.status === "cancelled") return send(res, 409, { error: "state" });
+          o.status = "cancelled";
+          if (!o.refunded) {
+            const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
+            acc.balance += o.price; o.refunded = true;
+            tgSend(o.uid, "❌ Nakrutka buyurtmangiz admin tomonidan bekor qilindi, mablag' qaytarildi: " + o.item);
+          }
+          save();
+          return send(res, 200, { ok: true, order: o });
+        }
+        return send(res, 400, { error: "action" });
+      });
+    }
+    // Kurs (USD->so'm) va foyda ustamasi (%) — bo'sh/0 qiymat berilsa standart (ENV) qiymatga qaytadi.
+    if (url === "/api/admin/nakrutka/settings" && m === "GET") {
+      const s = nkSettings();
+      return send(res, 200, { usdRate: nkUsdRate(), usdRateOverride: s.usdRate || null,
+        defaultUsdRate: NAKRUTKA_USD_RATE, markupPercent: nkMarkupPct() });
+    }
+    if (url === "/api/admin/nakrutka/settings" && m === "POST") {
+      return readBody(req, res, b => {
+        const s = nkSettings();
+        if (b.usdRate !== undefined) { const v = Number(b.usdRate); s.usdRate = v > 0 ? v : null; }
+        if (b.markupPercent !== undefined) s.markupPercent = Math.max(0, Math.min(500, Number(b.markupPercent) || 0));
+        save();
+        send(res, 200, { ok: true, usdRate: nkUsdRate(), markupPercent: nkMarkupPct() });
+      });
+    }
+    // Xizmatlarni ko'rish/yashirish: admin JAP'dan kelgan HAMMA xizmatni ko'radi, ba'zilarini
+    // mijozlardan yashirishi mumkin (masalan sifatsiz/keraksiz deb topganlarini).
+    if (url === "/api/admin/nakrutka/services" && m === "GET") {
+      if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
+      return getJapServices()
+        .then(list => send(res, 200, { services: list, hidden: nkSettings().hiddenServices || [] }))
+        .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+    }
+    if (url === "/api/admin/nakrutka/toggle-service" && m === "POST") {
+      return readBody(req, res, b => {
+        const id = Number(b.service);
+        if (!id) return send(res, 400, { error: "service" });
+        const s = nkSettings();
+        const idx = s.hiddenServices.indexOf(id);
+        if (idx === -1) s.hiddenServices.push(id); else s.hiddenServices.splice(idx, 1);
+        save();
+        send(res, 200, { ok: true, hidden: s.hiddenServices });
+      });
+    }
+
     return send(res, 404, { error: "unknown admin route" });
   }
 

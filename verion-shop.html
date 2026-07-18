@@ -471,6 +471,10 @@ var BOT_USERNAME="verionshopbot";     /* @ belgisisiz, do'st taklif havolasi uch
 var SHOW_VIDEO_ROW=false;             /* set true + put link below when video is ready */
 var VIDEO_URL="";
 var MIN_AMOUNT=1000;
+/* JAP narxlari USD'da beriladi — hozircha shu kursda so'mga o'giramiz.
+   Bu VAQTINCHALIK qiymat: keyinroq admin panelidan yoki avtomatik API'dan
+   (masalan CBU.uz) yangilanadigan qilib almashtiriladi. */
+var NAKRUTKA_USD_RATE=12700;
 var HIDE_STOCK_KINDS=["games","telegram","nakrutka"]; /* shu kategoriyalarda "N dona qoldi" ko'rsatilmaydi */
 var CARDS=[
   {id:"humo",  name:"HUMO",  number:"9860 1966 1864 6182", holder:"Asatullayev Shaxzod", icon:"card", enabled:true},
@@ -547,6 +551,14 @@ en:{
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
   support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light",theme_switch_to_light:"Switch to light mode",theme_switch_to_dark:"Switch to dark mode",reduce_motion:"Reduce animations",reduce_motion_sub:"Turn off icon animations for speed",leaderboard_row:"Top spenders",leaderboard_row_sub:"See the leaderboard", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Check",amount_optional:"ENTER AMOUNT",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing...",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
+  nakrutka_title:"Boost services",nakrutka_sub:"Followers, likes, views",nakrutka_panel_title:"Boost services",nakrutka_app_label:"Choose app",nakrutka_loading:"Loading services...",nakrutka_load_err:"Failed to load, try again",nakrutka_soon_note:"Ordering will be added soon \u2014 for now you can only view prices and services.",
+  nakrutka_link_label:"Link",nakrutka_link_ph:"https://t.me/... or profile link",nakrutka_qty_label:"Quantity",nakrutka_total_label:"Estimated price",nakrutka_qty_range:"Quantity must be between {min} and {max}",nakrutka_order_soon:"Order \u2014 coming soon",nakrutka_order_btn:"Order now",nakrutka_order_ok:"Order accepted! Processing \u2014 check Orders.",nakrutka_link_needed:"Enter the link",nakrutka_refresh_btn:"Refresh status",nakrutka_remains:"remaining",nakrutka_refreshed:"Status updated",
+  nk_st_pending:"Pending",nk_st_inprogress:"In progress",nk_st_processing:"Processing",nk_st_completed:"Completed",nk_st_partial:"Partially completed",nk_st_canceled:"Canceled",nk_st_refunded:"Refunded",
+  a_nakrutka_title:"Boost orders (SMM)",a_nk_balance:"JAP balance",a_nk_settings:"Rate & markup",a_nk_services:"Manage services",
+  a_nk_rate_label:"USD \u2192 sum rate",a_nk_rate_hint:"Leave empty to use the default rate",a_nk_markup_label:"Markup, %",a_nk_markup_hint:"Added on top of the JAP price",
+  a_nk_filter_processing:"Pending",a_nk_filter_done:"Completed",a_nk_filter_cancelled:"Cancelled",a_nk_filter_all:"All",
+  a_nk_refresh:"Refresh",a_nk_cancel_refund:"Cancel & refund",a_nk_none:"No orders",a_nk_hide:"Hide",a_nk_unhide:"Unhide",a_nk_hidden_badge:"Hidden",
+  a_nk_search_ph:"Search service...",a_nk_saved:"Saved",
   period_today:"Today",period_week:"Week",period_month:"Month",period_all:"All time",
   fav_add:"Add to favorites",fav_remove:"Remove from favorites",fav_title:"Favorites",fav_empty:"No favorites yet — tap the heart on any product.",
   invite_link_label:"Your invite link",invite_share_btn:"Share",invite_copy_btn:"Copy",
@@ -612,6 +624,14 @@ uz:{
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
   support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",theme_switch_to_light:"Yorug' rejimga o'tkazish",theme_switch_to_dark:"Qorong'u rejimga o'tkazish",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",leaderboard_row:"Top xaridorlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
+  nakrutka_title:"Nakrutka xizmatlari",nakrutka_sub:"Obunachi, layk, ko'rishlar",nakrutka_panel_title:"Nakrutka xizmatlari",nakrutka_app_label:"Ilovani tanlang",nakrutka_loading:"Xizmatlar yuklanmoqda...",nakrutka_load_err:"Yuklab bo'lmadi, qayta urinib ko'ring",nakrutka_soon_note:"Buyurtma tizimi tez orada qo'shiladi \u2014 hozircha faqat narxlar va xizmatlar ro'yxatini ko'rishingiz mumkin.",
+  nakrutka_link_label:"Havola (link)",nakrutka_link_ph:"https://t.me/... yoki profil havolasi",nakrutka_qty_label:"Miqdor",nakrutka_total_label:"Taxminiy narx",nakrutka_qty_range:"Miqdor {min} dan {max} gacha bo'lishi kerak",nakrutka_order_soon:"Buyurtma berish \u2014 tez orada",nakrutka_order_btn:"Buyurtma berish",nakrutka_order_ok:"Buyurtma qabul qilindi! Amalga oshirilmoqda \u2014 Buyurtmalarda ko'ring.",nakrutka_link_needed:"Havolani kiriting",nakrutka_refresh_btn:"Holatni yangilash",nakrutka_remains:"qoldi",nakrutka_refreshed:"Holat yangilandi",
+  nk_st_pending:"Navbatda",nk_st_inprogress:"Bajarilmoqda",nk_st_processing:"Ishlanmoqda",nk_st_completed:"Bajarildi",nk_st_partial:"Qisman bajarildi",nk_st_canceled:"Bekor qilindi",nk_st_refunded:"Pul qaytarildi",
+  a_nakrutka_title:"Nakrutka buyurtmalari",a_nk_balance:"JAP balansi",a_nk_settings:"Kurs va ustama",a_nk_services:"Xizmatlarni boshqarish",
+  a_nk_rate_label:"USD \u2192 so'm kursi",a_nk_rate_hint:"Bo'sh qoldirsangiz standart kurs ishlatiladi",a_nk_markup_label:"Ustama, %",a_nk_markup_hint:"JAP narxi ustiga qo'shiladi",
+  a_nk_filter_processing:"Kutilmoqda",a_nk_filter_done:"Bajarilgan",a_nk_filter_cancelled:"Bekor qilingan",a_nk_filter_all:"Barchasi",
+  a_nk_refresh:"Yangilash",a_nk_cancel_refund:"Bekor qilish va qaytarish",a_nk_none:"Buyurtmalar yo'q",a_nk_hide:"Yashirish",a_nk_unhide:"Qaytarish",a_nk_hidden_badge:"Yashirilgan",
+  a_nk_search_ph:"Xizmat qidirish...",a_nk_saved:"Saqlandi",
   period_today:"Bugun",period_week:"Hafta",period_month:"Oy",period_all:"Hammasi",
   fav_add:"Sevimlilarga qo'shish",fav_remove:"Sevimlilardan olib tashlash",fav_title:"Sevimlilar",fav_empty:"Hozircha sevimli mahsulot yo'q — istalgan mahsulotdagi yurak belgisini bosing.",
   invite_link_label:"Sizning taklif havolangiz",invite_share_btn:"Ulashish",invite_copy_btn:"Nusxalash",
@@ -677,6 +697,14 @@ ru:{
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
   support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая",theme_switch_to_light:"Переключить на светлую тему",theme_switch_to_dark:"Переключить на тёмную тему",reduce_motion:"Уменьшить анимации",reduce_motion_sub:"Отключить анимацию иконок для скорости",leaderboard_row:"Топ покупателей",leaderboard_row_sub:"Смотреть рейтинг", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Проверить",amount_optional:"ВВЕДИТЕ СУММУ",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка...",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
+  nakrutka_title:"Накрутка",nakrutka_sub:"Подписчики, лайки, просмотры",nakrutka_panel_title:"Услуги накрутки",nakrutka_app_label:"Выберите приложение",nakrutka_loading:"Загрузка услуг...",nakrutka_load_err:"Не удалось загрузить, попробуйте снова",nakrutka_soon_note:"Система заказа будет добавлена позже \u2014 пока доступен только просмотр цен и услуг.",
+  nakrutka_link_label:"Ссылка",nakrutka_link_ph:"https://t.me/... или ссылка на профиль",nakrutka_qty_label:"Количество",nakrutka_total_label:"Примерная цена",nakrutka_qty_range:"Количество должно быть от {min} до {max}",nakrutka_order_soon:"Заказать \u2014 скоро",nakrutka_order_btn:"Заказать",nakrutka_order_ok:"Заказ принят! Выполняется \u2014 смотрите в Заказах.",nakrutka_link_needed:"Введите ссылку",nakrutka_refresh_btn:"Обновить статус",nakrutka_remains:"осталось",nakrutka_refreshed:"Статус обновлён",
+  nk_st_pending:"В очереди",nk_st_inprogress:"Выполняется",nk_st_processing:"В обработке",nk_st_completed:"Завершено",nk_st_partial:"Частично выполнено",nk_st_canceled:"Отменено",nk_st_refunded:"Возвращено",
+  a_nakrutka_title:"Заказы накрутки",a_nk_balance:"Баланс JAP",a_nk_settings:"Курс и наценка",a_nk_services:"Управление услугами",
+  a_nk_rate_label:"Курс USD \u2192 сум",a_nk_rate_hint:"Оставьте пустым для стандартного курса",a_nk_markup_label:"Наценка, %",a_nk_markup_hint:"Добавляется к цене JAP",
+  a_nk_filter_processing:"В ожидании",a_nk_filter_done:"Завершённые",a_nk_filter_cancelled:"Отменённые",a_nk_filter_all:"Все",
+  a_nk_refresh:"Обновить",a_nk_cancel_refund:"Отменить и вернуть",a_nk_none:"Заказов нет",a_nk_hide:"Скрыть",a_nk_unhide:"Показать",a_nk_hidden_badge:"Скрыто",
+  a_nk_search_ph:"Поиск услуги...",a_nk_saved:"Сохранено",
   period_today:"Сегодня",period_week:"Неделя",period_month:"Месяц",period_all:"Всё время",
   fav_add:"В избранное",fav_remove:"Убрать из избранного",fav_title:"Избранное",fav_empty:"Пока нет избранного — нажмите на сердечко у товара.",
   invite_link_label:"Ваша реферальная ссылка",invite_share_btn:"Поделиться",invite_copy_btn:"Копировать",
@@ -1887,9 +1915,9 @@ function ordersHTML(){
     var rows=[];
     for(var i=0;i<ME.orders.length;i++){
       var o=ME.orders[i];
-      var st=o.status==="pending"?"pending":(o.status==="done"?"done":"cancelled");
+      var st=o.status==="done"?"done":(o.status==="cancelled"?"cancelled":"pending");
       if(S.ordFilter!=="all"&&st!==S.ordFilter)continue;
-      rows.push({ts:o.ts,ic:ic("cart",15),title:o.item,id:o.id,oid:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null,status:o.status,reviewed:!!o.reviewed});
+      rows.push({ts:o.ts,ic:ic("cart",15),title:o.item,id:o.id,oid:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null,status:o.status,reviewed:!!o.reviewed,itemId:o.itemId,link:o.link,quantity:o.quantity,japStatus:o.japStatus,japRemains:o.japRemains});
     }
     rows.sort(function(a,b){return b.ts-a.ts;});
     if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
@@ -1905,8 +1933,16 @@ function ordersHTML(){
       html+='<div class="card ordcard"><div class="ordrow"><div class="l">'+x.ic+' '+esc(x.title)
         +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
         +'<div class="d">'+esc(money(x.amt))+'</div></div>'
-        +'<span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>'
-        +(acts?'<div class="ordacts">'+acts+'</div>':'')
+        +'<span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>';
+      if(String(x.itemId||"").indexOf("nk_")===0){
+        html+='<div class="d" style="padding:0 14px 10px;font-size:11.5px;line-height:1.6">'
+          +esc(t("nakrutka_qty_label"))+': '+esc(x.quantity)+' · '+esc(t("nakrutka_link_label"))+': '+esc(x.link||"—")
+          +(x.japStatus?'<br>'+esc(nkStatusLabel(x.japStatus))+(x.japRemains!=null?' ('+esc(t("nakrutka_remains"))+': '+esc(x.japRemains)+')':''):'')
+          +'</div>';
+        if(x.status!=="done"&&x.status!=="cancelled")
+          acts+='<button class="btn sm gray" data-nkrefresh="'+esc(x.oid)+'">'+ic("history",13)+' '+esc(t("nakrutka_refresh_btn"))+'</button>';
+      }
+      html+=(acts?'<div class="ordacts">'+acts+'</div>':'')
         +'</div>';
     }
   } else {
@@ -1929,6 +1965,185 @@ function ordersHTML(){
   return html;
 }
 
+/* ===== Nakrutka paneli — hozircha faqat xizmatlar ro'yxati va narxlarni ko'rsatadi.
+   Havola/miqdor kiritish va buyurtma berish keyingi bosqichda qo'shiladi. ===== */
+// JAP'dan inglizcha xom holatda keladigan status matnini (Pending/In progress/
+// Completed/Partial/Canceled/Refunded va h.k.) joriy tilga o'giradi. Tanish
+// bo'lmagan/kutilmagan matn kelsa — asl matnning o'zi ko'rsatiladi (yo'qotilmaydi).
+function nkStatusLabel(raw){
+  var s=String(raw||"").toLowerCase().trim();
+  if(!s)return "";
+  if(s==="completed")return t("nk_st_completed");
+  if(s==="partial")return t("nk_st_partial");
+  if(s==="canceled"||s==="cancelled")return t("nk_st_canceled");
+  if(s==="refunded")return t("nk_st_refunded");
+  if(s==="processing")return t("nk_st_processing");
+  if(s==="in progress"||s==="inprogress")return t("nk_st_inprogress");
+  if(s==="pending")return t("nk_st_pending");
+  return raw;
+}
+function nakrutkaAppOf(svc){
+  var s=((svc.category||"")+" "+(svc.name||"")).toLowerCase();
+  if(s.indexOf("telegram")!==-1||s.indexOf(" tg ")!==-1)return "tg";
+  if(s.indexOf("instagram")!==-1||s.indexOf("insta")!==-1)return "insta";
+  if(s.indexOf("tiktok")!==-1||s.indexOf("tik tok")!==-1)return "tiktok";
+  if(s.indexOf("youtube")!==-1||s.indexOf(" yt ")!==-1)return "yt";
+  return "other";
+}
+function openNakrutkaPanel(){
+  var sh=openSheet(
+    '<h2>🚀 '+esc(t("nakrutka_panel_title"))+'</h2>'
+    +'<div id="nkBody" style="min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
+  );
+  var appNames={tg:"Telegram",insta:"Instagram",tiktok:"TikTok",yt:"YouTube",other:t("group_other")};
+  var appOrder=["tg","insta","tiktok","yt","other"];
+  api("/api/nakrutka/services").then(function(r){
+    var list=r.services||[];
+    var curUsdRate=Number(r.usdRate)||NAKRUTKA_USD_RATE; // admin panelidan boshqariladigan joriy kurs
+    var byApp={};
+    for(var i=0;i<list.length;i++){var a=nakrutkaAppOf(list[i]);(byApp[a]=byApp[a]||[]).push(list[i]);}
+    var apps=appOrder.filter(function(a){return byApp[a]&&byApp[a].length;});
+    if(!apps.length){sh.querySelector("#nkBody").outerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';return;}
+
+    var html='<div class="seg" id="nkAppSeg" style="margin-bottom:12px">';
+    for(var j=0;j<apps.length;j++)html+='<button data-nk-app="'+apps[j]+'" class="'+(j===0?"on":"")+'">'+esc(appNames[apps[j]])+'</button>';
+    html+='</div><div id="nkStage"></div>';
+    sh.querySelector("#nkBody").outerHTML='<div id="nkBody">'+html+'</div>';
+
+    // Xizmat nomidan/kategoriyasidan taxminiy ikon tanlaydi — kategoriyalar JAP'dan
+    // dinamik kelgani uchun qattiq ro'yxat emas, kalit so'zlarga qarab tanlanadi.
+    function catIcon(label){
+      var s=label.toLowerCase();
+      if(s.indexOf("subscri")!==-1||s.indexOf("member")!==-1||s.indexOf("follow")!==-1)return "users";
+      if(s.indexOf("react")!==-1||s.indexOf("like")!==-1)return "heart";
+      if(s.indexOf("view")!==-1)return "eye";
+      if(s.indexOf("comment")!==-1)return "send";
+      if(s.indexOf("boost")!==-1)return "bolt";
+      if(s.indexOf("poll")!==-1||s.indexOf("vote")!==-1)return "trophy";
+      if(s.indexOf("share")!==-1)return "share";
+      return "trendUp";
+    }
+    // "Telegram - Members" kabi xom kategoriya nomidan ilova nomini olib tashlab, tozalab beradi
+    function catLabel(raw,appName){
+      var s=String(raw||"").replace(new RegExp(appName,"ig"),"").replace(/^[\s\-–|:]+|[\s\-–|:]+$/g,"");
+      return s||raw||t("group_other");
+    }
+
+    // 2-qavat: tanlangan ilovaning kategoriyalari (vertikal ro'yxat)
+    function showCategories(app){
+      var appName=appNames[app]||"";
+      var services=byApp[app]||[];
+      var cats={};
+      for(var k=0;k<services.length;k++){
+        var label=catLabel(services[k].category,appName);
+        (cats[label]=cats[label]||[]).push(services[k]);
+      }
+      var labels=Object.keys(cats).sort();
+      var h='';
+      for(var m=0;m<labels.length;m++){
+        var lb=labels[m];
+        h+=svcRow('data-nk-cat="'+esc(lb)+'"',catIcon(lb),"#2ecc71",lb,cats[lb].length+" "+esc(t("group_count_unit")));
+      }
+      sh.querySelector("#nkStage").innerHTML='<div class="card">'+(h||'<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>')+'</div>';
+      var catEls=sh.querySelectorAll("[data-nk-cat]");
+      for(var n=0;n<catEls.length;n++)catEls[n].addEventListener("click",function(){
+        var lb2=this.getAttribute("data-nk-cat");
+        haptic();showServices(app,lb2,cats[lb2]);
+      });
+    }
+
+    // 3-qavat: tanlangan kategoriya ichidagi aniq xizmatlar (narx, min/max bilan) + "Orqaga"
+    function showServices(app,label,services){
+      var h='<div class="row" data-nk-back="1" style="cursor:pointer"><div class="l" style="display:flex;align-items:center;gap:8px">'+ic("arrowLeft",15)+esc(label)+'</div></div>';
+      var list2=services.slice(0,40);
+      for(var i2=0;i2<list2.length;i2++){
+        var s=list2[i2];
+        h+='<div class="row" data-nk-svc="'+i2+'"><div class="l" style="min-width:0;flex:1">'+esc(s.name)
+          +'<div class="d">min '+s.min+' · max '+s.max+'</div></div>'
+          +'<b style="font-size:12.5px;white-space:nowrap;margin-right:6px">$'+s.rate.toFixed(2)+' / 1000</b>'+ic("arrowRight",13)+'</div>';
+      }
+      sh.querySelector("#nkStage").innerHTML='<div class="card">'+h+'</div>';
+      var back=sh.querySelector("[data-nk-back]");
+      if(back)back.addEventListener("click",function(){haptic();showCategories(app);});
+      var svcEls=sh.querySelectorAll("[data-nk-svc]");
+      for(var i3=0;i3<svcEls.length;i3++)svcEls[i3].addEventListener("click",function(){
+        var idx=Number(this.getAttribute("data-nk-svc"));
+        haptic();showServiceDetail(app,label,list2[idx],function(){showServices(app,label,services);});
+      });
+    }
+
+    // 4-qavat: bitta xizmat uchun havola + miqdor + taxminiy narx (buyurtma tizimi hali ulanmagan)
+    function showServiceDetail(app,label,svc,goBack){
+      var h='<div class="row" data-nk-back="1" style="cursor:pointer"><div class="l" style="display:flex;align-items:center;gap:8px">'+ic("arrowLeft",15)+esc(label)+'</div></div>'
+        +'<div style="padding:14px 16px 4px"><div style="font-weight:700;font-size:14.5px">'+esc(svc.name)+'</div>'
+        +'<div class="d" style="margin-top:2px">min '+svc.min+' · max '+svc.max+' · $'+svc.rate.toFixed(2)+' / 1000</div>'
+        +'<label>'+esc(t("nakrutka_link_label"))+'</label>'
+        +'<input id="nkLink" placeholder="'+esc(t("nakrutka_link_ph"))+'">'
+        +'<label>'+esc(t("nakrutka_qty_label"))+'</label>'
+        +'<div class="amount"><input id="nkQty" type="number" inputmode="numeric" placeholder="'+svc.min+'"><span class="cur">'+esc(t("group_count_unit"))+'</span></div>'
+        +'<div id="nkQtyErr" class="paynote" style="display:none;color:#e74c3c"></div>'
+        +'<div class="refline" style="margin-top:10px"><span>'+esc(t("nakrutka_total_label"))+'</span><b id="nkTotal">$0.00</b></div>'
+        +'<div id="nkBalWarn" class="paynote" style="display:none;color:#e74c3c"></div>'
+        +'<div style="height:12px"></div>'
+        +'<button class="btn big" id="nkOrderBtn" disabled>'+esc(t("nakrutka_order_btn"))+'</button>'
+        +'<div style="height:10px"></div></div>';
+      sh.querySelector("#nkStage").innerHTML='<div class="card">'+h+'</div>';
+      var back=sh.querySelector("[data-nk-back]");
+      if(back)back.addEventListener("click",function(){haptic();goBack();});
+      var qtyEl=sh.querySelector("#nkQty"),linkEl=sh.querySelector("#nkLink"),errEl=sh.querySelector("#nkQtyErr"),
+          totalEl=sh.querySelector("#nkTotal"),balWarnEl=sh.querySelector("#nkBalWarn"),btnEl=sh.querySelector("#nkOrderBtn");
+      var lastTotalUzs=0;
+      function recalc(){
+        var qty=parseInt(qtyEl.value)||0;
+        var totalUsd=qty>0?(qty*svc.rate/1000):0;
+        var totalUzs=Math.round(totalUsd*curUsdRate);
+        lastTotalUzs=totalUzs;
+        totalEl.textContent=money(totalUzs)+" (~$"+totalUsd.toFixed(2)+")";
+        var qtyOk=qty>0&&qty>=svc.min&&qty<=svc.max;
+        if(qty>0&&!qtyOk){
+          errEl.textContent=t("nakrutka_qty_range").replace("{min}",svc.min).replace("{max}",svc.max);
+          errEl.style.display="block";
+        }else errEl.style.display="none";
+        var balOk=totalUzs>0&&totalUzs<=(ME.balance||0);
+        if(qty>0&&qtyOk&&!balOk){
+          balWarnEl.innerHTML=ic("warning",13)+" "+esc(t("need_more"));
+          balWarnEl.style.display="block";
+        }else balWarnEl.style.display="none";
+        var linkOk=linkEl.value.trim().length>3;
+        btnEl.disabled=!(qtyOk&&balOk&&linkOk);
+        btnEl.textContent=t("nakrutka_order_btn")+(qtyOk?" — "+money(totalUzs):"");
+      }
+      qtyEl.addEventListener("input",recalc);
+      linkEl.addEventListener("input",recalc);
+      recalc();
+      btnEl.addEventListener("click",function(){
+        if(btnEl.disabled)return;
+        var qty=parseInt(qtyEl.value)||0,link=linkEl.value.trim();
+        btnEl.disabled=true;btnEl.textContent=t("processing");
+        api("/api/nakrutka/buy","POST",{service:svc.service,link:link,quantity:qty}).then(function(r){
+          ME.balance=r.balance;
+          haptic("ok");closeSheet();toast(t("nakrutka_order_ok"));go("orders");
+        }).catch(function(e){
+          var msg=t("srv_off");
+          if(e.resp&&e.resp.error==="balance")msg=t("need_more");
+          else if(e.resp&&e.resp.error==="qty_range")msg=t("nakrutka_qty_range").replace("{min}",e.resp.min).replace("{max}",e.resp.max);
+          toast(msg,true);
+          recalc();
+        });
+      });
+    }
+
+    showCategories(apps[0]);
+
+    var tabs=sh.querySelectorAll("[data-nk-app]");
+    for(var t2=0;t2<tabs.length;t2++)tabs[t2].addEventListener("click",function(){
+      for(var x=0;x<tabs.length;x++)tabs[x].classList.remove("on");
+      this.classList.add("on");haptic();showCategories(this.getAttribute("data-nk-app"));
+    });
+  }).catch(function(){
+    var b=sh.querySelector("#nkBody");if(b)b.outerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';
+  });
+}
 function openFavoritesSheet(){
   var favIds=ME.favorites||[];
   var items=catalog().filter(function(x){return favIds.indexOf(x.id)!==-1&&x.active!==false;});
@@ -2038,6 +2253,7 @@ function profileHTML(){
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     +'<div class="card">'
     +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")))
+    +svcRow('data-opennakrutka="1"',"trendUp","#2ecc71",t("nakrutka_title"),t("nakrutka_sub"))
     +svcRow('data-openref="1"',"gift","#9b59b6",t("invite_title"),refSub)
     +svcRow('data-viewalllb="1"',"trophy","#f1c40f",t("leaderboard_row"),t("leaderboard_row_sub"))
     +svcRow('data-support="1"',"headset","#1abc9c",t("support"),t("support_sub")+' · @'+SUPPORT_USERNAME)
@@ -2082,6 +2298,8 @@ function openAdmin(){
     +'<button class="btn gray" id="aReferralBtn">'+ic("gift",15)+' '+esc(t("a_referral_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aNakrutkaBtn">'+ic("trendUp",15)+' '+esc(t("a_nakrutka_title"))+'</button>'
     +'<div style="height:10px"></div>'
     +'<button class="btn green" id="aPub">'+ic("globe",15)+' '+esc(t("a_publish"))+'</button>'
     +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
@@ -2120,6 +2338,7 @@ function openAdmin(){
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
   sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
+  sh.querySelector("#aNakrutkaBtn").addEventListener("click",openAdminNakrutka);
   var agb=sh.querySelector("#aGroupsBtn");if(agb)agb.addEventListener("click",openAdminGroups);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
   sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
@@ -2162,6 +2381,131 @@ function openAdminReferral(){
     }).then(function(){haptic("ok");toast(t("a_saved"));btn.disabled=false;loadReferral();})
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
+}
+/* ===== admin: Nakrutka (SMM/JAP) — balans, kurs/ustama, buyurtmalar, xizmatlar ===== */
+function openAdminNakrutka(){
+  var html='<h2>🚀 '+esc(t("a_nakrutka_title"))+'</h2>'
+    +'<div class="stats" style="margin:0 0 12px"><div class="stat"><div class="v" id="nkAdmBal">…</div><div class="k">'+esc(t("a_nk_balance"))+'</div></div></div>'
+    +'<div class="sect" style="margin:0 0 6px">'+esc(t("a_nk_settings"))+'</div>'
+    +'<label>'+esc(t("a_nk_rate_label"))+'</label><input id="nkAdmRate" type="number" inputmode="numeric" placeholder="'+esc(t("a_nk_rate_hint"))+'">'
+    +'<label>'+esc(t("a_nk_markup_label"))+'</label><input id="nkAdmMarkup" type="number" inputmode="numeric" min="0" max="500">'
+    +'<div class="d" style="margin:2px 0 0">'+esc(t("a_nk_markup_hint"))+'</div>'
+    +'<div style="height:10px"></div><button class="btn" id="nkAdmSaveBtn">'+esc(t("a_save"))+'</button>'
+    +'<div style="height:8px"></div><button class="btn gray" id="nkAdmServicesBtn">'+ic("clipboard",15)+' '+esc(t("a_nk_services"))+'</button>'
+    +'<div class="sect" style="margin:16px 0 6px">'+esc(t("a_nakrutka_title"))+'</div>'
+    +'<div class="seg" id="nkAdmFilterSeg">'
+    +'<button data-nkf="processing" class="on">'+esc(t("a_nk_filter_processing"))+'</button>'
+    +'<button data-nkf="done">'+esc(t("a_nk_filter_done"))+'</button>'
+    +'<button data-nkf="cancelled">'+esc(t("a_nk_filter_cancelled"))+'</button>'
+    +'<button data-nkf="all">'+esc(t("a_nk_filter_all"))+'</button>'
+    +'</div><div id="nkAdmOrders" style="margin-top:10px"></div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html);
+
+  api("/api/admin/nakrutka/balance").then(function(r){
+    sh.querySelector("#nkAdmBal").textContent=(r&&r.balance!=null)?("$"+Number(r.balance).toFixed(2)):"—";
+  }).catch(function(){sh.querySelector("#nkAdmBal").textContent="—";});
+
+  api("/api/admin/nakrutka/settings").then(function(r){
+    sh.querySelector("#nkAdmRate").value=r.usdRateOverride||"";
+    sh.querySelector("#nkAdmRate").placeholder=t("a_nk_rate_hint")+" ("+r.defaultUsdRate+")";
+    sh.querySelector("#nkAdmMarkup").value=r.markupPercent||0;
+  }).catch(function(){});
+  sh.querySelector("#nkAdmSaveBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    api("/api/admin/nakrutka/settings","POST",{
+      usdRate:Number(sh.querySelector("#nkAdmRate").value)||0,
+      markupPercent:Number(sh.querySelector("#nkAdmMarkup").value)||0
+    }).then(function(){haptic("ok");toast(t("a_nk_saved"));btn.disabled=false;})
+      .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
+  sh.querySelector("#nkAdmServicesBtn").addEventListener("click",openAdminNakrutkaServices);
+
+  function nkAdmOrderRow(o){
+    var st=o.status,bad=ORD_BADGE[st]||ORD_BADGE.pending;
+    var h='<div class="card ordcard"><div class="ordrow"><div class="l">'+ic("cart",15)+' '+esc(o.item)
+      +'<div class="d"><span class="code">'+esc(o.id)+'</span> · '+esc(fmtDate(o.ts))+'</div>'
+      +'<div class="d">'+esc(money(o.price))+' · '+(o.uname?"@"+esc(o.uname):esc(String(o.uid)))+'</div>'
+      +'<div class="d">'+esc(t("nakrutka_qty_label"))+': '+esc(o.quantity)+' · '+esc(o.link||"—")+'</div>'
+      +(o.japStatus?'<div class="d">'+esc(nkStatusLabel(o.japStatus))+(o.japRemains!=null?' ('+esc(t("nakrutka_remains"))+': '+esc(o.japRemains)+')':'')+'</div>':'')
+      +'</div><span class="badge '+bad[0]+'">'+esc(t(bad[1]))+'</span></div>';
+    var acts='';
+    if(o.status==="processing"){
+      acts+='<button class="btn sm gray" data-nkadm-refresh="'+esc(o.id)+'">'+ic("history",13)+' '+esc(t("a_nk_refresh"))+'</button>';
+      acts+='<button class="btn sm red" data-nkadm-cancel="'+esc(o.id)+'">'+ic("cross",13)+' '+esc(t("a_nk_cancel_refund"))+'</button>';
+    }
+    h+=(acts?'<div class="ordacts">'+acts+'</div>':'');
+    return h;
+  }
+  function loadOrders(status){
+    var box=sh.querySelector("#nkAdmOrders");
+    box.innerHTML='<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("checking"))+'</div>';
+    api("/api/admin/nakrutka/orders?status="+encodeURIComponent(status)).then(function(r){
+      var list=r.orders||[];
+      if(!list.length){box.innerHTML='<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("a_nk_none"))+'</div>';return;}
+      var h='';for(var i=0;i<list.length;i++)h+=nkAdmOrderRow(list[i]);
+      box.innerHTML=h;
+      var rbtns=box.querySelectorAll("[data-nkadm-refresh]");
+      for(var a=0;a<rbtns.length;a++)rbtns[a].addEventListener("click",function(){
+        var id=this.getAttribute("data-nkadm-refresh"),btn=this;btn.disabled=true;
+        api("/api/admin/nakrutka/order","POST",{id:id,action:"refresh"}).then(function(){
+          haptic("ok");loadOrders(curFilter);
+        }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+      });
+      var cbtns=box.querySelectorAll("[data-nkadm-cancel]");
+      for(var c=0;c<cbtns.length;c++)cbtns[c].addEventListener("click",function(){
+        var id=this.getAttribute("data-nkadm-cancel"),btn=this;btn.disabled=true;
+        api("/api/admin/nakrutka/order","POST",{id:id,action:"cancel_refund"}).then(function(){
+          haptic("ok");loadOrders(curFilter);
+        }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+      });
+    }).catch(function(){box.innerHTML='<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("srv_off"))+'</div>';});
+  }
+  var curFilter="processing";
+  loadOrders(curFilter);
+  var fbtns=sh.querySelectorAll("#nkAdmFilterSeg [data-nkf]");
+  for(var fi=0;fi<fbtns.length;fi++)fbtns[fi].addEventListener("click",function(){
+    var all=sh.querySelectorAll("#nkAdmFilterSeg [data-nkf]");
+    for(var fj=0;fj<all.length;fj++)all[fj].classList.toggle("on",all[fj]===this);
+    curFilter=this.getAttribute("data-nkf");haptic();loadOrders(curFilter);
+  });
+}
+// Xizmatlarni ko'rish/qidirish/yashirish — JAP'dan kelgan HAMMA xizmat shu yerda,
+// yashirilganlari mijozlarga "/api/nakrutka/services"da ko'rinmaydi.
+function openAdminNakrutkaServices(){
+  var html='<h2>'+esc(t("a_nk_services"))+'</h2>'
+    +'<input id="nkSvcSearch" placeholder="'+esc(t("a_nk_search_ph"))+'">'
+    +'<div id="nkSvcList" style="margin-top:10px;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html);
+  var allServices=[],hiddenIds=[];
+  function render(filterText){
+    var f=(filterText||"").trim().toLowerCase();
+    var list=!f?allServices.slice(0,60):allServices.filter(function(s){
+      return (s.name||"").toLowerCase().indexOf(f)!==-1||(s.category||"").toLowerCase().indexOf(f)!==-1;
+    }).slice(0,60);
+    var h='';
+    for(var i=0;i<list.length;i++){
+      var s=list[i],isHidden=hiddenIds.indexOf(s.service)!==-1;
+      h+='<div class="row"><div class="l" style="min-width:0;flex:1">'+esc(s.name)
+        +(isHidden?' <span class="badge cncl" style="margin-left:4px">'+esc(t("a_nk_hidden_badge"))+'</span>':'')
+        +'<div class="d">'+esc(s.category||"")+' · min '+s.min+' · max '+s.max+' · $'+Number(s.rate).toFixed(2)+'/1000</div></div>'
+        +'<button class="btn sm '+(isHidden?"":"gray")+'" data-nksvc-toggle="'+s.service+'">'+esc(isHidden?t("a_nk_unhide"):t("a_nk_hide"))+'</button></div>';
+    }
+    sh.querySelector("#nkSvcList").innerHTML=h||('<div class="paynote">'+esc(t("empty_section"))+'</div>');
+    var btns=sh.querySelectorAll("[data-nksvc-toggle]");
+    for(var b=0;b<btns.length;b++)btns[b].addEventListener("click",function(){
+      var id=Number(this.getAttribute("data-nksvc-toggle")),btn=this;btn.disabled=true;
+      api("/api/admin/nakrutka/toggle-service","POST",{service:id}).then(function(r){
+        hiddenIds=r.hidden||[];haptic("ok");render(sh.querySelector("#nkSvcSearch").value);
+      }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+    });
+  }
+  api("/api/admin/nakrutka/services").then(function(r){
+    allServices=r.services||[];hiddenIds=r.hidden||[];
+    render("");
+  }).catch(function(){sh.querySelector("#nkSvcList").innerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';});
+  sh.querySelector("#nkSvcSearch").addEventListener("input",function(){render(this.value);});
 }
 function renderAdminList(sh){
   var c=catalog(),html="";
@@ -2902,6 +3246,8 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();toggleFavorite(this.getAttribute("data-fav"));});
   els=document.querySelectorAll("[data-openfavs]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openFavoritesSheet);
+  els=document.querySelectorAll("[data-opennakrutka]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",openNakrutkaPanel);
   els=document.querySelectorAll("[data-setlang]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.lang=this.getAttribute("data-setlang");persist();haptic();render();});
   var hlc=document.getElementById("hLangBtn");
@@ -2928,6 +3274,16 @@ function bind(){
     if(!ord||!ord.delivered)return;
     var it=byId(ord.itemId)||{title:ord.item};
     showDeliveredSheet(it,ord);
+  });
+  els=document.querySelectorAll("[data-nkrefresh]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+    var btn=this,oid=this.getAttribute("data-nkrefresh");
+    btn.disabled=true;
+    api("/api/nakrutka/order-status?id="+encodeURIComponent(oid)).then(function(r){
+      for(var k=0;k<ME.orders.length;k++)if(ME.orders[k].id===oid)ME.orders[k]=Object.assign({},ME.orders[k],r.order);
+      if(r.balance!=null)ME.balance=r.balance;
+      haptic("ok");toast(t("nakrutka_refreshed"));render();
+    }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
   els=document.querySelectorAll("[data-settheme]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.theme=this.getAttribute("data-settheme");Store.set("vn_theme",S.theme);haptic();render();});
