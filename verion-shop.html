@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#0a0e14; --card:#121821; --card2:#1a2230; --line:#28323f;
-  --txt:#eef3f8; --mut:#87939f; --acc:#2f8fff; --acc2:#8fc2ff; --grad:linear-gradient(135deg,#0f6fe0 0%,#3ea0ff 55%,#c7dcf5 100%);
+  --txt:#eef3f8; --mut:#87939f; --mut2:#c3ccd6; --acc:#2f8fff; --acc2:#8fc2ff; --grad:linear-gradient(135deg,#0f6fe0 0%,#3ea0ff 55%,#c7dcf5 100%);
   --hdrbg:rgba(18,20,26,.62);
   --glassline:rgba(255,255,255,.14);
   --ok:#30d158; --warn:#ffd60a; --blue:#4da3ff; --err:#ff453a; --gold:#c7d4e0;
@@ -19,7 +19,7 @@
 }
 [data-theme="light"]{
   --bg:#f3f6fa; --card:#ffffff; --card2:#eaf1fa; --line:#dbe6f0;
-  --txt:#101820; --mut:#5c6b78; --acc:#1f7ae0; --acc2:#0c56b8; --grad:linear-gradient(135deg,#0f6fe0 0%,#3ea0ff 55%,#c7dcf5 100%);
+  --txt:#101820; --mut:#5c6b78; --mut2:#3a4652; --acc:#1f7ae0; --acc2:#0c56b8; --grad:linear-gradient(135deg,#0f6fe0 0%,#3ea0ff 55%,#c7dcf5 100%);
   --hdrbg:rgba(255,255,255,.62);
   --glassline:rgba(255,255,255,.6);
   --ok:#1fa84c; --warn:#b8860b; --blue:#1f7ae0; --err:#e0342a; --gold:#7c8b99;
@@ -204,6 +204,14 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .backrow:active{transform:translateX(-4px)}
 .backrow svg{flex:0 0 auto}
 
+.ordcard{padding:10px 13px}
+.ordrow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ordrow .l{font-size:13px;font-weight:600}
+.ordrow .l .d{font-size:10.5px;color:var(--mut);margin-top:2px;font-weight:400}
+.ordrow .badge{flex:0 0 auto;margin-top:1px}
+.ordacts{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+.ordacts .btn.sm{flex:1}
+.ordreviewed{font-size:11px;color:var(--ok);font-weight:700;display:flex;align-items:center;gap:4px}
 .badge{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:800;white-space:nowrap}
 .badge.ok{background:rgba(48,209,88,.14);color:var(--ok)}
 .badge.pend{background:rgba(255,214,10,.14);color:var(--warn)}
@@ -272,9 +280,18 @@ nav.navintro button:nth-child(5){animation-delay:.44s}
   0%,100%{filter:drop-shadow(0 0 3px rgba(255,176,32,.45));transform:scale(1)}
   50%{filter:drop-shadow(0 0 8px rgba(255,176,32,.9));transform:scale(1.08)}
 }
-[data-reduce-motion="1"] nav button.on svg{animation:none}
+nav button:not(.on) svg{animation:navIdle 3.6s ease-in-out infinite}
+nav button:nth-child(1) svg{animation-delay:0s}
+nav button:nth-child(2) svg{animation-delay:.25s}
+nav button:nth-child(3) svg{animation-delay:.5s}
+nav button:nth-child(4) svg{animation-delay:.75s}
+nav button:nth-child(5) svg{animation-delay:1s}
+@keyframes navIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.ptile .isvg{animation:navIdle 3.2s ease-in-out infinite}
+[data-reduce-motion="1"] nav button svg{animation:none!important;transform:none!important}
+[data-reduce-motion="1"] .ptile .isvg{animation:none!important;transform:none!important}
 [data-reduce-motion="1"] nav.navintro,[data-reduce-motion="1"] nav.navintro button{animation:none;opacity:1}
-[data-reduce-motion="1"] .shine-ic{animation:none}
+[data-reduce-motion="1"] .shine-ic{animation:none;transform:none}
 
 /* onboarding */
 #onb{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;flex-direction:column;
@@ -298,9 +315,9 @@ nav.navintro button:nth-child(5){animation-delay:.44s}
 .amount input::placeholder{color:var(--mut);font-weight:600;opacity:1}
 .amount .cur{color:var(--mut);font-size:13px;font-weight:700}
 .minnote{font-size:11px;color:var(--mut);margin-top:6px}
-.chips{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
-.chips button{flex:1;padding:9px 4px;border-radius:11px;background:transparent;border:1px dashed var(--line);
-  font-size:12.5px;font-weight:600;color:var(--mut);transition:all .15s ease;}
+.chips{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.chips button{flex:1;padding:7px 4px;border-radius:10px;background:transparent;border:1px dashed var(--line);
+  font-size:11.5px;font-weight:600;color:var(--mut);transition:all .15s ease;}
 .chips button.on{border:1px solid transparent;color:#fff;background:var(--grad);font-weight:800;
   box-shadow:0 4px 14px rgba(47,143,255,.35)}
 .methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -413,8 +430,8 @@ nav.navintro button:nth-child(5){animation-delay:.44s}
 .itemrow .acts{display:flex;gap:6px}
 .itemrow .acts button{padding:7px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-size:13px}
 .itemrow.offi .nm{opacity:.45;text-decoration:line-through}
-.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
-.seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:12px;font-weight:700;color:var(--mut);min-width:70px}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1;padding:6.5px 4px;border-radius:8px;font-size:11.5px;font-weight:700;color:var(--mut);min-width:70px}
 .seg button.on{background:var(--grad);color:#fff;box-shadow:0 3px 10px rgba(124,92,255,.3)}
 .seg.mini{padding:2px;border-radius:10px;flex-wrap:nowrap;width:auto;gap:2px}
 .seg.mini button{flex:none;min-width:30px;padding:6px 9px;font-size:11px;border-radius:8px;transition:transform .12s ease}
@@ -525,7 +542,7 @@ en:{
   paynote:"Transfer the exact amount to the card above, take a screenshot of the receipt, then press “Send receipt” — the chat opens with your Order ID, attach the screenshot there.",
   cancel_order:"Cancel order",cancelled_toast:"Order cancelled",amount_low:"Amount is below the minimum",
   choose_method:"Choose a payment method",custom_pay:"Payment",method_hint:"Select a payment method above to continue",retry_load:"Couldn't load — tap to retry",
-  orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Finance",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
+  orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Top-ups",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
@@ -590,7 +607,7 @@ uz:{
   paynote:"Yuqoridagi kartaga aynan shu summani o'tkazing, chek skrinshotini oling, so'ng “Chek yuborish” tugmasini bosing — chat Buyurtma ID bilan ochiladi, skrinshotni o'sha yerga yuboring.",
   cancel_order:"Buyurtmani bekor qilish",cancelled_toast:"Buyurtma bekor qilindi",amount_low:"Summa eng kam miqdordan past",
   choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",method_hint:"Davom etish uchun yuqoridan to'lov usulini tanlang",retry_load:"Yuklanmadi — qayta urinish uchun bosing",
-  orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"Moliya",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
+  orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"To'ldirishlar",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
@@ -655,7 +672,7 @@ ru:{
   paynote:"Переведите точную сумму на карту выше, сделайте скриншот чека и нажмите «Отправить чек» — откроется чат с ID заказа, приложите туда скриншот.",
   cancel_order:"Отменить заказ",cancelled_toast:"Заказ отменён",amount_low:"Сумма меньше минимальной",
   choose_method:"Выберите способ оплаты",custom_pay:"Оплата",method_hint:"Выберите способ оплаты выше, чтобы продолжить",retry_load:"Не удалось загрузить — нажмите, чтобы повторить",
-  orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Финансы",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
+  orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Пополнения",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
@@ -1275,8 +1292,8 @@ function homeHTML(){
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
   }
   html+=categoryCardsHTML();
-  html+=reviewsBlockHTML();
-  html+=leaderboardBlockHTML();
+  html+='<div id="wrapReviews">'+reviewsBlockHTML()+'</div>';
+  html+='<div id="wrapLeaderboard">'+leaderboardBlockHTML()+'</div>';
   return html;
 }
 
@@ -1287,21 +1304,21 @@ function starsHTML(n,size){
   return h;
 }
 function reviewCardHTML(r){
-  return '<div class="card"><div style="padding:9px 0">'
+  return '<div class="card" style="padding:8px 10px;margin-bottom:6px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
-    +'<b style="font-size:13.5px">'+esc(r.name||"")+'</b>'
-    +'<span style="font-size:10px;color:var(--mut);white-space:nowrap">'+esc(fmtDate(r.ts))+'</span></div>'
-    +'<div style="margin:5px 0 3px">'+starsHTML(r.stars,12)+'</div>'
-    +(r.text?'<div style="font-size:12.5px;color:var(--mut)">'+esc(r.text)+'</div>':'')
-    +(r.itemTitle?'<div style="font-size:10.5px;color:var(--mut);margin-top:4px;opacity:.8">'+esc(r.itemTitle)+'</div>':'')
-    +'</div></div>';
+    +'<b style="font-size:12px">'+esc(r.name||"")+'</b>'
+    +'<span style="font-size:9px;color:var(--mut);white-space:nowrap">'+esc(fmtDate(r.ts))+'</span></div>'
+    +'<div style="margin:3px 0 2px">'+starsHTML(r.stars,10)+'</div>'
+    +(r.text?'<div style="font-size:11.5px;color:var(--mut2)">'+esc(r.text)+'</div>':'')
+    +(r.itemTitle?'<div style="font-size:9.5px;color:var(--mut);margin-top:2px;opacity:.8">'+esc(r.itemTitle)+'</div>':'')
+    +'</div>';
 }
 function reviewRotatorInnerHTML(r){
   var initial=(r.name||"?").trim().charAt(0).toUpperCase();
   return '<div class="avatar" style="width:26px;height:26px;font-size:11px;flex:0 0 auto">'+esc(initial)+'</div>'
     +'<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px">'
     +'<b style="font-size:12px">'+esc(r.name||"")+'</b><span style="font-size:10px">'+starsHTML(r.stars,10)+'</span></div>'
-    +(r.text?'<div style="font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.text)+'</div>':'')
+    +(r.text?'<div style="font-size:12px;color:var(--mut2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r.text)+'</div>':'')
     +'</div>';
 }
 function reviewsBlockHTML(){
@@ -1309,17 +1326,22 @@ function reviewsBlockHTML(){
     +'<span>'+esc(t("reviews_title"))+'</span>'
     +(REVIEWS&&REVIEWS.length>3?'<button data-viewallrev="1" style="background:none;border:none;color:var(--acc2);font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;padding:0">'+esc(t("view_all_btn"))+'</button>':'')
     +'</div>';
-  if(REVIEWS===null)return html+'<div class="card" style="color:var(--mut);font-size:13px;padding:14px 12px">…</div>';
-  if(!REVIEWS.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px;padding:14px 12px">'+esc(t("reviews_empty"))+'</div>';
-  var sum=0;for(var s=0;s<REVIEWS.length;s++)sum+=(REVIEWS[s].stars||0);
-  var avg=sum/REVIEWS.length;
-  html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
-    +'<div style="flex:0 0 auto;text-align:center;padding-right:12px;border-right:1px solid var(--line)">'
+  if(REVIEWS===null||REVIEW_STATS===null)return html+'<div class="card" style="color:var(--mut);font-size:13px;padding:14px 12px">…</div>';
+  if(!REVIEW_STATS.count)return html+'<div class="card" style="color:var(--mut);font-size:13.5px;padding:14px 12px">'+esc(t("reviews_empty"))+'</div>';
+  var avg=REVIEW_STATS.avg||0,cnt=REVIEW_STATS.count||0;
+  var ratingHTML='<div style="flex:0 0 auto;text-align:center'+(REVIEWS.length?';padding-right:12px;border-right:1px solid var(--line)':'')+'">'
     +'<div style="font-size:22px;font-weight:800">'+avg.toFixed(1)+'</div>'
     +'<div class="shine-ic" style="margin:2px 0">'+starsHTML(avg,11)+'</div>'
-    +'<div style="font-size:9.5px;color:var(--mut);white-space:nowrap">'+REVIEWS.length+' '+esc(t("reviews_count_unit"))+'</div></div>'
+    +'<div style="font-size:9.5px;color:var(--mut);white-space:nowrap">'+cnt+' '+esc(t("reviews_count_unit"))+'</div></div>';
+  if(!REVIEWS.length){
+    // Faqat yulduzli baholar bor, matnli sharh yo'q — aylanadigan panelsiz, faqat reyting.
+    html+='<div class="card" style="display:flex;align-items:center;justify-content:center;padding:14px 14px">'+ratingHTML+'</div>';
+    return html;
+  }
+  html+='<div class="card" id="revRotator" style="display:flex;align-items:center;gap:14px;padding:14px 14px">'
+    +ratingHTML
     +'<div id="revCurrent" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;transition:opacity .3s ease">'
-    +reviewRotatorInnerHTML(REVIEWS[0])+'</div></div>';
+    +reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]||REVIEWS[0])+'</div></div>';
   return html;
 }
 var REV_ROT_IDX=0;
@@ -1328,10 +1350,16 @@ function rotateReviewWidget(){
   var el=document.getElementById("revCurrent");
   if(!el)return;
   REV_ROT_IDX=(REV_ROT_IDX+1)%REVIEWS.length;
+  if(S.reduceMotion){
+    el.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
+    el.style.opacity="1";
+    return;
+  }
   el.style.opacity="0";
   setTimeout(function(){
     var el2=document.getElementById("revCurrent");
     if(!el2)return;
+    if(REV_ROT_IDX>=REVIEWS.length)REV_ROT_IDX=0;
     el2.innerHTML=reviewRotatorInnerHTML(REVIEWS[REV_ROT_IDX]);
     el2.style.opacity="1";
   },280);
@@ -1823,16 +1851,19 @@ function ordersHTML(){
     if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
     for(var r=0;r<rows.length;r++){
       var x=rows[r];
-      html+='<div class="card"><div class="row"><div class="l">'+x.ic+' '+esc(x.title)
+      var acts='';
+      if(x.delivered)acts+='<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'">'+ic("key",13)+' '+esc(t("delivered_view"))+'</button>';
+      if(x.status==="done"){
+        acts+=x.reviewed
+          ?'<span class="ordreviewed">'+ic("check",12)+' '+esc(t("review_done"))+'</span>'
+          :'<button class="btn sm gray" data-leavereview="'+esc(x.oid)+'" data-revtitle="'+esc(x.title)+'">'+esc(t("review_btn"))+'</button>';
+      }
+      html+='<div class="card ordcard"><div class="ordrow"><div class="l">'+x.ic+' '+esc(x.title)
         +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
         +'<div class="d">'+esc(money(x.amt))+'</div></div>'
-        +'<div class="r" style="display:flex;flex-direction:column;align-items:flex-end"><span class="badge '+x.b[0]+'" style="display:inline-block">'+esc(t(x.b[1]))+'</span>'
-        +(x.delivered?'<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'" style="margin-top:14px">'+ic("key",13)+' '+esc(t("delivered_view"))+'</button>':'')
-        +(x.status==="done"?(x.reviewed
-            ?'<span style="margin-top:10px;font-size:11px;color:var(--ok);font-weight:700">'+esc(t("review_done"))+'</span>'
-            :'<button class="btn sm gray" data-leavereview="'+esc(x.oid)+'" data-revtitle="'+esc(x.title)+'" style="margin-top:10px">'+esc(t("review_btn"))+'</button>')
-          :'')
-        +'</div></div></div>';
+        +'<span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>'
+        +(acts?'<div class="ordacts">'+acts+'</div>':'')
+        +'</div>';
     }
   } else {
     var frows=[];
@@ -2269,32 +2300,23 @@ function adminReviewCardHTML(r){
     +(r.text?'<div class="meta" style="white-space:normal">'+esc(r.text)+'</div>':'')
     +(r.itemTitle?'<div class="meta" style="opacity:.75">'+esc(r.itemTitle)+' · '+esc(fmtDate(r.ts))+'</div>':'<div class="meta">'+esc(fmtDate(r.ts))+'</div>')
     +'</div><div class="acts">'
-    +(r.status==="approved"?'':'<button data-revapprove="'+esc(r.id)+'" style="color:var(--ok)">'+ic("check",15)+'</button>')
     +'<button data-revdel="'+esc(r.id)+'" style="color:var(--err)">'+ic("trash",15)+'</button>'
     +'</div></div>';
 }
 function openAdminReviews(){
-  var sh=openSheet('<h2>'+esc(t("a_reviews_title"))+'</h2>'
-    +'<div class="sect" style="margin:12px 0 8px">'+esc(t("a_reviews_pending"))+'</div><div id="revPend">…</div>'
-    +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_reviews_approved"))+'</div><div id="revAppr">…</div>');
+  // Sharhlar endi avtomatik chop etiladi — admin faqat kerak bo'lsa o'chira oladi.
+  var sh=openSheet('<h2>'+esc(t("a_reviews_title"))+'</h2><div id="revAll">…</div>');
   function load(){
     api("/api/admin/reviews").then(function(r){
-      var list=r.reviews||[],pend=list.filter(function(x){return x.status!=="approved";}),appr=list.filter(function(x){return x.status==="approved";});
-      var hp="";for(var i=0;i<pend.length;i++)hp+=adminReviewCardHTML(pend[i]);
-      sh.querySelector("#revPend").innerHTML=hp||'<div class="paynote">'+esc(t("a_reviews_none_pending"))+'</div>';
-      var ha="";for(var j=0;j<appr.length;j++)ha+=adminReviewCardHTML(appr[j]);
-      sh.querySelector("#revAppr").innerHTML=ha||'<div class="paynote">'+esc(t("a_reviews_none_approved"))+'</div>';
-      var aps=sh.querySelectorAll("[data-revapprove]");
-      for(var a=0;a<aps.length;a++)aps[a].addEventListener("click",function(){
-        var id=this.getAttribute("data-revapprove");
-        api("/api/admin/review-approve","POST",{id:id}).then(function(){toast(t("a_reviews_published"));haptic("ok");load();}).catch(function(){toast(t("srv_off"),true);});
-      });
+      var list=r.reviews||[];
+      var h="";for(var i=0;i<list.length;i++)h+=adminReviewCardHTML(list[i]);
+      sh.querySelector("#revAll").innerHTML=h||'<div class="paynote">'+esc(t("a_reviews_none_approved"))+'</div>';
       var dls=sh.querySelectorAll("[data-revdel]");
       for(var d=0;d<dls.length;d++)dls[d].addEventListener("click",function(){
         var id=this.getAttribute("data-revdel");
         api("/api/admin/review-delete","POST",{id:id}).then(function(){toast(t("a_reviews_deleted"));haptic();load();}).catch(function(){toast(t("srv_off"),true);});
       });
-    }).catch(function(){sh.querySelector("#revPend").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+    }).catch(function(){sh.querySelector("#revAll").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
   }
   load();
 }
@@ -2326,15 +2348,35 @@ function loadServerCatalog(){
   }catch(e){}
 }
 /* ===== bosh sahifa: Mijozlar fikri (sharhlar) va Top donaterlar (reyting) ===== */
-var REVIEWS=null,LEADERBOARD=null; // null = hali yuklanmagan, [] = bo'sh, keyin — massiv
+var REVIEWS=null,REVIEW_STATS=null,LEADERBOARD=null; // null = hali yuklanmagan, [] = bo'sh, keyin — massiv
+// Sharh/reyting va top-xaridorlar panellarini alohida yangilaydi — butun bosh sahifani
+// qayta chizmaydi (avvalgi versiyada har poll'da to'liq render() chaqirilib, panel
+// yangilanganda ekran "qotib qolgandek" ko'rinar edi).
+function updateHomeWidgets(){
+  if(!S.lang||S.screen!=="home"||S.group||S.category)return;
+  var w1=document.getElementById("wrapReviews");
+  if(w1){
+    w1.innerHTML=reviewsBlockHTML();
+    var rb=w1.querySelectorAll("[data-viewallrev]");
+    for(var i=0;i<rb.length;i++)rb[i].addEventListener("click",openReviewsSheet);
+  }
+  var w2=document.getElementById("wrapLeaderboard");
+  if(w2){
+    w2.innerHTML=leaderboardBlockHTML();
+    var lb=w2.querySelectorAll("[data-viewalllb]");
+    for(var j=0;j<lb.length;j++)lb[j].addEventListener("click",openLeaderboardSheet);
+  }
+}
 function loadReviews(){
-  if(typeof fetch!=="function"){REVIEWS=[];return;}
-  api("/api/reviews").then(function(r){REVIEWS=r.reviews||[];if(S.lang&&S.screen==="home"&&!S.group&&!S.category)render();})
-    .catch(function(){if(REVIEWS===null)REVIEWS=[];});
+  if(typeof fetch!=="function"){REVIEWS=[];REVIEW_STATS={count:0,avg:0};return;}
+  api("/api/reviews").then(function(r){
+    REVIEWS=r.reviews||[];REVIEW_STATS=r.stats||{count:REVIEWS.length,avg:0};REV_ROT_IDX=0;
+    updateHomeWidgets();
+  }).catch(function(){if(REVIEWS===null){REVIEWS=[];REVIEW_STATS={count:0,avg:0};}});
 }
 function loadLeaderboard(){
   if(typeof fetch!=="function"){LEADERBOARD=[];return;}
-  api("/api/leaderboard").then(function(r){LEADERBOARD=r.leaderboard||[];if(S.lang&&S.screen==="home"&&!S.group&&!S.category)render();})
+  api("/api/leaderboard").then(function(r){LEADERBOARD=r.leaderboard||[];updateHomeWidgets();})
     .catch(function(){if(LEADERBOARD===null)LEADERBOARD=[];});
 }
 function loadLeaderboardPeriod(period,cb){

@@ -398,17 +398,23 @@ const server = http.createServer((req, res) => {
       if (o.status !== "done") return send(res, 409, { error: "order_not_done" });
       if (DB.reviews.some(r => r.orderId === o.id)) return send(res, 409, { error: "already_reviewed" });
       const acc = user(u);
+      // Sharhlar endi avtomatik chop etiladi (admin tasdig'i shart emas).
       const rv = { id: genId("RV"), uid: u.id, name: (acc.name || u.first_name || "Mijoz").split(" ")[0],
-        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now(), status: "pending" };
+        orderId: o.id, itemTitle: o.item, stars, text, ts: Date.now(), status: "approved" };
       DB.reviews.push(rv); save();
       send(res, 200, { ok: true, review: rv });
     });
   }
   // Bosh sahifadagi "Mijozlar fikri" uchun ochiq (auth shart emas) — faqat admin tasdiqlagan sharhlar.
+  // Reyting (o'rtacha baho + soni) BARCHA tasdiqlangan sharhlar (matnli yoki faqat yulduzli) bo'yicha
+  // hisoblanadi, lekin aylanadigan panelda faqat matni bor sharhlar ko'rsatiladi.
   if (url === "/api/reviews" && m === "GET") {
-    const list = DB.reviews.filter(r => r.status === "approved").slice(-40).reverse()
+    const approved = DB.reviews.filter(r => r.status === "approved");
+    const count = approved.length;
+    const avg = count ? approved.reduce((s, r) => s + (r.stars || 0), 0) / count : 0;
+    const list = approved.filter(r => r.text && r.text.trim()).slice(-40).reverse()
       .map(r => ({ name: r.name, itemTitle: r.itemTitle, stars: r.stars, text: r.text, ts: r.ts }));
-    return send(res, 200, { reviews: list });
+    return send(res, 200, { reviews: list, stats: { count, avg } });
   }
 
   /* ===== Top donaterlar (reyting) ===== */
