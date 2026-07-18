@@ -983,30 +983,42 @@ function applyTGChrome(){
     if(TG.setBottomBarColor)TG.setBottomBarColor(bg);
   }catch(e){}
 }
+function bindNavOnce(){
+  var els=document.querySelectorAll("[data-nav]");
+  for(var i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
+}
 function render(){
   var app=document.getElementById("app");
   document.documentElement.setAttribute("data-theme",S.theme==="light"?"light":"dark");
   document.documentElement.setAttribute("data-reduce-motion",S.reduceMotion?"1":"0");
   applyTGChrome();
   if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
+  var screenWrap=document.getElementById("screenWrap");
+  var navEl=document.getElementById("mainNav");
+  if(!screenWrap||!navEl||_navLangBuilt!==S.lang){
+    // Nav (blur-effekt + doimiy SVG animatsiya bilan) faqat shu yerda —
+    // til o'zgarganda yoki birinchi marta — noldan yaratiladi. Aks holda
+    // u umuman qayta yaratilmaydi, shu bilan har bir tab bosilishidagi
+    // "qotib qolish" hissi yo'qoladi.
+    app.innerHTML='<div id="screenWrap"></div>'+navHTML();
+    screenWrap=document.getElementById("screenWrap");
+    _navLangBuilt=S.lang;
+    NAV_PILL_LAST=null;
+    bindNavOnce(); // faqat shu yerda — aks holda bosilganda listener ko'payib, bir bosishda bir necha marta ishga tushib qolardi
+  }
   var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen">';
   if(S.screen==="home")html+=homeHTML();
   else if(S.screen==="products")html+=productsScreenHTML();
   else if(S.screen==="orders")html+=ordersHTML();
   else if(S.screen==="pay")html+=payHTML();
   else html+=profileHTML();
-  html+='<div style="height:80px"></div></div>'+navHTML();
-  app.innerHTML=html;
+  html+='<div style="height:80px"></div></div>';
+  screenWrap.innerHTML=html;
+  updateNavActive();
   bind();
-  // positionNavPill() getBoundingClientRect/offsetWidth orqali MAJBURIY,
-  // DARHOL layout hisoblashni talab qiladi. Agar buni katta innerHTML
-  // almashtirilgan zahoti (shu tickda) chaqirsak, brauzer yangi ekranni
-  // chizishdan oldin shu og'ir hisob-kitobni tugatishga majbur bo'ladi —
-  // aynan shu narsa nav tugmalari (To'lov/Buyurtmalar/Profil) bosilganda
-  // bir lahza "qotib qolish" hissini beradi. requestAnimationFrame bilan
-  // keyingi frame'ga o'tkazib, brauzerga avval chizib olishga imkon beramiz.
   requestAnimationFrame(positionNavPill);
 }
+var _navLangBuilt=null;
 function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();if(screen==="profile"&&REFERRAL===null)loadReferral();}
 
 function onboardingHTML(){
@@ -1039,7 +1051,20 @@ function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon]+'<span>'+esc(label)+'</span></button>';}
   var introClass=NAV_INTRO_PLAYED?"":" navintro";
   NAV_INTRO_PLAYED=true;
-  return '<nav class="'+introClass.trim()+'">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'<span class="navpill" id="navPill"></span></nav>';
+  return '<nav id="mainNav" class="'+introClass.trim()+'">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'<span class="navpill" id="navPill"></span></nav>';
+}
+// Nav DOM'ini yo'q qilib qaytadan yaratmasdan — faqat aktiv tugmani almashtiradi.
+// (backdrop-filter blur + SVG glow-animatsiya bor nav har safar noldan
+// yaratilganda GPU ularni qaytadan hisoblashga majbur bo'lardi — aynan shu
+// har bir tab bosilganda "qotib qolish" hissini berardi.)
+function updateNavActive(){
+  var nav=document.getElementById("mainNav");
+  if(!nav)return;
+  var btns=nav.querySelectorAll("[data-nav]");
+  for(var i=0;i<btns.length;i++){
+    var on=btns[i].getAttribute("data-nav")===S.screen;
+    btns[i].classList.toggle("on",on);
+  }
 }
 var NAV_PILL_LAST=null;
 function positionNavPill(){
@@ -2790,8 +2815,6 @@ function openAdminForm(editId){
 /* ===== events ===== */
 function bind(){
   var i,els;
-  els=document.querySelectorAll("[data-nav]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
   var psEl=document.getElementById("prodSearch");
   if(psEl){
     psEl.addEventListener("input",function(){
