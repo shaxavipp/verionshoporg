@@ -150,6 +150,19 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .stkb.out{background:rgba(255,69,58,.14);color:var(--err)}
 .empty{padding:40px 20px;text-align:center;color:var(--mut);font-size:13.5px;grid-column:1/-1}
 
+/* nakrutka (SMM) xizmatlar ro'yxati — ixcham qator kartochkalari (~75px balandlik) */
+.svclist{display:flex;flex-direction:column;gap:8px;padding:10px 12px}
+.svcrow{display:flex;align-items:center;gap:10px;width:100%;height:75px;text-align:left;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 12px;
+  box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .22s var(--spring),box-shadow .22s ease}
+.svcrow:active{transform:scale(.97);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.svcicon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.svcbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.svcbody .nm{font-size:13px;font-weight:650;line-height:1.28;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:ellipsis}
+.svcbody .ct{font-size:11px;color:var(--mut)}
+
 /* sheet */
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:100;opacity:0;transition:opacity .28s var(--ease)}
 .dim.on{opacity:1}
@@ -552,9 +565,9 @@ en:{
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
   support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light",theme_switch_to_light:"Switch to light mode",theme_switch_to_dark:"Switch to dark mode",reduce_motion:"Reduce animations",reduce_motion_sub:"Turn off icon animations for speed",leaderboard_row:"Top spenders",leaderboard_row_sub:"See the leaderboard", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Check",amount_optional:"ENTER AMOUNT",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing...",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
   nakrutka_title:"Boost services",nakrutka_sub:"Followers, likes, views",nakrutka_panel_title:"Boost services",nakrutka_app_label:"Choose app",nakrutka_loading:"Loading services...",nakrutka_load_err:"Failed to load, try again",nakrutka_soon_note:"Ordering will be added soon \u2014 for now you can only view prices and services.",
-  nakrutka_link_label:"Link",nakrutka_link_ph:"https://t.me/... or profile link",nakrutka_qty_label:"Quantity",nakrutka_total_label:"Total price",nakrutka_qty_range:"Quantity must be between {min} and {max}",nakrutka_order_soon:"Order \u2014 coming soon",nakrutka_order_btn:"Submit Order",nakrutka_order_ok:"Order accepted! Processing \u2014 check Orders.",nakrutka_link_needed:"Enter the link",nakrutka_refresh_btn:"Refresh status",nakrutka_remains:"remaining",nakrutka_refreshed:"Status updated",nakrutka_choose_app:"Choose a platform",nakrutka_min_max:"min {min} \u2013 max {max}",
+  nakrutka_link_label:"Link",nakrutka_link_ph:"https://t.me/... or profile link",nakrutka_qty_label:"Quantity",nakrutka_qty_unit:"pcs",nakrutka_total_label:"Total price",nakrutka_qty_range:"Quantity must be between {min} and {max}",nakrutka_order_soon:"Order \u2014 coming soon",nakrutka_order_btn:"Submit Order",nakrutka_order_ok:"Order accepted! Processing \u2014 check Orders.",nakrutka_link_needed:"Enter the link",nakrutka_refresh_btn:"Refresh status",nakrutka_remains:"remaining",nakrutka_refreshed:"Status updated",nakrutka_choose_app:"Choose a platform",nakrutka_min_max:"min {min} \u2013 max {max}",
   nk_st_pending:"Pending",nk_st_inprogress:"In progress",nk_st_processing:"Processing",nk_st_completed:"Completed",nk_st_partial:"Partially completed",nk_st_canceled:"Canceled",nk_st_refunded:"Refunded",
-  a_nakrutka_title:"Boost orders (SMM)",a_nk_balance:"JAP balance",a_nk_settings:"Rate & markup",a_nk_services:"Manage services",
+  a_nakrutka_title:"Boost orders (SMM)",a_nk_balance:"JAP balance",a_nk_settings:"Rate & markup",a_nk_services:"Manage services",a_nk_images:"Manage group images",a_nk_images_hint:"Attach a custom picture to each SMM group (e.g. Telegram \u2192 Members). Shown to customers instead of the default icon.",a_nk_images_saved:"Images saved",
   a_nk_rate_label:"USD \u2192 sum rate",a_nk_rate_hint:"Leave empty to use the default rate",a_nk_markup_label:"Markup, %",a_nk_markup_hint:"Added on top of the JAP price",
   a_nk_filter_processing:"Pending",a_nk_filter_done:"Completed",a_nk_filter_cancelled:"Cancelled",a_nk_filter_all:"All",
   a_nk_refresh:"Refresh",a_nk_cancel_refund:"Cancel & refund",a_nk_none:"No orders",a_nk_hide:"Hide",a_nk_unhide:"Unhide",a_nk_hidden_badge:"Hidden",
@@ -625,9 +638,9 @@ uz:{
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
   support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",theme_switch_to_light:"Yorug' rejimga o'tkazish",theme_switch_to_dark:"Qorong'u rejimga o'tkazish",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",leaderboard_row:"Top xaridorlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Tekshirish",amount_optional:"SUMMANI KIRITING",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
   nakrutka_title:"Nakrutka xizmatlari",nakrutka_sub:"Obunachi, layk, ko'rishlar",nakrutka_panel_title:"Nakrutka xizmatlari",nakrutka_app_label:"Ilovani tanlang",nakrutka_loading:"Xizmatlar yuklanmoqda...",nakrutka_load_err:"Yuklab bo'lmadi, qayta urinib ko'ring",nakrutka_soon_note:"Buyurtma tizimi tez orada qo'shiladi \u2014 hozircha faqat narxlar va xizmatlar ro'yxatini ko'rishingiz mumkin.",
-  nakrutka_link_label:"Havola",nakrutka_link_ph:"https://t.me/... yoki profil havolasi",nakrutka_qty_label:"Miqdor",nakrutka_total_label:"Jami narx",nakrutka_qty_range:"Miqdor {min} dan {max} gacha bo'lishi kerak",nakrutka_order_soon:"Buyurtma berish \u2014 tez orada",nakrutka_order_btn:"Yuborish",nakrutka_order_ok:"Buyurtma qabul qilindi! Amalga oshirilmoqda \u2014 Buyurtmalarda ko'ring.",nakrutka_link_needed:"Havolani kiriting",nakrutka_refresh_btn:"Holatni yangilash",nakrutka_remains:"qoldi",nakrutka_refreshed:"Holat yangilandi",nakrutka_choose_app:"Ilovani tanlang",nakrutka_min_max:"min {min} \u2013 max {max}",
+  nakrutka_link_label:"Havola",nakrutka_link_ph:"https://t.me/... yoki profil havolasi",nakrutka_qty_label:"Miqdor",nakrutka_qty_unit:"ta",nakrutka_total_label:"Jami narx",nakrutka_qty_range:"Miqdor {min} dan {max} gacha bo'lishi kerak",nakrutka_order_soon:"Buyurtma berish \u2014 tez orada",nakrutka_order_btn:"Yuborish",nakrutka_order_ok:"Buyurtma qabul qilindi! Amalga oshirilmoqda \u2014 Buyurtmalarda ko'ring.",nakrutka_link_needed:"Havolani kiriting",nakrutka_refresh_btn:"Holatni yangilash",nakrutka_remains:"qoldi",nakrutka_refreshed:"Holat yangilandi",nakrutka_choose_app:"Ilovani tanlang",nakrutka_min_max:"min {min} \u2013 max {max}",
   nk_st_pending:"Navbatda",nk_st_inprogress:"Bajarilmoqda",nk_st_processing:"Ishlanmoqda",nk_st_completed:"Bajarildi",nk_st_partial:"Qisman bajarildi",nk_st_canceled:"Bekor qilindi",nk_st_refunded:"Pul qaytarildi",
-  a_nakrutka_title:"Nakrutka buyurtmalari",a_nk_balance:"JAP balansi",a_nk_settings:"Kurs va ustama",a_nk_services:"Xizmatlarni boshqarish",
+  a_nakrutka_title:"Nakrutka buyurtmalari",a_nk_balance:"JAP balansi",a_nk_settings:"Kurs va ustama",a_nk_services:"Xizmatlarni boshqarish",a_nk_images:"Kategoriyalar rasmi",a_nk_images_hint:"Har bir SMM guruhi (masalan Telegram \u2192 Members) uchun ixtiyoriy rasm biriktiring. Mijozlarga standart ikonka o'rniga shu rasm ko'rsatiladi.",a_nk_images_saved:"Rasmlar saqlandi",
   a_nk_rate_label:"USD \u2192 so'm kursi",a_nk_rate_hint:"Bo'sh qoldirsangiz standart kurs ishlatiladi",a_nk_markup_label:"Ustama, %",a_nk_markup_hint:"JAP narxi ustiga qo'shiladi",
   a_nk_filter_processing:"Kutilmoqda",a_nk_filter_done:"Bajarilgan",a_nk_filter_cancelled:"Bekor qilingan",a_nk_filter_all:"Barchasi",
   a_nk_refresh:"Yangilash",a_nk_cancel_refund:"Bekor qilish va qaytarish",a_nk_none:"Buyurtmalar yo'q",a_nk_hide:"Yashirish",a_nk_unhide:"Qaytarish",a_nk_hidden_badge:"Yashirilgan",
@@ -698,9 +711,9 @@ ru:{
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
   support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая",theme_switch_to_light:"Переключить на светлую тему",theme_switch_to_dark:"Переключить на тёмную тему",reduce_motion:"Уменьшить анимации",reduce_motion_sub:"Отключить анимацию иконок для скорости",leaderboard_row:"Топ покупателей",leaderboard_row_sub:"Смотреть рейтинг", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"USERNAME",check_btn:"Проверить",amount_optional:"ВВЕДИТЕ СУММУ",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка...",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
   nakrutka_title:"Накрутка",nakrutka_sub:"Подписчики, лайки, просмотры",nakrutka_panel_title:"Услуги накрутки",nakrutka_app_label:"Выберите приложение",nakrutka_loading:"Загрузка услуг...",nakrutka_load_err:"Не удалось загрузить, попробуйте снова",nakrutka_soon_note:"Система заказа будет добавлена позже \u2014 пока доступен только просмотр цен и услуг.",
-  nakrutka_link_label:"Ссылка",nakrutka_link_ph:"https://t.me/... или ссылка на профиль",nakrutka_qty_label:"Количество",nakrutka_total_label:"Итоговая цена",nakrutka_qty_range:"Количество должно быть от {min} до {max}",nakrutka_order_soon:"Заказать \u2014 скоро",nakrutka_order_btn:"Отправить",nakrutka_order_ok:"Заказ принят! Выполняется \u2014 смотрите в Заказах.",nakrutka_link_needed:"Введите ссылку",nakrutka_refresh_btn:"Обновить статус",nakrutka_remains:"осталось",nakrutka_refreshed:"Статус обновлён",nakrutka_choose_app:"Выберите платформу",nakrutka_min_max:"мин {min} \u2013 макс {max}",
+  nakrutka_link_label:"Ссылка",nakrutka_link_ph:"https://t.me/... или ссылка на профиль",nakrutka_qty_label:"Количество",nakrutka_qty_unit:"шт",nakrutka_total_label:"Итоговая цена",nakrutka_qty_range:"Количество должно быть от {min} до {max}",nakrutka_order_soon:"Заказать \u2014 скоро",nakrutka_order_btn:"Отправить",nakrutka_order_ok:"Заказ принят! Выполняется \u2014 смотрите в Заказах.",nakrutka_link_needed:"Введите ссылку",nakrutka_refresh_btn:"Обновить статус",nakrutka_remains:"осталось",nakrutka_refreshed:"Статус обновлён",nakrutka_choose_app:"Выберите платформу",nakrutka_min_max:"мин {min} \u2013 макс {max}",
   nk_st_pending:"В очереди",nk_st_inprogress:"Выполняется",nk_st_processing:"В обработке",nk_st_completed:"Завершено",nk_st_partial:"Частично выполнено",nk_st_canceled:"Отменено",nk_st_refunded:"Возвращено",
-  a_nakrutka_title:"Заказы накрутки",a_nk_balance:"Баланс JAP",a_nk_settings:"Курс и наценка",a_nk_services:"Управление услугами",
+  a_nakrutka_title:"Заказы накрутки",a_nk_balance:"Баланс JAP",a_nk_settings:"Курс и наценка",a_nk_services:"Управление услугами",a_nk_images:"Изображения категорий",a_nk_images_hint:"Прикрепите картинку к каждой SMM-группе (например Telegram \u2192 Members). Показывается клиентам вместо стандартной иконки.",a_nk_images_saved:"Изображения сохранены",
   a_nk_rate_label:"Курс USD \u2192 сум",a_nk_rate_hint:"Оставьте пустым для стандартного курса",a_nk_markup_label:"Наценка, %",a_nk_markup_hint:"Добавляется к цене JAP",
   a_nk_filter_processing:"В ожидании",a_nk_filter_done:"Завершённые",a_nk_filter_cancelled:"Отменённые",a_nk_filter_all:"Все",
   a_nk_refresh:"Обновить",a_nk_cancel_refund:"Отменить и вернуть",a_nk_none:"Заказов нет",a_nk_hide:"Скрыть",a_nk_unhide:"Показать",a_nk_hidden_badge:"Скрыто",
@@ -1159,7 +1172,7 @@ function nkSearchResultsHTML(q){
     var s=matches[i],meta=NK_APP_META[nakrutkaAppOf(s)]||{color:"#2ecc71"};
     html+='<button class="pcard" data-nk-search-svc="'+i+'">'
       +'<div class="ptile" style="background:'+meta.color+'18;color:'+meta.color+'">'+ic("trendUp",24)+'</div>'
-      +'<div class="pbody"><div class="nm">'+esc(s.name)+'</div><div class="ct">'+esc(t("nakrutka_min_max").replace("{min}",s.min).replace("{max}",s.max))+'</div></div></button>';
+      +'<div class="pbody"><div class="nm">'+esc(smmTranslate(s.name))+'</div><div class="ct">'+esc(t("nakrutka_min_max").replace("{min}",s.min).replace("{max}",s.max))+'</div></div></button>';
   }
   return html+'</div>';
 }
@@ -2031,6 +2044,48 @@ var NK_APP_META={
   yt:{name:"YouTube",color:"#FF0000",icon:"youtube"}
 };
 var NK_APP_ORDER=["tg","insta","tiktok","yt"];
+// JAP API'dan xizmat/kategoriya nomlari doim inglizcha keladi ("Members","Views",
+// "Reactions" va h.k.). Bu "aqlli lug'at" — mijoz tiliga qarab shu kalit so'zlarni
+// (butun so'z sifatida, \b chegarasi bilan) mos tilga almashtiradi, qolgan matn
+// ([Refill: 7D] kabi texnik qismlar, sonlar) o'zgarishsiz qoladi. Lug'atda yo'q
+// so'z — original holicha qoladi (hech narsa yo'qotilmaydi).
+var SMM_DICT={
+  uz:{
+    Members:"Obunachilar",Member:"Obunachi",Subscribers:"Obunachilar",Subscriber:"Obunachi",
+    Followers:"Obunachilar",Follower:"Obunachi",Views:"Ko'rishlar",View:"Ko'rish",
+    Reactions:"Reaksiyalar",Reaction:"Reaksiya",Likes:"Layklar",Like:"Layk",
+    Comments:"Izohlar",Comment:"Izoh",Shares:"Ulashishlar",Share:"Ulashish",
+    Votes:"Ovozlar",Vote:"Ovoz",Poll:"So'rovnoma",Polls:"So'rovnomalar",
+    Boost:"Boost",Boosts:"Boostlar",Premium:"Premium",Reposts:"Repostlar",Repost:"Repost",
+    Impressions:"Ko'rsatishlar",Saves:"Saqlashlar",Save:"Saqlash",Story:"Hikoya",Stories:"Hikoyalar",
+    Live:"Jonli efir",Auto:"Avto",Refill:"Qayta to'ldirish",Guaranteed:"Kafolatlangan"
+  },
+  ru:{
+    Members:"Подписчики",Member:"Подписчик",Subscribers:"Подписчики",Subscriber:"Подписчик",
+    Followers:"Подписчики",Follower:"Подписчик",Views:"Просмотры",View:"Просмотр",
+    Reactions:"Реакции",Reaction:"Реакция",Likes:"Лайки",Like:"Лайк",
+    Comments:"Комментарии",Comment:"Комментарий",Shares:"Репосты",Share:"Репост",
+    Votes:"Голоса",Vote:"Голос",Poll:"Опрос",Polls:"Опросы",
+    Boost:"Буст",Boosts:"Бусты",Premium:"Премиум",Reposts:"Репосты",Repost:"Репост",
+    Impressions:"Показы",Saves:"Сохранения",Save:"Сохранение",Story:"История",Stories:"Истории",
+    Live:"Прямой эфир",Auto:"Авто",Refill:"Дозаливка",Guaranteed:"Гарантия"
+  }
+};
+var _smmDictWordsCache={};
+function smmTranslate(str){
+  str=String(str||"");
+  if(!str||S.lang==="en")return str;
+  var dict=SMM_DICT[S.lang];
+  if(!dict)return str;
+  var words=_smmDictWordsCache[S.lang];
+  if(!words)words=_smmDictWordsCache[S.lang]=Object.keys(dict).sort(function(a,b){return b.length-a.length;});
+  var out=str;
+  for(var i=0;i<words.length;i++){
+    var w=words[i];
+    out=out.replace(new RegExp("\\b"+w+"\\b","g"),dict[w]);
+  }
+  return out;
+}
 function nakrutkaAppOf(svc){
   if(svc.app&&NK_APP_META[svc.app])return svc.app;
   var s=((svc.category||"")+" "+(svc.name||"")).toLowerCase();
@@ -2060,13 +2115,13 @@ function nkCatLabel(raw,appName){
 }
 // Xizmatlar ro'yxati (4 tarmoq bo'yicha allaqachon serverda filtrlangan) — panel va
 // umumiy qidiruv o'rtasida qayta ishlatish uchun soddagina xotira-kesh (5 daqiqa).
-var NkCache={ts:0,flat:null,usdRate:0,promise:null};
+var NkCache={ts:0,flat:null,usdRate:0,catMeta:null,promise:null};
 function loadNkFlat(){
   if(NkCache.flat&&Date.now()-NkCache.ts<5*60*1000)return Promise.resolve(NkCache.flat);
   if(NkCache.promise)return NkCache.promise;
   NkCache.promise=api("/api/nakrutka/services").then(function(r){
     var list=r.services||[];
-    NkCache={ts:Date.now(),flat:list,usdRate:Number(r.usdRate)||NAKRUTKA_USD_RATE,promise:null};
+    NkCache={ts:Date.now(),flat:list,usdRate:Number(r.usdRate)||NAKRUTKA_USD_RATE,catMeta:r.catMeta||{},promise:null};
     return list;
   }).catch(function(e){NkCache.promise=null;throw e;});
   return NkCache.promise;
@@ -2083,12 +2138,12 @@ function ensureNkLoadedForSearch(){
 // nakrutka panelidan ham, umumiy qidiruv natijasidan ham chaqiriladi.
 function nkRenderOrderForm(container,svc,backLabel,onBack){
   var h=(onBack?('<button class="backrow" data-nk-back-x="1">'+ic("arrowLeft",16)+' <b>'+esc(backLabel)+'</b></button>'):'')
-    +'<div style="padding:0 16px 4px"><div style="font-weight:700;font-size:14.5px">'+esc(svc.name)+'</div>'
+    +'<div style="padding:0 16px 4px"><div style="font-weight:700;font-size:14.5px">'+esc(smmTranslate(svc.name))+'</div>'
     +'<div class="d" style="margin-top:2px">'+esc(t("nakrutka_min_max").replace("{min}",svc.min).replace("{max}",svc.max))+'</div>'
     +'<label>'+esc(t("nakrutka_link_label"))+'</label>'
     +'<input id="nkLink" placeholder="'+esc(t("nakrutka_link_ph"))+'">'
     +'<label>'+esc(t("nakrutka_qty_label"))+'</label>'
-    +'<div class="amount"><input id="nkQty" type="number" inputmode="numeric" placeholder="'+svc.min+'"><span class="cur">'+esc(t("group_count_unit"))+'</span></div>'
+    +'<div class="amount"><input id="nkQty" type="number" inputmode="numeric" placeholder="'+svc.min+'"><span class="cur">'+esc(t("nakrutka_qty_unit"))+'</span></div>'
     +'<div id="nkQtyErr" class="paynote" style="display:none;color:#e74c3c"></div>'
     +'<div class="refline" style="margin-top:10px"><span>'+esc(t("nakrutka_total_label"))+'</span><b id="nkTotal">'+money(0)+'</b></div>'
     +'<div id="nkBalWarn" class="paynote" style="display:none;color:#e74c3c"></div>'
@@ -2147,10 +2202,17 @@ function openNakrutkaPanel(){
   );
   loadNkFlat().then(function(list){
     var stage=sh.querySelector("#nkStage");
+    // MUHIM: yuklanish holatidagi inline "display:flex;align-items:center;justify-content:center"
+    // stili shu elementning O'ZIDA qolib ketardi (innerHTML faqat ICHKI kontentni almashtiradi,
+    // konteynerning stil atributini emas) — natijada keyingi barcha qavatlar (orqaga tugmasi +
+    // kartochkalar grid'i) markazlashtirilgan flex-qator sifatida chizilib, "Orqaga" tugmasi
+    // ekranning markazida "qolib ketgandek" ko'rinardi. Kontent tayyor bo'lgach stilni tozalaymiz.
+    stage.removeAttribute("style");
     var byApp={};
     for(var i=0;i<list.length;i++){var a=nakrutkaAppOf(list[i]);(byApp[a]=byApp[a]||[]).push(list[i]);}
     var apps=NK_APP_ORDER.filter(function(a){return byApp[a]&&byApp[a].length;});
     if(!apps.length){stage.innerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';return;}
+    var catMeta=NkCache.catMeta||{};
 
     // 1-qavat: 4 ta yirik kartochka — Telegram / Instagram / TikTok / YouTube
     function showApps(){
@@ -2172,18 +2234,23 @@ function openNakrutkaPanel(){
     function showCategories(app){
       var meta=NK_APP_META[app];
       var services=byApp[app]||[];
-      var cats={};
+      var cats={},catsRaw={};
       for(var k=0;k<services.length;k++){
-        var label=nkCatLabel(services[k].category,meta.name);
+        var rawCat=services[k].category||"";
+        var label=nkCatLabel(rawCat,meta.name);
         (cats[label]=cats[label]||[]).push(services[k]);
+        if(!catsRaw[label])catsRaw[label]=rawCat; // catMeta rasmini topish uchun xom (inglizcha) kalit
       }
       var labels=Object.keys(cats).sort();
       var h='';
       for(var m=0;m<labels.length;m++){
         var lb=labels[m];
+        var metaKey=app+"::"+catsRaw[lb];
+        var groupImg=catMeta[metaKey]&&catMeta[metaKey].img;
+        var tile=groupImg?'<img src="'+esc(groupImg)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(nkCatIcon(lb),28);
         h+='<button class="pcard" data-nk-cat="'+esc(lb)+'">'
-          +'<div class="ptile" style="background:'+meta.color+'22;color:'+meta.color+'">'+ic(nkCatIcon(lb),28)+'</div>'
-          +'<div class="pbody"><div class="nm">'+esc(lb)+'</div><div class="ct">'+cats[lb].length+' '+esc(t("group_count_unit"))+'</div></div></button>';
+          +'<div class="ptile" style="background:'+meta.color+'22;color:'+meta.color+'">'+tile+'</div>'
+          +'<div class="pbody"><div class="nm">'+esc(smmTranslate(lb))+'</div><div class="ct">'+cats[lb].length+' '+esc(t("group_count_unit"))+'</div></div></button>';
       }
       stage.innerHTML='<button class="backrow" data-nk-back="1">'+ic("arrowLeft",16)+' <b>'+esc(meta.name)+'</b></button>'
         +'<div class="grid groupgrid">'+h+'</div>';
@@ -2196,20 +2263,21 @@ function openNakrutkaPanel(){
       });
     }
 
-    // 3-qavat: tanlangan kategoriya ichidagi xizmatlar — standart mahsulot kartochkalari
-    // kabi ro'yxat, lekin NARXSIZ (narx faqat 4-qavatdagi buyurtma darchasida ko'rinadi)
+    // 3-qavat: tanlangan kategoriya ichidagi xizmatlar — ixcham ro'yxat qatorlari
+    // (~75px balandlik, nomi 2 qatordan oshsa "..." bilan kesiladi), NARXSIZ
+    // (narx faqat 4-qavatdagi buyurtma darchasida ko'rinadi)
     function showServices(app,label,services){
       var meta=NK_APP_META[app];
       var list2=services.slice(0,60);
       var h='';
       for(var i2=0;i2<list2.length;i2++){
         var s=list2[i2];
-        h+='<button class="pcard" data-nk-svc="'+i2+'">'
-          +'<div class="ptile" style="background:'+meta.color+'18;color:'+meta.color+'">'+ic("trendUp",24)+'</div>'
-          +'<div class="pbody"><div class="nm">'+esc(s.name)+'</div><div class="ct">'+esc(t("nakrutka_min_max").replace("{min}",s.min).replace("{max}",s.max))+'</div></div></button>';
+        h+='<button class="svcrow" data-nk-svc="'+i2+'">'
+          +'<div class="svcicon" style="background:'+meta.color+'18;color:'+meta.color+'">'+ic("trendUp",20)+'</div>'
+          +'<div class="svcbody"><div class="nm">'+esc(smmTranslate(s.name))+'</div><div class="ct">'+esc(t("nakrutka_min_max").replace("{min}",s.min).replace("{max}",s.max))+'</div></div></button>';
       }
-      stage.innerHTML='<button class="backrow" data-nk-back="1">'+ic("arrowLeft",16)+' <b>'+esc(label)+'</b></button>'
-        +'<div class="grid">'+(h||'<div class="empty">'+esc(t("nakrutka_load_err"))+'</div>')+'</div>';
+      stage.innerHTML='<button class="backrow" data-nk-back="1">'+ic("arrowLeft",16)+' <b>'+esc(smmTranslate(label))+'</b></button>'
+        +'<div class="svclist">'+(h||'<div class="empty">'+esc(t("nakrutka_load_err"))+'</div>')+'</div>';
       var back=stage.querySelector("[data-nk-back]");
       if(back)back.addEventListener("click",function(){haptic();showCategories(app);});
       var svcEls=stage.querySelectorAll("[data-nk-svc]");
@@ -2221,7 +2289,7 @@ function openNakrutkaPanel(){
 
     // 4-qavat: buyurtma darchasi
     function showServiceDetail(svc,backLabel,goBack){
-      nkRenderOrderForm(stage,svc,backLabel,goBack);
+      nkRenderOrderForm(stage,svc,smmTranslate(backLabel),goBack);
     }
 
     showApps();
@@ -2233,7 +2301,7 @@ function openNakrutkaPanel(){
 // nakrutka xizmati) to'g'ridan-to'g'ri buyurtma darchasini ochadi.
 function openNakrutkaServiceDirect(svc){
   var meta=NK_APP_META[nakrutkaAppOf(svc)]||{name:t("nakrutka_title")};
-  var sh=openSheet('<h2>🚀 '+esc(svc.name)+'</h2><div id="nkDirectStage"></div>');
+  var sh=openSheet('<h2>🚀 '+esc(smmTranslate(svc.name))+'</h2><div id="nkDirectStage"></div>');
   nkRenderOrderForm(sh.querySelector("#nkDirectStage"),svc,null,null);
 }
 function openFavoritesSheet(){
@@ -2484,6 +2552,7 @@ function openAdminNakrutka(){
     +'<div class="d" style="margin:2px 0 0">'+esc(t("a_nk_markup_hint"))+'</div>'
     +'<div style="height:10px"></div><button class="btn" id="nkAdmSaveBtn">'+esc(t("a_save"))+'</button>'
     +'<div style="height:8px"></div><button class="btn gray" id="nkAdmServicesBtn">'+ic("clipboard",15)+' '+esc(t("a_nk_services"))+'</button>'
+    +'<div style="height:8px"></div><button class="btn gray" id="nkAdmImagesBtn">'+ic("camera",15)+' '+esc(t("a_nk_images"))+'</button>'
     +'<div class="sect" style="margin:16px 0 6px">'+esc(t("a_nakrutka_title"))+'</div>'
     +'<div class="seg" id="nkAdmFilterSeg">'
     +'<button data-nkf="processing" class="on">'+esc(t("a_nk_filter_processing"))+'</button>'
@@ -2512,6 +2581,7 @@ function openAdminNakrutka(){
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
   sh.querySelector("#nkAdmServicesBtn").addEventListener("click",openAdminNakrutkaServices);
+  sh.querySelector("#nkAdmImagesBtn").addEventListener("click",openAdminNakrutkaImages);
 
   function nkAdmOrderRow(o){
     var st=o.status,bad=ORD_BADGE[st]||ORD_BADGE.pending;
@@ -2598,6 +2668,101 @@ function openAdminNakrutkaServices(){
     render("");
   }).catch(function(){sh.querySelector("#nkSvcList").innerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';});
   sh.querySelector("#nkSvcSearch").addEventListener("input",function(){render(this.value);});
+}
+// Admin har bir SMM guruhiga (masalan Telegram -> Members, Instagram -> Likes) ixtiyoriy
+// rasm biriktiradi. Guruh kaliti — "app::xom_kategoriya_nomi" (inglizcha, til-mustaqil),
+// shu bilan mijoz ekranidagi (openNakrutkaPanel -> showCategories) kalit mos keladi.
+// Rasm tanlanganda darhol 300x300gacha siqiladi (canvas) va Base64 sifatida saqlanadi.
+function openAdminNakrutkaImages(){
+  var html='<h2>'+esc(t("a_nk_images"))+'</h2><div class="paynote" style="margin-top:0">'+esc(t("a_nk_images_hint"))+'</div>'
+    +'<div id="nkImgList" style="margin-top:10px;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
+    +'<div style="height:8px"></div><button class="btn big" id="nkImgSaveBtn" style="display:none">'+esc(t("a_save"))+'</button>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html);
+  var groups=[],curMeta={},pendingImg={};
+  function groupRowHTML(g){
+    var cur=curMeta[g.key]||{};
+    var img=(pendingImg[g.key]==="__clear__")?"":(pendingImg[g.key]||cur.img||"");
+    var thumb=img?'<img src="'+esc(img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(nkCatIcon(g.label),18);
+    return '<div class="card" style="display:flex;align-items:center;gap:10px;padding:9px 12px" data-nkimg-row="'+esc(g.key)+'">'
+      +'<div class="ibadge" style="background:'+g.color+'22;color:'+g.color+';width:40px;height:40px;overflow:hidden">'+thumb+'</div>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:650">'+esc(g.appName)+' \u2014 '+esc(smmTranslate(g.label))+'</div>'
+      +'<div class="d" style="font-size:11px;color:var(--mut)">'+g.count+' '+esc(t("group_count_unit"))+'</div></div>'
+      +'<label class="btn sm gray" style="cursor:pointer;margin:0">'+ic("camera",13)+' <input type="file" accept="image/jpeg,image/png,image/webp" data-nkimg-file="'+esc(g.key)+'" style="display:none"></label>'
+      +(img?'<button class="btn sm red" data-nkimg-clear="'+esc(g.key)+'" type="button">'+ic("trash",12)+'</button>':'')
+      +'</div>';
+  }
+  function renderList(){
+    var h='';
+    for(var i=0;i<groups.length;i++)h+=groupRowHTML(groups[i]);
+    sh.querySelector("#nkImgList").innerHTML=h||('<div class="paynote">'+esc(t("empty_section"))+'</div>');
+    var fileEls=sh.querySelectorAll("[data-nkimg-file]");
+    for(var f=0;f<fileEls.length;f++)fileEls[f].addEventListener("change",function(){
+      var key=this.getAttribute("data-nkimg-file");
+      var file=this.files&&this.files[0];if(!file)return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var im=new Image();
+        im.onload=function(){
+          try{
+            var MAX=300,w=im.width,h=im.height;
+            if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+            if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+            var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+            cv.getContext("2d").drawImage(im,0,0,w,h);
+            pendingImg[key]=cv.toDataURL("image/jpeg",0.85);
+            renderList();toast(t("a_img_selected"));
+          }catch(e){toast(t("srv_off"),true);}
+        };
+        im.src=rd.result;
+      };
+      rd.readAsDataURL(file);
+    });
+    var clrEls=sh.querySelectorAll("[data-nkimg-clear]");
+    for(var c=0;c<clrEls.length;c++)clrEls[c].addEventListener("click",function(){
+      pendingImg[this.getAttribute("data-nkimg-clear")]="__clear__";renderList();
+    });
+    var saveBtn=sh.querySelector("#nkImgSaveBtn");
+    if(saveBtn)saveBtn.style.display=groups.length?"block":"none";
+  }
+  api("/api/admin/nakrutka/services").then(function(r){
+    var list=r.services||[];
+    var byKey={};
+    for(var i=0;i<list.length;i++){
+      var s=list[i],app=nakrutkaAppOf(s);
+      if(NK_APP_ORDER.indexOf(app)===-1)continue; // faqat 4 asosiy tarmoq — boshqalari mijozga ko'rinmaydi
+      var appMeta=NK_APP_META[app],rawCat=s.category||"",label=nkCatLabel(rawCat,appMeta.name);
+      var key=app+"::"+rawCat;
+      if(!byKey[key])byKey[key]={key:key,app:app,appName:appMeta.name,color:appMeta.color,label:label,count:0};
+      byKey[key].count++;
+    }
+    groups=Object.keys(byKey).map(function(k){return byKey[k];})
+      .sort(function(a,b){
+        var ai=NK_APP_ORDER.indexOf(a.app),bi=NK_APP_ORDER.indexOf(b.app);
+        return ai!==bi?ai-bi:a.label.localeCompare(b.label);
+      });
+    return api("/api/admin/nakrutka/catmeta");
+  }).then(function(r){
+    curMeta=r||{};
+    renderList();
+  }).catch(function(){sh.querySelector("#nkImgList").innerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';});
+  sh.querySelector("#nkImgSaveBtn").addEventListener("click",function(){
+    var btn=this,origLabel=btn.textContent;
+    btn.disabled=true;btn.textContent=t("processing");
+    var out=Object.assign({},curMeta);
+    var keys=Object.keys(pendingImg);
+    for(var i=0;i<keys.length;i++){
+      var k=keys[i],v=pendingImg[k];
+      if(v==="__clear__"){var prev=out[k]||{};out[k]=Object.assign({},prev,{img:""});}
+      else{var prev2=out[k]||{};out[k]=Object.assign({},prev2,{img:v});}
+    }
+    api("/api/admin/nakrutka/catmeta","POST",out).then(function(){
+      curMeta=out;pendingImg={};
+      NkCache.catMeta=out; // ochiq bo'lgan bo'lsa mijoz keshini ham darhol yangilaymiz
+      haptic("ok");toast(t("a_nk_images_saved"));renderList();
+      btn.disabled=false;btn.textContent=origLabel;
+    }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;btn.textContent=origLabel;});
+  });
 }
 function renderAdminList(sh){
   var c=catalog(),html="";

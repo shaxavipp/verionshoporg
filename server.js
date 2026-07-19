@@ -28,6 +28,8 @@ try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.co
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
 const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
 const CATMETA_FILE = path.join(DATA_DIR, "catmeta.json");
+// Nakrutka (SMM) guruhlari uchun admin biriktirgan rasmlar — { "tg::Members": {img:"data:..."}, ... }
+const NK_CATMETA_FILE = path.join(DATA_DIR, "nkcatmeta.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
@@ -406,6 +408,11 @@ function catalogArr() {
 function catMetaObj() {
   try { return JSON.parse(fs.readFileSync(CATMETA_FILE, "utf8")); } catch (e) { return {}; }
 }
+// Nakrutka guruh rasmlari — kalit "app::xom_kategoriya" (masalan "tg::Telegram - Members"),
+// til-mustaqil (JAP'dan doim inglizcha keladi), shu sababli barcha tillar uchun bir xil ishlaydi.
+function nkCatMetaObj() {
+  try { return JSON.parse(fs.readFileSync(NK_CATMETA_FILE, "utf8")); } catch (e) { return {}; }
+}
 function myView(uid) {
   expireOld();
   const mine = x => x.uid === uid;
@@ -534,7 +541,7 @@ const server = http.createServer((req, res) => {
           .filter(s => NK_APPS.indexOf(s.app) !== -1)
           .map(s => ({ service: s.service, name: s.name, category: s.category, app: s.app,
             min: s.min, max: s.max, rate: Number(nkAdjustedRate(s.rate).toFixed(4)) }));
-        send(res, 200, { services: visible, usdRate: nkUsdRate() });
+        send(res, 200, { services: visible, usdRate: nkUsdRate(), catMeta: nkCatMetaObj() });
       })
       .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     return;
@@ -1067,6 +1074,19 @@ const server = http.createServer((req, res) => {
         if (idx === -1) s.hiddenServices.push(id); else s.hiddenServices.splice(idx, 1);
         save();
         send(res, 200, { ok: true, hidden: s.hiddenServices });
+      });
+    }
+    // Nakrutka guruh rasmlari (masalan Telegram -> Members): admin ro'yxatini o'qiydi/yozadi.
+    // Butun obyekt bir yo'la almashtiriladi (frontend joriy holatni GET orqali olib, kerakli
+    // kalitlarnigina o'zgartirib, to'liq obyektni qayta yuboradi — category-meta bilan bir xil naqsh).
+    if (url === "/api/admin/nakrutka/catmeta" && m === "GET") {
+      return send(res, 200, nkCatMetaObj());
+    }
+    if (url === "/api/admin/nakrutka/catmeta" && m === "POST") {
+      return readBody(req, res, obj => {
+        if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
+        fs.writeFile(NK_CATMETA_FILE, JSON.stringify(obj), err =>
+          err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
       });
     }
 
