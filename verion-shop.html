@@ -2323,8 +2323,10 @@ function nakrutkaScreenHTML(){
   var h1='';
   for(var j=0;j<apps.length;j++){
     var aK=apps[j],metaA=NK_APP_META[aK];
+    var appImg=catMeta[nkAppKey(aK)]&&catMeta[nkAppKey(aK)].img;
+    var aTile=appImg?'<img src="'+esc(appImg)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(metaA.icon,34);
     h1+='<button class="pcard" data-nk-app="'+aK+'">'
-      +'<div class="ptile" style="background:'+metaA.color+';color:#fff">'+ic(metaA.icon,34)+'</div>'
+      +'<div class="ptile" style="background:'+metaA.color+';color:#fff;overflow:hidden">'+aTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(metaA.name)+'</div><div class="ct">'+byApp[aK].length+' '+esc(t("nk_svc_count"))+'</div></div></button>';
   }
   return backTop+esc(t("nakrutka_title"))+'</b></button><div class="grid groupgrid">'+h1+'</div>';
@@ -2798,14 +2800,19 @@ function openAdminNakrutkaImages(){
   }
   renderCardBox();
 
-  // ---- Butun tarmoqni (Telegram/Instagram/TikTok/YouTube) yashirish/qaytarish ----
+  // ---- Butun tarmoqni (Telegram/Instagram/TikTok/YouTube) yashirish/qaytarish + rasm ----
   function appRowHTML(appKey){
     var meta=NK_APP_META[appKey],key=nkAppKey(appKey),hidden=nkIsHidden(curMeta,key);
+    var cur=curMeta[key]||{};
+    var img=cur.img||"";
+    var thumb=img?'<img src="'+esc(img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(meta.icon,18);
     return '<div class="card" style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:8px">'
-      +'<div class="ibadge" style="background:'+meta.color+'22;color:'+meta.color+';width:38px;height:38px">'+ic(meta.icon,18)+'</div>'
+      +'<div class="ibadge" style="background:'+meta.color+'22;color:'+meta.color+';width:38px;height:38px;overflow:hidden">'+thumb+'</div>'
       +'<div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">'+esc(meta.name)+'</div>'
       +(hidden?'<div class="d" style="font-size:11px;color:var(--err)">'+esc(t("a_nk_hidden_badge"))+'</div>':'')+'</div>'
       +'<button class="btn sm '+(hidden?"":"gray")+'" data-nkapp-toggle="'+appKey+'">'+esc(hidden?t("a_nk_unhide"):t("a_nk_hide"))+'</button>'
+      +'<label class="btn sm gray" style="cursor:pointer;margin:0">'+ic("camera",13)+' <input type="file" accept="image/jpeg,image/png,image/webp" data-nkappimg-file="'+esc(appKey)+'" style="display:none"></label>'
+      +(img?'<button class="btn sm red" data-nkappimg-clear="'+esc(appKey)+'" type="button">'+ic("trash",12)+'</button>':'')
       +'</div>';
   }
   function renderApps(){
@@ -2822,6 +2829,42 @@ function openAdminNakrutkaImages(){
       api("/api/admin/nakrutka/catmeta","POST",out).then(function(){
         curMeta=out;NkCache.catMeta=out;haptic("ok");toast(t("a_saved"));renderApps();btn.disabled=false;
       }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+    });
+    var afiles=sh.querySelectorAll("[data-nkappimg-file]");
+    for(var af=0;af<afiles.length;af++)afiles[af].addEventListener("change",function(){
+      var appKey=this.getAttribute("data-nkappimg-file");
+      var file=this.files&&this.files[0];if(!file)return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var im=new Image();
+        im.onload=function(){
+          try{
+            var MAX=300,w=im.width,h=im.height;
+            if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+            if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+            var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+            cv.getContext("2d").drawImage(im,0,0,w,h);
+            var dataUrl=cv.toDataURL("image/jpeg",0.85);
+            var key=nkAppKey(appKey);
+            var out=Object.assign({},curMeta);
+            out[key]=Object.assign({},out[key]||{},{img:dataUrl});
+            api("/api/admin/nakrutka/catmeta","POST",out).then(function(){
+              curMeta=out;NkCache.catMeta=out;haptic("ok");toast(t("a_saved"));renderApps();
+            }).catch(function(){toast(t("srv_off"),true);});
+          }catch(e){toast(t("srv_off"),true);}
+        };
+        im.src=rd.result;
+      };
+      rd.readAsDataURL(file);
+    });
+    var aclrs=sh.querySelectorAll("[data-nkappimg-clear]");
+    for(var ac=0;ac<aclrs.length;ac++)aclrs[ac].addEventListener("click",function(){
+      var appKey=this.getAttribute("data-nkappimg-clear"),key=nkAppKey(appKey);
+      var out=Object.assign({},curMeta);
+      out[key]=Object.assign({},out[key]||{},{img:""});
+      api("/api/admin/nakrutka/catmeta","POST",out).then(function(){
+        curMeta=out;NkCache.catMeta=out;haptic("ok");toast(t("a_saved"));renderApps();
+      }).catch(function(){toast(t("srv_off"),true);});
     });
   }
 
