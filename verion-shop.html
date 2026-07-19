@@ -162,6 +162,11 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .svcbody .nm{font-size:13px;font-weight:650;line-height:1.28;overflow:hidden;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:ellipsis}
 .svcbody .ct{font-size:11px;color:var(--mut)}
+/* nakrutka xizmatlar ro'yxati — standart mahsulot kartochkalari (pcard) uslubida grid, narxsiz */
+.svcgrid.grid .pbody{padding:8px 8px 9px}
+.svcgrid.grid .pbody .nm{font-size:12px;-webkit-line-clamp:2;min-height:2.2em}
+.svcgrid.grid .pbody .ct{font-size:10px}
+.svcgrid .ptile{height:74px}
 
 /* sheet */
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:100;opacity:0;transition:opacity .28s var(--ease)}
@@ -567,6 +572,7 @@ en:{
   nakrutka_title:"Boost services",nakrutka_sub:"Followers, likes, views",nakrutka_panel_title:"Boost services",nakrutka_app_label:"Choose app",nakrutka_loading:"Loading services...",nakrutka_load_err:"Failed to load, try again",nakrutka_soon_note:"Ordering will be added soon \u2014 for now you can only view prices and services.",
   nakrutka_link_label:"Link",nakrutka_link_ph:"https://t.me/... or profile link",nakrutka_qty_label:"Quantity",nakrutka_qty_unit:"pcs",nakrutka_total_label:"Total price",nakrutka_qty_range:"Quantity must be between {min} and {max}",nakrutka_order_soon:"Order \u2014 coming soon",nakrutka_order_btn:"Submit Order",nakrutka_order_ok:"Order accepted! Processing \u2014 check Orders.",nakrutka_link_needed:"Enter the link",nakrutka_refresh_btn:"Refresh status",nakrutka_remains:"remaining",nakrutka_refreshed:"Status updated",nakrutka_choose_app:"Choose a platform",nakrutka_min_max:"min {min} \u2013 max {max}",
   nk_st_pending:"Pending",nk_st_inprogress:"In progress",nk_st_processing:"Processing",nk_st_completed:"Completed",nk_st_partial:"Partially completed",nk_st_canceled:"Canceled",nk_st_refunded:"Refunded",
+  nk_svc_count:"services",
   a_nakrutka_title:"Boost orders (SMM)",a_nk_balance:"JAP balance",a_nk_settings:"Rate & markup",a_nk_services:"Manage services",a_nk_images:"Manage group images",a_nk_images_hint:"Attach a custom picture to each SMM group (e.g. Telegram \u2192 Members). Shown to customers instead of the default icon.",a_nk_images_saved:"Images saved",
   a_nk_rate_label:"USD \u2192 sum rate",a_nk_rate_hint:"Leave empty to use the default rate",a_nk_markup_label:"Markup, %",a_nk_markup_hint:"Added on top of the JAP price",
   a_nk_filter_processing:"Pending",a_nk_filter_done:"Completed",a_nk_filter_cancelled:"Cancelled",a_nk_filter_all:"All",
@@ -588,6 +594,7 @@ en:{
   stat_orders:"Orders",stat_spent:"Total paid",
   a_panel:"Admin panel",a_panel_sub:"Products, catalog, export",a_new:"+ New product", a_stats_title:"Overview",a_st_users:"Users",a_st_orders:"Orders",a_st_revenue:"Revenue",a_st_topup:"Top-ups",a_st_pending:"Pending",a_st_balances:"Total balances",a_users_title:"Users",a_users_recent:"Recent",a_users_bybalance:"By balance",
   a_reviews_title:"Reviews",a_reviews_pending:"Awaiting approval",a_reviews_approved:"Published",a_reviews_none_pending:"No reviews awaiting approval",a_reviews_none_approved:"No published reviews",a_reviews_publish:"Publish",a_reviews_delete:"Delete",a_reviews_published:"Published ✓",a_reviews_deleted:"Deleted",
+  a_reviews_edit:"Edit",a_reviews_edit_title:"Edit review",a_reviews_name_label:"Customer name",a_reviews_item_label:"Product name",a_reviews_stars_label:"Rating",a_reviews_text_label:"Review text",a_reviews_save:"Save",a_reviews_saved:"Saved ✓",
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
   a_img:"Image from gallery",a_active:"Active (visible in store)",
@@ -640,6 +647,7 @@ uz:{
   nakrutka_title:"Nakrutka xizmatlari",nakrutka_sub:"Obunachi, layk, ko'rishlar",nakrutka_panel_title:"Nakrutka xizmatlari",nakrutka_app_label:"Ilovani tanlang",nakrutka_loading:"Xizmatlar yuklanmoqda...",nakrutka_load_err:"Yuklab bo'lmadi, qayta urinib ko'ring",nakrutka_soon_note:"Buyurtma tizimi tez orada qo'shiladi \u2014 hozircha faqat narxlar va xizmatlar ro'yxatini ko'rishingiz mumkin.",
   nakrutka_link_label:"Havola",nakrutka_link_ph:"https://t.me/... yoki profil havolasi",nakrutka_qty_label:"Miqdor",nakrutka_qty_unit:"ta",nakrutka_total_label:"Jami narx",nakrutka_qty_range:"Miqdor {min} dan {max} gacha bo'lishi kerak",nakrutka_order_soon:"Buyurtma berish \u2014 tez orada",nakrutka_order_btn:"Yuborish",nakrutka_order_ok:"Buyurtma qabul qilindi! Amalga oshirilmoqda \u2014 Buyurtmalarda ko'ring.",nakrutka_link_needed:"Havolani kiriting",nakrutka_refresh_btn:"Holatni yangilash",nakrutka_remains:"qoldi",nakrutka_refreshed:"Holat yangilandi",nakrutka_choose_app:"Ilovani tanlang",nakrutka_min_max:"min {min} \u2013 max {max}",
   nk_st_pending:"Navbatda",nk_st_inprogress:"Bajarilmoqda",nk_st_processing:"Ishlanmoqda",nk_st_completed:"Bajarildi",nk_st_partial:"Qisman bajarildi",nk_st_canceled:"Bekor qilindi",nk_st_refunded:"Pul qaytarildi",
+  nk_svc_count:"ta xizmat",
   a_nakrutka_title:"Nakrutka buyurtmalari",a_nk_balance:"JAP balansi",a_nk_settings:"Kurs va ustama",a_nk_services:"Xizmatlarni boshqarish",a_nk_images:"Kategoriyalar rasmi",a_nk_images_hint:"Har bir SMM guruhi (masalan Telegram \u2192 Members) uchun ixtiyoriy rasm biriktiring. Mijozlarga standart ikonka o'rniga shu rasm ko'rsatiladi.",a_nk_images_saved:"Rasmlar saqlandi",
   a_nk_rate_label:"USD \u2192 so'm kursi",a_nk_rate_hint:"Bo'sh qoldirsangiz standart kurs ishlatiladi",a_nk_markup_label:"Ustama, %",a_nk_markup_hint:"JAP narxi ustiga qo'shiladi",
   a_nk_filter_processing:"Kutilmoqda",a_nk_filter_done:"Bajarilgan",a_nk_filter_cancelled:"Bekor qilingan",a_nk_filter_all:"Barchasi",
@@ -661,6 +669,7 @@ uz:{
   stat_orders:"Buyurtmalar",stat_spent:"Jami to'lov",
   a_panel:"Admin panel",a_panel_sub:"Mahsulotlar, katalog, eksport",a_new:"+ Yangi mahsulot", a_stats_title:"Umumiy ko'rinish",a_st_users:"Foydalanuvchilar",a_st_orders:"Buyurtmalar",a_st_revenue:"Tushum",a_st_topup:"To'ldirishlar",a_st_pending:"Kutilmoqda",a_st_balances:"Jami balanslar",a_users_title:"Foydalanuvchilar",a_users_recent:"Yaqinda",a_users_bybalance:"Balans bo'yicha",
   a_reviews_title:"Sharhlar",a_reviews_pending:"Tasdiq kutmoqda",a_reviews_approved:"Chop etilgan",a_reviews_none_pending:"Tasdiq kutayotgan sharh yo'q",a_reviews_none_approved:"Chop etilgan sharh yo'q",a_reviews_publish:"Chop etish",a_reviews_delete:"O'chirish",a_reviews_published:"Chop etildi ✓",a_reviews_deleted:"O'chirildi",
+  a_reviews_edit:"Tahrirlash",a_reviews_edit_title:"Sharhni tahrirlash",a_reviews_name_label:"Mijoz ismi",a_reviews_item_label:"Mahsulot nomi",a_reviews_stars_label:"Baho (yulduz)",a_reviews_text_label:"Sharh matni",a_reviews_save:"Saqlash",a_reviews_saved:"Saqlandi ✓",
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
   a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
@@ -713,6 +722,7 @@ ru:{
   nakrutka_title:"Накрутка",nakrutka_sub:"Подписчики, лайки, просмотры",nakrutka_panel_title:"Услуги накрутки",nakrutka_app_label:"Выберите приложение",nakrutka_loading:"Загрузка услуг...",nakrutka_load_err:"Не удалось загрузить, попробуйте снова",nakrutka_soon_note:"Система заказа будет добавлена позже \u2014 пока доступен только просмотр цен и услуг.",
   nakrutka_link_label:"Ссылка",nakrutka_link_ph:"https://t.me/... или ссылка на профиль",nakrutka_qty_label:"Количество",nakrutka_qty_unit:"шт",nakrutka_total_label:"Итоговая цена",nakrutka_qty_range:"Количество должно быть от {min} до {max}",nakrutka_order_soon:"Заказать \u2014 скоро",nakrutka_order_btn:"Отправить",nakrutka_order_ok:"Заказ принят! Выполняется \u2014 смотрите в Заказах.",nakrutka_link_needed:"Введите ссылку",nakrutka_refresh_btn:"Обновить статус",nakrutka_remains:"осталось",nakrutka_refreshed:"Статус обновлён",nakrutka_choose_app:"Выберите платформу",nakrutka_min_max:"мин {min} \u2013 макс {max}",
   nk_st_pending:"В очереди",nk_st_inprogress:"Выполняется",nk_st_processing:"В обработке",nk_st_completed:"Завершено",nk_st_partial:"Частично выполнено",nk_st_canceled:"Отменено",nk_st_refunded:"Возвращено",
+  nk_svc_count:"услуг",
   a_nakrutka_title:"Заказы накрутки",a_nk_balance:"Баланс JAP",a_nk_settings:"Курс и наценка",a_nk_services:"Управление услугами",a_nk_images:"Изображения категорий",a_nk_images_hint:"Прикрепите картинку к каждой SMM-группе (например Telegram \u2192 Members). Показывается клиентам вместо стандартной иконки.",a_nk_images_saved:"Изображения сохранены",
   a_nk_rate_label:"Курс USD \u2192 сум",a_nk_rate_hint:"Оставьте пустым для стандартного курса",a_nk_markup_label:"Наценка, %",a_nk_markup_hint:"Добавляется к цене JAP",
   a_nk_filter_processing:"В ожидании",a_nk_filter_done:"Завершённые",a_nk_filter_cancelled:"Отменённые",a_nk_filter_all:"Все",
@@ -734,6 +744,7 @@ ru:{
   stat_orders:"Заказы",stat_spent:"Всего оплачено",
   a_panel:"Админ-панель",a_panel_sub:"Товары, каталог, экспорт",a_new:"+ Новый товар", a_stats_title:"Обзор",a_st_users:"Пользователи",a_st_orders:"Заказы",a_st_revenue:"Выручка",a_st_topup:"Пополнения",a_st_pending:"В ожидании",a_st_balances:"Всего балансов",a_users_title:"Пользователи",a_users_recent:"Недавние",a_users_bybalance:"По балансу",
   a_reviews_title:"Отзывы",a_reviews_pending:"Ожидают проверки",a_reviews_approved:"Опубликованные",a_reviews_none_pending:"Нет отзывов на проверке",a_reviews_none_approved:"Нет опубликованных отзывов",a_reviews_publish:"Опубликовать",a_reviews_delete:"Удалить",a_reviews_published:"Опубликовано ✓",a_reviews_deleted:"Удалено",
+  a_reviews_edit:"Изменить",a_reviews_edit_title:"Редактировать отзыв",a_reviews_name_label:"Имя клиента",a_reviews_item_label:"Название товара",a_reviews_stars_label:"Оценка (звёзды)",a_reviews_text_label:"Текст отзыва",a_reviews_save:"Сохранить",a_reviews_saved:"Сохранено ✓",
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
   a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
@@ -829,6 +840,7 @@ var S={
   topup:{amount:0,method:null},
   group:null, // {kind,key} — asosiy sahifada hozir ochiq turgan guruh (Kategoriya→Guruh→Mahsulot)
   category:null, // kind — asosiy sahifada hozir ochiq turgan kategoriya (bosh sahifa endi faqat kategoriya kartochkalarini ko'rsatadi)
+  nk:{app:null,cat:null}, // Nakrutka to'liq sahifasi ichidagi navigatsiya chuqurligi (S.category==="nakrutka" bo'lganda)
   groupDefs:Store.get("vn_groupdefs",[]), // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
   products:{search:"",filter:"all"} // "Mahsulotlar" bo'limi qidiruv/filtr holati
 };
@@ -1299,7 +1311,7 @@ function categoryCardsHTML(){
     any=true;
     var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
-    html+='<button class="pcard" data-opennakrutka="1">'
+    html+='<button class="pcard" data-opencat="nakrutka">'
       +'<div class="ptile" style="background:#22304a;color:#fff">'+nkTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(nkLabel)+'</div>'
       +'<div class="ct">'+esc(t("nakrutka_sub"))+'</div></div></button>';
@@ -1391,6 +1403,7 @@ function openAdminCategories(){
 }
 function homeHTML(){
   if(S.group)return groupProductsHTML();
+  if(S.category==="nakrutka")return nakrutkaScreenHTML();
   if(S.category){
     var found=null;
     for(var m=0;m<TABS.length;m++)if(TABS[m][0]===S.category)found=TABS[m];
@@ -2195,106 +2208,107 @@ function nkRenderOrderForm(container,svc,backLabel,onBack){
     });
   });
 }
-function openNakrutkaPanel(){
-  var sh=openSheet(
-    '<h2>🚀 '+esc(t("nakrutka_panel_title"))+'</h2>'
-    +'<div id="nkStage" style="min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
-  );
-  loadNkFlat().then(function(list){
-    var stage=sh.querySelector("#nkStage");
-    // MUHIM: yuklanish holatidagi inline "display:flex;align-items:center;justify-content:center"
-    // stili shu elementning O'ZIDA qolib ketardi (innerHTML faqat ICHKI kontentni almashtiradi,
-    // konteynerning stil atributini emas) — natijada keyingi barcha qavatlar (orqaga tugmasi +
-    // kartochkalar grid'i) markazlashtirilgan flex-qator sifatida chizilib, "Orqaga" tugmasi
-    // ekranning markazida "qolib ketgandek" ko'rinardi. Kontent tayyor bo'lgach stilni tozalaymiz.
-    stage.removeAttribute("style");
-    var byApp={};
-    for(var i=0;i<list.length;i++){var a=nakrutkaAppOf(list[i]);(byApp[a]=byApp[a]||[]).push(list[i]);}
-    var apps=NK_APP_ORDER.filter(function(a){return byApp[a]&&byApp[a].length;});
-    if(!apps.length){stage.innerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';return;}
-    var catMeta=NkCache.catMeta||{};
+// Bir ilova (app) uchun kategoriyalarga bo'lish — {label:[services]} va
+// {label:xom_kategoriya_nomi} (catMeta rasmini topish uchun) qaytaradi.
+function nkGroupByCat(app,byApp,meta){
+  var services=byApp[app]||[];
+  var cats={},catsRaw={};
+  for(var k=0;k<services.length;k++){
+    var rawCat=services[k].category||"";
+    var label=nkCatLabel(rawCat,meta.name);
+    (cats[label]=cats[label]||[]).push(services[k]);
+    if(!catsRaw[label])catsRaw[label]=rawCat;
+  }
+  return {cats:cats,catsRaw:catsRaw};
+}
+// Xizmat kartochkasi bosilganda ochiladigan buyurtma darchasi (havola+miqdor+jami narx) — JAP'ning
+// o'z panelidagi order formaga o'xshab, alohida pastdan chiqadigan sheet sifatida ko'rinadi.
+var NK_PAGE_SVC_LIST=[];
+function openNkOrderSheet(svc,backLabel){
+  var sh=openSheet('<h2>🚀 '+esc(smmTranslate(svc.name))+'</h2><div id="nkOrderStage"></div>');
+  nkRenderOrderForm(sh.querySelector("#nkOrderStage"),svc,null,null);
+}
+// Nakrutka bo'limini boshqa har qanday kategoriya kabi TO'LIQ SAHIFA sifatida chizadi
+// (Telegram/Games kabi — orqaga strelkasi + tab-bar ko'rinib turadi), pastdan chiqadigan
+// oyna (sheet) o'rniga. Qavatlar S.nk{app,cat} orqali kuzatiladi:
+// app=null            -> 1-qavat: 4 ta ilova kartochkasi
+// app bor, cat=null   -> 2-qavat: shu ilovaning kategoriyalari
+// app va cat bor      -> 3-qavat: shu kategoriya ichidagi xizmatlar (grid, narxsiz)
+// Xizmat bosilganda    -> 4-qavat: buyurtma darchasi (alohida sheet sifatida ochiladi)
+function nakrutkaScreenHTML(){
+  var backTop='<button class="backrow" data-nk-back-top="1">'+ic("arrowLeft",16)+' <b>';
+  if(!NkCache.flat){
+    ensureNkPageLoaded();
+    return backTop+esc(t("nakrutka_title"))+'</b></button>'
+      +'<div class="paynote" style="text-align:center;padding:40px 0;color:var(--mut)">'+esc(t("nakrutka_loading"))+'</div>';
+  }
+  var list=NkCache.flat,catMeta=NkCache.catMeta||{};
+  var byApp={};
+  for(var i=0;i<list.length;i++){var a=nakrutkaAppOf(list[i]);(byApp[a]=byApp[a]||[]).push(list[i]);}
+  var apps=NK_APP_ORDER.filter(function(a){return byApp[a]&&byApp[a].length;});
+  if(!apps.length)return backTop+esc(t("nakrutka_title"))+'</b></button><div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';
 
-    // 1-qavat: 4 ta yirik kartochka — Telegram / Instagram / TikTok / YouTube
-    function showApps(){
-      var h='';
-      for(var j=0;j<apps.length;j++){
-        var a=apps[j],meta=NK_APP_META[a];
-        h+='<button class="pcard" data-nk-app="'+a+'">'
-          +'<div class="ptile" style="background:'+meta.color+';color:#fff">'+ic(meta.icon,34)+'</div>'
-          +'<div class="pbody"><div class="nm">'+esc(meta.name)+'</div><div class="ct">'+byApp[a].length+' '+esc(t("group_count_unit"))+'</div></div></button>';
-      }
-      stage.innerHTML='<div class="grid groupgrid">'+h+'</div>';
-      var els=stage.querySelectorAll("[data-nk-app]");
-      for(var k=0;k<els.length;k++)els[k].addEventListener("click",function(){
-        haptic();showCategories(this.getAttribute("data-nk-app"));
-      });
+  // 3-qavat: xizmatlar (tanlangan kategoriya ichida)
+  if(S.nk.app&&S.nk.cat){
+    var app3=S.nk.app,meta3=NK_APP_META[app3];
+    if(!meta3||apps.indexOf(app3)===-1){S.nk={app:null,cat:null};return nakrutkaScreenHTML();}
+    var g3=nkGroupByCat(app3,byApp,meta3);
+    var services=g3.cats[S.nk.cat]||[];
+    var list2=services.slice(0,60);
+    NK_PAGE_SVC_LIST=list2;
+    var h3='';
+    for(var i2=0;i2<list2.length;i2++){
+      var s=list2[i2];
+      h3+='<button class="pcard" data-nk-svc="'+i2+'">'
+        +'<div class="ptile" style="background:'+meta3.color+'18;color:'+meta3.color+'">'+ic("trendUp",26)+'</div>'
+        +'<div class="pbody"><div class="nm">'+esc(smmTranslate(s.name))+'</div><div class="ct">'+esc(t("nakrutka_min_max").replace("{min}",s.min).replace("{max}",s.max))+'</div></div></button>';
     }
+    return '<button class="backrow" data-nk-back-top="1">'+ic("arrowLeft",16)+' <b>'+esc(smmTranslate(S.nk.cat))+'</b></button>'
+      +'<div class="grid svcgrid">'+(h3||'<div class="empty">'+esc(t("nakrutka_load_err"))+'</div>')+'</div>';
+  }
 
-    // 2-qavat: tanlangan ilovaning kategoriyalari (kartochkalar)
-    function showCategories(app){
-      var meta=NK_APP_META[app];
-      var services=byApp[app]||[];
-      var cats={},catsRaw={};
-      for(var k=0;k<services.length;k++){
-        var rawCat=services[k].category||"";
-        var label=nkCatLabel(rawCat,meta.name);
-        (cats[label]=cats[label]||[]).push(services[k]);
-        if(!catsRaw[label])catsRaw[label]=rawCat; // catMeta rasmini topish uchun xom (inglizcha) kalit
-      }
-      var labels=Object.keys(cats).sort();
-      var h='';
-      for(var m=0;m<labels.length;m++){
-        var lb=labels[m];
-        var metaKey=app+"::"+catsRaw[lb];
-        var groupImg=catMeta[metaKey]&&catMeta[metaKey].img;
-        var tile=groupImg?'<img src="'+esc(groupImg)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(nkCatIcon(lb),28);
-        h+='<button class="pcard" data-nk-cat="'+esc(lb)+'">'
-          +'<div class="ptile" style="background:'+meta.color+'22;color:'+meta.color+'">'+tile+'</div>'
-          +'<div class="pbody"><div class="nm">'+esc(smmTranslate(lb))+'</div><div class="ct">'+cats[lb].length+' '+esc(t("group_count_unit"))+'</div></div></button>';
-      }
-      stage.innerHTML='<button class="backrow" data-nk-back="1">'+ic("arrowLeft",16)+' <b>'+esc(meta.name)+'</b></button>'
-        +'<div class="grid groupgrid">'+h+'</div>';
-      var back=stage.querySelector("[data-nk-back]");
-      if(back)back.addEventListener("click",function(){haptic();showApps();});
-      var catEls=stage.querySelectorAll("[data-nk-cat]");
-      for(var n=0;n<catEls.length;n++)catEls[n].addEventListener("click",function(){
-        var lb2=this.getAttribute("data-nk-cat");
-        haptic();showServices(app,lb2,cats[lb2]);
-      });
+  // 2-qavat: tanlangan ilovaning kategoriyalari
+  if(S.nk.app){
+    var app2=S.nk.app,meta2=NK_APP_META[app2];
+    if(!meta2||apps.indexOf(app2)===-1){S.nk={app:null,cat:null};return nakrutkaScreenHTML();}
+    var g2=nkGroupByCat(app2,byApp,meta2);
+    var labels=Object.keys(g2.cats).sort();
+    var h2='';
+    for(var m=0;m<labels.length;m++){
+      var lb=labels[m];
+      var metaKey=app2+"::"+g2.catsRaw[lb];
+      var groupImg=catMeta[metaKey]&&catMeta[metaKey].img;
+      var tile=groupImg?'<img src="'+esc(groupImg)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(nkCatIcon(lb),28);
+      h2+='<button class="pcard" data-nk-cat="'+esc(lb)+'">'
+        +'<div class="ptile" style="background:'+meta2.color+'22;color:'+meta2.color+'">'+tile+'</div>'
+        +'<div class="pbody"><div class="nm">'+esc(smmTranslate(lb))+'</div><div class="ct">'+g2.cats[lb].length+' '+esc(t("nk_svc_count"))+'</div></div></button>';
     }
+    return '<button class="backrow" data-nk-back-top="1">'+ic("arrowLeft",16)+' <b>'+esc(meta2.name)+'</b></button>'
+      +'<div class="grid groupgrid">'+h2+'</div>';
+  }
 
-    // 3-qavat: tanlangan kategoriya ichidagi xizmatlar — ixcham ro'yxat qatorlari
-    // (~75px balandlik, nomi 2 qatordan oshsa "..." bilan kesiladi), NARXSIZ
-    // (narx faqat 4-qavatdagi buyurtma darchasida ko'rinadi)
-    function showServices(app,label,services){
-      var meta=NK_APP_META[app];
-      var list2=services.slice(0,60);
-      var h='';
-      for(var i2=0;i2<list2.length;i2++){
-        var s=list2[i2];
-        h+='<button class="svcrow" data-nk-svc="'+i2+'">'
-          +'<div class="svcicon" style="background:'+meta.color+'18;color:'+meta.color+'">'+ic("trendUp",20)+'</div>'
-          +'<div class="svcbody"><div class="nm">'+esc(smmTranslate(s.name))+'</div><div class="ct">'+esc(t("nakrutka_min_max").replace("{min}",s.min).replace("{max}",s.max))+'</div></div></button>';
-      }
-      stage.innerHTML='<button class="backrow" data-nk-back="1">'+ic("arrowLeft",16)+' <b>'+esc(smmTranslate(label))+'</b></button>'
-        +'<div class="svclist">'+(h||'<div class="empty">'+esc(t("nakrutka_load_err"))+'</div>')+'</div>';
-      var back=stage.querySelector("[data-nk-back]");
-      if(back)back.addEventListener("click",function(){haptic();showCategories(app);});
-      var svcEls=stage.querySelectorAll("[data-nk-svc]");
-      for(var i3=0;i3<svcEls.length;i3++)svcEls[i3].addEventListener("click",function(){
-        var idx=Number(this.getAttribute("data-nk-svc"));
-        haptic();showServiceDetail(list2[idx],label,function(){showServices(app,label,services);});
-      });
-    }
-
-    // 4-qavat: buyurtma darchasi
-    function showServiceDetail(svc,backLabel,goBack){
-      nkRenderOrderForm(stage,svc,smmTranslate(backLabel),goBack);
-    }
-
-    showApps();
+  // 1-qavat: 4 ta yirik ilova kartochkasi
+  var h1='';
+  for(var j=0;j<apps.length;j++){
+    var aK=apps[j],metaA=NK_APP_META[aK];
+    h1+='<button class="pcard" data-nk-app="'+aK+'">'
+      +'<div class="ptile" style="background:'+metaA.color+';color:#fff">'+ic(metaA.icon,34)+'</div>'
+      +'<div class="pbody"><div class="nm">'+esc(metaA.name)+'</div><div class="ct">'+byApp[aK].length+' '+esc(t("nk_svc_count"))+'</div></div></button>';
+  }
+  return backTop+esc(t("nakrutka_title"))+'</b></button><div class="grid groupgrid">'+h1+'</div>';
+}
+// Xizmatlar ro'yxati hali yuklanmagan bo'lsa jim tarzda yuklab, tayyor bo'lgach
+// (agar foydalanuvchi hali ham shu sahifada bo'lsa) qayta chizadi.
+var _nkPageLoading=false;
+function ensureNkPageLoaded(){
+  if(_nkPageLoading)return;
+  _nkPageLoading=true;
+  loadNkFlat().then(function(){
+    _nkPageLoading=false;
+    if(S.category==="nakrutka")render();
   }).catch(function(){
-    var b=sh.querySelector("#nkStage");if(b)b.innerHTML='<div class="paynote">'+esc(t("nakrutka_load_err"))+'</div>';
+    _nkPageLoading=false;
+    if(S.category==="nakrutka")render();
   });
 }
 // Umumiy qidiruv natijasidan ("Mahsulotlar" ekranida "Layk" kabi so'z bo'yicha topilgan
@@ -2947,8 +2961,38 @@ function adminReviewCardHTML(r){
     +(r.itemTitle?'<div class="meta" style="opacity:.75">'+esc(r.itemTitle)+' · '+esc(fmtDate(r.ts))+'</div>':'<div class="meta">'+esc(fmtDate(r.ts))+'</div>')
     +'</div><div class="acts" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">'
     +(pending?'<button data-revapprove="'+esc(r.id)+'" class="btn sm" style="color:var(--ok)">'+ic("check",14)+' '+esc(t("a_reviews_publish"))+'</button>':'')
+    +'<button data-revedit="'+esc(r.id)+'" class="btn sm gray">'+ic("pencil",14)+' '+esc(t("a_reviews_edit"))+'</button>'
     +'<button data-revdel="'+esc(r.id)+'" style="color:var(--err)">'+ic("trash",15)+'</button>'
     +'</div></div>';
+}
+// Admin sharhni bitta oynada to'liq tahrirlaydi: ism, mahsulot nomi, yulduzlar, matn.
+// Saqlangach karusel/ro'yxatda darhol yangilanishi uchun onSaved() chaqiriladi (load()).
+function openAdminReviewEdit(r,onSaved){
+  var sh=openSheet('<h2>'+esc(t("a_reviews_edit_title"))+'</h2>'
+    +'<label>'+esc(t("a_reviews_name_label"))+'</label>'
+    +'<input id="revEdName" value="'+esc(r.name||"")+'">'
+    +'<label>'+esc(t("a_reviews_item_label"))+'</label>'
+    +'<input id="revEdItem" value="'+esc(r.itemTitle||"")+'">'
+    +'<label>'+esc(t("a_reviews_stars_label"))+'</label>'
+    +'<select id="revEdStars">'+[1,2,3,4,5].map(function(n){
+      return '<option value="'+n+'"'+(Number(r.stars)===n?' selected':'')+'>'+n+'</option>';
+    }).join('')+'</select>'
+    +'<label>'+esc(t("a_reviews_text_label"))+'</label>'
+    +'<textarea id="revEdText" rows="4">'+esc(r.text||"")+'</textarea>'
+    +'<div style="height:12px"></div>'
+    +'<button class="btn big" id="revEdSaveBtn">'+esc(t("a_reviews_save"))+'</button>'
+    +'<div style="height:10px"></div>');
+  sh.querySelector("#revEdSaveBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    var payload={id:r.id,
+      name:sh.querySelector("#revEdName").value.trim(),
+      itemTitle:sh.querySelector("#revEdItem").value.trim(),
+      stars:Number(sh.querySelector("#revEdStars").value)||5,
+      text:sh.querySelector("#revEdText").value.trim()};
+    api("/api/admin/review-edit","POST",payload).then(function(){
+      haptic("ok");toast(t("a_reviews_saved"));closeSheet();onSaved&&onSaved();
+    }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
 }
 function openAdminReviews(){
   var sh=openSheet('<h2>'+esc(t("a_reviews_title"))+'</h2>'
@@ -2956,18 +3000,25 @@ function openAdminReviews(){
     +'<button data-revtab="pending" class="on">'+esc(t("a_reviews_pending"))+'</button>'
     +'<button data-revtab="approved">'+esc(t("a_reviews_approved"))+'</button></div>'
     +'<div id="revAll">…</div>');
-  var tab="pending";
+  var tab="pending",byId={};
   function load(){
     api("/api/admin/reviews").then(function(r){
       var list=(r.reviews||[]).filter(function(rv){
         return tab==="pending"?rv.status!=="approved":rv.status==="approved";
       });
+      byId={};for(var j=0;j<list.length;j++)byId[list[j].id]=list[j];
       var h="";for(var i=0;i<list.length;i++)h+=adminReviewCardHTML(list[i]);
       sh.querySelector("#revAll").innerHTML=h||'<div class="paynote">'+esc(t(tab==="pending"?"a_reviews_none_pending":"a_reviews_none_approved"))+'</div>';
       var aps=sh.querySelectorAll("[data-revapprove]");
       for(var a=0;a<aps.length;a++)aps[a].addEventListener("click",function(){
         var id=this.getAttribute("data-revapprove");
         api("/api/admin/review-approve","POST",{id:id}).then(function(){toast(t("a_reviews_published"));haptic("ok");load();}).catch(function(){toast(t("srv_off"),true);});
+      });
+      var eds=sh.querySelectorAll("[data-revedit]");
+      for(var e=0;e<eds.length;e++)eds[e].addEventListener("click",function(){
+        var id=this.getAttribute("data-revedit");
+        var rv=byId[id];if(!rv)return;
+        haptic();openAdminReviewEdit(rv,load);
       });
       var dls=sh.querySelectorAll("[data-revdel]");
       for(var d=0;d<dls.length;d++)dls[d].addEventListener("click",function(){
@@ -3472,10 +3523,34 @@ function bind(){
   if(gb)gb.addEventListener("click",function(){S.group=null;render();window.scrollTo(0,0);});
   els=document.querySelectorAll("[data-opencat]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
-    S.category=this.getAttribute("data-opencat");haptic();render();window.scrollTo(0,0);
+    S.category=this.getAttribute("data-opencat");S.nk={app:null,cat:null};haptic();render();window.scrollTo(0,0);
   });
   var cb=document.getElementById("catBackBtn");
-  if(cb)cb.addEventListener("click",function(){S.category=null;S.group=null;render();window.scrollTo(0,0);});
+  if(cb)cb.addEventListener("click",function(){S.category=null;S.group=null;S.nk={app:null,cat:null};render();window.scrollTo(0,0);});
+  if(S.category==="nakrutka"){
+    var nkBackTop=document.querySelector("[data-nk-back-top]");
+    if(nkBackTop)nkBackTop.addEventListener("click",function(){
+      haptic();
+      if(S.nk.cat)S.nk.cat=null;
+      else if(S.nk.app)S.nk.app=null;
+      else{S.category=null;S.nk={app:null,cat:null};}
+      render();window.scrollTo(0,0);
+    });
+    els=document.querySelectorAll("[data-nk-app]");
+    for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+      haptic();S.nk.app=this.getAttribute("data-nk-app");S.nk.cat=null;render();window.scrollTo(0,0);
+    });
+    els=document.querySelectorAll("[data-nk-cat]");
+    for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+      haptic();S.nk.cat=this.getAttribute("data-nk-cat");render();window.scrollTo(0,0);
+    });
+    els=document.querySelectorAll("[data-nk-svc]");
+    for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+      var idx=Number(this.getAttribute("data-nk-svc"));
+      var svc=NK_PAGE_SVC_LIST[idx];
+      if(svc){haptic();openNkOrderSheet(svc,S.nk.cat);}
+    });
+  }
   els=document.querySelectorAll("[data-leavereview]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     openReviewForm(this.getAttribute("data-leavereview"),this.getAttribute("data-revtitle"));
@@ -3504,7 +3579,9 @@ function bind(){
   els=document.querySelectorAll("[data-openfavs]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openFavoritesSheet);
   els=document.querySelectorAll("[data-opennakrutka]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",openNakrutkaPanel);
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+    S.nk={app:null,cat:null};S.category="nakrutka";S.screen="home";haptic();render();window.scrollTo(0,0);
+  });
   els=document.querySelectorAll("[data-nk-search-svc]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     var idx=Number(this.getAttribute("data-nk-search-svc"));

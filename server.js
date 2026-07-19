@@ -979,6 +979,19 @@ const server = http.createServer((req, res) => {
         send(res, 200, { ok: true });
       });
     }
+    // Admin sharh matnini, mijoz ismini, mahsulot nomini va yulduzlar sonini to'liq tahrirlaydi.
+    if (url === "/api/admin/review-edit" && m === "POST") {
+      return readBody(req, res, b => {
+        const rv = DB.reviews.find(r => r.id === b.id);
+        if (!rv) return send(res, 404, { error: "not_found" });
+        if (b.name !== undefined) rv.name = String(b.name).slice(0, 80);
+        if (b.itemTitle !== undefined) rv.itemTitle = String(b.itemTitle).slice(0, 120);
+        if (b.text !== undefined) rv.text = String(b.text).slice(0, 1000);
+        if (b.stars !== undefined) rv.stars = Math.max(1, Math.min(5, Math.round(Number(b.stars)) || 5));
+        save();
+        send(res, 200, { ok: true, review: rv });
+      });
+    }
     // Rad etish ham, tasdiqlangandan keyin o'chirish ham shu bitta endpoint orqali.
     if (url === "/api/admin/review-delete" && m === "POST") {
       return readBody(req, res, b => {
