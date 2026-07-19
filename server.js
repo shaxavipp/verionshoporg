@@ -202,6 +202,18 @@ function nkSettings() { return DB.settings.nakrutka || (DB.settings.nakrutka = {
 function nkUsdRate() { const v = Number(nkSettings().usdRate); return v > 0 ? v : NAKRUTKA_USD_RATE; }
 function nkMarkupPct() { const v = Number(nkSettings().markupPercent); return v > 0 ? Math.min(v, 500) : 0; }
 function nkIsHidden(serviceId) { return (nkSettings().hiddenServices || []).indexOf(serviceId) !== -1; }
+// Faqat 4 ta asosiy ijtimoiy tarmoq mijozlarga ko'rsatiladi: Telegram, Instagram, TikTok, YouTube.
+// Boshqa barcha tarmoqlar (Facebook, Twitter, Spotify va h.k.) "other" deb belgilanadi va
+// /api/nakrutka/services javobidan to'liq chiqarib tashlanadi (faqat admin panelida ko'rinadi).
+const NK_APPS = ["tg", "insta", "tiktok", "yt"];
+function nkAppOf(svc) {
+  const s = ((svc.category || "") + " " + (svc.name || "")).toLowerCase();
+  if (s.indexOf("telegram") !== -1 || s.indexOf(" tg ") !== -1) return "tg";
+  if (s.indexOf("instagram") !== -1 || s.indexOf("insta") !== -1) return "insta";
+  if (s.indexOf("tiktok") !== -1 || s.indexOf("tik tok") !== -1) return "tiktok";
+  if (s.indexOf("youtube") !== -1 || s.indexOf(" yt ") !== -1) return "yt";
+  return "other";
+}
 // JAP xom narxiga (USD/1000) ustama qo'shadi — frontendga shu tayyor narx yuboriladi.
 function nkAdjustedRate(rawRate) { return (Number(rawRate) || 0) * (1 + nkMarkupPct() / 100); }
 // Miqdor va JAP xom narxidan yakuniy so'm narxini hisoblaydi (ustama + joriy kurs bilan).
@@ -515,8 +527,12 @@ const server = http.createServer((req, res) => {
     if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
     getJapServices()
       .then(list => {
+        // Faqat Telegram/Instagram/TikTok/YouTube xizmatlari mijozga chiqadi — qolgan
+        // barcha tarmoqlar (masalan Facebook, Twitter, Spotify) bu yerda kesib tashlanadi.
         const visible = list.filter(s => !nkIsHidden(s.service))
-          .map(s => ({ service: s.service, name: s.name, category: s.category,
+          .map(s => Object.assign({ app: nkAppOf(s) }, s))
+          .filter(s => NK_APPS.indexOf(s.app) !== -1)
+          .map(s => ({ service: s.service, name: s.name, category: s.category, app: s.app,
             min: s.min, max: s.max, rate: Number(nkAdjustedRate(s.rate).toFixed(4)) }));
         send(res, 200, { services: visible, usdRate: nkUsdRate() });
       })
