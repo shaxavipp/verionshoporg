@@ -189,6 +189,35 @@ function fragmentCall(path, body) {
     req.write(data); req.end();
   });
 }
+// Telegram Gift bot (Railway'dagi alohida Python xizmati) bilan bog'lanish.
+// GIFT_BOT_URL va GIFT_BOT_SECRET Railway "Variables" orqali beriladi.
+const GIFT_BOT_URL = process.env.GIFT_BOT_URL || "";
+const GIFT_BOT_SECRET = process.env.GIFT_BOT_SECRET || "";
+function giftBotCall(path, body) {
+  return new Promise((resolve, reject) => {
+    if (!GIFT_BOT_URL || !GIFT_BOT_SECRET) return reject(new Error("GIFT_BOT_URL/GIFT_BOT_SECRET sozlanmagan"));
+    const data = JSON.stringify(body || {});
+    const u = new URL(GIFT_BOT_URL + path);
+    const mod = u.protocol === "https:" ? https : http;
+    const req = mod.request({
+      hostname: u.hostname, port: u.port || (u.protocol === "https:" ? 443 : 80),
+      path: u.pathname, method: "POST",
+      headers: { "Content-Type": "application/json", "X-Secret": GIFT_BOT_SECRET,
+        "Content-Length": Buffer.byteLength(data) },
+      timeout: 30000
+    }, r => {
+      let buf = "";
+      r.on("data", c => buf += c);
+      r.on("end", () => {
+        try { resolve({ status: r.statusCode, json: JSON.parse(buf || "{}") }); }
+        catch (e) { resolve({ status: r.statusCode, json: null, raw: buf }); }
+      });
+    });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
+    req.write(data); req.end();
+  });
+}
 // ---------- SMM "Nakrutka" — JustAnotherPanel (JAP) API integratsiyasi ----------
 // JAP_API_KEY Railway "Variables" orqali beriladi (hisobingiz sahifasida mavjud), kodga yozilmaydi.
 // JAP hujjatiga ko'ra so'rov POST, x-www-form-urlencoded formatida yuboriladi, javob JSON qaytadi.
@@ -812,6 +841,40 @@ const server = http.createServer((req, res) => {
       DB.orders.push(o); save();
       if (delivered) creditReferralOnOrder(o);
       send(res, 200, { ok: true, order: o, balance: acc.balance });
+    });
+  }
+  if (url === "/api/buy-gift" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    return readBody(req, res, b => {
+      const cat = catalogArr();
+      if (!cat) return send(res, 409, { error: "catalog not published" });
+      const it = cat.find(x => x.id === b.itemId && x.active !== false && x.fulfill === "telegram_gift");
+      if (!it) return send(res, 404, { error: "no item" });
+      const uname = String(b.username || "").trim().replace(/^@/, "");
+      const message = String(b.message || "").slice(0, 200);
+      const anonymous = !!b.anonymous;
+      if (!uname) return send(res, 400, { error: "username" });
+      const price = Math.round(Number(it.price) || 0);
+      const acc = user(u);
+      if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+      const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
+      giftBotCall("/order", { gift_id: it.telegramGiftId, username: uname, message, anonymous }).then(r => {
+        const j = r.json;
+        if (!j || j.ok !== true) {
+          const msg = (j && j.error) || "Gift yuborishda xatolik";
+          return send(res, 502, { error: "gift_failed", message: msg });
+        }
+        acc.balance -= price;
+        const summary = "🎁 " + title + " @" + uname + " ga yuborildi" + (anonymous ? " (anonim)" : "");
+        const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+          item: title, price, status: "done", ts: Date.now(),
+          delivered: summary, doneTs: Date.now(),
+          giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous };
+        DB.orders.push(o); save();
+        creditReferralOnOrder(o);
+        send(res, 200, { ok: true, order: o, balance: acc.balance });
+      }).catch(e => send(res, 502, { error: "gift_failed", message: String(e.message || e) }));
     });
   }
 
