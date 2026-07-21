@@ -466,6 +466,18 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .swbtn i{position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--mut);transition:all .18s}
 .swbtn.on{background:var(--acc);border-color:var(--acc)}
 .swbtn.on i{left:21px;background:#fff}
+.giftSpin{width:42px;height:42px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--acc);animation:giftspin .8s linear infinite;margin:28px auto 18px}
+@keyframes giftspin{to{transform:rotate(360deg)}}
+.giftOkCircle{width:64px;height:64px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;margin:22px auto 16px;animation:giftpop .32s var(--ease)}
+@keyframes giftpop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.giftStatusWrap{text-align:center;padding:6px 0 10px}
+.giftStatusTitle{font-size:18px;font-weight:700;margin-bottom:4px}
+.giftStatusSub{color:var(--mut);font-size:13.5px}
+.giftTabs{display:flex;gap:8px;margin:2px 16px 14px}
+.giftTabs button{flex:1;padding:9px 0;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--mut);font-weight:600;font-size:13.5px}
+.giftTabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.giftUrow{display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px}
+.giftSelfBtn{color:var(--acc);font-size:13px;font-weight:600;text-decoration:underline;background:none;border:none;padding:0}
 .exta{font-family:ui-monospace,Menlo,monospace;font-size:11px;min-height:90px}
 </style>
 </head>
@@ -600,7 +612,7 @@ en:{
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
   a_img:"Image from gallery",a_active:"Active (visible in store)",
   a_desc_en:"Description — English",a_desc_uz:"Description",a_desc_ru:"Description — Russian",a_desc_autotr:"Automatically translated to Russian and English when saved",a_title_autotr:"Automatically translated to Russian and English when saved",a_translating:"Translating...", a_note:"Delivery instructions (shown to buyer)",a_note_ph:"e.g. login and password format, or activation steps",a_stock_title:"Inventory",a_stock_count:"Available in stock",a_stock_unit:"pcs",a_stock_add:"Add new stock (one per line)",a_stock_ph:"login1:pass1\nlogin2:pass2\nor promo codes, one per line",a_stock_addbtn:"Add",a_stock_clear:"Clear all",a_stock_added:"Stock added",a_stock_cleared:"Stock cleared",
-  a_fulfill:"Fulfillment",a_fulfill_normal:"Manual / stock",a_fulfill_fragstars:"Auto-Stars (Fragment)",a_fulfill_fragpremium:"Auto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — any amount (Fragment)",a_fulfill_telegramgift:"Telegram gift (auto)",a_gift_id_label:"Telegram gift ID",gift_unit:"Telegram gift",gift_message_label:"Message (optional)",gift_message_ph:"e.g. Thanks for your purchase!",gift_anon_label:"Send anonymously",
+  a_fulfill:"Fulfillment",a_fulfill_normal:"Manual / stock",a_fulfill_fragstars:"Auto-Stars (Fragment)",a_fulfill_fragpremium:"Auto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — any amount (Fragment)",a_fulfill_telegramgift:"Telegram gift (auto)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Gifts menu (hub card)",a_gift_kind_label:"Gift type",gift_unit:"Telegram gift",gift_message_label:"Message (optional)",gift_message_ph:"e.g. Thanks for your purchase!",gift_anon_label:"Send anonymously",gift_send_title:"Enter username:",gift_self_btn:"To myself",gift_username_ph:"User @username",gift_processing_title:"Sending gift...",gift_processing_sub:"Please wait",gift_success_title:"Sent!",gift_close:"Close",gift_tab_limited:"Limited",gift_tab_oddiy:"Regular",
   a_months:"Months",a_stars_amount:"Stars amount",a_price_per_star:"Price per Star (sum)",a_min_stars:"Minimum Stars",a_fulfill_note:"Delivered automatically to the buyer's own Telegram account — no manual delivery needed.",a_fulfill_note_custom:"Buyer enters any @username and amount themselves — delivered automatically via Fragment.",
   a_preview:"Preview",a_save:"Save",a_add:"Add product",a_added:"Added ✓",a_saved:"Saved ✓",
   a_need:"Fill in title and price",a_del:"Delete",a_del_done:"Deleted",a_edit:"Edit",
@@ -676,7 +688,7 @@ uz:{
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
   a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
   a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif (o'zbekcha yozing)",a_desc_ru:"Tavsif — Ruscha",a_desc_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_title_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_translating:"Tarjima qilinmoqda...", a_note:"Yetkazish yo'riqnomasi (xaridorga ko'rsatiladi)",a_note_ph:"masalan login-parol formati, yoki faollashtirish qadamlari",a_stock_title:"Zaxira (inventar)",a_stock_count:"Mavjud zaxira",a_stock_unit:"dona",a_stock_add:"Yangi zaxira qo'shish (har biri alohida qatorda)",a_stock_ph:"login1:parol1\nlogin2:parol2\nyoki promokodlar, har biri alohida qatorda",a_stock_addbtn:"Qo'shish",a_stock_clear:"Hammasini tozalash",a_stock_added:"Zaxira qo'shildi",a_stock_cleared:"Zaxira tozalandi",
-  a_fulfill:"Yetkazish turi",a_fulfill_normal:"Qo'lda / zaxiradan",a_fulfill_fragstars:"Avto-Stars (Fragment)",a_fulfill_fragpremium:"Avto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — istalgan miqdor (Fragment)",a_fulfill_telegramgift:"Telegram gift (avtomatik)",a_gift_id_label:"Telegram gift ID",gift_unit:"Telegram sovg'a",gift_message_label:"Sharh (ixtiyoriy)",gift_message_ph:"Masalan: Xaridingiz uchun rahmat!",gift_anon_label:"Anonim yuborish",
+  a_fulfill:"Yetkazish turi",a_fulfill_normal:"Qo'lda / zaxiradan",a_fulfill_fragstars:"Avto-Stars (Fragment)",a_fulfill_fragpremium:"Avto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — istalgan miqdor (Fragment)",a_fulfill_telegramgift:"Telegram gift (avtomatik)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Sovg'alar menyusi (bosh kartochka)",a_gift_kind_label:"Gift turi",gift_unit:"Telegram sovg'a",gift_message_label:"Sharh (ixtiyoriy)",gift_message_ph:"Masalan: Xaridingiz uchun rahmat!",gift_anon_label:"Anonim yuborish",gift_send_title:"Username kiriting:",gift_self_btn:"O'zimga",gift_username_ph:"Foydalanuvchi @username",gift_processing_title:"Sovg'a yuborilmoqda...",gift_processing_sub:"Iltimos kuting",gift_success_title:"Yuborildi!",gift_close:"Yopish",gift_tab_limited:"Limited",gift_tab_oddiy:"Oddiy",
   a_months:"Oy soni",a_stars_amount:"Stars miqdori",a_price_per_star:"1 Star narxi (so'm)",a_min_stars:"Eng kam Stars",a_fulfill_note:"Xaridorning o'z Telegram akkauntiga avtomatik yetkaziladi — qo'lda berish shart emas.",a_fulfill_note_custom:"Xaridor o'zi @username va miqdorni kiritadi — Fragment orqali avtomatik yetkaziladi.",
   a_preview:"Ko'rinish",a_save:"Saqlash",a_add:"Qo'shish",a_added:"Qo'shildi ✓",a_saved:"Saqlandi ✓",
   a_need:"Nomi va narxini kiriting",a_del:"O'chirish",a_del_done:"O'chirildi",a_edit:"Tahrirlash",
@@ -752,7 +764,7 @@ ru:{
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
   a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
   a_desc_en:"Описание — Английский",a_desc_uz:"Описание",a_desc_ru:"Описание — Русский",a_desc_autotr:"При сохранении автоматически переводится на русский и английский",a_title_autotr:"При сохранении автоматически переводится на русский и английский",a_translating:"Перевод...", a_note:"Инструкция по выдаче (видна покупателю)",a_note_ph:"например формат логина и пароля, или шаги активации",a_stock_title:"Запас (инвентарь)",a_stock_count:"Доступно на складе",a_stock_unit:"шт",a_stock_add:"Добавить новый запас (по одному в строке)",a_stock_ph:"логин1:пароль1\nлогин2:пароль2\nили промокоды, по одному в строке",a_stock_addbtn:"Добавить",a_stock_clear:"Очистить всё",a_stock_added:"Запас добавлен",a_stock_cleared:"Запас очищен",
-  a_fulfill:"Способ выдачи",a_fulfill_normal:"Вручную / со склада",a_fulfill_fragstars:"Авто-Stars (Fragment)",a_fulfill_fragpremium:"Авто-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — любое количество (Fragment)",a_fulfill_telegramgift:"Telegram gift (авто)",a_gift_id_label:"Telegram gift ID",gift_unit:"Telegram подарок",gift_message_label:"Комментарий (необязательно)",gift_message_ph:"Например: Спасибо за покупку!",gift_anon_label:"Отправить анонимно",
+  a_fulfill:"Способ выдачи",a_fulfill_normal:"Вручную / со склада",a_fulfill_fragstars:"Авто-Stars (Fragment)",a_fulfill_fragpremium:"Авто-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — любое количество (Fragment)",a_fulfill_telegramgift:"Telegram gift (авто)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Меню Telegram Подарков (карточка-раздел)",a_gift_kind_label:"Тип подарка",gift_unit:"Telegram подарок",gift_message_label:"Комментарий (необязательно)",gift_message_ph:"Например: Спасибо за покупку!",gift_anon_label:"Отправить анонимно",gift_send_title:"Введите username:",gift_self_btn:"Себе",gift_username_ph:"Пользователь @username",gift_processing_title:"Отправка подарка...",gift_processing_sub:"Пожалуйста, подождите",gift_success_title:"Отправлено!",gift_close:"Закрыть",gift_tab_limited:"Limited",gift_tab_oddiy:"Обычные",
   a_months:"Кол-во месяцев",a_stars_amount:"Кол-во Stars",a_price_per_star:"Цена за 1 Star (сум)",a_min_stars:"Минимум Stars",a_fulfill_note:"Доставляется автоматически на аккаунт покупателя — ручная выдача не нужна.",a_fulfill_note_custom:"Покупатель сам вводит @username и количество — доставка автоматическая через Fragment.",
   a_preview:"Предпросмотр",a_save:"Сохранить",a_add:"Добавить",a_added:"Добавлено ✓",a_saved:"Сохранено ✓",
   a_need:"Укажите название и цену",a_del:"Удалить",a_del_done:"Удалено",a_edit:"Изменить",
@@ -844,6 +856,7 @@ var S={
   group:null, // {kind,key} — asosiy sahifada hozir ochiq turgan guruh (Kategoriya→Guruh→Mahsulot)
   category:null, // kind — asosiy sahifada hozir ochiq turgan kategoriya (bosh sahifa endi faqat kategoriya kartochkalarini ko'rsatadi)
   nk:{app:null,cat:null}, // Nakrutka to'liq sahifasi ichidagi navigatsiya chuqurligi (S.category==="nakrutka" bo'lganda)
+  giftHub:null, // {tab:"oddiy"|"limited"} — Telegram Sovg'alar to'liq ekranli sahifasi ochiq bo'lsa
   groupDefs:Store.get("vn_groupdefs",[]), // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
   products:{search:"",filter:"all"} // "Mahsulotlar" bo'limi qidiruv/filtr holati
 };
@@ -1078,7 +1091,7 @@ function render(){
   requestAnimationFrame(positionNavPill);
 }
 var _navLangBuilt=null;
-function go(screen){if(screen==="home"){S.group=null;S.category=null;}S.screen=screen;haptic();render();window.scrollTo(0,0);if(screen==="profile"&&REFERRAL===null)loadReferral();}
+function go(screen){if(screen==="home"){S.group=null;S.category=null;S.giftHub=null;}S.screen=screen;haptic();render();window.scrollTo(0,0);if(screen==="profile"&&REFERRAL===null)loadReferral();}
 
 function onboardingHTML(){
   return '<div id="onb">'
@@ -1326,10 +1339,29 @@ function categoryCardsHTML(){
 }
 function categoryDetailHTML(kind,labelKey){
   // Guruh qatlami o'chirilgan — kategoriya bosilganda doim to'g'ridan-to'g'ri mahsulotlar chiqadi.
+  // Alohida "telegram_gift" mahsulotlari bu yerda ko'rsatilmaydi — ular faqat
+  // "Telegram Sovg'alar" (gift_hub) kartochkasi ichida, to'liq ekranli sahifada chiqadi.
   var meta=CatMeta[kind]||{};
   var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
+  var items=activeItems(kind).filter(function(x){return x.fulfill!=="telegram_gift";});
   return '<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(label)+'</b></button>'
-    +productGridHTML(activeItems(kind));
+    +productGridHTML(items);
+}
+/* ===== Telegram Sovg'alar — to'liq ekranli sahifa (Limited / Oddiy tablar) ===== */
+function giftHubItems(){
+  return catalog().filter(function(x){
+    return x.fulfill==="telegram_gift"&&x.active!==false&&(x.giftKind==="limited"?"limited":"oddiy")===S.giftHub.tab;
+  });
+}
+function giftHubHTML(){
+  var hub=byId(S.giftHub.hubId);
+  var title=hub?loc(hub.title):t("gift_unit");
+  return '<button class="backrow" id="giftHubBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(title)+'</b></button>'
+    +'<div class="giftTabs">'
+    +'<button data-ghtab="oddiy" class="'+(S.giftHub.tab==="oddiy"?"on":"")+'">'+esc(t("gift_tab_oddiy"))+'</button>'
+    +'<button data-ghtab="limited" class="'+(S.giftHub.tab==="limited"?"on":"")+'">'+esc(t("gift_tab_limited"))+'</button>'
+    +'</div>'
+    +productGridHTML(giftHubItems());
 }
 /* ===== Admin: kategoriya (Obuna/Promokod/Telegram/O'yinlar) nomi va rasmini tahrirlash ===== */
 function openAdminCategories(){
@@ -1407,6 +1439,7 @@ function openAdminCategories(){
   });
 }
 function homeHTML(){
+  if(S.giftHub)return giftHubHTML();
   if(S.group)return groupProductsHTML();
   if(S.category==="nakrutka")return nakrutkaScreenHTML();
   if(S.category){
@@ -1662,6 +1695,7 @@ function openProduct(id){
   var it=byId(id);if(!it)return;
   if(it.fulfill==="fragment_stars_custom")return openStarsBuy(it);
   if(it.fulfill==="telegram_gift")return openGiftBuy(it);
+  if(it.fulfill==="gift_hub"){S.giftHub={tab:"oddiy",hubId:it.id};haptic();render();window.scrollTo(0,0);return;}
   var out=it.stock<=0,guest=!tgUser();
   var sh=openSheet(
     tileHTML(it,true)
@@ -1747,39 +1781,92 @@ function openStarsBuy(it){
   });
 }
 
-/* ===== Telegram gift xaridi (kimga / sharh / anonim) ===== */
+/* ===== Telegram gift xaridi (kimga / sharh / anonim) — to'liq TZ oqimi ===== */
 function openGiftBuy(it){
+  var me=tgUser();
+  var selfUname=me&&me.username?me.username:"";
   var sh=openSheet(
     tileHTML(it,true)
     +'<h2>'+esc(loc(it.title))+'</h2><div class="cat">🎁 '+esc(t("gift_unit"))+'</div>'
-    +'<div class="sect" style="margin:14px 0 6px">@'+esc(t("username_label"))+'</div>'
-    +'<div class="arow"><input id="gU" placeholder="@username"></div>'
+    +'<div class="giftUrow"><span class="sect" style="margin:0">'+esc(t("gift_send_title"))+'</span>'
+    +(selfUname?'<button type="button" class="giftSelfBtn" id="gSelf">'+esc(t("gift_self_btn"))+'</button>':'')
+    +'</div>'
+    +'<div class="arow"><input id="gU" placeholder="'+esc(t("gift_username_ph"))+'"><button class="btn sm" id="gCheck">'+esc(t("check_btn"))+'</button></div>'
+    +'<div id="gUres" style="margin-top:8px"></div>'
     +'<div class="sect" style="margin:16px 0 6px">'+esc(t("gift_message_label"))+'</div>'
     +'<textarea id="gMsg" maxlength="200" placeholder="'+esc(t("gift_message_ph"))+'" style="width:100%;min-height:60px;border-radius:12px;border:1px solid var(--line);padding:10px;font:inherit;box-sizing:border-box"></textarea>'
-    +'<div class="row" style="margin-top:12px"><label style="display:flex;align-items:center;gap:8px;width:100%"><input type="checkbox" id="gAnon"> '+esc(t("gift_anon_label"))+'</label></div>'
+    +'<div class="switch" style="margin-top:6px"><span style="font-size:13.5px">'+esc(t("gift_anon_label"))+'</span><button type="button" class="swbtn" id="gAnon"><i></i></button></div>'
     +'<div class="row" style="border-top:1px dashed var(--line);margin-top:8px"><div class="l">'+esc(t("price_label"))+'</div><div class="r">'+esc(money(it.price))+'</div></div>'
     +'<div style="height:12px"></div>'
-    +'<button class="btn big" id="gBuy">'+esc(t("buy"))+'</button>'
+    +'<button class="btn big" id="gBuy" disabled>'+esc(t("buy"))+'</button>'
+    +'<div class="minnote" id="gBuyHint" style="text-align:center;margin-top:8px">'+esc(t("stars_hint_check"))+'</div>'
   );
-  sh.querySelector("#gBuy").addEventListener("click",function(){
+  var checkedUser=null,anonOn=false;
+  function setChecked(uname,res){
+    checkedUser=uname;
+    sh.querySelector("#gUres").innerHTML='<div class="refline">'+ic("check",14)+' '+esc((res&&res.name)||uname)+' (@'+esc((res&&res.username)||uname)+')'+((res&&res.is_premium)?(' '+ic("diamond",13)):'')+'</div>';
+    sh.querySelector("#gBuy").disabled=false;
+    sh.querySelector("#gBuyHint").style.display="none";
+  }
+  function clearChecked(errMsg){
+    checkedUser=null;
+    sh.querySelector("#gUres").innerHTML=errMsg?('<div class="paynote" style="color:var(--err)">'+ic("cross",13)+' '+esc(errMsg)+'</div>'):"";
+    sh.querySelector("#gBuy").disabled=true;
+    var hint=sh.querySelector("#gBuyHint");hint.style.display="";hint.textContent=t("stars_hint_check");
+  }
+  function runCheck(uname){
+    if(!uname)return;
+    sh.querySelector("#gUres").innerHTML='<div class="paynote">'+esc(t("checking"))+'…</div>';
+    api("/api/fragment/check-user","POST",{username:uname}).then(function(r){
+      setChecked(uname,r.result||{});
+    }).catch(function(){
+      clearChecked(t("user_not_found"));
+    });
+  }
+  sh.querySelector("#gCheck").addEventListener("click",function(){
     var uname=sh.querySelector("#gU").value.trim().replace(/^@/,"");
-    if(!uname){haptic();return;}
+    runCheck(uname);
+  });
+  sh.querySelector("#gU").addEventListener("input",function(){clearChecked();});
+  var selfBtn=sh.querySelector("#gSelf");
+  if(selfBtn)selfBtn.addEventListener("click",function(){
+    var inp=sh.querySelector("#gU");
+    inp.value="@"+selfUname;
+    runCheck(selfUname);
+  });
+  sh.querySelector("#gAnon").addEventListener("click",function(){
+    anonOn=!anonOn;this.classList.toggle("on",anonOn);
+  });
+  sh.querySelector("#gBuy").addEventListener("click",function(){
+    if(!checkedUser)return;
     var msg=sh.querySelector("#gMsg").value.trim();
-    var anon=sh.querySelector("#gAnon").checked;
-    var btn=sh.querySelector("#gBuy");btn.disabled=true;btn.textContent=t("processing");
-    api("/api/buy-gift","POST",{itemId:it.id,username:uname,message:msg,anonymous:anon}).then(function(r){
-      ME.balance=r.balance;haptic("ok");closeSheet();
-      loadMe(function(){ go("orders"); });
+    var body=sh.querySelector(".sheet-body");
+    var head=sh.querySelector(".sheet-head");
+    if(head)head.style.visibility="hidden";
+    body.innerHTML='<div class="giftStatusWrap"><div class="giftSpin"></div>'
+      +'<div class="giftStatusTitle">'+esc(t("gift_processing_title"))+'</div>'
+      +'<div class="giftStatusSub">'+esc(t("gift_processing_sub"))+'</div></div>';
+    api("/api/buy-gift","POST",{itemId:it.id,username:checkedUser,message:msg,anonymous:anonOn}).then(function(r){
+      ME.balance=r.balance;haptic("ok");
+      if(head)head.style.visibility="";
+      body.innerHTML='<div class="giftStatusWrap"><div class="giftOkCircle">'+ic("check",30)+'</div>'
+        +'<div class="giftStatusTitle">'+esc(t("gift_success_title"))+'</div>'
+        +'<div class="giftStatusSub">'+esc(loc(it.title))+' · @'+esc(checkedUser)+'</div></div>'
+        +'<button class="btn big" id="gCloseBtn" style="margin-top:6px">'+esc(t("gift_close"))+'</button>';
+      sh.querySelector("#gCloseBtn").addEventListener("click",function(){
+        closeSheet();loadMe(function(){ go("orders"); });
+      });
     }).catch(function(e){
-      btn.disabled=false;btn.textContent=t("buy");
+      haptic();
+      if(head)head.style.visibility="";
       var msg2=null;
       if(e.resp&&e.resp.error==="balance")msg2=t("need_more");
       else if(e.resp&&e.resp.error==="gift_failed")msg2=e.resp.message||t("srv_off");
       else msg2=t("srv_off");
-      var note=sh.querySelector("#gBuyErr");
-      if(!note){note=document.createElement("div");note.id="gBuyErr";note.className="paynote";note.style.color="var(--err)";btn.insertAdjacentElement("afterend",note);}
-      note.innerHTML=ic("warning",13)+' '+esc(msg2);
-      haptic();
+      body.innerHTML='<div class="giftStatusWrap"><div class="giftStatusTitle" style="color:var(--err)">'+ic("warning",22)+'</div>'
+        +'<div class="giftStatusSub">'+esc(msg2)+'</div></div>'
+        +'<button class="btn big" id="gRetryBtn" style="margin-top:6px">'+esc(t("gift_close"))+'</button>';
+      sh.querySelector("#gRetryBtn").addEventListener("click",function(){closeSheet();openGiftBuy(it);});
     });
   });
 }
@@ -3499,12 +3586,14 @@ function openAdminForm(editId){
     fulfillType:it&&it.fulfill==="fragment_stars"?"fragstars"
       :(it&&it.fulfill==="fragment_premium"?"fragpremium"
       :(it&&it.fulfill==="fragment_stars_custom"?"fragstarscustom"
-      :(it&&it.fulfill==="telegram_gift"?"telegramgift":"normal"))),
+      :(it&&it.fulfill==="telegram_gift"?"telegramgift"
+      :(it&&it.fulfill==="gift_hub"?"gifthub":"normal")))),
     months:(it&&it.premiumMonths)||3,
     starsAmount:(it&&it.starsAmount)||100,
     pricePerStar:(it&&it.pricePerStar)||0,
     minStars:(it&&it.minStars)||50,
     telegramGiftId:(it&&it.telegramGiftId)||"",
+    giftKind:(it&&it.giftKind)||"oddiy",
     group:it?(it.group||""):"",
     groupLabel:it?(it.groupLabel||""):"",
     groupImg:it?(it.groupImg||""):""
@@ -3525,6 +3614,7 @@ function openAdminForm(editId){
     +'<button data-ff="fragpremium" class="'+(F.fulfillType==="fragpremium"?"on":"")+'">'+esc(t("a_fulfill_fragpremium"))+'</button>'
     +'<button data-ff="fragstarscustom" class="'+(F.fulfillType==="fragstarscustom"?"on":"")+'">'+esc(t("a_fulfill_fragstarscustom"))+'</button>'
     +'<button data-ff="telegramgift" class="'+(F.fulfillType==="telegramgift"?"on":"")+'">'+esc(t("a_fulfill_telegramgift"))+'</button>'
+    +'<button data-ff="gifthub" class="'+(F.fulfillType==="gifthub"?"on":"")+'">'+esc(t("a_fulfill_gifthub"))+'</button>'
     +'</div>'
     +'<div id="ffMonthsWrap" class="hide"><label>'+esc(t("a_months"))+'</label><input id="f_months" type="number" inputmode="numeric" value="'+esc(F.months)+'"></div>'
     +'<div id="ffStarsWrap" class="hide"><label>'+esc(t("a_stars_amount"))+'</label><input id="f_starsAmount" type="number" inputmode="numeric" value="'+esc(F.starsAmount)+'"></div>'
@@ -3532,7 +3622,11 @@ function openAdminForm(editId){
     +'<div><label>'+esc(t("a_price_per_star"))+'</label><input id="f_pricePerStar" type="number" inputmode="numeric" value="'+esc(F.pricePerStar)+'"></div>'
     +'<div><label>'+esc(t("a_min_stars"))+'</label><input id="f_minStars" type="number" inputmode="numeric" value="'+esc(F.minStars)+'"></div>'
     +'</div>'
-    +'<div id="ffGiftWrap" class="hide"><label>'+esc(t("a_gift_id_label"))+'</label><input id="f_giftId" type="text" inputmode="numeric" value="'+esc(F.telegramGiftId)+'" placeholder="5170145012310081615"></div>'
+    +'<div id="ffGiftWrap" class="hide">'
+    +'<label>'+esc(t("a_gift_id_label"))+'</label><input id="f_giftId" type="text" inputmode="numeric" value="'+esc(F.telegramGiftId)+'" placeholder="5170145012310081615">'
+    +'<label style="margin-top:10px">'+esc(t("a_gift_kind_label"))+'</label>'
+    +'<div class="seg" id="ffGiftKindSeg"><button data-gk="oddiy" class="'+(F.giftKind==="oddiy"?"on":"")+'">'+esc(t("gift_tab_oddiy"))+'</button><button data-gk="limited" class="'+(F.giftKind==="limited"?"on":"")+'">'+esc(t("gift_tab_limited"))+'</button></div>'
+    +'</div>'
     +'<div id="ffNote" class="paynote hide"></div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
@@ -3591,9 +3685,9 @@ function openAdminForm(editId){
     sw.classList.toggle("hide",F.fulfillType!=="fragstars");
     cw.classList.toggle("hide",F.fulfillType!=="fragstarscustom");
     gw.classList.toggle("hide",F.fulfillType!=="telegramgift");
-    var showNote=F.fulfillType!=="normal";
+    var showNote=F.fulfillType!=="normal"&&F.fulfillType!=="gifthub";
     nt.classList.toggle("hide",!showNote);
-    if(showNote)nt.textContent=F.fulfillType==="fragstarscustom"?t("a_fulfill_note_custom"):(F.fulfillType==="telegramgift"?t("a_fulfill_note"):t("a_fulfill_note"));
+    if(showNote)nt.textContent=F.fulfillType==="fragstarscustom"?t("a_fulfill_note_custom"):t("a_fulfill_note");
     syncStockVisibility();
   }
   syncFulfillVisibility();
@@ -3636,6 +3730,12 @@ function openAdminForm(editId){
     for(var fj=0;fj<all.length;fj++)all[fj].classList.toggle("on",all[fj]===this);
     syncFulfillVisibility();
   });
+  var gks=sh.querySelectorAll("#ffGiftKindSeg [data-gk]");
+  for(var gki=0;gki<gks.length;gki++)gks[gki].addEventListener("click",function(){
+    F.giftKind=this.getAttribute("data-gk");
+    var all=sh.querySelectorAll("#ffGiftKindSeg [data-gk]");
+    for(var gkj=0;gkj<all.length;gkj++)all[gkj].classList.toggle("on",all[gkj]===this);
+  });
   g("#f_active").addEventListener("click",function(){F.active=!F.active;this.classList.toggle("on",F.active);});
   var file=g("#f_file");
   if(file)file.addEventListener("change",function(){
@@ -3664,7 +3764,7 @@ function openAdminForm(editId){
   for(var n=0;n<inputs.length;n++)inputs[n].addEventListener("input",preview);
   g("#fSave").addEventListener("click",function(){
     readForm();
-    if(!F.title||(F.fulfillType!=="fragstarscustom"&&!Number(F.price))){toast(t("a_need"));return;}
+    if(!F.title||((F.fulfillType!=="fragstarscustom"&&F.fulfillType!=="gifthub")&&!Number(F.price))){toast(t("a_need"));return;}
     if(F.fulfillType==="fragstarscustom"&&!F.price)F.price=0;
     var saveBtn=g("#fSave");
     var origLabel=saveBtn.textContent;
@@ -3689,12 +3789,13 @@ function openAdminForm(editId){
         desc:descObj,
         note:F.note||"",
         group:groupKey||null,groupLabel:groupKey?groupLabel:null,groupImg:groupKey?groupImg:null,
-        fulfill:null,starsAmount:null,premiumMonths:null,pricePerStar:null,minStars:null,telegramGiftId:null
+        fulfill:null,starsAmount:null,premiumMonths:null,pricePerStar:null,minStars:null,telegramGiftId:null,giftKind:null
       };
       if(F.fulfillType==="fragstars"){data.fulfill="fragment_stars";data.starsAmount=Number(F.starsAmount)||0;}
       else if(F.fulfillType==="fragpremium"){data.fulfill="fragment_premium";data.premiumMonths=Number(F.months)||3;}
       else if(F.fulfillType==="fragstarscustom"){data.fulfill="fragment_stars_custom";data.pricePerStar=Number(F.pricePerStar)||0;data.minStars=Number(F.minStars)||50;}
-      else if(F.fulfillType==="telegramgift"){data.fulfill="telegram_gift";data.telegramGiftId=String(F.telegramGiftId||"").trim();}
+      else if(F.fulfillType==="telegramgift"){data.fulfill="telegram_gift";data.telegramGiftId=String(F.telegramGiftId||"").trim();data.giftKind=F.giftKind==="limited"?"limited":"oddiy";}
+      else if(F.fulfillType==="gifthub"){data.fulfill="gift_hub";data.price=0;}
       if(F.id){patchItem(F.id,data);toast(t("a_saved"));}
       else{data.id="c"+Date.now();S.custom.push(data);toast(t("a_added"));}
       persist();haptic("ok");closeSheet();
@@ -3760,6 +3861,13 @@ function bind(){
   });
   var cb=document.getElementById("catBackBtn");
   if(cb)cb.addEventListener("click",function(){S.category=null;S.group=null;S.nk={app:null,cat:null};render();window.scrollTo(0,0);});
+  var ghb=document.getElementById("giftHubBackBtn");
+  if(ghb)ghb.addEventListener("click",function(){S.giftHub=null;render();window.scrollTo(0,0);});
+  els=document.querySelectorAll("[data-ghtab]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
+    if(!S.giftHub)return;
+    S.giftHub.tab=this.getAttribute("data-ghtab");haptic();render();window.scrollTo(0,0);
+  });
   if(S.category==="nakrutka"){
     var nkBackTop=document.querySelector("[data-nk-back-top]");
     if(nkBackTop)nkBackTop.addEventListener("click",function(){
