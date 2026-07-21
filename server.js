@@ -11,6 +11,10 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
+// Har bir buyurtma avtomatik shu guruh/kanalga (chat_id) e'lon qilinadi — Railway
+// "Variables"da ORDER_NOTIFY_CHAT_ID ni o'rnating (masalan -1001234567890). Bo'sh bo'lsa
+// hech qayerga yuborilmaydi, lekin mijozga xabar baribir boradi.
+const ORDER_NOTIFY_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
 const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
 
@@ -33,9 +37,12 @@ const NK_CATMETA_FILE = path.join(DATA_DIR, "nkcatmeta.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 /* ---------- tiny db ---------- */
-let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [],
+let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [], orderSeq: 0,
   settings: { referral: { enabled: true, percent: 1, shareText: "" } } };
 try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
+// Ketma-ket buyurtma raqami (#56, #57, #58...) — birinchi ishga tushishda mavjud
+// buyurtmalar sonidan davom etadi, keyin har doim shundan +1 bo'lib boradi (hech qachon orqaga qaytmaydi).
+if (!DB.orderSeq) DB.orderSeq = DB.orders.length;
 if (!DB.settings) DB.settings = {};
 if (!DB.settings.referral) DB.settings.referral = { enabled: true, percent: 1, shareText: "" };
 if (DB.settings.referral.percent === undefined) {
@@ -161,6 +168,49 @@ function tgSend(chatId, text) {
     }, r => { r.on("data", () => {}); });
     req.on("error", () => {});
     req.write(data); req.end();
+  } catch (e) {}
+}
+// Har bir yangi buyurtmaga ketma-ket raqam beradi: 56, 57, 58... — hech qachon
+// qaytarilmaydi va hech qachon orqaga siljimaydi (DB.orderSeq faylda saqlanadi).
+function nextOrderSeq() { DB.orderSeq = (DB.orderSeq || 0) + 1; return DB.orderSeq; }
+// Rasmdagi kabi formatda buyurtma xabarini tuzadi (mahsulot, mijoz, narx, sana, # raqam, holat).
+function orderMessageText(o) {
+  const dt = new Date(o.ts || Date.now());
+  const dateStr = dt.toLocaleDateString("ru-RU", { timeZone: "Asia/Tashkent" }) + " " +
+    dt.toLocaleTimeString("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
+  const who = o.uname ? ("@" + o.uname) : ("ID: " + o.uid);
+  const priceStr = (Number(o.price) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
+  // "Holat" (order status) — mijoz o'zbek va yer bo'lsa ham tushunishi uchun ikki tilda:
+  const statusLine = o.status === "done" ? "✅ Muvaffaqiyatli / Successful"
+    : o.status === "processing" ? "⏳ Bajarilmoqda / Processing"
+    : o.status === "cancelled" ? "❌ Bekor qilindi / Cancelled"
+    : "🕓 Kutilmoqda / Pending";
+  // Bekor qilingan buyurtmada pul balansga qaytarilgan, shu sabab "to'landi" emas, "qaytarildi" deyiladi.
+  const paidLine = o.status === "cancelled" ? "↩️ Qaytarildi / Refunded" : "✅ To'landi / Paid";
+  const lines = [
+    "🛍 " + o.item,
+    "👤 " + who,
+    "💰 " + priceStr,
+    "🕐 " + dateStr,
+    "#️⃣ #" + o.seq,
+    statusLine,
+    paidLine
+  ];
+  return lines.join("\n");
+}
+// Faqat guruh/kanalga (mijozga qayta yubormasdan) — buyurtma holati keyinroq
+// o'zgarganda (masalan admin "bajarildi" qilib qo'lda yetkazganda) kanaldagi
+// yozuvni yangilab qo'yish uchun ishlatiladi, mijozga ikkinchi marta xabar bormasin.
+function notifyOrderChannel(o) {
+  try { if (ORDER_NOTIFY_CHAT_ID) tgSend(ORDER_NOTIFY_CHAT_ID, orderMessageText(o)); } catch (e) {}
+}
+// Buyurtma birinchi marta yaratilganda shu xabarni: 1) ORDER_NOTIFY_CHAT_ID guruh/kanaliga,
+// 2) mijozning o'ziga (o.uid) yuboradi — ikkalasi bir xil, rasmdagi kabi formatda.
+function notifyOrder(o) {
+  try {
+    const text = orderMessageText(o);
+    if (ORDER_NOTIFY_CHAT_ID) tgSend(ORDER_NOTIFY_CHAT_ID, text);
+    tgSend(o.uid, text);
   } catch (e) {}
 }
 // fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni istalgan @username'ga avtomatik sotib olish.
@@ -600,10 +650,10 @@ const server = http.createServer((req, res) => {
             return send(res, 502, { error: "jap_failed", message: msg });
           }
           acc.balance -= price;
-          const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: "nk_" + serviceId,
+          const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: "nk_" + serviceId,
             item: svc.name, price, status: "processing", ts: Date.now(),
             delivered: null, doneTs: null, japOrderId: j.order, japService: serviceId, link, quantity };
-          DB.orders.push(o); save();
+          DB.orders.push(o); save(); notifyOrder(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
       }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
@@ -776,10 +826,10 @@ const server = http.createServer((req, res) => {
         }
         acc.balance -= price;
         const summary = "⭐ " + amount + " Stars @" + uname + " ga yuborildi";
-        const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+        const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
           item: "Telegram Stars (" + amount + ")", price, status: "done", ts: Date.now(),
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
-        DB.orders.push(o); save();
+        DB.orders.push(o); save(); notifyOrder(o);
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
@@ -815,10 +865,10 @@ const server = http.createServer((req, res) => {
           const summary = isStars
             ? "⭐ " + body.amount + " Stars @" + u.username + " ga yuborildi"
             : "💎 Premium " + body.duration + " oy @" + u.username + " ga yuborildi";
-          const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+          const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
             item: title, price, status: "done", ts: Date.now(),
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
-          DB.orders.push(o); save();
+          DB.orders.push(o); save(); notifyOrder(o);
           creditReferralOnOrder(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
@@ -835,10 +885,10 @@ const server = http.createServer((req, res) => {
       const list = DB.stock[it.id];
       const delivered = (Array.isArray(list) && list.length) ? list.shift() : null;
       acc.balance -= price;
-      const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+      const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
         item: title, price, status: delivered ? "done" : "pending", ts: Date.now(),
         delivered: delivered || null, doneTs: delivered ? Date.now() : null };
-      DB.orders.push(o); save();
+      DB.orders.push(o); save(); notifyOrder(o);
       if (delivered) creditReferralOnOrder(o);
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
@@ -867,11 +917,11 @@ const server = http.createServer((req, res) => {
         }
         acc.balance -= price;
         const summary = "🎁 " + title + " @" + uname + " ga yuborildi" + (anonymous ? " (anonim)" : "");
-        const o = { id: genId("VN"), uid: u.id, uname: u.username || null, itemId: it.id,
+        const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
           item: title, price, status: "done", ts: Date.now(),
           delivered: summary, doneTs: Date.now(),
           giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous };
-        DB.orders.push(o); save();
+        DB.orders.push(o); save(); notifyOrder(o);
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => send(res, 502, { error: "gift_failed", message: String(e.message || e) }));
@@ -913,12 +963,14 @@ const server = http.createServer((req, res) => {
           save();
           creditReferralOnOrder(o);
           tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
+          notifyOrderChannel(o);
         }
         else { o.status = "cancelled"; // refund
           const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
           acc.balance += o.price;
           save();
           tgSend(o.uid, "❌ Buyurtmangiz bekor qilindi, mablag' balansingizga qaytarildi: " + o.item);
+          notifyOrderChannel(o);
         }
         return send(res, 200, { ok: true });
       });

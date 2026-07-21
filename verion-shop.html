@@ -1342,7 +1342,9 @@ function nkSearchResultsHTML(q){
 function productsScreenHTML(){
   var q=(S.products.search||"").trim().toLowerCase();
   var filter=S.products.filter||"all";
-  var items=catalog().filter(function(x){return x.active!==false&&catEnabled(x.kind);});
+  // "telegram_gift" mahsulotlari (TG Gift ichidagi har bir sovg'a) bu ro'yxatda ham
+  // chiqmasin — ular faqat gift-hub kartochkasi ichida ko'rinishi kerak.
+  var items=catalog().filter(function(x){return x.active!==false&&catEnabled(x.kind)&&x.fulfill!=="telegram_gift";});
   if(filter!=="all")items=items.filter(function(x){return x.kind===filter;});
   if(q)items=items.filter(function(x){
     return (loc(x.title)||"").toLowerCase().indexOf(q)!==-1||(x.cat||"").toLowerCase().indexOf(q)!==-1;
@@ -1454,7 +1456,10 @@ function categoryCardsHTML(){
   var html='<div class="grid groupgrid">',any=false;
   for(var m=0;m<PRODUCTS_PILLS.length;m++){
     var kind=PRODUCTS_PILLS[m][0],labelKey=PRODUCTS_PILLS[m][1];
-    var items=activeItems(kind);
+    // "telegram_gift" mahsulotlari (TG Gift ichidagi har bir sovg'a) bu yerda
+    // sanalmaydi — ular gift-hub kartochkasi ichida ko'rsatiladi, shuning uchun
+    // Telegram kategoriyasi soni yangi sovg'a qo'shilganda o'zgarmasligi kerak.
+    var items=activeItems(kind).filter(function(x){return x.fulfill!=="telegram_gift";});
     if(!items.length)continue;
     any=true;
     var meta=CatMeta[kind]||{};
