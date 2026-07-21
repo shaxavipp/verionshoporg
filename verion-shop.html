@@ -202,6 +202,25 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .sheet .cat{font-size:12px;color:var(--mut);margin-bottom:10px}
 .sheet .desc{font-size:14px;color:var(--txt);opacity:.88;margin:10px 0 14px;white-space:pre-wrap}
 .bigtile{height:118px;border-radius:16px;margin-bottom:12px}
+.vidtile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* jonli sovg'a ko'rinishi — haqiqiy animatsiya (video) qo'yilmagan bo'lsa ham emoji "tirik" ko'rinadi */
+.giftGlow{position:relative;overflow:hidden}
+.giftGlow::before{content:"";position:absolute;inset:-20%;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%);
+  animation:giftPulseBg 2.6s ease-in-out infinite}
+@keyframes giftPulseBg{0%,100%{opacity:.45;transform:scale(.88)}50%{opacity:1;transform:scale(1.08)}}
+.giftFloat{display:inline-block;animation:giftFloat 2.6s ease-in-out infinite;
+  filter:drop-shadow(0 0 18px rgba(255,255,255,.4))}
+@keyframes giftFloat{0%,100%{transform:translateY(0) scale(1) rotate(-2deg)}50%{transform:translateY(-6px) scale(1.07) rotate(2deg)}}
+.giftSpark{position:absolute;width:5px;height:5px;border-radius:50%;background:#fff;opacity:0;
+  box-shadow:0 0 8px 2px rgba(255,255,255,.95);animation:giftSpark 2.4s ease-in-out infinite;pointer-events:none}
+.giftSpark.s1{top:22%;left:26%;animation-delay:0s}
+.giftSpark.s2{top:28%;right:22%;animation-delay:.7s}
+.giftSpark.s3{bottom:22%;left:48%;animation-delay:1.4s}
+@keyframes giftSpark{0%,100%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}}
+[data-reduce-motion="1"] .giftGlow::before{animation:none;opacity:.7}
+[data-reduce-motion="1"] .giftFloat{animation:none}
+[data-reduce-motion="1"] .giftSpark{animation:none;opacity:0}
 
 /* buttons */
 .btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
@@ -674,7 +693,7 @@ en:{
   a_reviews_edit:"Edit",a_reviews_edit_title:"Edit review",a_reviews_name_label:"Customer name",a_reviews_item_label:"Product name",a_reviews_stars_label:"Rating",a_reviews_text_label:"Review text",a_reviews_save:"Save",a_reviews_saved:"Saved ✓",
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
-  a_img:"Image from gallery",a_active:"Active (visible in store)",
+  a_img:"Image from gallery",a_active:"Active (visible in store)",a_video_label:"Animation (video) link",a_video_hint:"Optional: paste a .webm/.mp4 link — it will replace the emoji/photo with a looping animated preview",
   a_desc_en:"Description — English",a_desc_uz:"Description",a_desc_ru:"Description — Russian",a_desc_autotr:"Automatically translated to Russian and English when saved",a_title_autotr:"Automatically translated to Russian and English when saved",a_translating:"Translating...", a_note:"Delivery instructions (shown to buyer)",a_note_ph:"e.g. login and password format, or activation steps",a_stock_title:"Inventory",a_stock_count:"Available in stock",a_stock_unit:"pcs",a_stock_add:"Add new stock (one per line)",a_stock_ph:"login1:pass1\nlogin2:pass2\nor promo codes, one per line",a_stock_addbtn:"Add",a_stock_clear:"Clear all",a_stock_added:"Stock added",a_stock_cleared:"Stock cleared",
   a_fulfill:"Fulfillment",a_fulfill_normal:"Manual / stock",a_fulfill_fragstars:"Auto-Stars (Fragment)",a_fulfill_fragpremium:"Auto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — any amount (Fragment)",a_fulfill_telegramgift:"Telegram gift (auto)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Gifts menu (hub card)",a_gift_kind_label:"Gift type",gift_unit:"Telegram gift",gift_message_label:"Message (optional)",gift_message_ph:"e.g. Thanks for your purchase!",gift_anon_label:"Send anonymously",gift_send_title:"Enter username:",gift_self_btn:"To myself",gift_username_ph:"User @username",gift_processing_title:"Sending gift...",gift_processing_sub:"Please wait",gift_success_title:"Sent!",gift_close:"Close",gift_tab_limited:"Limited",gift_tab_oddiy:"Regular",gift_choose_product:"Choose a product",gift_hit_badge:"HIT",
   a_months:"Months",a_stars_amount:"Stars amount",a_price_per_star:"Price per Star (sum)",a_min_stars:"Minimum Stars",a_fulfill_note:"Delivered automatically to the buyer's own Telegram account — no manual delivery needed.",a_fulfill_note_custom:"Buyer enters any @username and amount themselves — delivered automatically via Fragment.",
@@ -751,7 +770,7 @@ uz:{
   a_reviews_edit:"Tahrirlash",a_reviews_edit_title:"Sharhni tahrirlash",a_reviews_name_label:"Mijoz ismi",a_reviews_item_label:"Mahsulot nomi",a_reviews_stars_label:"Baho (yulduz)",a_reviews_text_label:"Sharh matni",a_reviews_save:"Saqlash",a_reviews_saved:"Saqlandi ✓",
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
-  a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",
+  a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",a_video_label:"Animatsiya (video) havolasi",a_video_hint:"Ixtiyoriy: .webm/.mp4 havolasini qo'ysangiz, emoji/rasm o'rniga aylanib turuvchi animatsiya ko'rsatiladi",
   a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif (o'zbekcha yozing)",a_desc_ru:"Tavsif — Ruscha",a_desc_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_title_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_translating:"Tarjima qilinmoqda...", a_note:"Yetkazish yo'riqnomasi (xaridorga ko'rsatiladi)",a_note_ph:"masalan login-parol formati, yoki faollashtirish qadamlari",a_stock_title:"Zaxira (inventar)",a_stock_count:"Mavjud zaxira",a_stock_unit:"dona",a_stock_add:"Yangi zaxira qo'shish (har biri alohida qatorda)",a_stock_ph:"login1:parol1\nlogin2:parol2\nyoki promokodlar, har biri alohida qatorda",a_stock_addbtn:"Qo'shish",a_stock_clear:"Hammasini tozalash",a_stock_added:"Zaxira qo'shildi",a_stock_cleared:"Zaxira tozalandi",
   a_fulfill:"Yetkazish turi",a_fulfill_normal:"Qo'lda / zaxiradan",a_fulfill_fragstars:"Avto-Stars (Fragment)",a_fulfill_fragpremium:"Avto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — istalgan miqdor (Fragment)",a_fulfill_telegramgift:"Telegram gift (avtomatik)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Sovg'alar menyusi (bosh kartochka)",a_gift_kind_label:"Gift turi",gift_unit:"Telegram sovg'a",gift_message_label:"Sharh (ixtiyoriy)",gift_message_ph:"Masalan: Xaridingiz uchun rahmat!",gift_anon_label:"Anonim yuborish",gift_send_title:"Username kiriting:",gift_self_btn:"O'zimga",gift_username_ph:"Foydalanuvchi @username",gift_processing_title:"Sovg'a yuborilmoqda...",gift_processing_sub:"Iltimos kuting",gift_success_title:"Yuborildi!",gift_close:"Yopish",gift_tab_limited:"Limited",gift_tab_oddiy:"Oddiy",gift_choose_product:"Mahsulotni tanlang",gift_hit_badge:"HIT",
   a_months:"Oy soni",a_stars_amount:"Stars miqdori",a_price_per_star:"1 Star narxi (so'm)",a_min_stars:"Eng kam Stars",a_fulfill_note:"Xaridorning o'z Telegram akkauntiga avtomatik yetkaziladi — qo'lda berish shart emas.",a_fulfill_note_custom:"Xaridor o'zi @username va miqdorni kiritadi — Fragment orqali avtomatik yetkaziladi.",
@@ -828,7 +847,7 @@ ru:{
   a_reviews_edit:"Изменить",a_reviews_edit_title:"Редактировать отзыв",a_reviews_name_label:"Имя клиента",a_reviews_item_label:"Название товара",a_reviews_stars_label:"Оценка (звёзды)",a_reviews_text_label:"Текст отзыва",a_reviews_save:"Сохранить",a_reviews_saved:"Сохранено ✓",
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
-  a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",
+  a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",a_video_label:"Ссылка на анимацию (видео)",a_video_hint:"Необязательно: вставьте ссылку .webm/.mp4 — вместо эмодзи/фото покажется зацикленная анимация",
   a_desc_en:"Описание — Английский",a_desc_uz:"Описание",a_desc_ru:"Описание — Русский",a_desc_autotr:"При сохранении автоматически переводится на русский и английский",a_title_autotr:"При сохранении автоматически переводится на русский и английский",a_translating:"Перевод...", a_note:"Инструкция по выдаче (видна покупателю)",a_note_ph:"например формат логина и пароля, или шаги активации",a_stock_title:"Запас (инвентарь)",a_stock_count:"Доступно на складе",a_stock_unit:"шт",a_stock_add:"Добавить новый запас (по одному в строке)",a_stock_ph:"логин1:пароль1\nлогин2:пароль2\nили промокоды, по одному в строке",a_stock_addbtn:"Добавить",a_stock_clear:"Очистить всё",a_stock_added:"Запас добавлен",a_stock_cleared:"Запас очищен",
   a_fulfill:"Способ выдачи",a_fulfill_normal:"Вручную / со склада",a_fulfill_fragstars:"Авто-Stars (Fragment)",a_fulfill_fragpremium:"Авто-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — любое количество (Fragment)",a_fulfill_telegramgift:"Telegram gift (авто)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Меню Telegram Подарков (карточка-раздел)",a_gift_kind_label:"Тип подарка",gift_unit:"Telegram подарок",gift_message_label:"Комментарий (необязательно)",gift_message_ph:"Например: Спасибо за покупку!",gift_anon_label:"Отправить анонимно",gift_send_title:"Введите username:",gift_self_btn:"Себе",gift_username_ph:"Пользователь @username",gift_processing_title:"Отправка подарка...",gift_processing_sub:"Пожалуйста, подождите",gift_success_title:"Отправлено!",gift_close:"Закрыть",gift_tab_limited:"Limited",gift_tab_oddiy:"Обычные",gift_choose_product:"Выберите товар",gift_hit_badge:"ХИТ",
   a_months:"Кол-во месяцев",a_stars_amount:"Кол-во Stars",a_price_per_star:"Цена за 1 Star (сум)",a_min_stars:"Минимум Stars",a_fulfill_note:"Доставляется автоматически на аккаунт покупателя — ручная выдача не нужна.",a_fulfill_note_custom:"Покупатель сам вводит @username и количество — доставка автоматическая через Fragment.",
@@ -1351,8 +1370,16 @@ var LANG_ORDER=["uz","ru","en"];
 var TABS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"],["extra1","tab_extra1"],["extra2","tab_extra2"]];
 function tileHTML(it,big){
   var st=it.tile||{};
+  var isGift=it&&it.fulfill==="telegram_gift";
+  if(st.video){
+    return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000"><video src="'+esc(st.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
+  }
   if(st.emoji){
-    return '<div class="ptile emoji-only'+(big?" bigtile":"")+'"><div class="emj">'+esc(st.emoji)+'</div></div>';
+    var glow=isGift&&big;
+    return '<div class="ptile emoji-only'+(big?" bigtile":"")+(glow?" giftGlow":"")+'">'
+      +'<div class="emj'+(glow?" giftFloat":"")+'">'+esc(st.emoji)+'</div>'
+      +(glow?'<span class="giftSpark s1"></span><span class="giftSpark s2"></span><span class="giftSpark s3"></span>':"")
+      +'</div>';
   }
   var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
   var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
@@ -3741,6 +3768,7 @@ function openAdminForm(editId){
     price:it?it.price:"", stock:it?it.stock:10,
     img:it?(it.tile&&it.tile.img||""):"",
     emoji:it?(it.tile&&it.tile.emoji||""):"",
+    video:it?(it.tile&&it.tile.video||""):"",
     den:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.en)||""):"",
     duz:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.uz)||""):"",
     dru:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.ru)||""):"",
@@ -3792,6 +3820,8 @@ function openAdminForm(editId){
     +'<div id="ffNote" class="paynote hide"></div>'
     +'<label>Emoji</label><input id="f_emoji" value="'+esc(F.emoji)+'" placeholder="🔥" maxlength="8">'
     +'<div class="minnote">Emoji kiritilsa, kartochkada rasm/fon o\'rniga faqat shu emoji ko\'rsatiladi</div>'
+    +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
+    +'<div class="minnote">'+esc(t("a_video_hint"))+'</div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
     +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="4">'+esc(F.duz)+'</textarea>'
@@ -3814,6 +3844,7 @@ function openAdminForm(editId){
   function readForm(){
     F.title=g("#f_title").value.trim();
     var ew=g("#f_emoji");if(ew)F.emoji=ew.value.trim();
+    var vw=g("#f_video");if(vw)F.video=vw.value.trim();
     F.price=g("#f_price").value;F.stock=g("#f_stock").value;
     F.duz=g("#f_duz").value;
     F.note=g("#f_note").value;
@@ -3828,7 +3859,7 @@ function openAdminForm(editId){
   function preview(){
     readForm();
     var hideStock=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka");
-    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji},
+    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video},
       title:F.title||"…",price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
     var out=fake.stock<=0;
     g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
@@ -3949,7 +3980,7 @@ function openAdminForm(editId){
       if(groupKey&&groupKey!=="__new__")upsertGroupDef(F.kind,groupKey,groupLabel,groupImg);
       var data={
         kind:F.kind,cat:"",price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji},
+        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video||""},
         title:titleObj,
         desc:descObj,
         note:F.note||"",
