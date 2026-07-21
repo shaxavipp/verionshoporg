@@ -139,6 +139,10 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .ptile{height:auto;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;padding:6px;position:relative;overflow:hidden;}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ptile.emoji-only{background:none!important}
+.ptile .emj{font-size:44px;line-height:1;position:relative;z-index:1}
+.groupgrid .ptile .emj{font-size:56px}
+.svcgrid .ptile .emj{font-size:30px}
 .ptile .tl{font-size:13px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
 .ptile .ts{font-size:9px;opacity:.9;position:relative;z-index:1;text-align:center}
 .pbody{padding:5px 7px 6px;display:flex;flex-direction:column;gap:2px;flex:1}
@@ -237,6 +241,28 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .badge.cncl{background:rgba(255,69,58,.14);color:var(--err)}
 .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card2);
   border:1px dashed var(--acc);border-radius:8px;padding:2px 8px;font-size:12px;color:var(--acc2);}
+
+/* professional order / history card (Buyurtmalar & Moliya) */
+.hcard{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:0 16px 12px;
+  padding:14px 15px;box-shadow:0 6px 18px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05)}
+.hc-head{display:flex;align-items:center;gap:11px}
+.hc-thumb{width:46px;height:46px;border-radius:13px;overflow:hidden;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;background:var(--card2);font-size:22px}
+.hc-thumb img{width:100%;height:100%;object-fit:cover}
+.hc-info{flex:1;min-width:0}
+.hc-info .t{font-size:14.5px;font-weight:800;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-info .s{font-size:12px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-amt{font-size:15.5px;font-weight:800;white-space:nowrap;flex:0 0 auto;margin-left:6px}
+.hc-amt.pos{color:var(--ok)}
+.hc-amt.neg{color:var(--txt)}
+.hc-details{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.hc-drow{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;gap:10px}
+.hc-drow .k{color:var(--mut);flex:0 0 auto}
+.hc-drow .v{font-weight:700;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-date{font-size:11.5px;color:var(--mut);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.hc-date .arw{opacity:.6}
+.hc-acts{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+.hc-acts .btn.sm{flex:1}
 .toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px) scale(.9);
   background:rgba(30,32,40,.82);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
   border:1px solid var(--line);color:var(--txt);padding:11px 18px;border-radius:14px;
@@ -577,6 +603,7 @@ en:{
   cancel_order:"Cancel order",cancelled_toast:"Order cancelled",amount_low:"Amount is below the minimum",
   choose_method:"Choose a payment method",custom_pay:"Payment",method_hint:"Select a payment method above to continue",retry_load:"Couldn't load — tap to retry",
   orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Top-ups",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
+  ord_number:"Order number",ord_status:"Status",ord_recipient:"Recipient",ord_method:"Method",ord_created:"Created",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
@@ -653,6 +680,7 @@ uz:{
   cancel_order:"Buyurtmani bekor qilish",cancelled_toast:"Buyurtma bekor qilindi",amount_low:"Summa eng kam miqdordan past",
   choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",method_hint:"Davom etish uchun yuqoridan to'lov usulini tanlang",retry_load:"Yuklanmadi — qayta urinish uchun bosing",
   orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"To'ldirishlar",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
+  ord_number:"Buyurtma raqami",ord_status:"Holat",ord_recipient:"Qabul qiluvchi",ord_method:"Usul",ord_created:"Yaratilgan",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
@@ -729,6 +757,7 @@ ru:{
   cancel_order:"Отменить заказ",cancelled_toast:"Заказ отменён",amount_low:"Сумма меньше минимальной",
   choose_method:"Выберите способ оплаты",custom_pay:"Оплата",method_hint:"Выберите способ оплаты выше, чтобы продолжить",retry_load:"Не удалось загрузить — нажмите, чтобы повторить",
   orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Пополнения",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
+  ord_number:"Номер заказа",ord_status:"Статус",ord_recipient:"Получатель",ord_method:"Способ",ord_created:"Создан",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
@@ -1235,6 +1264,9 @@ var LANG_ORDER=["uz","ru","en"];
 var TABS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"],["extra1","tab_extra1"],["extra2","tab_extra2"]];
 function tileHTML(it,big){
   var st=it.tile||{};
+  if(st.emoji){
+    return '<div class="ptile emoji-only'+(big?" bigtile":"")+'"><div class="emj">'+esc(st.emoji)+'</div></div>';
+  }
   var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
   var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
@@ -1700,7 +1732,8 @@ function openProduct(id){
   var out=it.stock<=0,guest=!tgUser();
   var sh=openSheet(
     tileHTML(it,true)
-    +'<h2>'+esc(loc(it.title))+'</h2><div class="cat">'+esc(it.cat||"")+' · '+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</div>'
+    +'<h2>'+esc(loc(it.title))+'</h2>'
+    +(it.kind==="obuna"?('<div class="cat">'+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</div>'):"")
     +'<div class="desc">'+esc(loc(it.desc))+'</div>'
     +(guest?'<div class="paynote">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>':"")
     +'<button class="btn big" id="buyBtn" '+((out||guest)?"disabled":"")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — '+esc(money(it.price))+'</button>'
@@ -2090,6 +2123,12 @@ console.log("[Verion Shop] build:",APP_BUILD);
 /* ===== orders (from server) ===== */
 var PAY_BADGE={waiting:["pend","st_pending"],checking:["chk","st_checking"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
 var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
+function historyThumbHTML(itemId,fallbackSvg){
+  var it=itemId?byId(itemId):null;
+  if(it&&it.tile&&it.tile.emoji)return '<div class="hc-thumb">'+esc(it.tile.emoji)+'</div>';
+  if(it&&it.tile&&it.tile.img)return '<div class="hc-thumb"><img src="'+esc(it.tile.img)+'" alt="" loading="lazy" onerror="this.parentNode.textContent=\'\'"></div>';
+  return '<div class="hc-thumb" style="color:var(--mut)">'+fallbackSvg+'</div>';
+}
 function ordersHTML(){
   var html='<div class="sect">'+esc(t("orders_title"))+'</div>';
   if(!tgUser())return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
@@ -2110,7 +2149,11 @@ function ordersHTML(){
       var o=ME.orders[i];
       var st=o.status==="done"?"done":(o.status==="cancelled"?"cancelled":"pending");
       if(S.ordFilter!=="all"&&st!==S.ordFilter)continue;
-      rows.push({ts:o.ts,ic:ic("cart",15),title:o.item,id:o.id,oid:o.id,amt:o.price,b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null,status:o.status,reviewed:!!o.reviewed,itemId:o.itemId,link:o.link,quantity:o.quantity,japStatus:o.japStatus,japRemains:o.japRemains});
+      var isNk=String(o.itemId||"").indexOf("nk_")===0;
+      rows.push({ts:o.ts,doneTs:o.doneTs||null,ic:ic(isNk?"trendUp":"cart",18),title:o.item,id:o.id,oid:o.id,amt:o.price,
+        b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null,status:o.status,reviewed:!!o.reviewed,
+        itemId:o.itemId,link:o.link,quantity:o.quantity,japStatus:o.japStatus,japRemains:o.japRemains,
+        giftRecipient:o.giftRecipient||null,isNk:isNk});
     }
     rows.sort(function(a,b){return b.ts-a.ts;});
     if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
@@ -2123,36 +2166,44 @@ function ordersHTML(){
           ?'<span class="ordreviewed">'+ic("check",12)+' '+esc(t("review_done"))+'</span>'
           :'<button class="btn sm gray" data-leavereview="'+esc(x.oid)+'" data-revtitle="'+esc(x.title)+'">'+esc(t("review_btn"))+'</button>';
       }
-      html+='<div class="card ordcard"><div class="ordrow"><div class="l">'+x.ic+' '+esc(x.title)
-        +'<div class="d"><span class="code">'+esc(x.id)+'</span> · '+esc(fmtDate(x.ts))+'</div>'
-        +'<div class="d">'+esc(money(x.amt))+'</div></div>'
-        +'<span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>';
-      if(String(x.itemId||"").indexOf("nk_")===0){
-        html+='<div class="d" style="padding:0 14px 10px;font-size:11.5px;line-height:1.6">'
-          +esc(t("nakrutka_qty_label"))+': '+esc(x.quantity)+' · '+esc(t("nakrutka_link_label"))+': '+esc(x.link||"—")
-          +(x.japStatus?'<br>'+esc(nkStatusLabel(x.japStatus))+(x.japRemains!=null?' ('+esc(t("nakrutka_remains"))+': '+esc(x.japRemains)+')':''):'')
-          +'</div>';
-        if(x.status!=="done"&&x.status!=="cancelled")
-          acts+='<button class="btn sm gray" data-nkrefresh="'+esc(x.oid)+'">'+ic("history",13)+' '+esc(t("nakrutka_refresh_btn"))+'</button>';
-      }
-      html+=(acts?'<div class="ordacts">'+acts+'</div>':'')
+      if(x.isNk&&x.status!=="done"&&x.status!=="cancelled")
+        acts+='<button class="btn sm gray" data-nkrefresh="'+esc(x.oid)+'">'+ic("history",13)+' '+esc(t("nakrutka_refresh_btn"))+'</button>';
+      var sub=x.isNk?(esc(t("nakrutka_qty_label"))+": "+esc(x.quantity)):(x.giftRecipient?"@"+esc(x.giftRecipient):"");
+      html+='<div class="hcard">'
+        +'<div class="hc-head">'+historyThumbHTML(x.itemId,x.ic)
+        +'<div class="hc-info"><div class="t">'+esc(x.title)+'</div>'+(sub?'<div class="s">'+sub+'</div>':'')+'</div>'
+        +'<div class="hc-amt neg">-'+esc(money(x.amt))+'</div></div>'
+        +'<div class="hc-details">'
+        +'<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+esc(x.id)+'</span></div>'
+        +(x.isNk?'<div class="hc-drow"><span class="k">'+esc(t("nakrutka_link_label"))+'</span><span class="v">'+esc(x.link||"—")+'</span></div>':'')
+        +(x.isNk&&x.japStatus?'<div class="hc-drow"><span class="k">'+esc(t("nakrutka_remains"))+'</span><span class="v">'+esc(nkStatusLabel(x.japStatus))+(x.japRemains!=null?' ('+esc(x.japRemains)+')':'')+'</span></div>':'')
+        +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>'
+        +'<div class="hc-date">'+ic("history",11)+' '+esc(fmtDate(x.ts))
+        +(x.doneTs&&x.doneTs!==x.ts?' <span class="arw">→</span> '+esc(fmtDate(x.doneTs)):'')+'</div>'
+        +'</div>'
+        +(acts?'<div class="hc-acts">'+acts+'</div>':'')
         +'</div>';
     }
   } else {
     var frows=[];
     for(var j=0;j<ME.payments.length;j++){
       var p=ME.payments[j];
-      if(p.type==="manual"){frows.push({ts:p.ts,ic:ic("gear",15),title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"]});continue;}
-      frows.push({ts:p.ts,ic:ic("card",15),title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting});
+      if(p.type==="manual"){frows.push({ts:p.ts,ic:ic("gear",18),title:"Admin",id:p.id,amt:p.amount,b:["ok","st_done"],method:null});continue;}
+      frows.push({ts:p.ts,ic:ic("card",18),title:t("bal_topup"),id:p.id,amt:p.pay,b:PAY_BADGE[p.status]||PAY_BADGE.waiting,method:p.method||null});
     }
     frows.sort(function(a,b){return b.ts-a.ts;});
     if(!frows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
     for(var rr=0;rr<frows.length;rr++){
       var y=frows[rr];
-      html+='<div class="card"><div class="row"><div class="l">'+y.ic+' '+esc(y.title)
-        +'<div class="d"><span class="code">'+esc(y.id)+'</span> · '+esc(fmtDate(y.ts))+'</div>'
-        +'<div class="d">'+esc(money(y.amt))+'</div></div>'
-        +'<div class="r"><span class="badge '+y.b[0]+'">'+esc(t(y.b[1]))+'</span></div></div></div>';
+      html+='<div class="hcard">'
+        +'<div class="hc-head"><div class="hc-thumb" style="color:var(--mut)">'+y.ic+'</div>'
+        +'<div class="hc-info"><div class="t">'+esc(y.title)+'</div>'+(y.method?'<div class="s">'+esc(y.method)+'</div>':'')+'</div>'
+        +'<div class="hc-amt pos">+'+esc(money(y.amt))+'</div></div>'
+        +'<div class="hc-details">'
+        +'<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+esc(y.id)+'</span></div>'
+        +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+y.b[0]+'">'+esc(t(y.b[1]))+'</span></div>'
+        +'<div class="hc-date">'+ic("history",11)+' '+esc(fmtDate(y.ts))+'</div>'
+        +'</div></div>';
     }
   }
   return html;
@@ -3579,6 +3630,7 @@ function openAdminForm(editId){
     title:it?((it.title&&(typeof it.title==="string"?it.title:it.title.uz))||""):"", cat:it?(it.cat||""):"",
     price:it?it.price:"", stock:it?it.stock:10,
     img:it?(it.tile&&it.tile.img||""):"",
+    emoji:it?(it.tile&&it.tile.emoji||""):"",
     den:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.en)||""):"",
     duz:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.uz)||""):"",
     dru:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.ru)||""):"",
@@ -3605,8 +3657,7 @@ function openAdminForm(editId){
     +'<div class="seg" id="kindSeg">'+kindBtn("obuna","tab_obuna")+kindBtn("games","tab_games")+kindBtn("telegram","tab_telegram")+kindBtn("extra1","tab_extra1")+kindBtn("extra2","tab_extra2")+'</div>'
     +'<label>'+esc(t("a_title"))+'</label><input id="f_title" value="'+esc(F.title)+'">'
     +'<div class="minnote">'+ic("wand",12)+' '+esc(t("a_title_autotr"))+'</div>'
-    +'<div class="arow"><div><label>'+esc(t("a_category"))+'</label><input id="f_cat" value="'+esc(F.cat)+'"></div>'
-    +'<div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
+    +'<div class="arow"><div><label>'+esc(t("a_price"))+'</label><input id="f_price" type="number" inputmode="numeric" value="'+esc(F.price)+'"></div>'
     +'<div id="stockWrap"><label>'+esc(t("a_stock"))+'</label><input id="f_stock" type="number" inputmode="numeric" value="'+esc(F.stock)+'"></div></div>'
     +'<label>'+esc(t("a_fulfill"))+'</label>'
     +'<div class="seg" id="fulfillSeg">'
@@ -3629,6 +3680,8 @@ function openAdminForm(editId){
     +'<div class="seg" id="ffGiftKindSeg"><button data-gk="oddiy" class="'+(F.giftKind==="oddiy"?"on":"")+'">'+esc(t("gift_tab_oddiy"))+'</button><button data-gk="limited" class="'+(F.giftKind==="limited"?"on":"")+'">'+esc(t("gift_tab_limited"))+'</button></div>'
     +'</div>'
     +'<div id="ffNote" class="paynote hide"></div>'
+    +'<label>Emoji</label><input id="f_emoji" value="'+esc(F.emoji)+'" placeholder="🔥" maxlength="8">'
+    +'<div class="minnote">Emoji kiritilsa, kartochkada rasm/fon o\'rniga faqat shu emoji ko\'rsatiladi</div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
     +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="4">'+esc(F.duz)+'</textarea>'
@@ -3649,7 +3702,8 @@ function openAdminForm(editId){
   var sh=openSheet(html);
   function g(sel){return sh.querySelector(sel);}
   function readForm(){
-    F.title=g("#f_title").value.trim();F.cat=g("#f_cat").value.trim();
+    F.title=g("#f_title").value.trim();
+    var ew=g("#f_emoji");if(ew)F.emoji=ew.value.trim();
     F.price=g("#f_price").value;F.stock=g("#f_stock").value;
     F.duz=g("#f_duz").value;
     F.note=g("#f_note").value;
@@ -3664,14 +3718,14 @@ function openAdminForm(editId){
   function preview(){
     readForm();
     var hideStock=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka");
-    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
-      title:F.title||"…",cat:F.cat,price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
+    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji},
+      title:F.title||"…",price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
     var out=fake.stock<=0;
     g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
-      +'<div class="pbody"><div class="nm">'+esc(fake.title)+'</div><div class="ct">'+esc(fake.cat)+'</div>'
-      +'<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span>'
-      +(hideStock?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span>')
-      +'</div></div></div>';
+      +'<div class="pbody"><div class="nm">'+esc(fake.title)+'</div>'
+      +(F.kind==="obuna"?('<div class="prow"><span class="prc">'+esc(money(fake.price))+'</span>'
+      +'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):fake.stock+" "+esc(t("in_stock")))+'</span></div>'):"")
+      +'</div></div>';
   }
   function syncStockVisibility(){
     var hide=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka")||F.fulfillType!=="normal";
@@ -3784,8 +3838,8 @@ function openAdminForm(editId){
       }
       if(groupKey&&groupKey!=="__new__")upsertGroupDef(F.kind,groupKey,groupLabel,groupImg);
       var data={
-        kind:F.kind,cat:F.cat,price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img},
+        kind:F.kind,cat:"",price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
+        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji},
         title:titleObj,
         desc:descObj,
         note:F.note||"",
