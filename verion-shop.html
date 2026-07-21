@@ -122,7 +122,7 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 /* product grid */
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
 .groupgrid{grid-template-columns:1fr 1fr;gap:12px}
-.groupgrid .ptile{height:172px}
+.groupgrid .ptile{height:auto;aspect-ratio:1/1}
 .groupgrid.grid .pbody{padding:12px 12px 14px}
 .groupgrid.grid .pbody .nm{font-size:16px;-webkit-line-clamp:2}
 .groupgrid.grid .pbody .ct{font-size:13px}
@@ -136,7 +136,7 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
   backdrop-filter:blur(6px) saturate(150%)}
 .favbtn:active{opacity:.6}
 .favbtn.on{color:#ff4d6d}
-.ptile{height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+.ptile{height:auto;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;padding:6px;position:relative;overflow:hidden;}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .ptile .tl{font-size:13px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
@@ -1250,9 +1250,10 @@ function productGridHTML(items){
     html+='<button class="pcard" data-open="'+esc(it.id)+'">'
       +(tgUser()?('<span class="favbtn'+(isFav?" on":"")+'" data-fav="'+esc(it.id)+'">'+ic(isFav?"heartFill":"heart",15)+'</span>'):"")
       +tileHTML(it)
-      +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div><div class="ct">'+esc(it.cat||"")+'</div>'
-      +'<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
-      +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):realStk+" "+esc(t("in_stock")))+'</span>')+'</div></div></button>';
+      +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div>'
+      +(it.kind==="obuna"?('<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
+      +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):realStk+" "+esc(t("in_stock")))+'</span>')+'</div>'):"")
+      +'</div></button>';
   }
   return html+'</div>';
 }
