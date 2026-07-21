@@ -423,6 +423,21 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .rule{display:flex;gap:7px;font-size:11.5px;padding:3px 0;color:var(--mut)}
 .rule.bad{color:#ff8f88}
 .timer{font-family:ui-monospace,Menlo,monospace;font-size:15px;font-weight:800;color:var(--warn)}
+.timerbarwrap{margin-top:8px;height:6px;border-radius:4px;background:var(--card2);overflow:hidden}
+.timerbar{height:100%;background:var(--grad);border-radius:4px;transition:width 1s linear}
+.paysteps{margin:0 16px 9px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:4px 13px;box-shadow:0 5px 16px rgba(0,0,0,.18);}
+.stepitem{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+.stepitem:last-child{border-bottom:none}
+.stepnum{width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px}
+.stepitem .st{font-size:12.5px;color:var(--mut2);line-height:1.4}
+.warncard{margin:0 16px 9px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.warncard button,.warncard>div{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:12px;background:var(--card2);
+  border:1px solid var(--line);text-align:left;font-size:11.5px;font-weight:700}
+.warncard .wic{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.bankpill{display:inline-block;background:rgba(255,255,255,.22);color:#fff;font-size:10px;font-weight:800;
+  padding:3px 8px;border-radius:6px;margin-right:6px;text-transform:uppercase;letter-spacing:.03em}
 
 /* profile */
 .avatar{width:48px;height:48px;border-radius:50%;background:var(--grad);display:flex;align-items:center;
@@ -711,6 +726,10 @@ en:{
   pw_exact:"Transfer EXACTLY this amount",pw_timer_hint:"Pay before the time runs out",pw_rule1:"Do not change the amount even by 1 sum",
   pw_rule2:"Pay within 10 minutes",pw_rule3:"Only to the card shown",pw_rule4:"Card transfer only (no ATM cash-in)",
   pw_paid:"I have paid",pw_expired:"Time is up — create a new payment",pw_abort:"Cancel payment",
+  pw_steps_title:"Top-up steps",pw_step1:"Choose payment method and amount",pw_step2:"Transfer EXACTLY this amount to the shown card",
+  pw_step3:"Payment is checked automatically (1–2 min)",pw_step4:"Your balance is updated",
+  pw_warn_title:"Attention! Only send the shown amount",pw_support_247:"24/7 support",pw_card_active:"Card is valid for",
+  pw_copy_full:"Copy",
   pw_expired_title:"Time's up",pw_expired_body:"If you haven't transferred the money, nothing was charged — just create a new payment. If you already paid, contact support with a screenshot of the receipt.",pw_expired_new:"Create new payment",
   continue_btn:"Continue",st_done:"Completed",st_deliver:"Being delivered",
   topup_created:"Now transfer the exact amount",srv_off:"Couldn't connect — check your internet and try again",
@@ -788,6 +807,10 @@ uz:{
   pw_exact:"AYNAN shu summani o'tkazing",pw_timer_hint:"Shu vaqt tugaguncha to'lovni amalga oshiring",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
   pw_rule2:"10 daqiqa ichida to'lang",pw_rule3:"Faqat ko'rsatilgan kartaga",pw_rule4:"Faqat kartadan kartaga (bankomat orqali emas)",
   pw_paid:"To'lov qildim",pw_expired:"Vaqt tugadi — yangi to'lov yarating",pw_abort:"To'lovni bekor qilish",
+  pw_steps_title:"To'ldirish bosqichlari",pw_step1:"To'lov usuli va summani tanlang",pw_step2:"Ko'rsatilgan kartaga AYNAN shu summani o'tkazing (1 so'mga ham o'zgartirmang)",
+  pw_step3:"To'lov avtomatik tekshiriladi (1–2 daqiqa)",pw_step4:"Balansingiz yangilanadi",
+  pw_warn_title:"Diqqat! Faqat ko'rsatilgan summani yuboring",pw_support_247:"24/7 yordam",pw_card_active:"Karta amal qiladi",
+  pw_copy_full:"Nusxa olish",
   pw_expired_title:"Vaqt tugadi",pw_expired_body:"Agar hali pul o'tkazmagan bo'lsangiz — hech narsa yechilmadi, shunchaki yangi to'lov yarating. Agar allaqachon to'lagan bo'lsangiz — chek skrinshoti bilan yordamga yozing.",pw_expired_new:"Yangi to'lov yaratish",
   continue_btn:"Davom etish",st_done:"Bajarildi",st_deliver:"Yetkazilmoqda",
   topup_created:"Endi aynan shu summani o'tkazing",srv_off:"Ulanib bo'lmadi — internetni tekshirib, qayta urinib ko'ring",
@@ -865,6 +888,10 @@ ru:{
   pw_exact:"Переведите РОВНО эту сумму",pw_timer_hint:"Оплатите до истечения времени",pw_rule1:"Не меняйте сумму даже на 1 сум",
   pw_rule2:"Оплатите в течение 10 минут",pw_rule3:"Только на указанную карту",pw_rule4:"Только с карты на карту (не через банкомат)",
   pw_paid:"Я оплатил",pw_expired:"Время вышло — создайте новый платёж",pw_abort:"Отменить платёж",
+  pw_steps_title:"Шаги пополнения",pw_step1:"Выберите способ оплаты и сумму",pw_step2:"Переведите РОВНО эту сумму на указанную карту (не меняйте ни на 1 сум)",
+  pw_step3:"Платёж проверяется автоматически (1–2 мин)",pw_step4:"Ваш баланс обновится",
+  pw_warn_title:"Внимание! Отправляйте только указанную сумму",pw_support_247:"Поддержка 24/7",pw_card_active:"Карта активна",
+  pw_copy_full:"Копировать",
   pw_expired_title:"Время вышло",pw_expired_body:"Если вы ещё не перевели деньги — ничего не списано, просто создайте новый платёж. Если уже оплатили — напишите в поддержку со скриншотом чека.",pw_expired_new:"Создать новый платёж",
   continue_btn:"Продолжить",st_done:"Выполнено",st_deliver:"Доставляется",
   topup_created:"Теперь переведите ровно эту сумму",srv_off:"Не удалось подключиться — проверьте интернет и попробуйте снова",
@@ -2137,17 +2164,22 @@ function payHTML(){
   if(ap){
     var card=null;
     for(var k=0;k<CARDS.length;k++)if(CARDS[k].id===ap.method)card=CARDS[k];
+    html+='<div class="warncard">'
+      +'<div><span class="wic" style="background:linear-gradient(135deg,#4a3200,#6b4a00);color:#ffd60a">'+ic("warning",15)+'</span>'+esc(t("pw_warn_title"))+'</div>'
+      +'<button data-support="1"><span class="wic ric-green">'+ic("headset",15)+'</span>'+esc(t("pw_support_247"))+'</button></div>';
     html+='<div class="paybox">'
       +'<label style="margin-top:0">'+esc(t("pw_exact"))+'</label>'
       +'<div class="refline"><span class="payhuge">'+esc(money(ap.pay))+'</span>'
-      +'<button class="btn sm gray" data-copy="'+ap.pay+'">'+esc(t("copy"))+'</button></div>'
-      +'<div class="refline"><span>'+ic("clock",15)+'</span><span class="timer" id="pwTimer">--:--</span></div>'
-      +'<div class="minnote" style="text-align:center;margin-top:4px">'+esc(t("pw_timer_hint"))+'</div>'
+      +'<button class="btn sm gray" data-copy="'+ap.pay+'">'+ic("clipboard",13)+'</button></div>'
+      +'<div class="refline"><span style="display:flex;align-items:center;gap:6px">'+ic("clock",15)+' '+esc(t("pw_card_active"))+'</span><span class="timer" id="pwTimer">--:--</span></div>'
+      +'<div class="timerbarwrap"><div class="timerbar" id="pwTimerBar" style="width:100%"></div></div>'
       +'</div>';
     if(card){
       html+='<div class="cardbox"><div class="crow"><div><div class="cnum">'+esc(card.number)+'</div>'
-        +'<div class="chold">'+esc(card.holder)+'</div></div>'
-        +'<button class="cpy" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+esc(t("copy"))+'</button></div></div>';
+        +'<div class="chold"><span class="bankpill">'+esc(card.name)+'</span>'+esc(card.holder)+'</div></div>'
+        +'<button class="cpy" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+ic("clipboard",14)+'</button></div>'
+        +'<div style="height:10px"></div>'
+        +'<button class="cpy" style="width:100%;justify-content:center;display:flex;align-items:center;gap:7px" data-copy="'+esc(card.number.replace(/\s/g,""))+'">'+ic("clipboard",13)+' '+esc(t("pw_copy_full"))+'</button></div>';
     }
     html+='<div class="paybox">'
       +'<div class="rule">'+ic("check",13)+' '+esc(t("pw_rule1"))+'</div>'
@@ -2181,7 +2213,15 @@ function payHTML(){
       +'<span class="ic">'+ic(c.icon,23)+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
   }
   var noMethod=!S.topup.method;
-  html+='</div><div style="height:12px"></div>'
+  html+='</div></div>';
+  html+='<div class="sect" style="margin:14px 16px 6px;font-size:11px">'+esc(t("pw_steps_title"))+'</div>'
+    +'<div class="paysteps">'
+    +'<div class="stepitem"><span class="stepnum">1</span><span class="st">'+esc(t("pw_step1"))+'</span></div>'
+    +'<div class="stepitem"><span class="stepnum">2</span><span class="st">'+esc(t("pw_step2"))+'</span></div>'
+    +'<div class="stepitem"><span class="stepnum">3</span><span class="st">'+esc(t("pw_step3"))+'</span></div>'
+    +'<div class="stepitem"><span class="stepnum">4</span><span class="st">'+esc(t("pw_step4"))+'</span></div>'
+    +'</div>';
+  html+='<div class="paybox">'
     +'<button class="btn big'+(noMethod?" dis":"")+'" id="topupGo"'+(noMethod?" disabled":"")+'>'+(S.topup.method==="bank"?esc(t("contact_support_btn")):esc(t("continue_btn")))+'</button>'
     +(noMethod?'<div class="minnote" style="text-align:center;margin-top:8px">'+esc(t("method_hint"))+'</div>':'')
     +(TOPUP_ERR&&!noMethod?'<div class="paynote" style="color:var(--err)">'+ic("warning",13)+' '+esc(t("srv_off"))+'</div>':'')
@@ -2240,6 +2280,14 @@ function tickTimer(){
     return;
   }
   if(el)el.textContent=("0"+Math.floor(left/60)).slice(-2)+":"+("0"+(left%60)).slice(-2);
+  var bar=document.getElementById("pwTimerBar");
+  if(bar){
+    // To'lov oynasi umumiy davomiyligi (server TOPUP_TTL bilan bir xil — 10 daqiqa) —
+    // progress-bar shu nisbatda kamayib boradi (vaqt tugashiga qancha qolganini vizual ko'rsatadi).
+    var totalSec=10*60;
+    var pct=Math.max(0,Math.min(100,(left/totalSec)*100));
+    bar.style.width=pct+"%";
+  }
 }
 function showExpiredSheet(){
   var sh=openSheet(
@@ -2292,7 +2340,7 @@ function ordersHTML(){
       var st=o.status==="done"?"done":(o.status==="cancelled"?"cancelled":"pending");
       if(S.ordFilter!=="all"&&st!==S.ordFilter)continue;
       var isNk=String(o.itemId||"").indexOf("nk_")===0;
-      rows.push({ts:o.ts,doneTs:o.doneTs||null,ic:ic(isNk?"trendUp":"cart",18),title:o.item,id:o.id,oid:o.id,amt:o.price,
+      rows.push({ts:o.ts,doneTs:o.doneTs||null,ic:ic(isNk?"trendUp":"cart",18),title:o.item,id:o.id,seq:o.seq||null,oid:o.id,amt:o.price,
         b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null,status:o.status,reviewed:!!o.reviewed,
         itemId:o.itemId,link:o.link,quantity:o.quantity,japStatus:o.japStatus,japRemains:o.japRemains,
         giftRecipient:o.giftRecipient||null,isNk:isNk});
@@ -2316,7 +2364,7 @@ function ordersHTML(){
         +'<div class="hc-info"><div class="t">'+esc(x.title)+'</div>'+(sub?'<div class="s">'+sub+'</div>':'')+'</div>'
         +'<div class="hc-amt neg">-'+esc(money(x.amt))+'</div></div>'
         +'<div class="hc-details">'
-        +'<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+esc(x.id)+'</span></div>'
+        +'<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+(x.seq?('#'+x.seq):esc(x.id))+'</span></div>'
         +(x.isNk?'<div class="hc-drow"><span class="k">'+esc(t("nakrutka_link_label"))+'</span><span class="v">'+esc(x.link||"—")+'</span></div>':'')
         +(x.isNk&&x.japStatus?'<div class="hc-drow"><span class="k">'+esc(t("nakrutka_remains"))+'</span><span class="v">'+esc(nkStatusLabel(x.japStatus))+(x.japRemains!=null?' ('+esc(x.japRemains)+')':'')+'</span></div>':'')
         +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>'
@@ -2342,7 +2390,6 @@ function ordersHTML(){
         +'<div class="hc-info"><div class="t">'+esc(y.title)+'</div>'+(y.method?'<div class="s">'+esc(y.method)+'</div>':'')+'</div>'
         +'<div class="hc-amt pos">+'+esc(money(y.amt))+'</div></div>'
         +'<div class="hc-details">'
-        +'<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+esc(y.id)+'</span></div>'
         +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+y.b[0]+'">'+esc(t(y.b[1]))+'</span></div>'
         +'<div class="hc-date">'+ic("history",11)+' '+esc(fmtDate(y.ts))+'</div>'
         +'</div></div>';
