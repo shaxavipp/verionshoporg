@@ -34,6 +34,9 @@ try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.co
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
 const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
 const CATMETA_FILE = path.join(DATA_DIR, "catmeta.json");
+// To'lov usullari / profil tugmalari kabi UI elementlariga biriktirilgan premium
+// (Telegram) emoji — { "pay:card": {kind, dataUrl|lottieJson, id}, "profile:invite": {...}, ... }
+const UIEMOJI_FILE = path.join(DATA_DIR, "uiemoji.json");
 // Nakrutka (SMM) guruhlari uchun admin biriktirgan rasmlar — { "tg::Members": {img:"data:..."}, ... }
 const NK_CATMETA_FILE = path.join(DATA_DIR, "nkcatmeta.json");
 const DB_FILE = path.join(DATA_DIR, "db.json");
@@ -554,6 +557,10 @@ function catalogArr() {
 function catMetaObj() {
   try { return JSON.parse(fs.readFileSync(CATMETA_FILE, "utf8")); } catch (e) { return {}; }
 }
+// To'lov usuli ikonkalari / profil tugmalari uchun admin biriktirgan premium emoji'lar.
+function uiEmojiObj() {
+  try { return JSON.parse(fs.readFileSync(UIEMOJI_FILE, "utf8")); } catch (e) { return {}; }
+}
 // Nakrutka guruh rasmlari — kalit "app::xom_kategoriya" (masalan "tg::Telegram - Members"),
 // til-mustaqil (JAP'dan doim inglizcha keladi), shu sababli barcha tillar uchun bir xil ishlaydi.
 function nkCatMetaObj() {
@@ -604,6 +611,23 @@ const server = http.createServer((req, res) => {
     return readBody(req, res, obj => {
       if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
       fs.writeFile(CATMETA_FILE, JSON.stringify(obj), err =>
+        err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
+    });
+  }
+
+  // To'lov usullari (karta/bank ikonkalari) va profil bo'limi tugmalariga admin
+  // biriktirgan premium emoji'lar ro'yxati — hammaga (mijozlarga ham) ochiq o'qish uchun.
+  if (url === "/api/ui-emoji" && m === "GET") {
+    return sendCached(req, res, uiEmojiObj());
+  }
+  // Butun obyekt bir yo'la almashtiriladi (frontend joriy holatni GET orqali olib,
+  // kerakli slot(lar)ni o'zgartirib, to'liq obyektni qayta yuboradi — category-meta bilan bir xil naqsh).
+  if (url === "/api/admin/ui-emoji" && m === "POST") {
+    const u = auth(req);
+    if (!isAdm(u)) return send(res, 403, { error: "not admin" });
+    return readBody(req, res, obj => {
+      if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
+      fs.writeFile(UIEMOJI_FILE, JSON.stringify(obj), err =>
         err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
     });
   }

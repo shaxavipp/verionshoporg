@@ -1526,6 +1526,7 @@ function tileIconHTML(tile,fallback){
   tile=tile||{};
   if(tile.video)return '<video src="'+esc(tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></video>';
   if(tile.lottie)return lottieTileHTML(tile.lottie);
+  if(tile.img)return '<img src="'+esc(tile.img)+'" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">';
   if(tile.emoji)return esc(tile.emoji);
   return fallback;
 }
@@ -2328,8 +2329,9 @@ function payHTML(){
   // Video qo'llanma + texnik yordam paneli FAQAT shu birinchi qadamda ko'rsatiladi.
   if(!S.topup.method){
     html+='<div class="sect">'+esc(t("pay_title"))+'</div>';
-    html+='<div class="paybox balmini"><div class="lbl">'+esc(t("balance_caps"))+'</div>'
-      +'<div class="val">'+balHTML()+'</div></div>';
+    html+='<div class="paybox amountcard"><label style="margin-top:0;position:relative;z-index:1">'+esc(t("balance_caps"))+'</label>'
+      +'<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px;position:relative;z-index:1">'
+      +'<span class="payhuge">'+balHTML()+'</span></div></div>';
     html+='<div class="sect" style="margin:0 16px 6px;font-size:11px">'+esc(t("pay_method_label"))+'</div>';
     html+='<div class="paybox"><div class="methods">';
     for(var i=0;i<CARDS.length;i++){
@@ -2337,7 +2339,7 @@ function payHTML(){
       var cName=c.id==="intl"?t("intl_name"):c.name;
       var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
       html+='<button class="method'+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
-        +'<span class="ic">'+ic(c.icon,23)+'</span><span><span class="mn">'+esc(cName)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
+        +'<span class="ic">'+slotEmojiHTML("pay:"+c.id,ic(c.icon,23))+'</span><span><span class="mn">'+esc(cName)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
     }
     html+='</div>'
       +'<div class="refline" style="background:none;border:none;padding:8px 0 0;margin-top:2px">'
@@ -2472,25 +2474,27 @@ function openHowToTopupSheet(){
   var b=sh.querySelector("#httOk");
   if(b)b.addEventListener("click",closeSheet);
 }
+var ORD_TXT_COLOR={ok:"var(--ok)",cncl:"var(--err)",chk:"var(--warn)"};
 function showOrderDetailSheet(oid){
   var o=null;for(var k=0;k<ME.orders.length;k++)if(ME.orders[k].id===oid)o=ME.orders[k];
   if(!o)return;
   var isNk=String(o.itemId||"").indexOf("nk_")===0;
   var prod=isNk?null:byId(o.itemId);
   var kind=prod?prod.kind:null;
-  var st=o.status==="done"?"done":(o.status==="cancelled"?"cancelled":"pending");
   var b=ORD_BADGE[o.status]||ORD_BADGE.pending;
-  var rows='<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+(o.seq?('#'+o.seq):esc(o.id))+'</span></div>';
-  if(o.uid)rows+='<div class="hc-drow"><span class="k">'+esc(t(kind==="games"?"ord_player_id":"ord_user_id"))+'</span><span class="v">'+esc(o.uid)+'</span></div>';
-  if(isNk)rows+='<div class="hc-drow"><span class="k">'+esc(t("nakrutka_link_label"))+'</span><span class="v">'+esc(o.link||"—")+'</span></div>';
-  if(isNk&&o.japStatus)rows+='<div class="hc-drow"><span class="k">'+esc(t("nakrutka_remains"))+'</span><span class="v">'+esc(nkStatusLabel(o.japStatus))+(o.japRemains!=null?' ('+esc(o.japRemains)+')':'')+'</span></div>';
-  else if(o.giftRecipient)rows+='<div class="hc-drow"><span class="k">'+esc(t("ord_recipient"))+'</span><span class="v">@'+esc(o.giftRecipient)+'</span></div>';
-  rows+='<div class="hc-drow"><span class="k">'+esc(t("ord_price"))+'</span><span class="v">'+esc(money(o.price))+'</span></div>'
-    +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+b[0]+'">'+esc(t(b[1]))+'</span></div>'
-    +'<div class="hc-drow"><span class="k">'+esc(t("ord_created"))+'</span><span class="v">'+esc(fmtDate(o.ts))+'</span></div>';
+  var rows='<div class="row"><div class="l">'+esc(t("ord_number"))+'</div><div class="r">'+(o.seq?('#'+o.seq):esc(o.id))+'</div></div>';
+  if(o.uid)rows+='<div class="row"><div class="l">'+esc(t(kind==="games"?"ord_player_id":"ord_user_id"))+'</div><div class="r">'+esc(o.uid)+'</div></div>';
+  if(isNk)rows+='<div class="row"><div class="l">'+esc(t("nakrutka_link_label"))+'</div><div class="r">'+esc(o.link||"—")+'</div></div>';
+  if(isNk&&o.japStatus)rows+='<div class="row"><div class="l">'+esc(t("nakrutka_remains"))+'</div><div class="r">'+esc(nkStatusLabel(o.japStatus))+(o.japRemains!=null?' ('+esc(o.japRemains)+')':'')+'</div></div>';
+  else if(o.giftRecipient)rows+='<div class="row"><div class="l">'+esc(t("ord_recipient"))+'</div><div class="r">@'+esc(o.giftRecipient)+'</div></div>';
+  rows+='<div class="row"><div class="l">'+esc(t("ord_price"))+'</div><div class="r">'+esc(money(o.price))+'</div></div>'
+    +'<div class="row"><div class="l">'+esc(t("ord_status"))+'</div><div class="r" style="color:'+(ORD_TXT_COLOR[b[0]]||"inherit")+';font-weight:800">'+esc(t(b[1]))+'</div></div>'
+    +'<div class="row" style="border-bottom:none"><div class="l">'+esc(t("ord_created"))+'</div><div class="r">'+esc(fmtDate(o.ts))+'</div></div>';
   var sh=openSheet(
-    '<h2>'+ic(isNk?"trendUp":"cart",19)+' '+esc(o.item)+'</h2>'
-    +'<div class="cardbox" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;padding:14px">'+rows+'</div>'
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'
+    +'<h2 style="margin:0;display:flex;align-items:center;gap:8px">'+ic(isNk?"trendUp":"cart",19)+' '+esc(o.item)+'</h2>'
+    +'<span class="badge '+b[0]+'">'+esc(t(b[1]))+'</span></div>'
+    +'<div class="paybox" style="margin:14px 0 0">'+rows+'</div>'
     +'<div style="height:10px"></div>'
     +'<button class="btn big" id="ordDetailClose">'+esc(t("gift_close"))+'</button>'
   );
@@ -3016,10 +3020,11 @@ function themeSegHTML(){
     +'<button class="'+(S.theme==="light"?"on":"")+'" data-settheme="light">'+ic("sun",13)+'</button>'
     +'</div>';
 }
-function svcRow(attr,iconName,color,title,sub,rightHTML){
+function svcRow(attr,iconName,color,title,sub,rightHTML,slotKey){
+  var iconHTML=slotKey?slotEmojiHTML(slotKey,ic(iconName,17)):ic(iconName,17);
   return '<div class="row" '+attr+'>'
     +'<div style="display:flex;align-items:center;gap:11px;flex:1;min-width:0">'
-    +'<div class="ibadge" style="background:'+color+'38;color:'+color+'">'+ic(iconName,17)+'</div>'
+    +'<div class="ibadge" style="background:'+color+'38;color:'+color+'">'+iconHTML+'</div>'
     +'<div class="l" style="min-width:0">'+esc(title)+'<div class="d">'+esc(sub)+'</div></div></div>'
     +(rightHTML!==undefined?rightHTML:ic("arrowRight",14))
     +'</div>';
@@ -3041,20 +3046,20 @@ function profileHTML(){
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     +'<div class="card">'
-    +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")))
-    +svcRow('data-opennakrutka="1"',"trendUp","#2ecc71",t("nakrutka_title"),t("nakrutka_sub"))
-    +svcRow('data-openref="1"',"gift","#9b59b6",t("invite_title"),refSub)
-    +svcRow('data-viewalllb="1"',"trophy","#f1c40f",t("leaderboard_row"),t("leaderboard_row_sub"))
-    +svcRow('data-support="1"',"headset","#1abc9c",t("support"),t("support_sub")+' · @'+SUPPORT_USERNAME)
+    +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")),undefined,"profile:favs")
+    +svcRow('data-opennakrutka="1"',"trendUp","#2ecc71",t("nakrutka_title"),t("nakrutka_sub"),undefined,"profile:nakrutka")
+    +svcRow('data-openref="1"',"gift","#9b59b6",t("invite_title"),refSub,undefined,"profile:invite")
+    +svcRow('data-viewalllb="1"',"trophy","#f1c40f",t("leaderboard_row"),t("leaderboard_row_sub"),undefined,"profile:leaderboard")
+    +svcRow('data-support="1"',"headset","#1abc9c",t("support"),t("support_sub")+' · @'+SUPPORT_USERNAME,undefined,"profile:support")
     +'</div>'
     +'<div class="card">'
-    +svcRow('',"globe","#2980b9",t("language"),t("lang_tap_hint"),langSegHTML())
-    +svcRow('',(S.theme==="light"?"sun":"moon"),"#f39c12",t("theme_title"),(S.theme==="light"?t("theme_switch_to_dark"):t("theme_switch_to_light")),themeSegHTML())
-    +svcRow('',"bolt","#8e6fef",t("reduce_motion"),t("reduce_motion_sub"),'<button class="swbtn'+(S.reduceMotion?" on":"")+'" id="reduceMotionBtn"><i></i></button>')
+    +svcRow('',"globe","#2980b9",t("language"),t("lang_tap_hint"),langSegHTML(),"profile:lang")
+    +svcRow('',(S.theme==="light"?"sun":"moon"),"#f39c12",t("theme_title"),(S.theme==="light"?t("theme_switch_to_dark"):t("theme_switch_to_light")),themeSegHTML(),"profile:theme")
+    +svcRow('',"bolt","#8e6fef",t("reduce_motion"),t("reduce_motion_sub"),'<button class="swbtn'+(S.reduceMotion?" on":"")+'" id="reduceMotionBtn"><i></i></button>',"profile:motion")
     +'</div>';
   if(isAdmin()){
     html+='<div class="card">'
-      +svcRow('id="adminBtnRow"',"tools","#7f8c8d",t("a_panel"),t("a_panel_sub"))
+      +svcRow('id="adminBtnRow"',"tools","#7f8c8d",t("a_panel"),t("a_panel_sub"),undefined,"profile:admin")
       +'</div>';
   }
   html+='<div style="height:24px"></div>';
@@ -3087,6 +3092,8 @@ function openAdmin(){
     +'<button class="btn gray" id="aReferralBtn">'+ic("gift",15)+' '+esc(t("a_referral_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aUiEmojiBtn">'+ic("star",15)+' Premium emoji (to\'lov / profil)</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aNakrutkaBtn">'+ic("trendUp",15)+' '+esc(t("a_nakrutka_title"))+'</button>'
     +'<div style="height:10px"></div>'
@@ -3127,6 +3134,7 @@ function openAdmin(){
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
   sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
+  sh.querySelector("#aUiEmojiBtn").addEventListener("click",openAdminUiEmoji);
   sh.querySelector("#aNakrutkaBtn").addEventListener("click",openAdminNakrutka);
   var agb=sh.querySelector("#aGroupsBtn");if(agb)agb.addEventListener("click",openAdminGroups);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
@@ -3169,6 +3177,98 @@ function openAdminReferral(){
       shareText:sh.querySelector("#refShareText").value||""
     }).then(function(){haptic("ok");toast(t("a_saved"));btn.disabled=false;loadReferral();})
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
+}
+/* ===== admin: to'lov usullari va profil tugmalariga premium (Telegram) emoji biriktirish =====
+   Har bir slot (masalan "pay:humo" yoki "profile:invite") o'z premium emoji ID'siga ega bo'lishi
+   mumkin — /api/admin/premium-emoji orqali Telegramdan olib, /api/admin/ui-emoji orqali saqlanadi
+   (butun obyekt category-meta bilan bir xil naqshda qayta yuboriladi). */
+function openAdminUiEmoji(){
+  function safeId(k){return k.replace(/[^a-zA-Z0-9]/g,"_");}
+  var PAY_SLOTS=CARDS.map(function(c){return {key:"pay:"+c.id,label:c.name};});
+  var PROFILE_SLOTS=[
+    {key:"profile:favs",label:"Sevimlilar"},
+    {key:"profile:nakrutka",label:"Nakrutka buyurtmalari"},
+    {key:"profile:invite",label:"Do'stni taklif qilish"},
+    {key:"profile:leaderboard",label:"Reyting"},
+    {key:"profile:support",label:"Yordam"},
+    {key:"profile:lang",label:"Til"},
+    {key:"profile:theme",label:"Mavzu (tungi/kunduzgi)"},
+    {key:"profile:motion",label:"Animatsiyani kamaytirish"},
+    {key:"profile:admin",label:"Admin panel"}
+  ];
+  var ALL=PAY_SLOTS.concat(PROFILE_SLOTS);
+  function rowHTML(s){
+    var cur=UiEmoji[s.key];
+    var id=safeId(s.key);
+    return '<div class="card" style="padding:10px 12px;margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+      +'<div class="ibadge" id="uiprev_'+id+'" style="background:var(--card2)">'+(cur?slotEmojiHTML(s.key,"—"):"—")+'</div>'
+      +'<div style="font-weight:700;font-size:13.5px;flex:1">'+esc(s.label)+'</div>'
+      +'<button class="btn sm red'+(cur?"":" hide")+'" id="uiclear_'+id+'" type="button">Tozalash</button>'
+      +'</div>'
+      +'<div class="arow"><input id="uiid_'+id+'" style="flex:1" placeholder="5433838489083409183" inputmode="numeric">'
+      +'<button class="btn sm" id="uifetch_'+id+'" type="button">Yuklab olish</button></div>'
+      +'<div class="minnote" id="uistatus_'+id+'">'+(cur?"✅ O'rnatilgan":"")+'</div>'
+      +'</div>';
+  }
+  var html='<h2>Premium emoji (to\'lov / profil)</h2>'
+    +'<div class="paynote" style="margin-top:0">Telegram Desktop\'da istalgan premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — har bir to\'lov usuli va profil tugmasi uchun alohida-alohida emoji o\'rnatishingiz mumkin.</div>'
+    +'<div class="sect" style="margin:14px 0 6px">To\'lov usullari</div>'
+    +PAY_SLOTS.map(rowHTML).join("")
+    +'<div class="sect" style="margin:14px 0 6px">Profil tugmalari</div>'
+    +PROFILE_SLOTS.map(rowHTML).join("")
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html);
+  ALL.forEach(function(s){
+    var id=safeId(s.key);
+    var idw=sh.querySelector("#uiid_"+id);
+    var statusEl=sh.querySelector("#uistatus_"+id);
+    var prevEl=sh.querySelector("#uiprev_"+id);
+    var fetchBtn=sh.querySelector("#uifetch_"+id);
+    var clearBtn=sh.querySelector("#uiclear_"+id);
+    if(fetchBtn)fetchBtn.addEventListener("click",function(){
+      var eid=idw?idw.value.trim():"";
+      if(!/^\d+$/.test(eid)){toast("ID noto'g'ri — faqat raqamlardan iborat bo'lishi kerak");return;}
+      fetchBtn.disabled=true;fetchBtn.textContent="Yuklanmoqda...";
+      if(statusEl)statusEl.textContent="Telegramdan olinmoqda...";
+      api("/api/admin/premium-emoji?id="+encodeURIComponent(eid),"GET").then(function(r){
+        var val={id:eid};
+        if(r.kind==="video"){val.kind="video";val.dataUrl=r.dataUrl;}
+        else if(r.kind==="lottie"){val.kind="lottie";val.lottieJson=r.lottieJson;}
+        else{val.kind="image";val.dataUrl=r.dataUrl;}
+        var out=Object.assign({},UiEmoji);
+        out[s.key]=val;
+        return api("/api/admin/ui-emoji","POST",out).then(function(){
+          UiEmoji=out;
+          if(prevEl)prevEl.innerHTML=slotEmojiHTML(s.key,"—");
+          if(statusEl)statusEl.textContent="✅ Saqlandi";
+          if(clearBtn)clearBtn.classList.remove("hide");
+          toast("Premium emoji saqlandi");haptic("ok");
+          fetchBtn.disabled=false;fetchBtn.textContent="Yuklab olish";
+        });
+      }).catch(function(e){
+        var code=e&&e.resp&&e.resp.error;
+        var msg=code==="emoji_not_found"?"Bunday ID topilmadi — ID to'g'riligini tekshiring"
+          :code==="tgs_decode_failed"?"Animatsiya faylini o'qib bo'lmadi, qayta urinib ko'ring"
+          :code==="not admin"?"Ruxsat yo'q":"Xatolik yuz berdi, qayta urinib ko'ring";
+        if(statusEl)statusEl.textContent="⚠️ "+msg;
+        toast(msg,true);
+        fetchBtn.disabled=false;fetchBtn.textContent="Yuklab olish";
+      });
+    });
+    if(clearBtn)clearBtn.addEventListener("click",function(){
+      var out=Object.assign({},UiEmoji);
+      delete out[s.key];
+      clearBtn.disabled=true;
+      api("/api/admin/ui-emoji","POST",out).then(function(){
+        UiEmoji=out;
+        if(prevEl)prevEl.innerHTML="—";
+        if(statusEl)statusEl.textContent="";
+        clearBtn.classList.add("hide");clearBtn.disabled=false;
+        toast("Tozalandi");haptic("ok");
+      }).catch(function(){toast(t("srv_off"),true);clearBtn.disabled=false;});
+    });
   });
 }
 /* ===== admin: Nakrutka (SMM/JAP) — balans, kurs/ustama, buyurtmalar, xizmatlar ===== */
@@ -4559,10 +4659,40 @@ function loadCatMeta(){
     }).catch(function(){});
   }catch(e){}
 }
+/* To'lov usullari (karta/bank ikonkalari) va profil bo'limi tugmalariga admin tomonidan
+   biriktirilgan premium (Telegram) emoji'lar — { "pay:humo":{kind,dataUrl|lottieJson}, "profile:invite":{...}, ... } */
+var UiEmoji={};
+var _uiEmojiSig="";
+function loadUiEmoji(){
+  try{
+    if(typeof fetch!=="function")return;
+    fetch("/api/ui-emoji").then(function(r){return r.ok?r.json():null;})
+    .then(function(j){
+      if(!j)return;
+      var sig=JSON.stringify(j);
+      if(sig===_uiEmojiSig)return;
+      _uiEmojiSig=sig;
+      UiEmoji=j;
+      if(S.lang)render();
+    }).catch(function(){});
+  }catch(e){}
+}
+// Berilgan slot uchun admin premium emoji biriktirgan bo'lsa — shuni (video/lottie/rasm sifatida)
+// qaytaradi, aks holda standart (SVG ikonka yoki oddiy emoji) fallback ko'rsatiladi.
+function slotEmojiHTML(slotKey,fallbackHTML){
+  var d=UiEmoji&&UiEmoji[slotKey];
+  if(!d)return fallbackHTML;
+  return tileIconHTML({
+    video:d.kind==="video"?d.dataUrl:"",
+    lottie:d.kind==="lottie"?d.lottieJson:"",
+    img:d.kind==="image"?d.dataUrl:""
+  },fallbackHTML);
+}
 function boot(){
   render();
   loadServerCatalog();
   loadCatMeta();
+  loadUiEmoji();
   loadMe();
   resolveStartParamPay();
   loadStockCounts();
