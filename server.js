@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const zlib = require("zlib");
+const sdb = require("./db.js");
 
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN || "";
@@ -32,19 +33,32 @@ const SMS_LOG_MAX = 200;
 let DATA_DIR = process.env.DATA_DIR || "/data";
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.constants.W_OK); }
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
-const CATALOG_FILE = path.join(DATA_DIR, "catalog.json");
-const CATMETA_FILE = path.join(DATA_DIR, "catmeta.json");
-// To'lov usullari / profil tugmalari kabi UI elementlariga biriktirilgan premium
-// (Telegram) emoji — { "pay:card": {kind, dataUrl|lottieJson, id}, "profile:invite": {...}, ... }
-const UIEMOJI_FILE = path.join(DATA_DIR, "uiemoji.json");
-// Nakrutka (SMM) guruhlari uchun admin biriktirgan rasmlar — { "tg::Members": {img:"data:..."}, ... }
-const NK_CATMETA_FILE = path.join(DATA_DIR, "nkcatmeta.json");
-const DB_FILE = path.join(DATA_DIR, "db.json");
+// Premium (Telegram) emoji fayllari (video/rasm/lottie-json) endi base64 sifatida katalogga
+// emas, shu papkaga diskka saqlanadi — katalog faqat qisqa URL saqlaydi, ilova tezroq yuklanadi.
+const PREMIUM_EMOJI_DIR = path.join(DATA_DIR, "premium-emoji");
+try { fs.mkdirSync(PREMIUM_EMOJI_DIR, { recursive: true }); } catch (e) {}
+// Har kunlik avtomatik zaxira nusxalar (.tar.gz) shu yerga yoziladi va admin botga yuboriladi.
+const BACKUP_DIR = path.join(DATA_DIR, "backups");
+try { fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch (e) {}
+const BACKUP_KEEP = 7; // oxirgi N kunlik zaxira saqlanadi, qolgani avtomatik o'chiriladi
 
-/* ---------- tiny db ---------- */
+/* ---------- SQLite (data/shop.db) — TZ band 1 ----------
+   Barcha doimiy ma'lumot (mahsulotlar, buyurtmalar, to'lovlar, foydalanuvchilar,
+   sozlamalar, stock, sharhlar) endi tranzaksion SQLite jadvallarida saqlanadi — oddiy
+   JSON fayllarni to'liq qayta yozish (va shu bilan bog'liq ma'lumot yo'qolish xavfi)
+   endi yo'q. Eski data/*.json fayllar topilsa, birinchi ishga tushishda avtomatik
+   (bir martalik) SQLite'ga ko'chiriladi — xuddi shu narsani `node migrate.js` orqali
+   qo'lda ham bajarish mumkin. */
+const SQLITE_DB = sdb.openDb(DATA_DIR);
+sdb.migrateFromJsonIfNeeded(SQLITE_DB, DATA_DIR);
+
+/* ---------- tiny db ----------
+   Ilova hamon xotiradagi bitta DB obyekti bilan ishlaydi (tezlik va mavjud kodga
+   ishlov berish qulayligi uchun) — save() endi shu obyektni SQLite jadvallariga
+   BEGIN/COMMIT tranzaksiyasi ichida to'liq yozadi. */
 let DB = { users: {}, payments: [], orders: [], smsLog: [], stock: {}, reviews: [], orderSeq: 0,
-  settings: { referral: { enabled: true, percent: 1, shareText: "" } } };
-try { DB = Object.assign(DB, JSON.parse(fs.readFileSync(DB_FILE, "utf8"))); } catch (e) {}
+  notifState: {}, settings: { referral: { enabled: true, percent: 1, shareText: "" } } };
+try { DB = Object.assign(DB, sdb.loadState(SQLITE_DB)); } catch (e) { console.log("[db] loadState xato: " + e.message); }
 // Ketma-ket buyurtma raqami (#56, #57, #58...) — birinchi ishga tushishda mavjud
 // buyurtmalar sonidan davom etadi, keyin har doim shundan +1 bo'lib boradi (hech qachon orqaga qaytmaydi).
 if (!DB.orderSeq) DB.orderSeq = DB.orders.length;
@@ -59,11 +73,13 @@ if (DB.settings.referral.shareText === undefined) DB.settings.referral.shareText
 // yashirilgan xizmatlar ro'yxati ham shu yerda saqlanadi.
 if (!DB.settings.nakrutka) DB.settings.nakrutka = { usdRate: null, markupPercent: 0, hiddenServices: [] };
 if (!Array.isArray(DB.settings.nakrutka.hiddenServices)) DB.settings.nakrutka.hiddenServices = [];
+if (!DB.notifState) DB.notifState = {}; // TZ band 6: sevimli mahsulot stock/narx bildirishnomalari holati
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
 function save() { clearTimeout(saveT); saveT = setTimeout(() => {
-  fs.writeFile(DB_FILE, JSON.stringify(DB), () => {}); }, 100); }
+  try { sdb.saveState(SQLITE_DB, DB); } catch (e) { console.log("[db] saveState xato: " + e.message); }
+}, 100); }
 function user(u) {
   const k = String(u.id);
   if (!DB.users[k]) DB.users[k] = { balance: 0, ts: Date.now() };
@@ -256,6 +272,68 @@ function notifyOrder(o) {
     tgSend(o.uid, text);
   } catch (e) {}
 }
+
+/* ---------- TZ band 6: sevimli mahsulotlar uchun push-bildirishnoma ----------
+   Foydalanuvchi "sevimlilar"ga qo'shgan mahsulot (a) stock 0dan 1+ ga o'tsa yoki
+   (b) narxi pasaysa — botdan shaxsiy xabar boradi. Bir xil o'zgarish uchun bitta
+   foydalanuvchiga faqat bitta xabar (DB.notifState orqali kuzatiladi, keyingi
+   o'zgarish sodir bo'lganda yana yuboriladi). Foydalanuvchi profilida
+   "Bildirishnomalar"ni o'chirsa (acc.notifEnabled === false), unga umuman yuborilmaydi. */
+function itemTitleOf(it) {
+  if (!it) return "";
+  return typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || it.id || "");
+}
+function usersFavoriting(itemId) {
+  return Object.keys(DB.users).filter(k => {
+    const acc = DB.users[k];
+    return acc && Array.isArray(acc.favorites) && acc.favorites.indexOf(itemId) !== -1 && acc.notifEnabled !== false;
+  });
+}
+function notifyFavoriteEvent(itemId, kind, it, extra) {
+  const title = itemTitleOf(it) || itemId;
+  const link = miniAppLink("");
+  const text = kind === "restock"
+    ? "🔔 Sevimlilaringizdagi \"" + title + "\" mahsuloti qayta sotuvga chiqdi!"
+    : "🔻 Sevimlilaringizdagi \"" + title + "\" mahsuloti narxi tushdi: " +
+      (Number(extra) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
+  const uids = usersFavoriting(itemId);
+  for (const k of uids) tgSendButton(Number(k), text, "Ilovani ochish", link || undefined);
+}
+// Mahsulotning joriy (haqiqiy) zaxira soni: agar DB.stock orqali aniq inventar
+// yuritilayotgan bo'lsa o'shani, aks holda katalogdagi "stock" maydonini oladi.
+function effectiveStockOf(it) {
+  if (!it) return 0;
+  return DB.stock.hasOwnProperty(it.id) ? (DB.stock[it.id] || []).length : (Number(it.stock) || 0);
+}
+// Bitta mahsulot uchun stock/narx holatini joriy qiymat bilan solishtirib, kerak
+// bo'lsa bildirishnoma yuboradi va DB.notifState'ni yangilaydi.
+function checkFavoriteItemState(it) {
+  if (!it || !it.id) return;
+  const st = DB.notifState[it.id] || (DB.notifState[it.id] = {});
+  const newStock = effectiveStockOf(it);
+  const newPrice = Number(it.price) || 0;
+  if (newStock > 0 && st.lastStockPositive === false) notifyFavoriteEvent(it.id, "restock", it);
+  st.lastStockPositive = newStock > 0;
+  if (st.lastPrice !== undefined && newPrice > 0 && newPrice < st.lastPrice) notifyFavoriteEvent(it.id, "price", it, newPrice);
+  st.lastPrice = newPrice;
+}
+// Admin butun katalogni qayta saqlaganda (POST /api/catalog) — eski va yangi
+// ro'yxatlarni solishtirib, narx/stock o'zgargan har bir mahsulot uchun tekshiradi.
+function checkFavoriteChanges(prevArr, newArr) {
+  try {
+    for (const it of (newArr || [])) checkFavoriteItemState(it);
+    save();
+  } catch (e) {}
+}
+// DB.stock to'g'ridan-to'g'ri o'zgarganda (admin/stock/add va h.k.) — mos katalog
+// yozuvini topib, xuddi shu tekshiruvni bajaradi.
+function checkFavoriteStock(itemId) {
+  try {
+    const cat = catalogArr() || [];
+    const it = cat.find(x => x.id === itemId);
+    if (it) checkFavoriteItemState(it);
+  } catch (e) {}
+}
 // fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni istalgan @username'ga avtomatik sotib olish.
 // ---------- Premium (custom) Telegram emoji — Bot API orqali fayl olib berish ----------
 // Admin panelidan custom_emoji_id kiritilganda shu emojining video (webm) faylini
@@ -282,6 +360,20 @@ function tgFileDownload(filePath) {
       r.on("end", () => resolve(Buffer.concat(chunks)));
     }).on("error", reject);
   });
+}
+// Bir xil custom_emoji_id uchun fayl allaqachon diskda bormi — bo'lsa, Telegramga
+// murojaat qilmasdan mos kind+URL qaytaramiz (video/image/lottie tartibida tekshiriladi).
+function findCachedPremiumEmoji(emojiId) {
+  const candidates = [
+    { ext: ".webm", kind: "video" },
+    { ext: ".webp", kind: "image" },
+    { ext: ".json", kind: "lottie" }
+  ];
+  for (const c of candidates) {
+    const file = emojiId + c.ext;
+    if (fs.existsSync(path.join(PREMIUM_EMOJI_DIR, file))) return { kind: c.kind, url: "/premium-emoji/" + file };
+  }
+  return null;
 }
 
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
@@ -494,24 +586,35 @@ function logSms(entry) {
 }
 
 /* ---------- telegram auth ---------- */
+// initData imzosi to'g'ri chiqishi mumkin, lekin AUTH_DATE juda eski bo'lsa (masalan kimdir
+// eski initData qiymatini ushlab qolib qayta-qayta yuborsa — "replay attack"), so'rov endi
+// rad etiladi. Sabab (reason) req._authReason'ga yoziladi, shunda chaqiruvchi joy oddiy
+// "auth" (imzo yo'q/noto'g'ri) bilan "expired" (imzo to'g'ri, lekin muddati o'tgan) ni
+// bir-biridan ajratib, frontendga to'g'ri xabar qaytara oladi.
+const INITDATA_MAX_AGE = 24 * 60 * 60; // 24 soat
 function checkInitData(initData) {
   try {
-    if (!initData || !BOT_TOKEN) return null;
+    if (!initData || !BOT_TOKEN) return { reason: "auth", user: null };
     const params = new URLSearchParams(initData);
     const hash = params.get("hash");
-    if (!hash) return null;
+    if (!hash) return { reason: "auth", user: null };
     params.delete("hash");
     const dcs = [...params.entries()].map(([k, v]) => k + "=" + v).sort().join("\n");
     const secret = crypto.createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-    if (crypto.createHmac("sha256", secret).update(dcs).digest("hex") !== hash) return null;
+    if (crypto.createHmac("sha256", secret).update(dcs).digest("hex") !== hash) return { reason: "auth", user: null };
     const authDate = Number(params.get("auth_date") || 0);
-    if (!authDate || (Date.now() / 1000 - authDate) > 259200) return null;
+    if (!authDate) return { reason: "auth", user: null };
+    if ((Date.now() / 1000 - authDate) > INITDATA_MAX_AGE) return { reason: "expired", user: null };
     const u = JSON.parse(params.get("user") || "null");
     if (u) u._startParam = params.get("start_param") || "";
-    return u;
-  } catch (e) { return null; }
+    return { reason: "ok", user: u };
+  } catch (e) { return { reason: "auth", user: null }; }
 }
-function auth(req) { return checkInitData(req.headers["x-init-data"] || ""); }
+function auth(req) {
+  const r = checkInitData(req.headers["x-init-data"] || "");
+  req._authReason = r.reason;
+  return r.user;
+}
 function isAdm(u) { return !!u && ADMIN_IDS.indexOf(u.id) !== -1; }
 
 function send(res, code, obj, type) {
@@ -550,21 +653,21 @@ function readBody(req, res, cb) {
   });
 }
 function catalogArr() {
-  try { return JSON.parse(fs.readFileSync(CATALOG_FILE, "utf8")); } catch (e) { return null; }
+  try { return sdb.loadCatalog(SQLITE_DB); } catch (e) { return null; }
 }
 // Kategoriya kartochkalari (Obuna/Promokod/Telegram/O'yinlar) uchun admin belgilagan
 // nom va rasm — { obuna: {label:{uz,ru,en}, img:"data:..."}, telegram: {...}, ... }
 function catMetaObj() {
-  try { return JSON.parse(fs.readFileSync(CATMETA_FILE, "utf8")); } catch (e) { return {}; }
+  try { return sdb.kvGet(SQLITE_DB, "catmeta", {}); } catch (e) { return {}; }
 }
 // To'lov usuli ikonkalari / profil tugmalari uchun admin biriktirgan premium emoji'lar.
 function uiEmojiObj() {
-  try { return JSON.parse(fs.readFileSync(UIEMOJI_FILE, "utf8")); } catch (e) { return {}; }
+  try { return sdb.kvGet(SQLITE_DB, "uiemoji", {}); } catch (e) { return {}; }
 }
 // Nakrutka guruh rasmlari — kalit "app::xom_kategoriya" (masalan "tg::Telegram - Members"),
 // til-mustaqil (JAP'dan doim inglizcha keladi), shu sababli barcha tillar uchun bir xil ishlaydi.
 function nkCatMetaObj() {
-  try { return JSON.parse(fs.readFileSync(NK_CATMETA_FILE, "utf8")); } catch (e) { return {}; }
+  try { return sdb.kvGet(SQLITE_DB, "nkcatmeta", {}); } catch (e) { return {}; }
 }
 function myView(uid) {
   expireOld();
@@ -574,6 +677,7 @@ function myView(uid) {
   return {
     balance: acc.balance,
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
+    notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
     payments: DB.payments.filter(mine).slice(-50).reverse(),
     orders: DB.orders.filter(mine).slice(-50).reverse()
       .map(o => Object.assign({}, o, { reviewed: reviewedIds.has(o.id) }))
@@ -597,8 +701,12 @@ const server = http.createServer((req, res) => {
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
     return readBody(req, res, arr => {
       if (!Array.isArray(arr) || !arr.length) return send(res, 400, { error: "invalid json" });
-      fs.writeFile(CATALOG_FILE, JSON.stringify(arr), err =>
-        err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true, items: arr.length }));
+      const prevArr = catalogArr() || [];
+      try {
+        sdb.saveCatalog(SQLITE_DB, arr);
+        checkFavoriteChanges(prevArr, arr); // TZ band 6: narx tushishi / qayta sotuvga chiqishi haqida xabar
+        send(res, 200, { ok: true, items: arr.length });
+      } catch (e) { send(res, 500, { error: "write failed" }); }
     });
   }
 
@@ -610,8 +718,8 @@ const server = http.createServer((req, res) => {
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
     return readBody(req, res, obj => {
       if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
-      fs.writeFile(CATMETA_FILE, JSON.stringify(obj), err =>
-        err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
+      try { sdb.kvSet(SQLITE_DB, "catmeta", obj); send(res, 200, { ok: true }); }
+      catch (e) { send(res, 500, { error: "write failed" }); }
     });
   }
 
@@ -627,8 +735,8 @@ const server = http.createServer((req, res) => {
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
     return readBody(req, res, obj => {
       if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
-      fs.writeFile(UIEMOJI_FILE, JSON.stringify(obj), err =>
-        err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
+      try { sdb.kvSet(SQLITE_DB, "uiemoji", obj); send(res, 200, { ok: true }); }
+      catch (e) { send(res, 500, { error: "write failed" }); }
     });
   }
 
@@ -637,14 +745,19 @@ const server = http.createServer((req, res) => {
   //  - video (webm, animatsion)
   //  - statik (webp, oddiy rasm sifatida ko'rsatiladi)
   //  - eski Lottie (.tgs, gzip qilingan JSON animatsiya) — bu fayl serverda gunzip
-  //    qilinib, xom JSON holida qaytariladi; brauzerda lottie-web kutubxonasi
-  //    orqali (qo'shimcha video kodlashsiz) to'g'ridan-to'g'ri render qilinadi.
+  //    qilinib, xom JSON holida diskka (.json) saqlanadi; brauzerda lottie-web kutubxonasi
+  //    orqali (URL'dan o'zi fetch qilib) render qilinadi.
+  // Fayl base64 sifatida javobda QAYTARILMAYDI — diskka saqlanadi, javobda faqat qisqa URL
+  // beriladi (katalog hajmi shishib ketmasligi uchun). Bir xil ID qayta so'ralsa, fayl
+  // allaqachon diskda bo'lsa, Telegramga umuman murojaat qilinmaydi (tezroq javob).
   if (url === "/api/admin/premium-emoji" && m === "GET") {
     const u = auth(req);
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
-    if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
     const emojiId = (q.get("id") || "").trim();
     if (!/^\d+$/.test(emojiId)) return send(res, 400, { error: "invalid_id" });
+    const cached = findCachedPremiumEmoji(emojiId);
+    if (cached) return send(res, 200, { ok: true, kind: cached.kind, url: cached.url, cached: true });
+    if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
     tgApiGet("getCustomEmojiStickers", { custom_emoji_ids: JSON.stringify([emojiId]) })
       .then(j => {
         if (!j.ok || !j.result || !j.result.length) { send(res, 404, { error: "emoji_not_found" }); return null; }
@@ -654,20 +767,43 @@ const server = http.createServer((req, res) => {
           if (!fj.ok || !fj.result || !fj.result.file_path) { send(res, 502, { error: "file_lookup_failed" }); return; }
           return tgFileDownload(fj.result.file_path).then(buf => {
             if (isLottie) {
-              // .tgs = gzip qilingan Lottie JSON — shuni ochib, xom JSON matnini qaytaramiz
+              // .tgs = gzip qilingan Lottie JSON — shuni ochib, xom JSON matnini diskka yozamiz
               return zlib.gunzip(buf, (err, out) => {
                 if (err) return send(res, 500, { error: "tgs_decode_failed" });
-                send(res, 200, { ok: true, kind: "lottie", lottieJson: out.toString("utf8") });
+                const file = emojiId + ".json";
+                fs.writeFile(path.join(PREMIUM_EMOJI_DIR, file), out, err2 => {
+                  if (err2) return send(res, 500, { error: "write failed" });
+                  send(res, 200, { ok: true, kind: "lottie", url: "/premium-emoji/" + file });
+                });
               });
             }
             const kind = sticker.is_video ? "video" : "image";
-            const mime = sticker.is_video ? "video/webm" : "image/webp";
-            send(res, 200, { ok: true, kind, dataUrl: "data:" + mime + ";base64," + buf.toString("base64") });
+            const ext = sticker.is_video ? ".webm" : ".webp";
+            const file = emojiId + ext;
+            fs.writeFile(path.join(PREMIUM_EMOJI_DIR, file), buf, err2 => {
+              if (err2) return send(res, 500, { error: "write failed" });
+              send(res, 200, { ok: true, kind, url: "/premium-emoji/" + file });
+            });
           });
         });
       })
       .catch(e => send(res, 500, { error: e.message }));
     return;
+  }
+  // Diskdagi premium emoji fayllarini to'g'ridan-to'g'ri uzatadi. Fayl nomi ID asosida
+  // qat'iy shakllangani va o'zgarmasligi sababli (bir xil ID = bir xil fayl, hech qachon
+  // qayta yozilmaydi) — bir yillik "immutable" kesh sarlavhasi xavfsiz.
+  if (url.indexOf("/premium-emoji/") === 0 && m === "GET") {
+    const file = url.slice("/premium-emoji/".length);
+    if (!/^[a-zA-Z0-9_-]+\.(webm|webp|json)$/.test(file)) return send(res, 400, { error: "bad file" });
+    const full = path.join(PREMIUM_EMOJI_DIR, file);
+    return fs.readFile(full, (err, buf) => {
+      if (err) return send(res, 404, { error: "not found" });
+      const ext = path.extname(file);
+      const mime = ext === ".webm" ? "video/webm" : ext === ".webp" ? "image/webp" : "application/json; charset=utf-8";
+      res.writeHead(200, { "Content-Type": mime, "Cache-Control": "public, max-age=31536000, immutable" });
+      res.end(buf);
+    });
   }
 
   /* ----- user endpoints (need valid Telegram signature) ----- */
@@ -678,7 +814,7 @@ const server = http.createServer((req, res) => {
   }
   if (url === "/api/me" && m === "GET") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     const isNew = !DB.users[String(u.id)];
     const acc = user(u);
     if (isNew && u._startParam && /^ref_\d+$/.test(u._startParam)) {
@@ -694,7 +830,7 @@ const server = http.createServer((req, res) => {
   // Telegram'ning vaqtinchalik photo_url havolasi keyinchalik ishlamay qolsa ham muammo bo'lmaydi.
   if (url === "/api/avatar" && m === "GET") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     if (!u.photo_url) return send(res, 404, { error: "no_photo" });
     try {
       https.get(u.photo_url, r => {
@@ -714,7 +850,7 @@ const server = http.createServer((req, res) => {
   /* ===== Referal dasturi ===== */
   if (url === "/api/referral" && m === "GET") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     const settings = DB.settings.referral || {};
     const invitedKeys = Object.keys(DB.users).filter(k => DB.users[k].referredBy === u.id);
     const friends = invitedKeys
@@ -738,7 +874,7 @@ const server = http.createServer((req, res) => {
   // qo'shiladi — frontendga tayyor (ustama bilan) narx va joriy kurs birga yuboriladi.
   if (url === "/api/nakrutka/services" && m === "GET") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
     getJapServices()
       .then(list => {
@@ -758,7 +894,7 @@ const server = http.createServer((req, res) => {
   // balans yetarli bo'lsagina JAP'ga haqiqiy buyurtma yuboriladi, shundan keyingina balansdan yechiladi.
   if (url === "/api/nakrutka/buy" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
     return readBody(req, res, b => {
       const serviceId = Number(b.service);
@@ -793,7 +929,7 @@ const server = http.createServer((req, res) => {
   // "Completed" bo'lsa — referal bonusi beriladi; "Canceled/Refunded" bo'lsa — pul balansga qaytariladi (bir marta).
   if (url === "/api/nakrutka/order-status" && m === "GET") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     const o = DB.orders.find(x => x.id === q.get("id") && x.uid === u.id);
     if (!o || !o.japOrderId) return send(res, 404, { error: "no_order" });
     japCall({ action: "status", order: o.japOrderId }).then(j => {
@@ -809,7 +945,7 @@ const server = http.createServer((req, res) => {
   /* ===== Sevimlilar (wishlist) ===== */
   if (url === "/api/favorite" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const acc = user(u);
       if (!Array.isArray(acc.favorites)) acc.favorites = [];
@@ -822,11 +958,23 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  // TZ band 6: foydalanuvchi profilidagi "Bildirishnomalar" yoqish/o'chirish tugmasi.
+  if (url === "/api/notif-settings" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    return readBody(req, res, b => {
+      const acc = user(u);
+      acc.notifEnabled = b.enabled !== false;
+      save();
+      send(res, 200, { ok: true, notifEnabled: acc.notifEnabled });
+    });
+  }
+
 
   // Xarid "done" bo'lgan buyurtmaga mijoz 1 marta sharh qoldirishi mumkin.
   if (url === "/api/review" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const stars = Math.max(1, Math.min(5, Math.round(Number(b.stars) || 0)));
       const text = String(b.text || "").trim().slice(0, 200);
@@ -885,7 +1033,7 @@ const server = http.createServer((req, res) => {
 
   if (url === "/api/topup" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const amount = Math.round(Number(b.amount) || 0);
       const method = String(b.method || "");
@@ -922,7 +1070,7 @@ const server = http.createServer((req, res) => {
 
   if (url === "/api/paid" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       expireOld();
       const p = DB.payments.find(x => x.id === b.id && x.uid === u.id);
@@ -939,7 +1087,7 @@ const server = http.createServer((req, res) => {
   // Endi shu chaqiruv bilan yozuv darhol "bekor qilindi" statusiga o'tkaziladi.
   if (url === "/api/topup-cancel" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       expireOld();
       const p = DB.payments.find(x => x.id === b.id && x.uid === u.id);
@@ -951,7 +1099,7 @@ const server = http.createServer((req, res) => {
 
   if (url === "/api/fragment/check-user" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const uname = String(b.username || "").trim().replace(/^@/, "");
       if (!uname) return send(res, 400, { error: "username" });
@@ -964,7 +1112,7 @@ const server = http.createServer((req, res) => {
   }
   if (url === "/api/buy-stars-custom" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const cat = catalogArr();
       if (!cat) return send(res, 409, { error: "catalog not published" });
@@ -997,7 +1145,7 @@ const server = http.createServer((req, res) => {
   }
   if (url === "/api/buy" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const cat = catalogArr();
       if (!cat) return send(res, 409, { error: "catalog not published" });
@@ -1055,7 +1203,7 @@ const server = http.createServer((req, res) => {
   }
   if (url === "/api/buy-gift" && m === "POST") {
     const u = auth(req);
-    if (!u) return send(res, 401, { error: "auth" });
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const cat = catalogArr();
       if (!cat) return send(res, 409, { error: "catalog not published" });
@@ -1186,6 +1334,7 @@ const server = http.createServer((req, res) => {
         if (!DB.stock[itemId]) DB.stock[itemId] = [];
         DB.stock[itemId] = DB.stock[itemId].concat(lines);
         save();
+        checkFavoriteStock(itemId); // TZ band 6: 0dan 1+ ga o'tsa sevimli belgilaganlarga xabar
         return send(res, 200, { ok: true, count: DB.stock[itemId].length });
       });
     }
@@ -1197,6 +1346,7 @@ const server = http.createServer((req, res) => {
           return send(res, 404, { error: "not found" });
         DB.stock[itemId].splice(idx, 1);
         save();
+        checkFavoriteStock(itemId);
         return send(res, 200, { ok: true, count: DB.stock[itemId].length });
       });
     }
@@ -1205,6 +1355,7 @@ const server = http.createServer((req, res) => {
         const itemId = String(b.itemId || "");
         DB.stock[itemId] = [];
         save();
+        checkFavoriteStock(itemId);
         return send(res, 200, { ok: true, count: 0 });
       });
     }
@@ -1221,6 +1372,71 @@ const server = http.createServer((req, res) => {
         period, users, totalBalance, ordersCount: doneOrders.length, revenue, topupSum,
         pendingPayments: DB.payments.filter(p => p.status === "waiting" || p.status === "checking").length
       });
+    }
+    // TZ band 5: Admin statistika paneli — bugungi/haftalik/oylik savdo, oxirgi 30 kunlik
+    // kunlik grafik, eng ko'p sotilgan 5 mahsulot, yangi va faol foydalanuvchilar soni.
+    // Barchasi mavjud DB.orders/DB.payments/DB.users'dan hisoblanadi, alohida jadval kerak emas.
+    if (url === "/api/admin/dashboard" && m === "GET") {
+      const now = Date.now();
+      const doneOrders = DB.orders.filter(o => o.status === "done");
+
+      function sumRevenue(cutoff) {
+        return doneOrders.filter(o => o.ts >= cutoff).reduce((s, o) => s + (Number(o.price) || 0), 0);
+      }
+      const sales = {
+        today: sumRevenue(periodStart("today")),
+        week: sumRevenue(periodStart("week")),
+        month: sumRevenue(periodStart("month"))
+      };
+
+      // Toshkent (UTC+5) bo'yicha kun boshlanishi — kunlik grafik shu chegaralarga tushadi.
+      const TZ_OFFSET_MS = 5 * 60 * 60 * 1000;
+      function tashkentDayStart(ts) {
+        const local = new Date(ts + TZ_OFFSET_MS);
+        return Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()) - TZ_OFFSET_MS;
+      }
+      function tashkentDateStr(dayStartMs) {
+        const local = new Date(dayStartMs + TZ_OFFSET_MS);
+        const y = local.getUTCFullYear(), mo = local.getUTCMonth() + 1, d = local.getUTCDate();
+        return y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+      }
+      // Oxirgi 30 kun (bugungi kun bilan birga) — bo'sh kunlar 0 sifatida to'ldiriladi.
+      const todayStart = tashkentDayStart(now);
+      const dayMs = 24 * 60 * 60 * 1000;
+      const dailyMap = {};
+      for (let i = 0; i < 30; i++) dailyMap[todayStart - i * dayMs] = 0;
+      for (const o of doneOrders) {
+        const ds = tashkentDayStart(o.ts || 0);
+        if (ds in dailyMap) dailyMap[ds] += Number(o.price) || 0;
+      }
+      const dailySales = Object.keys(dailyMap).map(Number).sort((a, b) => a - b)
+        .map(ts => ({ date: tashkentDateStr(ts), total: dailyMap[ts] }));
+
+      // Eng ko'p sotilgan 5 mahsulot (nomi bo'yicha guruhlab, sotilgan soni).
+      const productCounts = {};
+      for (const o of doneOrders) {
+        const name = o.item || "Noma'lum";
+        productCounts[name] = (productCounts[name] || 0) + 1;
+      }
+      const topProducts = Object.keys(productCounts)
+        .map(name => ({ name, count: productCounts[name] }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Yangi ro'yxatdan o'tgan foydalanuvchilar (DB.users[].ts — birinchi marta ko'rilgan vaqt).
+      const userList = Object.values(DB.users);
+      const newUsers = {
+        daily: userList.filter(u => (u.ts || 0) >= periodStart("today")).length,
+        weekly: userList.filter(u => (u.ts || 0) >= periodStart("week")).length
+      };
+
+      // Faol foydalanuvchilar — oxirgi 7 kunda xarid qilganlar (uid bo'yicha unikal).
+      const sevenDaysAgo = now - 7 * dayMs;
+      const activeUidSet = {};
+      for (const o of doneOrders) if ((o.ts || 0) >= sevenDaysAgo) activeUidSet[o.uid] = true;
+      const activeUsers = Object.keys(activeUidSet).length;
+
+      return send(res, 200, { sales, dailySales, topProducts, newUsers, activeUsers });
     }
     if (url === "/api/admin/referral-settings" && m === "GET") {
       return send(res, 200, DB.settings.referral || {});
@@ -1373,9 +1589,18 @@ const server = http.createServer((req, res) => {
     if (url === "/api/admin/nakrutka/catmeta" && m === "POST") {
       return readBody(req, res, obj => {
         if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
-        fs.writeFile(NK_CATMETA_FILE, JSON.stringify(obj), err =>
-          err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
+        try { sdb.kvSet(SQLITE_DB, "nkcatmeta", obj); send(res, 200, { ok: true }); }
+        catch (e) { send(res, 500, { error: "write failed" }); }
       });
+    }
+
+    // Admin panelidagi "Zaxira nusxa olish" tugmasi — istalgan vaqtda qo'lda zaxira
+    // (barcha data/ fayllari .tar.gz qilib) tayyorlab, admin botga hujjat sifatida yuboradi.
+    if (url === "/api/admin/backup-now" && m === "POST") {
+      runBackup()
+        .then(r => send(res, 200, r))
+        .catch(e => send(res, 500, { error: String(e.message || e) }));
+      return;
     }
 
     return send(res, 404, { error: "unknown admin route" });
@@ -1460,6 +1685,133 @@ const server = http.createServer((req, res) => {
     res.end(data);
   });
 });
+
+/* ---------- avtomatik zaxira nusxa (backup) ---------- */
+// Tashqi kutubxonasiz (faqat fs/zlib) minimal tar+gzip arxivlovchi — data/ papkasidagi
+// barcha fayllarni (backups/ papkasining o'zidan tashqari) bitta .tar.gz ga yig'adi.
+function tarOctal(num, width) {
+  let s = Math.max(0, Math.floor(num)).toString(8);
+  while (s.length < width - 1) s = "0" + s;
+  return s + "\0";
+}
+function tarHeader(name, size, mtimeSec) {
+  const buf = Buffer.alloc(512, 0);
+  buf.write(String(name).slice(0, 100), 0, 100, "utf8");
+  buf.write(tarOctal(0o644, 8), 100, 8, "utf8");
+  buf.write(tarOctal(0, 8), 108, 8, "utf8");
+  buf.write(tarOctal(0, 8), 116, 8, "utf8");
+  buf.write(tarOctal(size, 12), 124, 12, "utf8");
+  buf.write(tarOctal(mtimeSec, 12), 136, 12, "utf8");
+  buf.write("        ", 148, 8, "utf8"); // chksum — vaqtincha bo'sh joy
+  buf.write("0", 156, 1, "utf8");        // typeflag: oddiy fayl
+  buf.write("ustar", 257, 6, "utf8");
+  buf.write("00", 263, 2, "utf8");
+  let sum = 0;
+  for (let i = 0; i < 512; i++) sum += buf[i];
+  buf.write(tarOctal(sum, 7) + " ", 148, 8, "utf8");
+  return buf;
+}
+function walkDataFiles(dir, base) {
+  base = base || dir;
+  let out = [];
+  let items;
+  try { items = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return out; }
+  for (const it of items) {
+    const abs = path.join(dir, it.name);
+    if (abs === BACKUP_DIR) continue; // arxiv o'z-o'zini arxivlab yubormasin
+    if (it.isDirectory()) out = out.concat(walkDataFiles(abs, base));
+    else out.push({ name: path.relative(base, abs).split(path.sep).join("/"), absPath: abs });
+  }
+  return out;
+}
+function buildTarGz(entries) {
+  const blocks = [];
+  const mtimeSec = Math.floor(Date.now() / 1000);
+  for (const e of entries) {
+    let data;
+    try { data = fs.readFileSync(e.absPath); } catch (err) { continue; }
+    blocks.push(tarHeader(e.name, data.length, mtimeSec));
+    blocks.push(data);
+    const pad = (512 - (data.length % 512)) % 512;
+    if (pad) blocks.push(Buffer.alloc(pad, 0));
+  }
+  blocks.push(Buffer.alloc(1024, 0)); // arxiv oxiri belgisi (ikkita bo'sh blok)
+  const tarBuf = Buffer.concat(blocks);
+  return new Promise((resolve, reject) => {
+    zlib.gzip(tarBuf, (err, out) => err ? reject(err) : resolve(out));
+  });
+}
+// Telegram Bot API'ga fayl (hujjat) yuborish — tashqi "form-data" kutubxonasisiz,
+// multipart/form-data tanasi qo'lda yig'iladi.
+function tgSendDocument(chatId, buffer, filename, caption) {
+  return new Promise((resolve, reject) => {
+    if (!BOT_TOKEN || !chatId) return reject(new Error("no bot/chat"));
+    const boundary = "----VerionBackup" + crypto.randomBytes(10).toString("hex");
+    const pre = [];
+    pre.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="chat_id"\r\n\r\n${chatId}\r\n`, "utf8"));
+    if (caption) pre.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="caption"\r\n\r\n${caption}\r\n`, "utf8"));
+    pre.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="document"; filename="${filename}"\r\nContent-Type: application/gzip\r\n\r\n`, "utf8"));
+    const post = Buffer.from(`\r\n--${boundary}--\r\n`, "utf8");
+    const body = Buffer.concat([...pre, buffer, post]);
+    const reqOpts = {
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendDocument", method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }
+    };
+    const r = https.request(reqOpts, resp => {
+      let out = ""; resp.on("data", c => out += c);
+      resp.on("end", () => {
+        try { const j = JSON.parse(out); j.ok ? resolve(j) : reject(new Error(j.description || "telegram_error")); }
+        catch (e) { reject(e); }
+      });
+    });
+    r.on("error", reject);
+    r.write(body); r.end();
+  });
+}
+function pruneOldBackups() {
+  try {
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith(".tar.gz")).sort();
+    while (files.length > BACKUP_KEEP) {
+      const old = files.shift();
+      try { fs.unlinkSync(path.join(BACKUP_DIR, old)); } catch (e) {}
+    }
+  } catch (e) {}
+}
+// Zaxira nusxa yasab, diskka yozadi, admin(lar)ga botdan hujjat qilib yuboradi va
+// 7 kundan eskisini o'chiradi. Ham kunlik jadval, ham "Zaxira nusxa olish" tugmasi shuni chaqiradi.
+function runBackup() {
+  // WAL rejimida yozilgan so'nggi o'zgarishlar asosiy shop.db fayliga ko'chirilishi
+  // kerak — aks holda arxivdagi shop.db yolg'iz o'zi to'liq bo'lmasligi mumkin.
+  try { SQLITE_DB.exec("PRAGMA wal_checkpoint(TRUNCATE)"); } catch (e) {}
+  const entries = walkDataFiles(DATA_DIR);
+  return buildTarGz(entries).then(gz => {
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = "backup-" + stamp + ".tar.gz";
+    fs.writeFileSync(path.join(BACKUP_DIR, filename), gz);
+    pruneOldBackups();
+    const caption = "🗄 Verion Shop — zaxira nusxa\n" +
+      new Date().toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" }) + "\n" +
+      "Fayllar: " + entries.length + " | Hajm: " + (gz.length / 1024).toFixed(1) + " KB";
+    const sends = ADMIN_IDS.map(id => tgSendDocument(id, gz, filename, caption).catch(() => {}));
+    return Promise.all(sends).then(() => ({ ok: true, filename, files: entries.length, size: gz.length }));
+  });
+}
+// Har kuni Toshkent vaqti bilan soat 04:00da avtomatik ishga tushadi.
+function msUntilNextBackup() {
+  const TZ_OFFSET_MS = 5 * 60 * 60 * 1000; // Asia/Tashkent = UTC+5, DST yo'q
+  const now = Date.now();
+  const local = new Date(now + TZ_OFFSET_MS);
+  let target = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate(), 4, 0, 0) - TZ_OFFSET_MS;
+  if (target <= now) target += 24 * 60 * 60 * 1000;
+  return target - now;
+}
+function scheduleBackup() {
+  setTimeout(function tick() {
+    runBackup().catch(e => console.log("[backup] xato: " + (e && e.message)));
+    setTimeout(tick, 24 * 60 * 60 * 1000);
+  }, msUntilNextBackup());
+}
+if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
