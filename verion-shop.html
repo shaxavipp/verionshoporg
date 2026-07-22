@@ -381,6 +381,11 @@ nav button:nth-child(5) svg{animation-delay:1s}
 /* pay screen */
 .paybox{margin:0 16px 9px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
   padding:13px;box-shadow:0 5px 16px rgba(0,0,0,.18);}
+.balmini{background:var(--card2);border:1px solid rgba(47,143,255,.32);box-shadow:0 0 0 1px rgba(47,143,255,.06) inset,0 6px 18px rgba(47,143,255,.08);padding:16px}
+.balmini .lbl{font-size:11px;color:var(--mut);font-weight:800;letter-spacing:.06em}
+.balmini .val{font-size:28px;font-weight:800;margin-top:6px}
+.linklike{font-size:12px;font-weight:800;color:var(--acc2);display:inline-flex;align-items:center;gap:3px}
+.linklike:active{opacity:.6}
 .amount{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);
   border-radius:12px;padding:3px 12px 3px 4px;transition:border-color .15s ease,box-shadow .15s ease}
 .amount:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px rgba(47,143,255,.14)}
@@ -409,7 +414,7 @@ nav button:nth-child(5) svg{animation-delay:1s}
   box-shadow:0 2px 6px rgba(47,143,255,.5)}
 .method.dis{opacity:.42}
 .method.dis .ic{background:var(--card2);box-shadow:none}
-.cardbox{margin-top:10px;background:var(--grad);border-radius:16px;padding:14px 16px;color:#fff;position:relative;overflow:hidden;
+.cardbox{margin:10px 16px 14px;background:var(--grad);border-radius:16px;padding:14px 16px;color:#fff;position:relative;overflow:hidden;
   box-shadow:0 10px 26px rgba(15,111,224,.38);animation:fadeUp .25s ease}
 .cardbox::after{content:"";position:absolute;top:-50%;right:-15%;width:150px;height:150px;border-radius:50%;
   background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%);pointer-events:none}
@@ -698,6 +703,7 @@ en:{
   paynote:"Transfer the exact amount to the card above, take a screenshot of the receipt, then press “Send receipt” — the chat opens with your Order ID, attach the screenshot there.",
   cancel_order:"Cancel order",cancelled_toast:"Order cancelled",amount_low:"Amount is below the minimum",
   choose_method:"Choose a payment method",custom_pay:"Payment",method_hint:"Select a payment method above to continue",retry_load:"Couldn't load — tap to retry",
+  pay_method_label:"Payment method",links_section:"Links",how_to_topup_q:"How to top up?",understood_btn:"Got it",balance_caps:"BALANCE",intl_name:"INTERNATIONAL",
   orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Top-ups",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
   ord_number:"Order number",ord_status:"Status",ord_recipient:"Recipient",ord_method:"Method",ord_created:"Created",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
@@ -779,6 +785,7 @@ uz:{
   paynote:"Yuqoridagi kartaga aynan shu summani o'tkazing, chek skrinshotini oling, so'ng “Chek yuborish” tugmasini bosing — chat Buyurtma ID bilan ochiladi, skrinshotni o'sha yerga yuboring.",
   cancel_order:"Buyurtmani bekor qilish",cancelled_toast:"Buyurtma bekor qilindi",amount_low:"Summa eng kam miqdordan past",
   choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",method_hint:"Davom etish uchun yuqoridan to'lov usulini tanlang",retry_load:"Yuklanmadi — qayta urinish uchun bosing",
+  pay_method_label:"To'lov usuli",links_section:"Havolalar",how_to_topup_q:"Qanday to'ldirish?",understood_btn:"Tushundim",balance_caps:"BALANS",intl_name:"XALQARO",
   orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"To'ldirishlar",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
   ord_number:"Buyurtma raqami",ord_status:"Holat",ord_recipient:"Qabul qiluvchi",ord_method:"Usul",ord_created:"Yaratilgan",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
@@ -860,6 +867,7 @@ ru:{
   paynote:"Переведите точную сумму на карту выше, сделайте скриншот чека и нажмите «Отправить чек» — откроется чат с ID заказа, приложите туда скриншот.",
   cancel_order:"Отменить заказ",cancelled_toast:"Заказ отменён",amount_low:"Сумма меньше минимальной",
   choose_method:"Выберите способ оплаты",custom_pay:"Оплата",method_hint:"Выберите способ оплаты выше, чтобы продолжить",retry_load:"Не удалось загрузить — нажмите, чтобы повторить",
+  pay_method_label:"Способ оплаты",links_section:"Ссылки",how_to_topup_q:"Как пополнить?",understood_btn:"Понятно",balance_caps:"БАЛАНС",intl_name:"МЕЖДУНАРОДНАЯ",
   orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Пополнения",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
   ord_number:"Номер заказа",ord_status:"Статус",ord_recipient:"Получатель",ord_method:"Способ",ord_created:"Создан",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
@@ -2196,14 +2204,15 @@ function showDeliveredSheet(it,order){
 
 /* ===== top-up (payment window with unique amount + timer) ===== */
 function payHTML(){
-  var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
+  var html='';
   if(!tgUser()){
-    return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
+    return '<div class="sect">'+esc(t("pay_title"))+'</div>'+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
   }
   var ap=S.activePay;
   if(ap){
     var card=null;
     for(var k=0;k<CARDS.length;k++)if(CARDS[k].id===ap.method)card=CARDS[k];
+    html+='<div class="sect">'+esc(t("pay_title"))+'</div>';
     html+='<div class="warncard">'
       +'<div><span class="wic" style="background:linear-gradient(135deg,#4a3200,#6b4a00);color:#ffd60a">'+ic("warning",15)+'</span>'+esc(t("pw_warn_title"))+'</div>'
       +'<button data-support="1"><span class="wic ric-green">'+ic("headset",15)+'</span>'+esc(t("pw_support_247"))+'</button></div>';
@@ -2241,6 +2250,24 @@ function payHTML(){
   // (rasmdagi 2-chi bot kabi alohida qadam, summa kiritish keyingi qadamda bo'ladi).
   // Video qo'llanma + texnik yordam paneli FAQAT shu birinchi qadamda ko'rsatiladi.
   if(!S.topup.method){
+    html+='<div class="sect">'+esc(t("pay_title"))+'</div>';
+    html+='<div class="paybox balmini"><div class="lbl">'+esc(t("balance_caps"))+'</div>'
+      +'<div class="val">'+balHTML()+'</div></div>';
+    html+='<div class="sect" style="margin:0 16px 6px;font-size:11px">'+esc(t("pay_method_label"))+'</div>';
+    html+='<div class="paybox"><div class="methods">';
+    for(var i=0;i<CARDS.length;i++){
+      var c=CARDS[i];
+      var cName=c.id==="intl"?t("intl_name"):c.name;
+      var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
+      html+='<button class="method'+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
+        +'<span class="ic">'+ic(c.icon,23)+'</span><span><span class="mn">'+esc(cName)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
+    }
+    html+='</div>'
+      +'<div class="refline" style="background:none;border:none;padding:8px 0 0;margin-top:2px">'
+      +'<span class="minnote" style="margin:0">'+esc(t("min_note"))+'</span>'
+      +'<button class="linklike" id="howToTopupBtn">'+esc(t("how_to_topup_q"))+' '+ic("arrowRight",12)+'</button>'
+      +'</div></div>';
+    html+='<div class="sect" style="margin:14px 16px 6px;font-size:11px">'+esc(t("links_section"))+'</div>';
     html+='<div class="card">';
     if(SHOW_VIDEO_ROW){
       html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
@@ -2253,24 +2280,16 @@ function payHTML(){
       +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
       +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div>'
       +'</div>';
-    html+='<div class="sect" style="margin:14px 16px 6px;font-size:11px">'+esc(t("choose_method"))+'</div>';
-    html+='<div class="paybox"><div class="methods">';
-    for(var i=0;i<CARDS.length;i++){
-      var c=CARDS[i];
-      var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
-      html+='<button class="method'+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
-        +'<span class="ic">'+ic(c.icon,23)+'</span><span><span class="mn">'+esc(c.name)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
-    }
-    html+='</div></div>';
     return html;
   }
   // 2-QADAM: usul tanlangan — endi tanlangan usul (o'zgartirish tugmasi bilan) + summa kiritish + bosqichlar.
   var selCard=null;
   for(var si=0;si<CARDS.length;si++)if(CARDS[si].id===S.topup.method)selCard=CARDS[si];
   var selSub=S.topup.method==="bank"?t("terminal"):(S.topup.method==="intl"?t("visa_mc"):t("card_transfer"));
+  html+='<button class="backrow" id="topupBackTop">'+ic("arrowLeft",16)+' <b>'+esc(t("pay_title"))+'</b></button>';
   html+='<div class="paybox"><div class="row" style="padding:0;border-bottom:none"><div class="l" style="display:flex;align-items:center;gap:10px">'
     +'<span class="ic" style="background:var(--card2);border-radius:10px;padding:8px;display:flex">'+ic(selCard?selCard.icon:"card",22)+'</span>'
-    +'<div><div style="font-weight:800">'+esc(selCard?selCard.name:S.topup.method)+'</div><div class="d" style="color:var(--mut)">'+esc(selSub)+'</div></div></div>'
+    +'<div><div style="font-weight:800">'+esc(selCard?(selCard.id==="intl"?t("intl_name"):selCard.name):S.topup.method)+'</div><div class="d" style="color:var(--mut)">'+esc(selSub)+'</div></div></div>'
     +'<button class="btn sm gray" id="topupChangeMethod">'+esc(t("pw_change"))+'</button></div></div>';
   html+='<div class="paybox">'
     +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+balHTML()+'</b></div>'
@@ -2360,6 +2379,21 @@ function tickTimer(){
     bar.style.width=pct+"%";
     bar.classList.toggle("urgent",left<=60);
   }
+}
+function openHowToTopupSheet(){
+  var sh=openSheet(
+    '<h2>'+ic("card",19)+' '+esc(t("how_to_topup_q"))+'</h2>'
+    +'<div class="paysteps" style="margin:10px 0 0;box-shadow:none">'
+    +'<div class="stepitem"><span class="stepnum">1</span><span class="st">'+esc(t("pw_step1"))+'</span></div>'
+    +'<div class="stepitem"><span class="stepnum">2</span><span class="st">'+esc(t("pw_step2"))+'</span></div>'
+    +'<div class="stepitem"><span class="stepnum">3</span><span class="st">'+esc(t("pw_step3"))+'</span></div>'
+    +'<div class="stepitem"><span class="stepnum">4</span><span class="st">'+esc(t("pw_step4"))+'</span></div>'
+    +'</div>'
+    +'<div style="height:14px"></div>'
+    +'<button class="btn big" id="httOk">'+esc(t("understood_btn"))+'</button>'
+  );
+  var b=sh.querySelector("#httOk");
+  if(b)b.addEventListener("click",closeSheet);
 }
 function showExpiredSheet(){
   var sh=openSheet(
@@ -4273,6 +4307,8 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();loadMe();});
   els=document.querySelectorAll("[data-openvid]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){if(VIDEO_URL)openLink(VIDEO_URL);else{haptic();toast(t("soon"));}});
+  var htt=document.getElementById("howToTopupBtn");
+  if(htt)htt.addEventListener("click",function(){haptic();openHowToTopupSheet();});
   els=document.querySelectorAll("[data-copy]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
   els=document.querySelectorAll("[data-shareref]");
@@ -4355,12 +4391,22 @@ function bind(){
     if(amtEl)S.topup.amount=Math.round(Number(amtEl.value))||S.topup.amount;
     S.topup.method=null;haptic();render();
   });
+  var backTop=document.getElementById("topupBackTop");
+  if(backTop)backTop.addEventListener("click",function(){
+    var amtEl=document.getElementById("payAmount");
+    if(amtEl)S.topup.amount=Math.round(Number(amtEl.value))||S.topup.amount;
+    S.topup.method=null;haptic();render();
+  });
   var tg1=document.getElementById("topupGo");
   if(tg1)tg1.addEventListener("click",createTopup);
   var pw=document.getElementById("pwPaid");
   if(pw)pw.addEventListener("click",markPaid);
   var pa=document.getElementById("pwAbort");
-  if(pa)pa.addEventListener("click",function(){S.activePay=null;persist();toast(t("cancelled_toast"));render();});
+  if(pa)pa.addEventListener("click",function(){
+    var ap=S.activePay;
+    S.activePay=null;persist();toast(t("cancelled_toast"));render();
+    if(ap&&ap.id)api("/api/topup-cancel","POST",{id:ap.id}).then(function(){loadMe();}).catch(function(){});
+  });
   var ab=document.getElementById("adminBtnRow");
   if(ab)ab.addEventListener("click",openAdmin);
   tickTimer();

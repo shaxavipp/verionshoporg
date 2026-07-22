@@ -902,6 +902,22 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  // Mijoz to'lov oynasidagi "To'lovni bekor qilish" tugmasini bosganda —
+  // avvalgi holatda faqat mahalliy ekran tozalanardi, serverdagi yozuv "kutilmoqda"
+  // bo'lib qolaverardi va Buyurtmalar > To'ldirishlar bo'limida shunday ko'rinardi.
+  // Endi shu chaqiruv bilan yozuv darhol "bekor qilindi" statusiga o'tkaziladi.
+  if (url === "/api/topup-cancel" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "auth" });
+    return readBody(req, res, b => {
+      expireOld();
+      const p = DB.payments.find(x => x.id === b.id && x.uid === u.id);
+      if (!p) return send(res, 404, { error: "not found" });
+      if (p.status === "waiting") { p.status = "cancelled"; save(); }
+      send(res, 200, { ok: true, status: p.status });
+    });
+  }
+
   if (url === "/api/fragment/check-user" && m === "POST") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: "auth" });
