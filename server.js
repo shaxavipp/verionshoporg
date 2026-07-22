@@ -15,7 +15,8 @@ const HTML_FILE = path.join(__dirname, "verion-shop.html");
 // "Variables"da ORDER_NOTIFY_CHAT_ID ni o'rnating (masalan -1001234567890). Bo'sh bo'lsa
 // hech qayerga yuborilmaydi, lekin mijozga xabar baribir boradi.
 const ORDER_NOTIFY_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
-const TOPUP_TTL = 10 * 60 * 1000;          // payment window: 10 minutes
+const TOPUP_TTL = 7 * 60 * 1000;           // payment window: 7 minutes
+const PAYMENT_REMINDER_DELAY = 4 * 60 * 1000; // 4 daqiqadan keyin ham to'lanmagan bo'lsa eslatma yuboriladi
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
 
 /* ---------- SMS auto-confirm (humocard / cardxabar orqali) ---------- */
@@ -147,8 +148,22 @@ function creditReferralOnOrder(order) {
 }
 function expireOld() {
   const now = Date.now();
-  for (const p of DB.payments)
-    if (p.status === "waiting" && now - p.ts > TOPUP_TTL) p.status = "cancelled";
+  // Vaqt tugagach to'lov TO'LIQ bekor bo'lishi kerak — foydalanuvchi "To'lov qildim"
+  // tugmasini bosib "checking" holatiga o'tgan bo'lsa ham, agar admin uni tasdiqlamasa,
+  // vaqt oynasi (TOPUP_TTL) tugagandan keyin baribir "cancelled" bo'lib qoladi —
+  // shu bilan admin panelida abadiy osilib qolmaydi.
+  for (const p of DB.payments) {
+    if ((p.status === "waiting" || p.status === "checking") && now - p.ts > TOPUP_TTL) {
+      p.status = "cancelled";
+      // Mijozga ham xabar boradi (ID ko'rsatilmaydi — faqat buyurtma va summa).
+      tgSend(p.uid,
+        "❌ To'lov bekor qilindi\n\n" +
+        "▪️ Buyurtma: Balansni to'ldirish\n" +
+        "▪️ Summa: " + (Number(p.amount) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm\n\n" +
+        "Vaqt tugagani sababli to'lov avtomatik bekor qilindi. Qayta urinish uchun \"To'ldirish\" bo'limiga o'ting."
+      );
+    }
+  }
 }
 // To'lovni tasdiqlash (admin qo'lda ✅ bossa ham, SMS avtomat topsa ham shu funksiya ishlaydi)
 function confirmPayment(p, source) {
@@ -162,6 +177,29 @@ function tgSend(chatId, text) {
   if (!BOT_TOKEN || !chatId) return;
   try {
     const data = JSON.stringify({ chat_id: chatId, text: text });
+    const req = https.request({
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendMessage", method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+    }, r => { r.on("data", () => {}); });
+    req.on("error", () => {});
+    req.write(data); req.end();
+  } catch (e) {}
+}
+// Mini-ilovani to'g'ridan-to'g'ri ochadigan havola (t.me/<bot>/<app>?startapp=...) — BOT_USERNAME
+// hali Telegram'dan olinmagan bo'lsa (server hozirgina ishga tushgan bo'lsa) bo'sh qaytaradi.
+function miniAppLink() {
+  if (!BOT_USERNAME) return "";
+  const appPart = MINIAPP_NAME ? ("/" + MINIAPP_NAME) : "";
+  return "https://t.me/" + BOT_USERNAME + appPart;
+}
+// tgSend bilan bir xil, faqat pastida "ilovani ochish" tugmasi (inline button) biriktirilgan holda —
+// rasmdagi "To'lovni yakunlash" tugmasi kabi, mijoz bosganda to'g'ridan-to'g'ri mini-ilova ochiladi.
+function tgSendButton(chatId, text, btnText, url) {
+  if (!BOT_TOKEN || !chatId) return;
+  try {
+    const payload = { chat_id: chatId, text: text };
+    if (url) payload.reply_markup = { inline_keyboard: [[{ text: btnText, url: url }]] };
+    const data = JSON.stringify(payload);
     const req = https.request({
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendMessage", method: "POST",
       headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
@@ -772,6 +810,21 @@ const server = http.createServer((req, res) => {
       const rec = { id: genId("TP"), uid: u.id, uname: u.username || null, type: "topup",
         amount, pay: amount + delta, method, status: "waiting", ts: Date.now() };
       user(u); DB.payments.push(rec); save();
+      // 4 daqiqadan keyin ham to'lov hali "waiting" bo'lib qolsa (ya'ni mijoz hali to'lamagan/
+      // "To'lov qildim" bosmagan bo'lsa) — rasmdagi Sara Stars boti kabi eslatma yuboriladi,
+      // pastida ilovani qayta ochadigan tugma bilan (ID ko'rsatilmaydi).
+      setTimeout(() => {
+        const p = DB.payments.find(x => x.id === rec.id);
+        if (p && p.status === "waiting") {
+          tgSendButton(p.uid,
+            "⏳ To'lovingiz kutilmoqda\n\n" +
+            "▪️ Buyurtma: Balansni to'ldirish\n" +
+            "▪️ Summa: " + (Number(p.amount) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm\n\n" +
+            "Buyurtmangiz hali to'lanmadi. Yakunlash uchun quyidagi tugmani bosing 👇",
+            "💳 To'lovni yakunlash", miniAppLink()
+          );
+        }
+      }, PAYMENT_REMINDER_DELAY);
       send(res, 200, { ok: true, payment: rec, expiresAt: rec.ts + TOPUP_TTL });
     });
   }
