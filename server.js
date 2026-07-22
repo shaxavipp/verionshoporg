@@ -607,7 +607,10 @@ const server = http.createServer((req, res) => {
   }
 
   // Admin panelidan premium emoji ID kiritilganda chaqiriladi: Telegram Bot API orqali
-  // shu custom emoji'ning video (webm) faylini topib, base64 data-url qilib qaytaradi.
+  // shu custom emoji faylini topib, base64 data-url qilib qaytaradi. Ikki format qo'llab-
+  // quvvatlanadi: video (webm, animatsion) va statik (webp, oddiy rasm sifatida ko'rsatiladi).
+  // Faqat eski Lottie (.tgs) formatdagi animatsiyalar qo'llab-quvvatlanmaydi (brauzerda
+  // qo'shimcha kutubxonasiz ko'rsatib bo'lmaydi).
   if (url === "/api/admin/premium-emoji" && m === "GET") {
     const u = auth(req);
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
@@ -618,14 +621,16 @@ const server = http.createServer((req, res) => {
       .then(j => {
         if (!j.ok || !j.result || !j.result.length) { send(res, 404, { error: "emoji_not_found" }); return null; }
         const sticker = j.result[0];
-        if (!sticker.is_video) {
+        if (sticker.is_animated && !sticker.is_video) {
           send(res, 422, { error: "unsupported_format" });
           return null;
         }
+        const kind = sticker.is_video ? "video" : "image";
+        const mime = sticker.is_video ? "video/webm" : "image/webp";
         return tgApiGet("getFile", { file_id: sticker.file_id }).then(fj => {
           if (!fj.ok || !fj.result || !fj.result.file_path) { send(res, 502, { error: "file_lookup_failed" }); return; }
           return tgFileDownload(fj.result.file_path).then(buf => {
-            send(res, 200, { ok: true, dataUrl: "data:video/webm;base64," + buf.toString("base64") });
+            send(res, 200, { ok: true, kind, dataUrl: "data:" + mime + ";base64," + buf.toString("base64") });
           });
         });
       })

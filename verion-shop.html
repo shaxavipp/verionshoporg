@@ -3896,7 +3896,7 @@ function openAdminForm(editId){
     +'<label>Premium (Telegram) emoji ID</label>'
     +'<div class="arow"><input id="f_premEmojiId" style="flex:1" value="" placeholder="5433838489083409183" inputmode="numeric">'
     +'<button class="btn sm" id="f_premEmojiFetch" type="button">Yuklab olish</button></div>'
-    +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — animatsiya avtomatik pastdagi video maydoniga tushadi.</div>'
+    +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — animatsion bo\'lsa video, statik bo\'lsa rasm sifatida avtomatik joylashadi.</div>'
     +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
     +'<div class="minnote">'+esc(t("a_video_hint"))+'</div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
@@ -4042,14 +4042,21 @@ function openAdminForm(editId){
     premBtn.disabled=true;premBtn.textContent="Yuklanmoqda...";
     if(statusEl)statusEl.textContent="Telegramdan olinmoqda...";
     api("/api/admin/premium-emoji?id="+encodeURIComponent(id),"GET").then(function(r){
-      F.video=r.dataUrl;
-      var vw=g("#f_video");if(vw)vw.value=r.dataUrl;
-      if(statusEl)statusEl.textContent="✅ Muvaffaqiyatli yuklandi — pastdagi ko'rinishda tekshiring.";
+      var ew=g("#f_emoji"),vw=g("#f_video");
+      if(r.kind==="video"){
+        F.video=r.dataUrl;F.img="";
+        if(vw)vw.value=r.dataUrl;
+      }else{
+        F.img=r.dataUrl;F.video="";
+        if(vw)vw.value="";
+      }
+      F.emoji="";if(ew)ew.value="";
+      if(statusEl)statusEl.textContent="✅ Muvaffaqiyatli yuklandi ("+(r.kind==="video"?"animatsion":"statik")+") — pastdagi ko'rinishda tekshiring.";
       preview();toast("Premium emoji qo'shildi");
       premBtn.disabled=false;premBtn.textContent="Yuklab olish";
     }).catch(function(e){
       var code=e&&e.resp&&e.resp.error;
-      var msg=code==="unsupported_format"?"Bu emoji video (webm) formatida emas — faqat animatsion (video-based) premium emojilar qo'llab-quvvatlanadi"
+      var msg=code==="unsupported_format"?"Bu emoji eski Lottie (.tgs) formatida — faqat video yoki statik rasm formatidagi premium emojilar qo'llab-quvvatlanadi"
         :code==="emoji_not_found"?"Bunday ID topilmadi — ID to'g'riligini tekshiring"
         :code==="not admin"?"Ruxsat yo'q":"Xatolik yuz berdi, qayta urinib ko'ring";
       if(statusEl)statusEl.textContent="⚠️ "+msg;
