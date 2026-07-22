@@ -107,7 +107,7 @@ function periodStart(period) {
 // start_param mini-ilova ichiga to'g'ri yetib boradi (oddiy ?start= chatni ochadi, ilovani emas).
 // Railway Variables'da MINIAPP_NAME o'rnatilmagan bo'lsa, pastdagi standart qiymat ishlatiladi —
 // buni BotFather > Bot Settings > Menu Button / Mini Apps bo'limidagi haqiqiy nomga moslang.
-const MINIAPP_NAME = process.env.MINIAPP_NAME || "";
+const MINIAPP_NAME = process.env.MINIAPP_NAME || "shop";
 // Bot username'ni Telegram'dan bir marta so'rab olamiz (referal havolasi t.me/<username>?start=ref_<uid>
 // qurish uchun kerak) — alohida ENV o'zgaruvchi talab qilmaslik uchun.
 let BOT_USERNAME = "";
@@ -187,10 +187,11 @@ function tgSend(chatId, text) {
 }
 // Mini-ilovani to'g'ridan-to'g'ri ochadigan havola (t.me/<bot>/<app>?startapp=...) — BOT_USERNAME
 // hali Telegram'dan olinmagan bo'lsa (server hozirgina ishga tushgan bo'lsa) bo'sh qaytaradi.
-function miniAppLink() {
+function miniAppLink(startParam) {
   if (!BOT_USERNAME) return "";
   const appPart = MINIAPP_NAME ? ("/" + MINIAPP_NAME) : "";
-  return "https://t.me/" + BOT_USERNAME + appPart;
+  const query = startParam ? ("?startapp=" + encodeURIComponent(startParam)) : "";
+  return "https://t.me/" + BOT_USERNAME + appPart + query;
 }
 // tgSend bilan bir xil, faqat pastida "ilovani ochish" tugmasi (inline button) biriktirilgan holda —
 // rasmdagi "To'lovni yakunlash" tugmasi kabi, mijoz bosganda to'g'ridan-to'g'ri mini-ilova ochiladi.
@@ -880,7 +881,7 @@ const server = http.createServer((req, res) => {
             "▪️ Buyurtma: Balansni to'ldirish\n" +
             "▪️ Summa: " + (Number(p.amount) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm\n\n" +
             "Buyurtmangiz hali to'lanmadi. Yakunlash uchun quyidagi tugmani bosing 👇",
-            "💳 To'lovni yakunlash", miniAppLink()
+            "💳 To'lovni yakunlash", miniAppLink("pay_" + rec.id)
           );
         }
       }, PAYMENT_REMINDER_DELAY);
