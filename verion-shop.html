@@ -304,6 +304,7 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .hc-drow .v{font-weight:700;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hc-date{font-size:11.5px;color:var(--mut);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .hc-date .arw{opacity:.6}
+.hc-click{cursor:pointer}
 .hc-acts{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
 .hc-acts .btn.sm{flex:1}
 .toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px) scale(.9);
@@ -728,7 +729,7 @@ en:{
   choose_method:"Choose a payment method",custom_pay:"Payment",method_hint:"Select a payment method above to continue",retry_load:"Couldn't load — tap to retry",
   pay_method_label:"Payment method",links_section:"Links",how_to_topup_q:"How to top up?",understood_btn:"Got it",balance_caps:"BALANCE",intl_name:"INTERNATIONAL",
   orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Top-ups",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
-  ord_number:"Order number",ord_status:"Status",ord_recipient:"Recipient",ord_method:"Method",ord_created:"Created",
+  ord_number:"Order number",ord_status:"Status",ord_recipient:"Recipient",ord_method:"Method",ord_created:"Created",ord_player_id:"Player ID",ord_user_id:"User ID",ord_price:"Price",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"OWNER", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
@@ -810,7 +811,7 @@ uz:{
   choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",method_hint:"Davom etish uchun yuqoridan to'lov usulini tanlang",retry_load:"Yuklanmadi — qayta urinish uchun bosing",
   pay_method_label:"To'lov usuli",links_section:"Havolalar",how_to_topup_q:"Qanday to'ldirish?",understood_btn:"Tushundim",balance_caps:"BALANS",intl_name:"XALQARO",
   orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"To'ldirishlar",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
-  ord_number:"Buyurtma raqami",ord_status:"Holat",ord_recipient:"Qabul qiluvchi",ord_method:"Usul",ord_created:"Yaratilgan",
+  ord_number:"Buyurtma raqami",ord_status:"Holat",ord_recipient:"Qabul qiluvchi",ord_method:"Usul",ord_created:"Yaratilgan",ord_player_id:"O'yinchi ID",ord_user_id:"Foydalanuvchi ID",ord_price:"Narx",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"EGASI", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
@@ -892,7 +893,7 @@ ru:{
   choose_method:"Выберите способ оплаты",custom_pay:"Оплата",method_hint:"Выберите способ оплаты выше, чтобы продолжить",retry_load:"Не удалось загрузить — нажмите, чтобы повторить",
   pay_method_label:"Способ оплаты",links_section:"Ссылки",how_to_topup_q:"Как пополнить?",understood_btn:"Понятно",balance_caps:"БАЛАНС",intl_name:"МЕЖДУНАРОДНАЯ",
   orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Пополнения",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
-  ord_number:"Номер заказа",ord_status:"Статус",ord_recipient:"Получатель",ord_method:"Способ",ord_created:"Создан",
+  ord_number:"Номер заказа",ord_status:"Статус",ord_recipient:"Получатель",ord_method:"Способ",ord_created:"Создан",ord_player_id:"ID игрока",ord_user_id:"ID пользователя",ord_price:"Цена",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"ВЛАДЕЛЕЦ", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
@@ -2471,6 +2472,31 @@ function openHowToTopupSheet(){
   var b=sh.querySelector("#httOk");
   if(b)b.addEventListener("click",closeSheet);
 }
+function showOrderDetailSheet(oid){
+  var o=null;for(var k=0;k<ME.orders.length;k++)if(ME.orders[k].id===oid)o=ME.orders[k];
+  if(!o)return;
+  var isNk=String(o.itemId||"").indexOf("nk_")===0;
+  var prod=isNk?null:byId(o.itemId);
+  var kind=prod?prod.kind:null;
+  var st=o.status==="done"?"done":(o.status==="cancelled"?"cancelled":"pending");
+  var b=ORD_BADGE[o.status]||ORD_BADGE.pending;
+  var rows='<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+(o.seq?('#'+o.seq):esc(o.id))+'</span></div>';
+  if(o.uid)rows+='<div class="hc-drow"><span class="k">'+esc(t(kind==="games"?"ord_player_id":"ord_user_id"))+'</span><span class="v">'+esc(o.uid)+'</span></div>';
+  if(isNk)rows+='<div class="hc-drow"><span class="k">'+esc(t("nakrutka_link_label"))+'</span><span class="v">'+esc(o.link||"—")+'</span></div>';
+  if(isNk&&o.japStatus)rows+='<div class="hc-drow"><span class="k">'+esc(t("nakrutka_remains"))+'</span><span class="v">'+esc(nkStatusLabel(o.japStatus))+(o.japRemains!=null?' ('+esc(o.japRemains)+')':'')+'</span></div>';
+  else if(o.giftRecipient)rows+='<div class="hc-drow"><span class="k">'+esc(t("ord_recipient"))+'</span><span class="v">@'+esc(o.giftRecipient)+'</span></div>';
+  rows+='<div class="hc-drow"><span class="k">'+esc(t("ord_price"))+'</span><span class="v">'+esc(money(o.price))+'</span></div>'
+    +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+b[0]+'">'+esc(t(b[1]))+'</span></div>'
+    +'<div class="hc-drow"><span class="k">'+esc(t("ord_created"))+'</span><span class="v">'+esc(fmtDate(o.ts))+'</span></div>';
+  var sh=openSheet(
+    '<h2>'+ic(isNk?"trendUp":"cart",19)+' '+esc(o.item)+'</h2>'
+    +'<div class="cardbox" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;padding:14px">'+rows+'</div>'
+    +'<div style="height:10px"></div>'
+    +'<button class="btn big" id="ordDetailClose">'+esc(t("gift_close"))+'</button>'
+  );
+  var cl=sh.querySelector("#ordDetailClose");
+  if(cl)cl.addEventListener("click",closeSheet);
+}
 function showExpiredSheet(){
   var sh=openSheet(
     '<h2>'+ic("clock",19)+' '+esc(t("pw_expired_title"))+'</h2>'
@@ -2525,17 +2551,18 @@ function ordersHTML(){
       var st=o.status==="done"?"done":(o.status==="cancelled"?"cancelled":"pending");
       if(S.ordFilter!=="all"&&st!==S.ordFilter)continue;
       var isNk=String(o.itemId||"").indexOf("nk_")===0;
+      var prod=isNk?null:byId(o.itemId);
       rows.push({ts:o.ts,doneTs:o.doneTs||null,ic:ic(isNk?"trendUp":"cart",18),title:o.item,id:o.id,seq:o.seq||null,oid:o.id,amt:o.price,
         b:ORD_BADGE[o.status]||ORD_BADGE.pending,delivered:o.delivered||null,status:o.status,reviewed:!!o.reviewed,
         itemId:o.itemId,link:o.link,quantity:o.quantity,japStatus:o.japStatus,japRemains:o.japRemains,
-        giftRecipient:o.giftRecipient||null,isNk:isNk});
+        giftRecipient:o.giftRecipient||null,isNk:isNk,kind:prod?prod.kind:null,uid:o.uid});
     }
     rows.sort(function(a,b){return b.ts-a.ts;});
     if(!rows.length)return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+esc(t("orders_empty"))+'</div>';
     for(var r=0;r<rows.length;r++){
       var x=rows[r];
       var acts='';
-      if(x.delivered)acts+='<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'">'+ic("key",13)+' '+esc(t("delivered_view"))+'</button>';
+      if(x.delivered&&x.kind==="obuna")acts+='<button class="btn sm" data-viewdeliv="'+esc(x.oid)+'">'+ic("key",13)+' '+esc(t("delivered_view"))+'</button>';
       if(x.status==="done"){
         acts+=x.reviewed
           ?'<span class="ordreviewed">'+ic("check",12)+' '+esc(t("review_done"))+'</span>'
@@ -2545,16 +2572,19 @@ function ordersHTML(){
         acts+='<button class="btn sm gray" data-nkrefresh="'+esc(x.oid)+'">'+ic("history",13)+' '+esc(t("nakrutka_refresh_btn"))+'</button>';
       var sub=x.isNk?(esc(t("nakrutka_qty_label"))+": "+esc(x.quantity)):(x.giftRecipient?"@"+esc(x.giftRecipient):"");
       html+='<div class="hcard">'
+        +'<div class="hc-click" data-ordopen="'+esc(x.oid)+'">'
         +'<div class="hc-head">'+historyThumbHTML(x.itemId,x.ic)
         +'<div class="hc-info"><div class="t">'+esc(x.title)+'</div>'+(sub?'<div class="s">'+sub+'</div>':'')+'</div>'
         +'<div class="hc-amt neg">-'+esc(money(x.amt))+'</div></div>'
         +'<div class="hc-details">'
         +'<div class="hc-drow"><span class="k">'+esc(t("ord_number"))+'</span><span class="v code">'+(x.seq?('#'+x.seq):esc(x.id))+'</span></div>'
+        +(x.uid?'<div class="hc-drow"><span class="k">'+esc(t(x.kind==="games"?"ord_player_id":"ord_user_id"))+'</span><span class="v">'+esc(x.uid)+'</span></div>':'')
         +(x.isNk?'<div class="hc-drow"><span class="k">'+esc(t("nakrutka_link_label"))+'</span><span class="v">'+esc(x.link||"—")+'</span></div>':'')
         +(x.isNk&&x.japStatus?'<div class="hc-drow"><span class="k">'+esc(t("nakrutka_remains"))+'</span><span class="v">'+esc(nkStatusLabel(x.japStatus))+(x.japRemains!=null?' ('+esc(x.japRemains)+')':'')+'</span></div>':'')
         +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+x.b[0]+'">'+esc(t(x.b[1]))+'</span></div>'
         +'<div class="hc-date">'+ic("history",11)+' '+esc(fmtDate(x.ts))
         +(x.doneTs&&x.doneTs!==x.ts?' <span class="arw">→</span> '+esc(fmtDate(x.doneTs)):'')+'</div>'
+        +'</div>'
         +'</div>'
         +(acts?'<div class="hc-acts">'+acts+'</div>':'')
         +'</div>';
@@ -4433,6 +4463,8 @@ function bind(){
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.ordTab=this.getAttribute("data-ordtab");haptic();render();});
   els=document.querySelectorAll("[data-ordfilter]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.ordFilter=this.getAttribute("data-ordfilter");haptic();render();});
+  els=document.querySelectorAll("[data-ordopen]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){showOrderDetailSheet(this.getAttribute("data-ordopen"));});
   els=document.querySelectorAll("[data-viewdeliv]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     var oid=this.getAttribute("data-viewdeliv");
