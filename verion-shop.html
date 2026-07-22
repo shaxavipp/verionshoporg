@@ -389,8 +389,8 @@ nav button:nth-child(5) svg{animation-delay:1s}
   font-size:11.5px;font-weight:600;color:var(--mut);transition:all .15s ease;}
 .chips button.on{border:1px solid transparent;color:#fff;background:var(--grad);font-weight:800;
   box-shadow:0 4px 14px rgba(47,143,255,.35)}
-.methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.method{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:12px;background:var(--card2);
+.methods{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:8px}
+.method{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:12px;background:var(--card2);min-height:64px;box-sizing:border-box;
   border:1px solid var(--line);text-align:left;}
 .method .ic{font-size:16px;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
   background:var(--grad);flex:0 0 auto;box-shadow:0 3px 10px rgba(47,143,255,.3)}
@@ -1397,6 +1397,12 @@ var LANG_FLAG={uz:"🇺🇿",ru:"🇷🇺",en:"🇬🇧"};
 var LANG_NAME={uz:"O‘zbekcha",ru:"Русский",en:"English"};
 var LANG_ORDER=["uz","ru","en"];
 var TABS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"],["extra1","tab_extra1"],["extra2","tab_extra2"]];
+function tileIconHTML(tile,fallback){
+  tile=tile||{};
+  if(tile.video)return '<video src="'+esc(tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></video>';
+  if(tile.emoji)return esc(tile.emoji);
+  return fallback;
+}
 function tileHTML(it,big){
   var st=it.tile||{};
   var isGift=it&&it.fulfill==="telegram_gift";
@@ -1541,7 +1547,7 @@ function giftHubHTML(){
     S.giftHub.selected=items.length?items[0].id:null;
   }
   var html='<button class="backrow" id="giftHubBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(title)+'</b></button>'
-    +'<div class="ghHead"><div class="ic">'+(hub&&hub.tile&&hub.tile.emoji?esc(hub.tile.emoji):"🎁")+'</div>'
+    +'<div class="ghHead"><div class="ic">'+tileIconHTML(hub&&hub.tile,"🎁")+'</div>'
     +'<div class="tx"><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></div></div>'
     +'<div class="sect" style="margin-top:0">'+esc(t("gift_choose_product"))+'</div>'
     +'<div class="ghtabs">'
@@ -1554,7 +1560,7 @@ function giftHubHTML(){
     var sel=S.giftHub.selected===g.id;
     html+='<button class="ghRow'+(sel?" on":"")+'" data-ghsel="'+esc(g.id)+'">'
       +(g.hit?'<span class="ghHit">'+esc(t("gift_hit_badge"))+'</span>':'')
-      +'<span class="ic">'+(g.tile&&g.tile.emoji?esc(g.tile.emoji):"🎁")+'</span>'
+      +'<span class="ic">'+tileIconHTML(g.tile,"🎁")+'</span>'
       +'<span class="info"><span class="nm">'+esc(loc(g.title))+'</span><span class="pc">'+esc(money(g.price))+'</span></span>'
       +'<span class="dot"></span></button>';
   }
@@ -2147,16 +2153,18 @@ function showDeliveredSheet(it,order){
 /* ===== top-up (payment window with unique amount + timer) ===== */
 function payHTML(){
   var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
+  html+='<div class="card">';
   if(SHOW_VIDEO_ROW){
-    html+='<div class="card"><div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
+    html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
       +'<span class="rowicon ric-red">'+ic("play",16,"")+'</span><div><div>'+esc(t("video_guide"))+'</div>'
       +'<div class="d" style="color:var(--err)">'+esc(t("video_guide_sub"))+'</div></div></div>'
-      +'<button class="btn sm gray" data-openvid="1">'+ic("arrowRight",14)+'</button></div></div>';
+      +'<button class="btn sm gray" data-openvid="1">'+ic("arrowRight",14)+'</button></div>';
   }
-  html+='<div class="card"><div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
+  html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
     +'<span class="rowicon ric-green">'+ic("headset",16)+'</span><div><div>'+esc(t("support"))+'</div>'
     +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
-    +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div></div>';
+    +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div>'
+    +'</div>';
   if(!tgUser()){
     return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
   }
@@ -2327,6 +2335,7 @@ var PAY_BADGE={waiting:["pend","st_pending"],checking:["chk","st_checking"],done
 var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
 function historyThumbHTML(itemId,fallbackSvg){
   var it=itemId?byId(itemId):null;
+  if(it&&it.tile&&it.tile.video)return '<div class="hc-thumb"><video src="'+esc(it.tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
   if(it&&it.tile&&it.tile.emoji)return '<div class="hc-thumb">'+esc(it.tile.emoji)+'</div>';
   if(it&&it.tile&&it.tile.img)return '<div class="hc-thumb"><img src="'+esc(it.tile.img)+'" alt="" loading="lazy" onerror="this.parentNode.textContent=\'\'"></div>';
   return '<div class="hc-thumb" style="color:var(--mut)">'+fallbackSvg+'</div>';
@@ -3884,6 +3893,10 @@ function openAdminForm(editId){
     +'<div id="ffNote" class="paynote hide"></div>'
     +'<label>Emoji</label><input id="f_emoji" value="'+esc(F.emoji)+'" placeholder="🔥" maxlength="8">'
     +'<div class="minnote">Emoji kiritilsa, kartochkada rasm/fon o\'rniga faqat shu emoji ko\'rsatiladi</div>'
+    +'<label>Premium (Telegram) emoji ID</label>'
+    +'<div class="arow"><input id="f_premEmojiId" style="flex:1" value="" placeholder="5433838489083409183" inputmode="numeric">'
+    +'<button class="btn sm" id="f_premEmojiFetch" type="button">Yuklab olish</button></div>'
+    +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — animatsiya avtomatik pastdagi video maydoniga tushadi.</div>'
     +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
     +'<div class="minnote">'+esc(t("a_video_hint"))+'</div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
@@ -4019,6 +4032,30 @@ function openAdminForm(editId){
       };
       rd.readAsDataURL(f);
     }catch(e){toast("Rasm xatosi");}
+  });
+  var premBtn=g("#f_premEmojiFetch");
+  if(premBtn)premBtn.addEventListener("click",function(){
+    var idw=g("#f_premEmojiId");
+    var statusEl=g("#f_premEmojiStatus");
+    var id=idw?idw.value.trim():"";
+    if(!/^\d+$/.test(id)){toast("ID noto'g'ri — faqat raqamlardan iborat bo'lishi kerak");return;}
+    premBtn.disabled=true;premBtn.textContent="Yuklanmoqda...";
+    if(statusEl)statusEl.textContent="Telegramdan olinmoqda...";
+    api("/api/admin/premium-emoji?id="+encodeURIComponent(id),"GET").then(function(r){
+      F.video=r.dataUrl;
+      var vw=g("#f_video");if(vw)vw.value=r.dataUrl;
+      if(statusEl)statusEl.textContent="✅ Muvaffaqiyatli yuklandi — pastdagi ko'rinishda tekshiring.";
+      preview();toast("Premium emoji qo'shildi");
+      premBtn.disabled=false;premBtn.textContent="Yuklab olish";
+    }).catch(function(e){
+      var code=e&&e.resp&&e.resp.error;
+      var msg=code==="unsupported_format"?"Bu emoji video (webm) formatida emas — faqat animatsion (video-based) premium emojilar qo'llab-quvvatlanadi"
+        :code==="emoji_not_found"?"Bunday ID topilmadi — ID to'g'riligini tekshiring"
+        :code==="not admin"?"Ruxsat yo'q":"Xatolik yuz berdi, qayta urinib ko'ring";
+      if(statusEl)statusEl.textContent="⚠️ "+msg;
+      toast(msg);
+      premBtn.disabled=false;premBtn.textContent="Yuklab olish";
+    });
   });
   var inputs=sh.querySelectorAll("input,textarea");
   for(var n=0;n<inputs.length;n++)inputs[n].addEventListener("input",preview);

@@ -252,6 +252,33 @@ function notifyOrder(o) {
   } catch (e) {}
 }
 // fragment-api.uz bilan ishlash: Telegram Stars va Premium'ni istalgan @username'ga avtomatik sotib olish.
+// ---------- Premium (custom) Telegram emoji — Bot API orqali fayl olib berish ----------
+// Admin panelidan custom_emoji_id kiritilganda shu emojining video (webm) faylini
+// Telegram serverlaridan yuklab olib, base64 data-url sifatida qaytaradi. Shu data-url
+// mahsulot/guruh kartochkasining "video" maydoniga tushadi va butun ilova bo'ylab
+// (mavjud video-render logikasi orqali) qayerda emoji ko'rsatilsa o'sha yerda ishlaydi.
+function tgApiGet(method, params) {
+  return new Promise((resolve, reject) => {
+    if (!BOT_TOKEN) return reject(new Error("BOT_TOKEN not set"));
+    const qs = new URLSearchParams(params || {}).toString();
+    https.get("https://api.telegram.org/bot" + BOT_TOKEN + "/" + method + (qs ? "?" + qs : ""), r => {
+      let body = "";
+      r.on("data", c => body += c);
+      r.on("end", () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+    }).on("error", reject);
+  });
+}
+function tgFileDownload(filePath) {
+  return new Promise((resolve, reject) => {
+    https.get("https://api.telegram.org/file/bot" + BOT_TOKEN + "/" + filePath, r => {
+      if (r.statusCode !== 200) { r.resume(); return reject(new Error("fetch_failed_" + r.statusCode)); }
+      const chunks = [];
+      r.on("data", c => chunks.push(c));
+      r.on("end", () => resolve(Buffer.concat(chunks)));
+    }).on("error", reject);
+  });
+}
+
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
 const FRAGMENT_API_KEY = process.env.FRAGMENT_API_KEY || "";
 const FRAGMENT_HOST = "fragment-api.uz";
@@ -577,6 +604,33 @@ const server = http.createServer((req, res) => {
       fs.writeFile(CATMETA_FILE, JSON.stringify(obj), err =>
         err ? send(res, 500, { error: "write failed" }) : send(res, 200, { ok: true }));
     });
+  }
+
+  // Admin panelidan premium emoji ID kiritilganda chaqiriladi: Telegram Bot API orqali
+  // shu custom emoji'ning video (webm) faylini topib, base64 data-url qilib qaytaradi.
+  if (url === "/api/admin/premium-emoji" && m === "GET") {
+    const u = auth(req);
+    if (!isAdm(u)) return send(res, 403, { error: "not admin" });
+    if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
+    const emojiId = (q.get("id") || "").trim();
+    if (!/^\d+$/.test(emojiId)) return send(res, 400, { error: "invalid_id" });
+    tgApiGet("getCustomEmojiStickers", { custom_emoji_ids: JSON.stringify([emojiId]) })
+      .then(j => {
+        if (!j.ok || !j.result || !j.result.length) { send(res, 404, { error: "emoji_not_found" }); return null; }
+        const sticker = j.result[0];
+        if (!sticker.is_video) {
+          send(res, 422, { error: "unsupported_format" });
+          return null;
+        }
+        return tgApiGet("getFile", { file_id: sticker.file_id }).then(fj => {
+          if (!fj.ok || !fj.result || !fj.result.file_path) { send(res, 502, { error: "file_lookup_failed" }); return; }
+          return tgFileDownload(fj.result.file_path).then(buf => {
+            send(res, 200, { ok: true, dataUrl: "data:video/webm;base64," + buf.toString("base64") });
+          });
+        });
+      })
+      .catch(e => send(res, 500, { error: e.message }));
+    return;
   }
 
   /* ----- user endpoints (need valid Telegram signature) ----- */
