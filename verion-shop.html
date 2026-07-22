@@ -2153,18 +2153,6 @@ function showDeliveredSheet(it,order){
 /* ===== top-up (payment window with unique amount + timer) ===== */
 function payHTML(){
   var html='<div class="sect">'+esc(t("pay_title"))+'</div>';
-  html+='<div class="card">';
-  if(SHOW_VIDEO_ROW){
-    html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
-      +'<span class="rowicon ric-red">'+ic("play",16,"")+'</span><div><div>'+esc(t("video_guide"))+'</div>'
-      +'<div class="d" style="color:var(--err)">'+esc(t("video_guide_sub"))+'</div></div></div>'
-      +'<button class="btn sm gray" data-openvid="1">'+ic("arrowRight",14)+'</button></div>';
-  }
-  html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
-    +'<span class="rowicon ric-green">'+ic("headset",16)+'</span><div><div>'+esc(t("support"))+'</div>'
-    +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
-    +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div>'
-    +'</div>';
   if(!tgUser()){
     return html+'<div class="card" style="color:var(--mut);font-size:13.5px">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>';
   }
@@ -2204,7 +2192,20 @@ function payHTML(){
   }
   // 1-QADAM: to'lov usuli hali tanlanmagan bo'lsa — faqat usullar ro'yxati ko'rsatiladi
   // (rasmdagi 2-chi bot kabi alohida qadam, summa kiritish keyingi qadamda bo'ladi).
+  // Video qo'llanma + texnik yordam paneli FAQAT shu birinchi qadamda ko'rsatiladi.
   if(!S.topup.method){
+    html+='<div class="card">';
+    if(SHOW_VIDEO_ROW){
+      html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
+        +'<span class="rowicon ric-red">'+ic("play",16,"")+'</span><div><div>'+esc(t("video_guide"))+'</div>'
+        +'<div class="d" style="color:var(--err)">'+esc(t("video_guide_sub"))+'</div></div></div>'
+        +'<button class="btn sm gray" data-openvid="1">'+ic("arrowRight",14)+'</button></div>';
+    }
+    html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
+      +'<span class="rowicon ric-green">'+ic("headset",16)+'</span><div><div>'+esc(t("support"))+'</div>'
+      +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
+      +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div>'
+      +'</div>';
     html+='<div class="sect" style="margin:14px 16px 6px;font-size:11px">'+esc(t("choose_method"))+'</div>';
     html+='<div class="paybox"><div class="methods">';
     for(var i=0;i<CARDS.length;i++){
