@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Shop</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
 <style>
 :root{
   --bg:#0a0e14; --card:#121821; --card2:#1a2230; --line:#28323f;
@@ -1449,9 +1450,59 @@ var LANG_FLAG={uz:"🇺🇿",ru:"🇷🇺",en:"🇬🇧"};
 var LANG_NAME={uz:"O‘zbekcha",ru:"Русский",en:"English"};
 var LANG_ORDER=["uz","ru","en"];
 var TABS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"],["nakrutka","tab_nakrutka"],["extra1","tab_extra1"],["extra2","tab_extra2"]];
+/* ===== Lottie (.tgs) premium emoji render — bir marta yuklab olingan JSON
+   barcha joyda (mahsulot kartochkasi, guruh belgisi, buyurtma tarixi, admin
+   preview) qayta ishlatiladi. Matn tarkibiga qarab barqaror kalit hisoblanadi,
+   shuning uchun bir xil emoji qayta-qayta saqlanmaydi. */
+var LOTTIE_STORE={};
+function lottieKey(jsonStr){
+  var h=0;
+  for(var i=0;i<jsonStr.length;i++){h=(h*31+jsonStr.charCodeAt(i))|0;}
+  var key="lt"+(h>>>0);
+  if(!(key in LOTTIE_STORE)){
+    try{LOTTIE_STORE[key]=JSON.parse(jsonStr);}catch(e){LOTTIE_STORE[key]=null;}
+  }
+  return key;
+}
+function lottieTileHTML(jsonStr,extraStyle){
+  return '<div class="lottie-tile" data-lottie-key="'+esc(lottieKey(jsonStr))+'" style="width:100%;height:100%'+(extraStyle||"")+'"></div>';
+}
+var LOTTIE_INSTANCES=[];
+function pruneLottieInstances(){
+  for(var i=LOTTIE_INSTANCES.length-1;i>=0;i--){
+    var it=LOTTIE_INSTANCES[i];
+    if(!it.wrapper||!document.body.contains(it.wrapper)){
+      try{it.anim.destroy();}catch(e){}
+      LOTTIE_INSTANCES.splice(i,1);
+    }
+  }
+}
+function initLottieTiles(root){
+  if(typeof lottie==="undefined")return;
+  pruneLottieInstances();
+  var els=(root||document).querySelectorAll("[data-lottie-key]:not([data-lottie-ready])");
+  for(var i=0;i<els.length;i++){
+    var el=els[i],key=el.getAttribute("data-lottie-key");
+    el.setAttribute("data-lottie-ready","1");
+    var data=LOTTIE_STORE[key];
+    if(!data)continue;
+    try{
+      var anim=lottie.loadAnimation({container:el,renderer:"svg",loop:true,autoplay:true,animationData:data});
+      LOTTIE_INSTANCES.push({wrapper:el,anim:anim});
+    }catch(e){}
+  }
+}
+try{
+  var lottieMoTimer=null;
+  new MutationObserver(function(){
+    clearTimeout(lottieMoTimer);
+    lottieMoTimer=setTimeout(function(){initLottieTiles(document);},30);
+  }).observe(document.body,{childList:true,subtree:true});
+}catch(e){}
 function tileIconHTML(tile,fallback){
   tile=tile||{};
   if(tile.video)return '<video src="'+esc(tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></video>';
+  if(tile.lottie)return lottieTileHTML(tile.lottie);
   if(tile.emoji)return esc(tile.emoji);
   return fallback;
 }
@@ -1460,6 +1511,9 @@ function tileHTML(it,big){
   var isGift=it&&it.fulfill==="telegram_gift";
   if(st.video){
     return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000"><video src="'+esc(st.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
+  }
+  if(st.lottie){
+    return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000">'+lottieTileHTML(st.lottie)+'</div>';
   }
   if(st.emoji){
     var glow=isGift&&big;
@@ -2423,6 +2477,7 @@ var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cn
 function historyThumbHTML(itemId,fallbackSvg){
   var it=itemId?byId(itemId):null;
   if(it&&it.tile&&it.tile.video)return '<div class="hc-thumb"><video src="'+esc(it.tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
+  if(it&&it.tile&&it.tile.lottie)return '<div class="hc-thumb">'+lottieTileHTML(it.tile.lottie)+'</div>';
   if(it&&it.tile&&it.tile.emoji)return '<div class="hc-thumb">'+esc(it.tile.emoji)+'</div>';
   if(it&&it.tile&&it.tile.img)return '<div class="hc-thumb"><img src="'+esc(it.tile.img)+'" alt="" loading="lazy" onerror="this.parentNode.textContent=\'\'"></div>';
   return '<div class="hc-thumb" style="color:var(--mut)">'+fallbackSvg+'</div>';
@@ -3929,6 +3984,7 @@ function openAdminForm(editId){
     img:it?(it.tile&&it.tile.img||""):"",
     emoji:it?(it.tile&&it.tile.emoji||""):"",
     video:it?(it.tile&&it.tile.video||""):"",
+    lottie:it?(it.tile&&it.tile.lottie||""):"",
     den:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.en)||""):"",
     duz:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.uz)||""):"",
     dru:it?(it.desc&&(typeof it.desc==="string"?it.desc:it.desc.ru)||""):"",
@@ -3983,7 +4039,7 @@ function openAdminForm(editId){
     +'<label>Premium (Telegram) emoji ID</label>'
     +'<div class="arow"><input id="f_premEmojiId" style="flex:1" value="" placeholder="5433838489083409183" inputmode="numeric">'
     +'<button class="btn sm" id="f_premEmojiFetch" type="button">Yuklab olish</button></div>'
-    +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — animatsion bo\'lsa video, statik bo\'lsa rasm sifatida avtomatik joylashadi.</div>'
+    +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — istalgan formatdagi (video, statik yoki eski Lottie/.tgs) premium emoji avtomatik joylashadi.</div>'
     +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
     +'<div class="minnote">'+esc(t("a_video_hint"))+'</div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
@@ -4023,7 +4079,7 @@ function openAdminForm(editId){
   function preview(){
     readForm();
     var hideStock=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka");
-    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video},
+    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video,lottie:F.lottie},
       title:F.title||"…",price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
     var out=fake.stock<=0;
     g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
@@ -4131,20 +4187,24 @@ function openAdminForm(editId){
     api("/api/admin/premium-emoji?id="+encodeURIComponent(id),"GET").then(function(r){
       var ew=g("#f_emoji"),vw=g("#f_video");
       if(r.kind==="video"){
-        F.video=r.dataUrl;F.img="";
+        F.video=r.dataUrl;F.img="";F.lottie="";
         if(vw)vw.value=r.dataUrl;
+      }else if(r.kind==="lottie"){
+        F.lottie=r.lottieJson;F.video="";F.img="";
+        if(vw)vw.value="";
       }else{
-        F.img=r.dataUrl;F.video="";
+        F.img=r.dataUrl;F.video="";F.lottie="";
         if(vw)vw.value="";
       }
       F.emoji="";if(ew)ew.value="";
-      if(statusEl)statusEl.textContent="✅ Muvaffaqiyatli yuklandi ("+(r.kind==="video"?"animatsion":"statik")+") — pastdagi ko'rinishda tekshiring.";
+      var kindLabel=r.kind==="video"?"animatsion (video)":r.kind==="lottie"?"animatsion (Lottie)":"statik";
+      if(statusEl)statusEl.textContent="✅ Muvaffaqiyatli yuklandi ("+kindLabel+") — pastdagi ko'rinishda tekshiring.";
       preview();toast("Premium emoji qo'shildi");
       premBtn.disabled=false;premBtn.textContent="Yuklab olish";
     }).catch(function(e){
       var code=e&&e.resp&&e.resp.error;
-      var msg=code==="unsupported_format"?"Bu emoji eski Lottie (.tgs) formatida — faqat video yoki statik rasm formatidagi premium emojilar qo'llab-quvvatlanadi"
-        :code==="emoji_not_found"?"Bunday ID topilmadi — ID to'g'riligini tekshiring"
+      var msg=code==="emoji_not_found"?"Bunday ID topilmadi — ID to'g'riligini tekshiring"
+        :code==="tgs_decode_failed"?"Animatsiya faylini o'qib bo'lmadi, qayta urinib ko'ring"
         :code==="not admin"?"Ruxsat yo'q":"Xatolik yuz berdi, qayta urinib ko'ring";
       if(statusEl)statusEl.textContent="⚠️ "+msg;
       toast(msg);
@@ -4175,7 +4235,7 @@ function openAdminForm(editId){
       if(groupKey&&groupKey!=="__new__")upsertGroupDef(F.kind,groupKey,groupLabel,groupImg);
       var data={
         kind:F.kind,cat:"",price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video||""},
+        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video||"",lottie:F.lottie||""},
         title:titleObj,
         desc:descObj,
         note:F.note||"",
