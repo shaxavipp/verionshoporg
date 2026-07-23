@@ -139,35 +139,81 @@ function loadState(db) {
   return { users, orders, payments, reviews, stock, settings, orderSeq, smsLog, notifState };
 }
 
+// ---------- generic incremental sync yordamchilari ----------
+// To'liq "DELETE FROM X; INSERT INTO X ..." o'rniga: faqat endi mavjud bo'lmagan
+// qatorlarni o'chiradi va qolganlarini UPSERT (INSERT ... ON CONFLICT DO UPDATE)
+// qiladi. Natija (loadState() qaytaradigan ma'lumot) avvalgidek bir xil,
+// faqat har save() chaqirilganda butun jadval qayta yozilmaydi —
+// buyurtmalar/to'lovlar soni ko'paygani sari yozish tezligi doimiy (o(o'zgarish),
+// avvalgidek o(jami yozuv soni) emas) bo'lib qoladi.
+function syncKeyedDelete(db, tableName, idCol, currentIds) {
+  const existing = db.prepare(`SELECT ${idCol} AS id FROM ${tableName}`).all();
+  if (!existing.length) return;
+  const keep = currentIds instanceof Set ? currentIds : new Set(currentIds);
+  const del = db.prepare(`DELETE FROM ${tableName} WHERE ${idCol} = ?`);
+  for (const row of existing) {
+    if (!keep.has(String(row.id))) del.run(row.id);
+  }
+}
+
+// ---------- asosiy DB'ni yozish (incremental upsert, to'liq qayta yozish emas) ----------
 function saveState(db, DB) {
   withTx(db, () => {
-    db.exec("DELETE FROM users");
-    const uStmt = db.prepare("INSERT INTO users (id, data) VALUES (?, ?)");
+    // users
+    syncKeyedDelete(db, "users", "id", Object.keys(DB.users || {}));
+    const uStmt = db.prepare(
+      "INSERT INTO users (id, data) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data"
+    );
     for (const k in DB.users) uStmt.run(k, JSON.stringify(DB.users[k]));
 
-    db.exec("DELETE FROM orders");
-    const oStmt = db.prepare("INSERT INTO orders (id, uid, status, seq, ts, data) VALUES (?, ?, ?, ?, ?, ?)");
-    for (const o of DB.orders) {
+    // orders
+    const orderIds = (DB.orders || []).map(o => String(o.id));
+    syncKeyedDelete(db, "orders", "id", orderIds);
+    const oStmt = db.prepare(
+      "INSERT INTO orders (id, uid, status, seq, ts, data) VALUES (?, ?, ?, ?, ?, ?) " +
+      "ON CONFLICT(id) DO UPDATE SET uid = excluded.uid, status = excluded.status, " +
+      "seq = excluded.seq, ts = excluded.ts, data = excluded.data"
+    );
+    for (const o of DB.orders || []) {
       oStmt.run(String(o.id), String(o.uid != null ? o.uid : ""), o.status || null,
         o.seq || null, o.ts || null, JSON.stringify(o));
     }
 
-    db.exec("DELETE FROM payments");
-    const pStmt = db.prepare("INSERT INTO payments (id, uid, status, ts, data) VALUES (?, ?, ?, ?, ?)");
-    for (const p of DB.payments) {
+    // payments
+    const paymentIds = (DB.payments || []).map(p => String(p.id));
+    syncKeyedDelete(db, "payments", "id", paymentIds);
+    const pStmt = db.prepare(
+      "INSERT INTO payments (id, uid, status, ts, data) VALUES (?, ?, ?, ?, ?) " +
+      "ON CONFLICT(id) DO UPDATE SET uid = excluded.uid, status = excluded.status, " +
+      "ts = excluded.ts, data = excluded.data"
+    );
+    for (const p of DB.payments || []) {
       pStmt.run(String(p.id), String(p.uid != null ? p.uid : ""), p.status || null, p.ts || null, JSON.stringify(p));
     }
 
-    db.exec("DELETE FROM reviews");
-    const rStmt = db.prepare("INSERT INTO reviews (id, order_id, uid, data) VALUES (?, ?, ?, ?)");
-    for (const r of DB.reviews) rStmt.run(String(r.id), r.orderId || null, String(r.uid != null ? r.uid : ""), JSON.stringify(r));
+    // reviews
+    const reviewIds = (DB.reviews || []).map(r => String(r.id));
+    syncKeyedDelete(db, "reviews", "id", reviewIds);
+    const rStmt = db.prepare(
+      "INSERT INTO reviews (id, order_id, uid, data) VALUES (?, ?, ?, ?) " +
+      "ON CONFLICT(id) DO UPDATE SET order_id = excluded.order_id, uid = excluded.uid, data = excluded.data"
+    );
+    for (const r of DB.reviews || []) {
+      rStmt.run(String(r.id), r.orderId || null, String(r.uid != null ? r.uid : ""), JSON.stringify(r));
+    }
 
-    db.exec("DELETE FROM stock");
-    const sStmt = db.prepare("INSERT INTO stock (item_id, data) VALUES (?, ?)");
+    // stock
+    syncKeyedDelete(db, "stock", "item_id", Object.keys(DB.stock || {}));
+    const sStmt = db.prepare(
+      "INSERT INTO stock (item_id, data) VALUES (?, ?) ON CONFLICT(item_id) DO UPDATE SET data = excluded.data"
+    );
     for (const k in DB.stock) sStmt.run(k, JSON.stringify(DB.stock[k] || []));
 
-    db.exec("DELETE FROM settings");
-    const setStmt = db.prepare("INSERT INTO settings (key, value) VALUES (?, ?)");
+    // settings
+    syncKeyedDelete(db, "settings", "key", Object.keys(DB.settings || {}));
+    const setStmt = db.prepare(
+      "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+    );
     for (const k in DB.settings) setStmt.run(k, JSON.stringify(DB.settings[k]));
 
     db.prepare("INSERT INTO kv (key, value) VALUES ('orderSeq', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
