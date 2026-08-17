@@ -560,6 +560,12 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .arow{display:flex;gap:8px}
 .arow>*{flex:1}
+.qtyRow{display:flex;align-items:center;gap:10px}
+.qtyBtn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:19px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center}
+.qtyBtn:active{transform:scale(.92)}
+.qtyBtn:disabled{opacity:.35}
+.qtyVal{min-width:28px;text-align:center;font-size:16px;font-weight:800}
+.qtyHint{margin-left:auto;font-size:11.5px;color:var(--mut)}
 .itemrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
 .itemrow:last-child{border-bottom:none}
 .itemrow .nm{font-size:13.5px;font-weight:600}
@@ -729,6 +735,7 @@ en:{
   choose_method:"Choose a payment method",custom_pay:"Payment",method_hint:"Select a payment method above to continue",retry_load:"Couldn't load — tap to retry",
   pay_method_label:"Payment method",links_section:"Links",how_to_topup_q:"How to top up?",understood_btn:"Got it",balance_caps:"BALANCE",intl_name:"INTERNATIONAL",
   orders_title:"My orders",orders_empty:"No orders yet.", tab_orders:"Orders",tab_finance:"Top-ups",f_all:"All",f_done:"Completed",f_pending:"Pending",f_cancelled:"Cancelled", delivered_title:"Your product",delivered_ok:"Got it",
+  qty_label:"Quantity",qty_max_note:"up to {n} pcs",delivered_file_note:"Too long to fit in a message — sent to you via the bot as a file.",
   ord_number:"Order number",ord_status:"Status",ord_recipient:"Recipient",ord_method:"Method",ord_created:"Created",ord_player_id:"Player ID",ord_user_id:"User ID",ord_price:"Price",
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
@@ -812,6 +819,7 @@ uz:{
   choose_method:"To'lov usulini tanlang",custom_pay:"To'lov",method_hint:"Davom etish uchun yuqoridan to'lov usulini tanlang",retry_load:"Yuklanmadi — qayta urinish uchun bosing",
   pay_method_label:"To'lov usuli",links_section:"Havolalar",how_to_topup_q:"Qanday to'ldirish?",understood_btn:"Tushundim",balance_caps:"BALANS",intl_name:"XALQARO",
   orders_title:"Buyurtmalarim",orders_empty:"Hali buyurtma yo'q.", tab_orders:"Buyurtmalar",tab_finance:"To'ldirishlar",f_all:"Barchasi",f_done:"Bajarildi",f_pending:"Kutilmoqda",f_cancelled:"Bekor qilindi", delivered_title:"Sizning mahsulotingiz",delivered_ok:"Tushunarli",
+  qty_label:"Miqdor",qty_max_note:"max {n} dona",delivered_file_note:"Matn juda uzun bo'lgani uchun xabarga sig'madi — bot orqali sizga fayl qilib yuborildi.",
   ord_number:"Buyurtma raqami",ord_status:"Holat",ord_recipient:"Qabul qiluvchi",ord_method:"Usul",ord_created:"Yaratilgan",ord_player_id:"O'yinchi ID",ord_user_id:"Foydalanuvchi ID",ord_price:"Narx",
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
@@ -895,6 +903,7 @@ ru:{
   choose_method:"Выберите способ оплаты",custom_pay:"Оплата",method_hint:"Выберите способ оплаты выше, чтобы продолжить",retry_load:"Не удалось загрузить — нажмите, чтобы повторить",
   pay_method_label:"Способ оплаты",links_section:"Ссылки",how_to_topup_q:"Как пополнить?",understood_btn:"Понятно",balance_caps:"БАЛАНС",intl_name:"МЕЖДУНАРОДНАЯ",
   orders_title:"Мои заказы",orders_empty:"Заказов пока нет.", tab_orders:"Заказы",tab_finance:"Пополнения",f_all:"Все",f_done:"Выполнено",f_pending:"В ожидании",f_cancelled:"Отменено", delivered_title:"Ваш товар",delivered_ok:"Понятно",
+  qty_label:"Количество",qty_max_note:"до {n} шт",delivered_file_note:"Текст слишком длинный для сообщения — отправлен вам через бота в виде файла.",
   ord_number:"Номер заказа",ord_status:"Статус",ord_recipient:"Получатель",ord_method:"Способ",ord_created:"Создан",ord_player_id:"ID игрока",ord_user_id:"ID пользователя",ord_price:"Цена",
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
@@ -2082,16 +2091,41 @@ function openProduct(id){
   if(it.fulfill==="telegram_gift")return openGiftBuy(it);
   if(it.fulfill==="gift_hub"){S.giftHub={tab:"oddiy",hubId:it.id,selected:null};haptic();render();window.scrollTo(0,0);return;}
   var out=it.stock<=0,guest=!tgUser();
+  var MAX_QTY=10;
+  var qtyMax=it.kind==="obuna"?Math.max(1,Math.min(MAX_QTY,it.stock||1)):1;
+  var showQty=it.kind==="obuna"&&!out&&qtyMax>1;
   var sh=openSheet(
     tileHTML(it,true)
     +'<h2>'+esc(loc(it.title))+'</h2>'
     +(it.kind==="obuna"?('<div class="cat">'+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</div>'):"")
     +'<div class="desc">'+esc(loc(it.desc))+'</div>'
+    +(showQty?(
+      '<div class="sect" style="margin:14px 0 6px">'+esc(t("qty_label"))+'</div>'
+      +'<div class="qtyRow">'
+      +'<button type="button" class="qtyBtn" id="qtyMinus">−</button>'
+      +'<div class="qtyVal" id="qtyVal">1</div>'
+      +'<button type="button" class="qtyBtn" id="qtyPlus">+</button>'
+      +'<div class="qtyHint">'+esc(t("qty_max_note")).replace("{n}",qtyMax)+'</div>'
+      +'</div>'
+    ):"")
     +(guest?'<div class="paynote">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>':"")
-    +'<button class="btn big" id="buyBtn" '+((out||guest)?"disabled":"")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — '+esc(money(it.price))+'</button>'
+    +'<button class="btn big" id="buyBtn" '+((out||guest)?"disabled":"")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — <span id="buyBtnPrice">'+esc(money(it.price))+'</span></button>'
   );
+  var qty=1;
+  if(showQty){
+    var qv=sh.querySelector("#qtyVal"),qp=sh.querySelector("#buyBtnPrice");
+    function refreshQty(){
+      qv.textContent=qty;
+      qp.textContent=money(it.price*qty);
+      sh.querySelector("#qtyMinus").disabled=qty<=1;
+      sh.querySelector("#qtyPlus").disabled=qty>=qtyMax;
+    }
+    sh.querySelector("#qtyMinus").addEventListener("click",function(){if(qty>1){qty--;refreshQty();haptic();}});
+    sh.querySelector("#qtyPlus").addEventListener("click",function(){if(qty<qtyMax){qty++;refreshQty();haptic();}});
+    refreshQty();
+  }
   var btn=sh.querySelector("#buyBtn");
-  if(btn&&!out&&!guest)btn.addEventListener("click",function(){openBuyConfirm(it);});
+  if(btn&&!out&&!guest)btn.addEventListener("click",function(){openBuyConfirm(it,qty);});
 }
 
 /* ===== moslashuvchan (istalgan miqdorda) Stars xaridi — Fragment orqali ===== */
@@ -2258,13 +2292,14 @@ function openGiftBuy(it){
 }
 
 /* ===== buy from balance ===== */
-function openBuyConfirm(it){
-  var bal=ME.balance,price=it.price;
+function openBuyConfirm(it,qty){
+  qty=Math.max(1,Math.min(10,Math.round(Number(qty)||1)));
+  var bal=ME.balance,price=it.price*qty;
   var enough=bal!==null&&bal>=price;
   var sh=openSheet(
     tileHTML(it,true)
     +'<h2>'+esc(t("buy_confirm"))+'</h2>'
-    +'<div class="refline"><span>'+esc(loc(it.title))+'</span><b>'+esc(money(price))+'</b></div>'
+    +'<div class="refline"><span>'+esc(loc(it.title))+(qty>1?(' ×'+qty):'')+'</span><b>'+esc(money(price))+'</b></div>'
     +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
     +(enough?'<div class="refline"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-price))+'</b></div>':'')
     +'<div style="height:12px"></div>'
@@ -2275,7 +2310,7 @@ function openBuyConfirm(it){
   var b=sh.querySelector("#doBuy");
   if(b)b.addEventListener("click",function(){
     b.disabled=true;b.textContent=t("processing");
-    api("/api/buy","POST",{itemId:it.id}).then(function(r){
+    api("/api/buy","POST",{itemId:it.id,quantity:qty}).then(function(r){
       ME.balance=r.balance;haptic("ok");closeSheet();
       loadMe(function(){
         if(r.order&&r.order.delivered){showDeliveredSheet(it,r.order);}
@@ -2308,12 +2343,16 @@ function openBuyConfirm(it){
 /* mijozga xarid qilinganidan so'ng darhol chiqadigan mahsulot (login/parol/promokod) oynasi */
 function showDeliveredSheet(it,order){
   var guide=it.note?('<div class="paynote">'+ic("clipboard",13)+' '+esc(loc(it.note))+'</div>'):"";
+  // Matn juda uzun bo'lgani uchun (masalan bir nechta dona birga sotib olinganda) server
+  // uni Telegram xabari sifatida emas, .txt fayl qilib botdan yuborgan bo'lsa — shu haqda eslatma.
+  var fileNote=order.deliveredAsFile?('<div class="paynote">'+ic("clipboard",13)+' '+esc(t("delivered_file_note"))+'</div>'):"";
   var sh=openSheet(
     '<h2>'+ic("check",19)+' '+esc(t("delivered_title"))+'</h2>'
-    +'<div class="refline"><span>'+esc(loc(it.title))+'</span></div>'
+    +'<div class="refline"><span>'+esc(loc(it.title))+(order.quantity>1?(' ×'+order.quantity):'')+'</span></div>'
     +'<div class="cardbox" style="margin-top:10px"><div class="crow"><div style="word-break:break-all;font-size:14px;font-weight:700">'
     +esc(order.delivered)+'</div>'
     +'<button class="cpy" data-copy="'+esc(order.delivered)+'">'+esc(t("copy"))+'</button></div></div>'
+    +fileNote
     +guide
     +'<div style="height:10px"></div>'
     +'<button class="btn big" id="delivClose">'+esc(t("delivered_ok"))+'</button>'

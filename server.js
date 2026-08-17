@@ -272,6 +272,32 @@ function notifyOrder(o) {
     tgSend(o.uid, text);
   } catch (e) {}
 }
+// Zaxiradan (stock) yetkazilgan mahsulot(lar)ni (login/parol, kod va h.k.) mijozga
+// bot orqali ham yuboradi. Bir nechta dona (max 10) birgalikda sotib olinsa,
+// hammasi BITTA xabarda (yoki matn juda uzun bo'lsa BITTA .txt faylda) ketadi —
+// mijoz alohida-alohida emas, bir joydan hammasini nusxalab/ochib ola oladi.
+// Telegram oddiy xabarning belgi chegarasi ~4096 — shu sabab xavfsiz chegara sifatida
+// 3500 belgi olinadi, undan oshsa fayl (hujjat) ko'rinishida yuboriladi.
+const TG_TEXT_SAFE_LIMIT = 3500;
+function deliverStockToCustomer(o, title) {
+  try {
+    if (!o.delivered || !o.uid) return;
+    const header = "🔑 " + title + (o.quantity > 1 ? (" ×" + o.quantity) : "") + "\n\n";
+    if ((header.length + o.delivered.length) <= TG_TEXT_SAFE_LIMIT) {
+      tgSend(o.uid, header + o.delivered);
+      return;
+    }
+    // Matn juda katta — oddiy xabarga sig'maydi, shu sabab .txt fayl qilib yuboriladi.
+    o.deliveredAsFile = true;
+    const buf = Buffer.from(o.delivered, "utf8");
+    const filename = "buyurtma-" + o.seq + ".txt";
+    tgSendDocument(o.uid, buf, filename, header.trim() + " (buyurtma #" + o.seq + ")")
+      .catch(() => {
+        // fayl yuborish muvaffaqiyatsiz bo'lsa — hech bo'lmasa qisqartirilgan matn ketsin
+        tgSend(o.uid, header + o.delivered.slice(0, TG_TEXT_SAFE_LIMIT - 60) + "\n\n… (to'liq nusxasi ilovada, \"Buyurtmalarim\" bo'limida)");
+      });
+  } catch (e) {}
+}
 
 /* ---------- TZ band 6: sevimli mahsulotlar uchun push-bildirishnoma ----------
    Foydalanuvchi "sevimlilar"ga qo'shgan mahsulot (a) stock 0dan 1+ ga o'tsa yoki
@@ -1183,21 +1209,37 @@ const server = http.createServer((req, res) => {
         return;
       }
 
-      // Agar bu mahsulot uchun inventar (aniq zaxira ro'yxati) yuritilayotgan bo'lsa va u tugagan bo'lsa — sotib bo'lmaydi
+      // Bitta xariddagi maksimal dona soni — mijoz 1 tadan 10 tagacha birga sotib olishi mumkin.
+      const MAX_BUY_QTY = 10;
       const listCheck = DB.stock[it.id];
-      if (Array.isArray(listCheck) && listCheck.length === 0)
+      const isStockItem = Array.isArray(listCheck);
+      const quantity = Math.max(1, Math.min(MAX_BUY_QTY, Math.round(Number(b.quantity) || 1)));
+      // Agar bu mahsulot uchun inventar (aniq zaxira ro'yxati) yuritilayotgan bo'lsa va u tugagan
+      // yoki so'ralgan miqdorga yetmasa — sotib bo'lmaydi (mavjud sonini ham qaytaramiz).
+      if (isStockItem && listCheck.length === 0)
         return send(res, 409, { error: "out_of_stock" });
-      if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
-      // Zaxirada (stock) tayyor mahsulot bo'lsa — bittasini olib, shu mijozga qat'iy biriktiramiz
-      // (boshqa hech kimga qayta berilmaydi), balansdan yechamiz va darhol "bajarildi" deb belgilaymiz.
+      if (isStockItem && quantity > listCheck.length)
+        return send(res, 409, { error: "out_of_stock", available: listCheck.length });
+      const totalPrice = price * quantity;
+      if (acc.balance < totalPrice) return send(res, 402, { error: "balance", need: totalPrice - acc.balance });
+      // Zaxirada (stock) tayyor mahsulot bo'lsa — so'ralgan miqdorni olib, shu mijozga qat'iy
+      // biriktiramiz (boshqa hech kimga qayta berilmaydi), balansdan yechamiz va darhol
+      // "bajarildi" deb belgilaymiz. Bir nechta dona sotib olinsa — hammasi bitta buyurtmada,
+      // bitta (nusxalanadigan) matn blokida birlashtiriladi.
       const list = DB.stock[it.id];
-      const delivered = (Array.isArray(list) && list.length) ? list.shift() : null;
-      acc.balance -= price;
+      let delivered = null;
+      if (Array.isArray(list) && list.length) {
+        const n = Math.min(quantity, list.length);
+        const items = list.splice(0, n);
+        delivered = items.length > 1 ? items.map((v, i) => "#" + (i + 1) + ") " + v).join("\n\n") : items[0];
+      }
+      acc.balance -= totalPrice;
       const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
-        item: title, price, status: delivered ? "done" : "pending", ts: Date.now(),
+        item: title + (quantity > 1 ? (" ×" + quantity) : ""), price: totalPrice,
+        status: delivered ? "done" : "pending", ts: Date.now(), quantity,
         delivered: delivered || null, doneTs: delivered ? Date.now() : null };
       DB.orders.push(o); save(); notifyOrder(o);
-      if (delivered) creditReferralOnOrder(o);
+      if (delivered) { creditReferralOnOrder(o); deliverStockToCustomer(o, title); }
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
   }
