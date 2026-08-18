@@ -213,6 +213,11 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
   transition:transform .2s var(--spring)}
 .sheet-x:active{transform:scale(.82)}
 .sheet-x svg{width:15px;height:15px}
+.sheet-back{position:absolute;top:0;left:12px;width:30px;height:30px;border-radius:50%;
+  background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;color:var(--txt);flex-shrink:0;
+  transition:transform .2s var(--spring)}
+.sheet-back:active{transform:scale(.82)}
+.sheet-back svg{width:16px;height:16px}
 .sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
 .sheet .cat{font-size:12px;color:var(--mut);margin-bottom:10px}
 .sheet .desc{font-size:14px;color:var(--txt);opacity:.88;margin:10px 0 14px;white-space:pre-wrap}
@@ -1780,7 +1785,7 @@ function openAdminCategories(){
       +'</div>';
   }
   html+='<div style="height:8px"></div><button class="btn big" id="catSaveBtn">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
   var pendingImg={};
   for(var i=0;i<TABS.length;i++)(function(kind){
     var f=sh.querySelector("#cf_"+kind);
@@ -2073,11 +2078,17 @@ function openReviewForm(orderId,itemTitle){
 }
 
 /* ===== sheets ===== */
-function openSheet(inner){
+// backFn berilsa (odatda admin panelidagi ichki ekranlar uchun) — sheet-head'da
+// chapda "‹" (orqaga) tugmasi chiqadi, bosilganda joriy oyna yopiladi va backFn()
+// chaqiriladi (ya'ni oldingi ekran qayta ochiladi). X tugmasi esa hamon HAMMASINI
+// (butun zanjirni) yopadi — bu ikkalasi endi alohida, aniq vazifaga ega.
+function openSheet(inner,backFn){
   closeSheet();
   var dim=document.createElement("div");dim.className="dim";dim.id="dim";
   var sh=document.createElement("div");sh.className="sheet";sh.id="sheetEl";
-  sh.innerHTML='<div class="sheet-head"><div class="grab"></div>'
+  sh.innerHTML='<div class="sheet-head">'
+    +(backFn?('<button class="sheet-back" id="sheetBackBtn" type="button" aria-label="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>'):'')
+    +'<div class="grab"></div>'
     +'<button class="sheet-x" id="sheetXBtn" type="button" aria-label="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
     +'<div class="sheet-body">'+inner+'</div>';
   document.body.appendChild(dim);document.body.appendChild(sh);
@@ -2085,6 +2096,7 @@ function openSheet(inner){
   requestAnimationFrame(function(){dim.classList.add("on");sh.classList.add("on");});
   dim.addEventListener("click",closeSheet);
   sh.querySelector("#sheetXBtn").addEventListener("click",closeSheet);
+  if(backFn){var bb=sh.querySelector("#sheetBackBtn");if(bb)bb.addEventListener("click",function(){backFn();});}
   return sh;
 }
 function closeSheet(){var d=document.getElementById("dim"),s=document.getElementById("sheetEl");if(d)d.remove();if(s)s.remove();document.body.style.overflow="";}
@@ -3231,7 +3243,7 @@ function openAdmin(){
     for(var pj=0;pj<all.length;pj++)all[pj].classList.toggle("on",all[pj]===this);
     loadStatsPeriod(this.getAttribute("data-period"));
   });
-  sh.querySelector("#aMoney").addEventListener("click",openAdminMoney);
+  sh.querySelector("#aMoney").addEventListener("click",function(){openAdminMoney();});
   sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
   sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
@@ -3275,7 +3287,7 @@ function openAdminReferral(){
     +'<label>'+esc(t("a_referral_sharetext"))+'</label><textarea id="refShareText" rows="3" placeholder="'+esc(t("a_referral_sharetext_ph"))+'"></textarea>'
     +'<div style="height:12px"></div><button class="btn" id="refSaveBtn">'+esc(t("a_save"))+'</button>'
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
   var enabled=false;
   api("/api/admin/referral-settings").then(function(r){
     enabled=!!r.enabled;
@@ -3315,7 +3327,7 @@ function openAdminDashboard(){
     +'<div class="stat"><div class="v" id="dashActive">…</div><div class="k">'+esc(t("a_dash_active"))+'</div></div>'
     +'</div>'
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
   api("/api/admin/dashboard").then(function(d){
     sh.querySelector("#dashToday").textContent=money(d.sales.today);
     sh.querySelector("#dashWeek").textContent=money(d.sales.week);
@@ -3405,7 +3417,7 @@ function openAdminUiEmoji(){
     +'<div class="sect" style="margin:14px 0 6px">Profil tugmalari</div>'
     +PROFILE_SLOTS.map(rowHTML).join("")
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
   ALL.forEach(function(s){
     var id=safeId(s.key);
     var idw=sh.querySelector("#uiid_"+id);
@@ -3474,7 +3486,7 @@ function openAdminNakrutka(){
     +'<button data-nkf="all">'+esc(t("a_nk_filter_all"))+'</button>'
     +'</div><div id="nkAdmOrders" style="margin-top:10px"></div>'
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
 
   api("/api/admin/nakrutka/balance").then(function(r){
     sh.querySelector("#nkAdmBal").textContent=(r&&r.balance!=null)?("$"+Number(r.balance).toFixed(2)):"—";
@@ -3552,7 +3564,7 @@ function openAdminNakrutkaServices(){
     +'<input id="nkSvcSearch" placeholder="'+esc(t("a_nk_search_ph"))+'">'
     +'<div id="nkSvcList" style="margin-top:10px;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdminNakrutka);
   var allServices=[],hiddenIds=[];
   function render(filterText){
     var f=(filterText||"").trim().toLowerCase();
@@ -3599,7 +3611,7 @@ function openAdminNakrutkaImages(){
     +'<div id="nkImgList" style="margin-top:2px;color:var(--mut);font-size:13px">'+esc(t("nakrutka_loading"))+'</div>'
     +'<div style="height:8px"></div><button class="btn big" id="nkImgSaveBtn" style="display:none">'+esc(t("a_save"))+'</button>'
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdminNakrutka);
   var groups=[],curMeta={},pendingImg={},pendingCardImg=null;
 
   // ---- Nakrutka bosh kartochkasi (rasm + yoqilgan holati) ----
@@ -3872,13 +3884,13 @@ function deleteItem(id){
 }
 
 /* ===== admin: payments & clients ===== */
-function openAdminMoney(prefillQ){
+function openAdminMoney(prefillQ,backFn){
   var sh=openSheet('<h2>'+esc(t("adm_money"))+'</h2>'
     +'<div class="sect" style="margin:12px 0 8px">'+esc(t("adm_pending"))+'</div><div id="amPay">…</div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_orders_p"))+'</div><div id="amOrd">…</div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_search"))+'</div>'
     +'<div class="arow"><input id="admQ" placeholder="ID / @username" value="'+esc(prefillQ||"")+'"><button class="btn sm" id="admFind">'+esc(t("adm_find"))+'</button></div>'
-    +'<div id="admRes" style="margin-top:10px"></div>');
+    +'<div id="admRes" style="margin-top:10px"></div>',backFn||openAdmin);
   function reload(){
     api("/api/admin/list").then(function(r){
       var hp="";
@@ -3927,7 +3939,7 @@ function openAdminMoney(prefillQ){
       }
       var ad=sh.querySelectorAll("[data-badd]");for(var a=0;a<ad.length;a++)ad[a].addEventListener("click",function(){adj(this.getAttribute("data-badd"),1);});
       var su=sh.querySelectorAll("[data-bsub]");for(var s=0;s<su.length;s++)su[s].addEventListener("click",function(){adj(this.getAttribute("data-bsub"),-1);});
-      var hb=sh.querySelectorAll("[data-uhist]");for(var hh=0;hh<hb.length;hh++)hb[hh].addEventListener("click",function(){openAdminHistory(this.getAttribute("data-uhist"));});
+      var hb=sh.querySelectorAll("[data-uhist]");for(var hh=0;hh<hb.length;hh++)hb[hh].addEventListener("click",function(){openAdminHistory(this.getAttribute("data-uhist"),function(){openAdminMoney();});});
     }).catch(function(){toast(t("srv_off"),true);});
   });
   reload();
@@ -3935,8 +3947,8 @@ function openAdminMoney(prefillQ){
 }
 
 /* Mijozning to'liq tarixi: barcha to'ldirishlar + barcha xaridlar + yetkazilgan mahsulot (login/parol/promokod) */
-function openAdminHistory(uid){
-  var sh2=openSheet('<h2>'+esc(t("a_hist_title"))+'</h2><div id="histBody" style="padding-top:6px">…</div><div style="height:20px"></div>');
+function openAdminHistory(uid,backFn){
+  var sh2=openSheet('<h2>'+esc(t("a_hist_title"))+'</h2><div id="histBody" style="padding-top:6px">…</div><div style="height:20px"></div>',backFn||openAdmin);
   api("/api/admin/history?uid="+encodeURIComponent(uid)).then(function(r){
     var html='<div class="card"><div class="row"><div class="l">'+esc(r.name||"—")+(r.uname?' · @'+esc(r.uname):'')
       +'<div class="d">ID '+esc(r.uid)+'</div></div><div class="r"><b>'+esc(money(r.balance))+'</b></div></div></div>';
@@ -3975,7 +3987,7 @@ function openAdminUsers(){
   var sh=openSheet('<h2>'+esc(t("a_users_title"))+'</h2>'
     +'<div class="seg" id="usersSortSeg"><button data-usort="recent" class="on">'+esc(t("a_users_recent"))+'</button>'
     +'<button data-usort="balance">'+esc(t("a_users_bybalance"))+'</button></div>'
-    +'<div id="usersList" style="margin-top:10px">…</div>');
+    +'<div id="usersList" style="margin-top:10px">…</div>',openAdmin);
   function load(sort){
     api("/api/admin/users?sort="+sort).then(function(list){
       var h="";
@@ -3988,11 +4000,11 @@ function openAdminUsers(){
       sh.querySelector("#usersList").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
       var ops=sh.querySelectorAll("[data-uopen]");
       for(var k=0;k<ops.length;k++)ops[k].addEventListener("click",function(){
-        var uid=this.getAttribute("data-uopen");closeSheet();openAdminMoney(uid);
+        var uid=this.getAttribute("data-uopen");openAdminMoney(uid,openAdminUsers);
       });
       var hs=sh.querySelectorAll("[data-uhist2]");
       for(var hh2=0;hh2<hs.length;hh2++)hs[hh2].addEventListener("click",function(){
-        openAdminHistory(this.getAttribute("data-uhist2"));
+        openAdminHistory(this.getAttribute("data-uhist2"),openAdminUsers);
       });
     }).catch(function(){sh.querySelector("#usersList").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
   }
@@ -4034,7 +4046,7 @@ function openAdminReviewEdit(r,onSaved){
     +'<textarea id="revEdText" rows="4">'+esc(r.text||"")+'</textarea>'
     +'<div style="height:12px"></div>'
     +'<button class="btn big" id="revEdSaveBtn">'+esc(t("a_reviews_save"))+'</button>'
-    +'<div style="height:10px"></div>');
+    +'<div style="height:10px"></div>',function(){openAdminReviews();});
   sh.querySelector("#revEdSaveBtn").addEventListener("click",function(){
     var btn=this;btn.disabled=true;
     var payload={id:r.id,
@@ -4052,7 +4064,7 @@ function openAdminReviews(){
     +'<div class="seg" id="revTabSeg" style="margin:0 0 12px">'
     +'<button data-revtab="pending" class="on">'+esc(t("a_reviews_pending"))+'</button>'
     +'<button data-revtab="approved">'+esc(t("a_reviews_approved"))+'</button></div>'
-    +'<div id="revAll">…</div>');
+    +'<div id="revAll">…</div>',openAdmin);
   var tab="pending",byId={};
   function load(){
     api("/api/admin/reviews").then(function(r){
@@ -4214,7 +4226,7 @@ function openAdminGroups(){
     +'<button class="btn" id="gNewBtn">'+esc(t("a_groups_new"))+'</button>'
     +'<div id="gList" style="margin-top:12px"></div>'
     +'<div style="height:20px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
   renderGroupList(sh);
   sh.querySelector("#gNewBtn").addEventListener("click",function(){openGroupForm(null,null,sh);});
 }
@@ -4265,7 +4277,7 @@ function openGroupForm(kind,key,parentSh){
     +'<div id="gPrev" style="margin:8px 0"></div>'
     +'<div style="height:6px"></div><button class="btn big" id="gSaveBtn">'+esc(t("a_save"))+'</button>'
     +'<div style="height:20px"></div>';
-  var sh2=openSheet(html);
+  var sh2=openSheet(html,openAdminGroups);
   function gp(){
     var box=sh2.querySelector("#gPrev");
     box.innerHTML=F.img?'<img src="'+esc(F.img)+'" style="width:60px;height:60px;border-radius:12px;object-fit:cover">':'';
@@ -4395,7 +4407,7 @@ function openAdminForm(editId){
       +'<button class="btn sm red" id="stkClearBtn">'+ic("trash",14)+' '+esc(t("a_stock_clear"))+'</button></div></div>'
     ):"")
     +'<div style="height:30px"></div>';
-  var sh=openSheet(html);
+  var sh=openSheet(html,openAdmin);
   function g(sel){return sh.querySelector(sel);}
   function readForm(){
     F.title=g("#f_title").value.trim();
@@ -4593,6 +4605,15 @@ function openAdminForm(editId){
     function reloadStk(){
       api("/api/admin/stock?itemId="+encodeURIComponent(editId)).then(function(r){
         g("#stkCount").textContent=r.count+" "+t("a_stock_unit");
+        // Agar bu mahsulot uchun haqiqiy inventar (login/parol, promokod va h.k.) mavjud
+        // bo'lsa — yuqoridagi "Soni" maydoni ham shu haqiqiy songa avtomatik moslashtiriladi.
+        // Aks holda admin eski (qo'lda kiritilgan, allaqachon eskirgan) raqamni ko'rib
+        // chalg'ib qolar edi — masalan "20" deb turaveradi, garchi 9 tasi sotilgan bo'lsa ham.
+        if(r.count>0){
+          var fs=g("#f_stock");
+          if(fs)fs.value=r.count;
+          F.stock=r.count;
+        }
       }).catch(function(){g("#stkCount").textContent="—";});
     }
     var sab=g("#stkAddBtn");
