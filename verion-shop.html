@@ -560,12 +560,16 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .arow{display:flex;gap:8px}
 .arow>*{flex:1}
-.qtyRow{display:flex;align-items:center;gap:10px}
-.qtyBtn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:19px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center}
-.qtyBtn:active{transform:scale(.92)}
-.qtyBtn:disabled{opacity:.35}
-.qtyVal{min-width:28px;text-align:center;font-size:16px;font-weight:800}
-.qtyHint{margin-left:auto;font-size:11.5px;color:var(--mut)}
+.qtyBlock{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:14px 0;padding:10px 14px;background:var(--card2);border:1px solid var(--line);border-radius:14px}
+.qtyBlockLabel{font-size:13.5px;font-weight:700;color:var(--mut2)}
+.qtyRow{display:flex;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}
+.qtyBtn{width:32px;height:32px;border-radius:9px;border:none;background:transparent;color:var(--txt);
+  font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center}
+.qtyBtn:active{background:var(--line);transform:scale(.94)}
+.qtyBtn:disabled{opacity:.3}
+.qtyVal{min-width:26px;text-align:center;font-size:15px;font-weight:800}
+.qtyHint{font-size:11px;color:var(--mut);white-space:nowrap}
 .itemrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
 .itemrow:last-child{border-bottom:none}
 .itemrow .nm{font-size:13.5px;font-weight:600}
@@ -2090,22 +2094,29 @@ function openProduct(id){
   if(it.fulfill==="fragment_stars_custom")return openStarsBuy(it);
   if(it.fulfill==="telegram_gift")return openGiftBuy(it);
   if(it.fulfill==="gift_hub"){S.giftHub={tab:"oddiy",hubId:it.id,selected:null};haptic();render();window.scrollTo(0,0);return;}
-  var out=it.stock<=0,guest=!tgUser();
+  // Haqiqiy (real vaqtda) zaxira soni — agar shu mahsulot uchun aniq stock ro'yxati
+  // yuritilayotgan bo'lsa (StockCounts orqali), o'shani olamiz; aks holda admin panelidagi
+  // "Soni" maydonini (it.stock). Shu bilan xarid qilingandan keyin son to'g'ri kamayib boradi,
+  // admin qo'lda kiritgan eski raqamda "qotib" qolmaydi.
+  var realStock=StockCounts.hasOwnProperty(it.id)?StockCounts[it.id]:it.stock;
+  var out=realStock<=0,guest=!tgUser();
   var MAX_QTY=10;
-  var qtyMax=it.kind==="obuna"?Math.max(1,Math.min(MAX_QTY,it.stock||1)):1;
+  var qtyMax=it.kind==="obuna"?Math.max(1,Math.min(MAX_QTY,realStock||1)):1;
   var showQty=it.kind==="obuna"&&!out&&qtyMax>1;
   var sh=openSheet(
     tileHTML(it,true)
     +'<h2>'+esc(loc(it.title))+'</h2>'
-    +(it.kind==="obuna"?('<div class="cat">'+(out?esc(t("out_stock")):it.stock+" "+esc(t("in_stock")))+'</div>'):"")
+    +(it.kind==="obuna"?('<div class="cat">'+(out?esc(t("out_stock")):realStock+" "+esc(t("in_stock")))+'</div>'):"")
     +'<div class="desc">'+esc(loc(it.desc))+'</div>'
     +(showQty?(
-      '<div class="sect" style="margin:14px 0 6px">'+esc(t("qty_label"))+'</div>'
+      '<div class="qtyBlock">'
+      +'<span class="qtyBlockLabel">'+esc(t("qty_label"))+'</span>'
       +'<div class="qtyRow">'
       +'<button type="button" class="qtyBtn" id="qtyMinus">−</button>'
       +'<div class="qtyVal" id="qtyVal">1</div>'
       +'<button type="button" class="qtyBtn" id="qtyPlus">+</button>'
-      +'<div class="qtyHint">'+esc(t("qty_max_note")).replace("{n}",qtyMax)+'</div>'
+      +'</div>'
+      +'<span class="qtyHint">'+esc(t("qty_max_note")).replace("{n}",qtyMax)+'</span>'
       +'</div>'
     ):"")
     +(guest?'<div class="paynote">'+ic("warning",13)+' '+esc(t("guest_note"))+'</div>':"")
