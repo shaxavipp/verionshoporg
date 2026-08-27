@@ -205,6 +205,170 @@ function tgSend(chatId, text) {
     req.write(data); req.end();
   } catch (e) {}
 }
+
+/* ---------- Ommaviy xabar (broadcast) — TZ: "barcha foydalanuvchilarga habar yuborish,
+   matn/rasm/video/premium emojilar ishlashi kerak" ----------
+   - Matn ichida premium (custom) emoji "[emoji:CUSTOM_EMOJI_ID:🙂]" ko'rinishidagi token
+     bilan kiritiladi (admin panel buni o'zi qo'shadi) — jo'natishda Telegram HTML
+     parse_mode'dagi <tg-emoji emoji-id="..."> tegiga aylantiriladi, shu sababli
+     yuborilgan xabarda haqiqiy animatsion/premium emoji ko'rinadi.
+   - Oddiy **qalin** va __qiya__ belgilash ham qo'llab-quvvatlanadi (ixtiyoriy).
+   - Rasm/video bo'lsa: birinchi qabul qiluvchiga multipart orqali fayl yuboriladi va
+     javobdan file_id olinadi, keyingi barcha qabul qiluvchilarga esa endi shu file_id
+     (juda tez, faylni qayta yuklamasdan) orqali yuboriladi — Telegram’ning tavsiya
+     etilgan usuli shu.
+   - Bir vaqtda faqat bitta ommaviy yuborish ishlaydi (BROADCAST_JOB), holati
+     /api/admin/broadcast-status orqali (polling bilan) admin panelda kuzatiladi. */
+const BROADCAST_MAX_TEXT = 4096;      // Telegram sendMessage matn limiti
+const BROADCAST_MAX_CAPTION = 1024;   // Telegram photo/video caption limiti
+const BROADCAST_HISTORY_MAX = 15;
+let BROADCAST_JOB = null;
+
+function escapeTgHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+// "matn [emoji:123456:🙂] davomi **qalin** __qiya__" -> xavfsiz Telegram HTML.
+// Avval butun matn HTML-escape qilinadi, SHUNDAN KEYIN emoji token va **/__ belgilar
+// qidiriladi — shu sababli foydalanuvchi matnidagi < > & hech qachon teg sifatida talqin qilinmaydi.
+function buildBroadcastHTML(rawText) {
+  const text = String(rawText || "");
+  const EMOJI_RE = /\[emoji:(\d{1,20}):([^\]\n]{1,24})\]/g;
+  let out = "", last = 0, m;
+  while ((m = EMOJI_RE.exec(text))) {
+    out += escapeTgHtml(text.slice(last, m.index));
+    out += '<tg-emoji emoji-id="' + m[1] + '">' + escapeTgHtml(m[2]) + '</tg-emoji>';
+    last = m.index + m[0].length;
+  }
+  out += escapeTgHtml(text.slice(last));
+  out = out.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/__([^_]+)__/g, "<i>$1</i>");
+  return out;
+}
+function tgApiPost(method, payload) {
+  return new Promise((resolve, reject) => {
+    if (!BOT_TOKEN) return reject(new Error("BOT_TOKEN not set"));
+    const data = JSON.stringify(payload);
+    const req = https.request({
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/" + method, method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+    }, r => {
+      let body = ""; r.on("data", c => body += c);
+      r.on("end", () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+    });
+    req.on("error", reject);
+    req.write(data); req.end();
+  });
+}
+// Umumiy multipart yuboruvchi (sendPhoto / sendVideo) — tgSendDocument bilan bir xil naqsh,
+// faqat maydon nomi (photo/video) va caption HTML sifatida beriladi.
+function tgSendMediaMultipart(chatId, field, buffer, filename, mimeType, captionHtml) {
+  return new Promise((resolve, reject) => {
+    if (!BOT_TOKEN || !chatId) return reject(new Error("no bot/chat"));
+    const boundary = "----VerionBroadcast" + crypto.randomBytes(10).toString("hex");
+    const parts = [];
+    const field_ = (name, val) => parts.push(Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${val}\r\n`, "utf8"));
+    field_("chat_id", chatId);
+    if (captionHtml) { field_("caption", captionHtml); field_("parse_mode", "HTML"); }
+    parts.push(Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="${field}"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`, "utf8"));
+    const post = Buffer.from(`\r\n--${boundary}--\r\n`, "utf8");
+    const body = Buffer.concat([...parts, buffer, post]);
+    const method = field === "video" ? "sendVideo" : "sendPhoto";
+    const req = https.request({
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/" + method, method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }
+    }, r => {
+      let out = ""; r.on("data", c => out += c);
+      r.on("end", () => {
+        try { const j = JSON.parse(out); j.ok ? resolve(j) : reject(new Error(j.description || "telegram_error")); }
+        catch (e) { reject(e); }
+      });
+    });
+    req.on("error", reject);
+    req.write(body); req.end();
+  });
+}
+function classifyTgError(msg) {
+  const s = String(msg || "").toLowerCase();
+  if (s.indexOf("blocked") !== -1 || s.indexOf("deactivated") !== -1 || s.indexOf("chat not found") !== -1
+    || s.indexOf("user is deactivated") !== -1 || s.indexOf("bot was kicked") !== -1) return "blocked";
+  return "failed";
+}
+function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
+// Ommaviy yuborishni fonda bajaradi (so'rovni ushlab turmaydi) — BROADCAST_JOB orqali
+// progressni admin panelga polling bilan ko'rsatish mumkin.
+async function runBroadcast(job, text, mediaType, mediaBuffer, mediaMime, ids) {
+  const captionHtml = buildBroadcastHTML(text);
+  const BATCH = 20, GAP_MS = 1000; // Telegramning "sekundiga ~30 xabar (turli chatlarga)" limitiga mos, ehtiyot zaxira bilan
+  let fileId = null;
+  let i = 0;
+  // Rasm/video bo'lsa — birinchi MUVAFFAQIYATLI yuborishdan file_id olinadi (fayl faqat bir marta yuklanadi).
+  if (mediaType === "photo" || mediaType === "video") {
+    const ext = mediaType === "video" ? ".mp4" : ".jpg";
+    const field = mediaType === "video" ? "video" : "photo";
+    while (i < ids.length && !fileId) {
+      try {
+        const r = await tgSendMediaMultipart(ids[i], field, mediaBuffer, "broadcast" + ext, mediaMime, captionHtml);
+        fileId = mediaType === "video" ? (r.result.video && r.result.video.file_id)
+          : (r.result.photo && r.result.photo[r.result.photo.length - 1].file_id);
+        job.sent++;
+      } catch (e) {
+        job[classifyTgError(e.message)]++;
+      }
+      i++;
+      job.processed = i;
+      await sleep(60);
+    }
+    if (!fileId) { job.done = true; job.finishedTs = Date.now(); return; } // hech kimga yubora olmadi (masalan token/fayl xato)
+  }
+  while (i < ids.length) {
+    const batch = ids.slice(i, i + BATCH);
+    await Promise.all(batch.map(async id => {
+      try {
+        if (mediaType === "photo" || mediaType === "video") {
+          const payload = { chat_id: id, caption: captionHtml, parse_mode: "HTML" };
+          payload[mediaType] = fileId;
+          const r = await tgApiPost(mediaType === "video" ? "sendVideo" : "sendPhoto", payload);
+          if (!r.ok) throw new Error(r.description || "telegram_error");
+        } else {
+          const r = await tgApiPost("sendMessage", { chat_id: id, text: captionHtml, parse_mode: "HTML" });
+          if (!r.ok) throw new Error(r.description || "telegram_error");
+        }
+        job.sent++;
+      } catch (e) {
+        job[classifyTgError(e.message)]++;
+      }
+    }));
+    i += BATCH;
+    job.processed = i;
+    if (i < ids.length) await sleep(GAP_MS);
+  }
+  job.done = true;
+  job.finishedTs = Date.now();
+  try {
+    const hist = sdb.kvGet(SQLITE_DB, "broadcastLog", []);
+    hist.push({ ts: job.startedTs, total: job.total, sent: job.sent, blocked: job.blocked, failed: job.failed,
+      mediaType: job.mediaType, preview: text.slice(0, 80) });
+    if (hist.length > BROADCAST_HISTORY_MAX) hist.splice(0, hist.length - BROADCAST_HISTORY_MAX);
+    sdb.kvSet(SQLITE_DB, "broadcastLog", hist);
+  } catch (e) {}
+}
+// Umumiy readBody'dan farqli — rasm/video uchun MAX_BODY (10MB) yetarli bo'lmasligi mumkin,
+// shu sababli shu bitta yo'nalish uchun kattaroq (20MB) limit bilan alohida o'qiladi.
+const MAX_BROADCAST_BODY = 20 * 1024 * 1024;
+function readBroadcastBody(req, res, cb) {
+  let body = "", size = 0, dead = false;
+  req.on("data", c => {
+    size += c.length;
+    if (size > MAX_BROADCAST_BODY) { dead = true; send(res, 413, { error: "too large" }); req.destroy(); }
+    else body += c;
+  });
+  req.on("end", () => {
+    if (dead) return;
+    try { cb(JSON.parse(body || "{}")); } catch (e) { send(res, 400, { error: "invalid json" }); }
+  });
+}
 // Mini-ilovani to'g'ridan-to'g'ri ochadigan havola (t.me/<bot>/<app>?startapp=...) — BOT_USERNAME
 // hali Telegram'dan olinmagan bo'lsa (server hozirgina ishga tushgan bo'lsa) bo'sh qaytaradi.
 function miniAppLink(startParam) {
@@ -1643,6 +1807,53 @@ const server = http.createServer((req, res) => {
         .then(r => send(res, 200, r))
         .catch(e => send(res, 500, { error: String(e.message || e) }));
       return;
+    }
+
+    // Ommaviy xabar (broadcast): matn + ixtiyoriy rasm/video + premium emoji.
+    // body: { text, mediaType: "none"|"photo"|"video", mediaData: "data:...;base64,..."|null, test: bool }
+    // test=true bo'lsa — faqat shu admin(a.id)ga yuboradi va natijani darhol qaytaradi (fon ishi emas).
+    if (url === "/api/admin/broadcast" && m === "POST") {
+      return readBroadcastBody(req, res, b => {
+        const text = String(b.text || "").trim();
+        const mediaType = ["photo", "video"].indexOf(b.mediaType) !== -1 ? b.mediaType : "none";
+        const limit = mediaType === "none" ? BROADCAST_MAX_TEXT : BROADCAST_MAX_CAPTION;
+        if (!text && mediaType === "none") return send(res, 400, { error: "empty_text" });
+        if (text.length > limit) return send(res, 400, { error: "text_too_long", limit });
+
+        let mediaBuffer = null, mediaMime = "";
+        if (mediaType !== "none") {
+          const mm = /^data:([^;]+);base64,(.+)$/.exec(String(b.mediaData || ""));
+          if (!mm) return send(res, 400, { error: "invalid_media" });
+          mediaMime = mm[1];
+          try { mediaBuffer = Buffer.from(mm[2], "base64"); } catch (e) { return send(res, 400, { error: "invalid_media" }); }
+          if (!mediaBuffer.length) return send(res, 400, { error: "invalid_media" });
+        }
+
+        if (b.test) {
+          const chatId = a.id;
+          const captionHtml = buildBroadcastHTML(text);
+          const p = mediaType !== "none"
+            ? tgSendMediaMultipart(chatId, mediaType, mediaBuffer, "test." + (mediaType === "video" ? "mp4" : "jpg"), mediaMime, captionHtml)
+            : tgApiPost("sendMessage", { chat_id: chatId, text: captionHtml, parse_mode: "HTML" })
+                .then(r => { if (!r.ok) throw new Error(r.description || "telegram_error"); return r; });
+          return p.then(() => send(res, 200, { ok: true }))
+            .catch(e => send(res, 200, { ok: false, error: String(e.message || e) }));
+        }
+
+        if (BROADCAST_JOB && !BROADCAST_JOB.done) return send(res, 409, { error: "already_running" });
+        const ids = Object.keys(DB.users).map(Number).filter(n => !isNaN(n));
+        if (!ids.length) return send(res, 400, { error: "no_users" });
+        BROADCAST_JOB = { total: ids.length, processed: 0, sent: 0, blocked: 0, failed: 0,
+          mediaType, done: false, startedTs: Date.now(), finishedTs: null };
+        const job = BROADCAST_JOB;
+        runBroadcast(job, text, mediaType, mediaBuffer, mediaMime, ids)
+          .catch(e => { job.done = true; job.finishedTs = Date.now(); job.error = String(e.message || e); });
+        return send(res, 200, { ok: true, total: ids.length });
+      });
+    }
+    if (url === "/api/admin/broadcast-status" && m === "GET") {
+      const hist = (() => { try { return sdb.kvGet(SQLITE_DB, "broadcastLog", []); } catch (e) { return []; } })();
+      return send(res, 200, { job: BROADCAST_JOB, history: hist.slice().reverse() });
     }
 
     return send(res, 404, { error: "unknown admin route" });

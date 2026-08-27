@@ -3207,6 +3207,8 @@ function openAdmin(){
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aUiEmojiBtn">'+ic("star",15)+' Premium emoji (to\'lov / profil)</button>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aBroadcastBtn">'+ic("send",15)+' Ommaviy xabar (Broadcast)</button>'
+    +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aBackupBtn">'+ic("clipboard",15)+' Zaxira nusxa olish</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aNakrutkaBtn">'+ic("trendUp",15)+' '+esc(t("a_nakrutka_title"))+'</button>'
@@ -3250,6 +3252,7 @@ function openAdmin(){
   sh.querySelector("#aDashBtn").addEventListener("click",openAdminDashboard);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
   sh.querySelector("#aUiEmojiBtn").addEventListener("click",openAdminUiEmoji);
+  sh.querySelector("#aBroadcastBtn").addEventListener("click",openAdminBroadcast);
   sh.querySelector("#aBackupBtn").addEventListener("click",function(){
     var btn=sh.querySelector("#aBackupBtn");
     btn.disabled=true;btn.textContent="Zaxira tayyorlanmoqda...";
@@ -4014,6 +4017,183 @@ function openAdminUsers(){
     this.classList.add("on");load(this.getAttribute("data-usort"));
   });
   load("recent");
+}
+
+/* ===== admin: ommaviy xabar (broadcast) — matn + rasm/video + premium emoji ===== */
+function openAdminBroadcast(){
+  var B={mediaType:"none",mediaData:"",mediaMime:"",fileLabel:""};
+  var html='<h2>'+ic("send",18)+' Ommaviy xabar</h2>'
+    +'<div class="paynote" style="margin-top:0">Xabar botdan foydalangan BARCHA foydalanuvchilarga yuboriladi. Matn ichiga premium emoji joylashtirish mumkin.</div>'
+    +'<div class="sect" style="margin:14px 0 6px">Media</div>'
+    +'<div class="seg" id="bcMediaSeg">'
+    +'<button data-bcm="none" class="on">Yo\'q</button>'
+    +'<button data-bcm="photo">Rasm</button>'
+    +'<button data-bcm="video">Video</button>'
+    +'</div>'
+    +'<div id="bcFileWrap" style="display:none;margin-top:10px">'
+    +'<label class="btn sm gray" style="cursor:pointer;display:inline-flex">'+ic("camera",14)+' <span id="bcFileBtnTxt" style="margin-left:6px">Fayl tanlash</span>'
+    +'<input type="file" id="bcFile" accept="image/*" style="display:none"></label>'
+    +'<span id="bcFileInfo" style="margin-left:10px;font-size:12px;color:var(--mut)"></span>'
+    +'</div>'
+    +'<div class="sect" style="margin:16px 0 6px">Matn</div>'
+    +'<textarea id="bcText" class="exta" style="min-height:120px" placeholder="Xabar matni..."></textarea>'
+    +'<div style="display:flex;justify-content:space-between;margin-top:4px">'
+    +'<span style="font-size:11px;color:var(--mut)" id="bcCharCount">0 / 4096</span>'
+    +'</div>'
+    +'<div class="sect" style="margin:16px 0 6px">Premium emoji qo\'shish</div>'
+    +'<div class="paynote" style="margin-top:0">Custom emoji ID va zaxira (fallback) belgisini kiritib, matn kursori turgan joyga qo\'shing.</div>'
+    +'<div class="arow"><input id="bcEmojiId" placeholder="custom_emoji_id (raqam)" inputmode="numeric">'
+    +'<input id="bcEmojiFb" placeholder="🙂" style="max-width:64px;text-align:center" maxlength="8"></div>'
+    +'<div style="height:8px"></div><button class="btn sm gray" id="bcEmojiAdd" style="width:100%">'+ic("star",13)+' Emoji tokenini qo\'shish</button>'
+    +'<div style="height:18px"></div>'
+    +'<button class="btn gray" id="bcTestBtn">'+ic("send",15)+' Sinov yuborish (o\'zimga)</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn green" id="bcSendBtn">'+ic("send",15)+' Barchaga yuborish</button>'
+    +'<div id="bcProgress" style="display:none;margin-top:14px">'
+    +'<div class="paynote" style="margin-top:0" id="bcProgTxt">…</div>'
+    +'<div style="height:8px;background:var(--line);border-radius:5px;overflow:hidden"><div id="bcProgBar" style="height:100%;width:0%;background:var(--acc,#2ecc71);transition:width .3s"></div></div>'
+    +'</div>'
+    +'<div class="sect" style="margin:20px 0 8px">Oxirgi yuborishlar</div><div id="bcHistory">…</div>'
+    +'<div style="height:30px"></div>';
+  var sh=openSheet(html,openAdmin);
+  var limit=4096;
+  function updateCount(){
+    var n=sh.querySelector("#bcText").value.length;
+    sh.querySelector("#bcCharCount").textContent=n+" / "+limit;
+  }
+  sh.querySelector("#bcText").addEventListener("input",updateCount);
+  var segs=sh.querySelectorAll("#bcMediaSeg [data-bcm]");
+  for(var i=0;i<segs.length;i++)segs[i].addEventListener("click",function(){
+    for(var j=0;j<segs.length;j++)segs[j].classList.toggle("on",segs[j]===this);
+    B.mediaType=this.getAttribute("data-bcm");
+    B.mediaData="";B.mediaMime="";
+    sh.querySelector("#bcFileInfo").textContent="";
+    var fi=sh.querySelector("#bcFile");
+    fi.accept=B.mediaType==="video"?"video/*":"image/*";
+    sh.querySelector("#bcFileWrap").style.display=B.mediaType==="none"?"none":"block";
+    limit=B.mediaType==="none"?4096:1024;
+    updateCount();
+  });
+  sh.querySelector("#bcFile").addEventListener("change",function(){
+    var f=this.files&&this.files[0];if(!f)return;
+    if(f.size>13*1024*1024){toast("Fayl juda katta (video uchun max ~13MB)",true);this.value="";return;}
+    if(B.mediaType==="photo"){
+      // Boshqa admin rasm maydonlari kabi — brauzerda siqib, keyin base64 sifatida yuboriladi.
+      var rd=new FileReader();
+      rd.onload=function(){
+        var im=new Image();
+        im.onload=function(){
+          try{
+            var MAX=1280,w=im.width,h=im.height;
+            if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+            if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+            var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+            cv.getContext("2d").drawImage(im,0,0,w,h);
+            B.mediaData=cv.toDataURL("image/jpeg",0.85);
+            B.mediaMime="image/jpeg";
+            sh.querySelector("#bcFileInfo").textContent=f.name+" — tayyor";
+          }catch(e){toast("Rasm xatosi",true);}
+        };
+        im.src=rd.result;
+      };
+      rd.readAsDataURL(f);
+    }else{
+      var rd2=new FileReader();
+      rd2.onload=function(){
+        B.mediaData=rd2.result;
+        B.mediaMime=f.type||"video/mp4";
+        sh.querySelector("#bcFileInfo").textContent=f.name+" — tayyor ("+(f.size/1024/1024).toFixed(1)+" MB)";
+      };
+      rd2.readAsDataURL(f);
+    }
+  });
+  sh.querySelector("#bcEmojiAdd").addEventListener("click",function(){
+    var idw=sh.querySelector("#bcEmojiId"),fbw=sh.querySelector("#bcEmojiFb"),ta=sh.querySelector("#bcText");
+    var id=idw.value.trim(),fb=fbw.value.trim()||"🙂";
+    if(!/^\d+$/.test(id)){toast("ID noto'g'ri — faqat raqamlardan iborat bo'lishi kerak",true);return;}
+    var token="[emoji:"+id+":"+fb+"]";
+    var start=ta.selectionStart||ta.value.length,end=ta.selectionEnd||ta.value.length;
+    ta.value=ta.value.slice(0,start)+token+ta.value.slice(end);
+    ta.focus();ta.selectionStart=ta.selectionEnd=start+token.length;
+    updateCount();
+    idw.value="";fbw.value="";
+  });
+  function sendBroadcast(test){
+    var text=sh.querySelector("#bcText").value.trim();
+    if(!text&&B.mediaType==="none"){toast("Matn kiriting yoki media biriktiring",true);return;}
+    if(B.mediaType!=="none"&&!B.mediaData){toast("Avval fayl tanlang",true);return;}
+    var body={text:text,mediaType:B.mediaType,mediaData:B.mediaData||null,test:!!test};
+    var btn=sh.querySelector(test?"#bcTestBtn":"#bcSendBtn");
+    var origHTML=btn.innerHTML;
+    btn.disabled=true;btn.textContent=test?"Yuborilmoqda...":"Boshlanmoqda...";
+    api("/api/admin/broadcast","POST",body).then(function(r){
+      if(test){
+        btn.disabled=false;btn.innerHTML=origHTML;
+        if(r.ok)toast("Sinov xabari yuborildi ✅");else toast("Xatolik: "+(r.error||"noma'lum"),true);
+        return;
+      }
+      sh.querySelector("#bcProgress").style.display="block";
+      pollProgress();
+    }).catch(function(e){
+      btn.disabled=false;btn.innerHTML=origHTML;
+      var msg=(e&&e.resp&&e.resp.error)||"xatolik";
+      toast(msg==="already_running"?"Boshqa yuborish hali tugamagan":"Xatolik: "+msg,true);
+    });
+  }
+  var pollT=null;
+  function pollProgress(){
+    clearTimeout(pollT);
+    api("/api/admin/broadcast-status").then(function(r){
+      var j=r.job;
+      renderHistory(r.history);
+      if(!j){sh.querySelector("#bcProgress").style.display="none";resetSendBtn();return;}
+      var pct=j.total?Math.round(100*j.processed/j.total):0;
+      sh.querySelector("#bcProgBar").style.width=pct+"%";
+      sh.querySelector("#bcProgTxt").textContent="Yuborilmoqda: "+j.processed+" / "+j.total
+        +" · ✅ "+j.sent+" · 🚫 "+j.blocked+" · ⚠️ "+j.failed;
+      if(j.done){
+        sh.querySelector("#bcProgTxt").textContent="Tugadi ✅ Yuborildi: "+j.sent+" · Bloklangan: "+j.blocked+" · Xato: "+j.failed+" (jami "+j.total+")";
+        resetSendBtn();
+        toast("Ommaviy xabar tugadi: "+j.sent+"/"+j.total);
+      }else{
+        pollT=setTimeout(pollProgress,1500);
+      }
+    }).catch(function(){pollT=setTimeout(pollProgress,2500);});
+  }
+  function resetSendBtn(){
+    var btn=sh.querySelector("#bcSendBtn");
+    btn.disabled=false;btn.innerHTML=ic("send",15)+' Barchaga yuborish';
+  }
+  var sendArmed=false,armT=null;
+  sh.querySelector("#bcSendBtn").addEventListener("click",function(){
+    var btn=this;
+    if(!sendArmed){
+      sendArmed=true;
+      btn.innerHTML="✅ Tasdiqlash uchun yana bosing";
+      clearTimeout(armT);
+      armT=setTimeout(function(){sendArmed=false;btn.innerHTML=ic("send",15)+' Barchaga yuborish';},5000);
+      return;
+    }
+    sendArmed=false;clearTimeout(armT);
+    sendBroadcast(false);
+  });
+  sh.querySelector("#bcTestBtn").addEventListener("click",function(){sendBroadcast(true);});
+  function renderHistory(list){
+    var el=sh.querySelector("#bcHistory");if(!el)return;
+    if(!list||!list.length){el.innerHTML='<div class="paynote">Hali yuborilmagan</div>';return;}
+    var h="";
+    for(var i=0;i<list.length;i++){
+      var x=list[i];
+      h+='<div class="itemrow"><div><div class="nm">'+esc(x.preview||"(media)")+'</div>'
+        +'<div class="meta">'+esc(fmtDate(x.ts))+' · ✅ '+x.sent+' · 🚫 '+x.blocked+' · ⚠️ '+x.failed+' / '+x.total+'</div></div></div>';
+    }
+    el.innerHTML=h;
+  }
+  updateCount();
+  api("/api/admin/broadcast-status").then(function(r){
+    renderHistory(r.history);
+    if(r.job&&!r.job.done){sh.querySelector("#bcProgress").style.display="block";pollProgress();}
+  }).catch(function(){sh.querySelector("#bcHistory").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
 }
 
 /* ===== admin: sharhlarni tasdiqlash (moderatsiya) ===== */
