@@ -3197,6 +3197,8 @@ function openAdmin(){
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aUsersBtn">'+ic("users",15)+' '+esc(t("a_users_title"))+'</button>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aDeliveriesBtn">'+ic("key",15)+' Sotilganlar / Yetkazilganlar qidiruvi</button>'
+    +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aReviewsBtn">'+ic("star",15)+' '+esc(t("a_reviews_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aReferralBtn">'+ic("gift",15)+' '+esc(t("a_referral_title"))+'</button>'
@@ -3247,6 +3249,7 @@ function openAdmin(){
   });
   sh.querySelector("#aMoney").addEventListener("click",function(){openAdminMoney();});
   sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
+  sh.querySelector("#aDeliveriesBtn").addEventListener("click",openAdminDeliveries);
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
   sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
   sh.querySelector("#aDashBtn").addEventListener("click",openAdminDashboard);
@@ -4017,6 +4020,46 @@ function openAdminUsers(){
     this.classList.add("on");load(this.getAttribute("data-usort"));
   });
   load("recent");
+}
+
+/* ===== admin: sotilgan/yetkazilgan mahsulotlar qidiruvi (login/parol/link va h.k.) ===== */
+function openAdminDeliveries(){
+  var html='<h2>'+ic("key",18)+' Sotilganlar qidiruvi</h2>'
+    +'<div class="paynote" style="margin-top:0">Har qanday mijozga yuborilgan login/parol, obuna linki, gmail va h.k. shu yerdan qidiriladi — mahsulot nomi, xaridor ID/@username, buyurtma raqami yoki yetkazilgan matnning o\'zi bo\'yicha.</div>'
+    +'<div class="arow"><input id="dlvQ" placeholder="Qidirish: gmail, login, @user, ID, #buyurtma..."><button class="btn sm" id="dlvFind">'+ic("search",14)+'</button></div>'
+    +'<div id="dlvRes" style="margin-top:12px">…</div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdmin);
+  function esc2(s){return esc(s==null?"":String(s));}
+  function load(qv){
+    sh.querySelector("#dlvRes").innerHTML='<div class="paynote">Qidirilmoqda...</div>';
+    api("/api/admin/deliveries"+(qv?("?q="+encodeURIComponent(qv)):"")).then(function(r){
+      var list=r.orders||[],h="";
+      if(!list.length){sh.querySelector("#dlvRes").innerHTML='<div class="paynote">'+esc(t("adm_none"))+'</div>';return;}
+      for(var i=0;i<list.length;i++){
+        var o=list[i];
+        h+='<div class="card" style="margin-bottom:10px">'
+          +'<div class="row"><div class="l">'+esc2(o.item)
+          +'<div class="d">'+(o.uname?'@'+esc2(o.uname)+' · ':'')+'ID '+esc2(o.uid)+' · <span class="code">'+esc2(o.id)+'</span> · #'+esc2(o.seq)+'</div>'
+          +'<div class="d">'+esc(fmtDate(o.ts))+' · '+esc(money(o.price))+'</div></div></div>'
+          +'<div class="cardbox" style="margin-top:8px"><div class="crow"><div style="word-break:break-all;font-size:13px;font-weight:600;white-space:pre-wrap">'
+          +esc2(o.deliveredAsFile?(o.delivered.length>400?(o.delivered.slice(0,400)+"…"):o.delivered):o.delivered)+'</div>'
+          +'<button class="cpy" data-copy="'+esc2(o.delivered)+'">'+esc(t("copy"))+'</button></div></div>'
+          +'<button class="btn sm gray" data-dlvhist="'+esc2(o.uid)+'" style="margin-top:8px;width:100%">'+ic("history",13)+' Shu mijozning to\'liq tarixi</button>'
+          +'</div>';
+      }
+      sh.querySelector("#dlvRes").innerHTML=h;
+      var cps=sh.querySelectorAll("#dlvRes [data-copy]");
+      for(var c=0;c<cps.length;c++)cps[c].addEventListener("click",function(){copyText(this.getAttribute("data-copy"));});
+      var hs=sh.querySelectorAll("#dlvRes [data-dlvhist]");
+      for(var hh=0;hh<hs.length;hh++)hs[hh].addEventListener("click",function(){
+        openAdminHistory(this.getAttribute("data-dlvhist"),openAdminDeliveries);
+      });
+    }).catch(function(){sh.querySelector("#dlvRes").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+  }
+  sh.querySelector("#dlvFind").addEventListener("click",function(){load(sh.querySelector("#dlvQ").value.trim());});
+  sh.querySelector("#dlvQ").addEventListener("keydown",function(e){if(e.key==="Enter")load(this.value.trim());});
+  load("");
 }
 
 /* ===== admin: ommaviy xabar (broadcast) — matn + rasm/video + premium emoji ===== */

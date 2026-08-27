@@ -17,6 +17,12 @@ const HTML_FILE = path.join(__dirname, "verion-shop.html");
 // "Variables"da ORDER_NOTIFY_CHAT_ID ni o'rnating (masalan -1001234567890). Bo'sh bo'lsa
 // hech qayerga yuborilmaydi, lekin mijozga xabar baribir boradi.
 const ORDER_NOTIFY_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
+// Mijozga yetkazilgan (sotib olingan) mahsulot — login/parol, obuna linki, gmail va h.k. —
+// bu kanalga HAM doimiy nusxa sifatida yuboriladi. Muammo/nizo chiqqanda (mijoz "olmadim"
+// desa yoki noto'g'ri narsa yuborilgan bo'lsa) admin bu kanaldan aynan nima yuborilganini
+// istalgan vaqtda topa oladi — Telegram DM tarixiga bog'liq bo'lmay. Bo'sh bo'lsa (yoki
+// ORDER_NOTIFY_CHAT_ID bilan bir xil bo'lsa) — o'sha kanalning o'ziga yoziladi.
+const DELIVERY_LOG_CHAT_ID = process.env.DELIVERY_LOG_CHAT_ID || ORDER_NOTIFY_CHAT_ID || "";
 const TOPUP_TTL = 7 * 60 * 1000;           // payment window: 7 minutes
 const PAYMENT_REMINDER_DELAY = 4 * 60 * 1000; // 4 daqiqadan keyin ham to'lanmagan bo'lsa eslatma yuboriladi
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
@@ -426,6 +432,33 @@ function orderMessageText(o) {
 // yozuvni yangilab qo'yish uchun ishlatiladi, mijozga ikkinchi marta xabar bormasin.
 function notifyOrderChannel(o) {
   try { if (ORDER_NOTIFY_CHAT_ID) tgSend(ORDER_NOTIFY_CHAT_ID, orderMessageText(o)); } catch (e) {}
+}
+// Yetkazilgan (delivered) mahsulot matnini (login/parol/link va h.k.) DELIVERY_LOG_CHAT_ID
+// kanaliga yozib qo'yadi — o.delivered bo'sh bo'lsa hech narsa qilmaydi. Juda uzun bo'lsa
+// (masalan bir nechta dona birga sotilgan bo'lsa) — xabar o'rniga .txt fayl qilib yuboriladi
+// (deliverStockToCustomer'dagi bilan bir xil chegara/mantiq).
+function deliveryLogText(o) {
+  const dt = new Date(o.ts || Date.now());
+  const dateStr = dt.toLocaleDateString("ru-RU", { timeZone: "Asia/Tashkent" }) + " " +
+    dt.toLocaleTimeString("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
+  const who = o.uname ? ("@" + o.uname) : ("ID: " + o.uid);
+  const priceStr = (Number(o.price) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
+  return "🧾 Buyurtma #" + o.seq + "\n" +
+    "👤 " + who + " (ID: " + o.uid + ")\n" +
+    "🛍 " + o.item + "\n" +
+    "💰 " + priceStr + "\n" +
+    "🕐 " + dateStr + "\n\n" +
+    "📦 Yetkazilgan:\n" + (o.delivered || "—");
+}
+function logDeliveryToChannel(o) {
+  try {
+    if (!DELIVERY_LOG_CHAT_ID || !o || !o.delivered) return;
+    const text = deliveryLogText(o);
+    if (text.length <= TG_TEXT_SAFE_LIMIT) { tgSend(DELIVERY_LOG_CHAT_ID, text); return; }
+    const buf = Buffer.from(text, "utf8");
+    tgSendDocument(DELIVERY_LOG_CHAT_ID, buf, "buyurtma-" + o.seq + ".txt", "🧾 Buyurtma #" + o.seq + " — yetkazilgan mahsulot")
+      .catch(() => tgSend(DELIVERY_LOG_CHAT_ID, text.slice(0, TG_TEXT_SAFE_LIMIT - 60) + "\n\n… (qisqartirildi, to'liqi admin panelda)"));
+  } catch (e) {}
 }
 // Buyurtma birinchi marta yaratilganda shu xabarni: 1) ORDER_NOTIFY_CHAT_ID guruh/kanaliga,
 // 2) mijozning o'ziga (o.uid) yuboradi — ikkalasi bir xil, rasmdagi kabi formatda.
@@ -1108,7 +1141,7 @@ const server = http.createServer((req, res) => {
           const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: "nk_" + serviceId,
             item: svc.name, price, status: "processing", ts: Date.now(),
             delivered: null, doneTs: null, japOrderId: j.order, japService: serviceId, link, quantity };
-          DB.orders.push(o); save(); notifyOrder(o);
+          DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
       }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
@@ -1327,7 +1360,7 @@ const server = http.createServer((req, res) => {
         const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
           item: "Telegram Stars (" + amount + ")", price, status: "done", ts: Date.now(),
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
-        DB.orders.push(o); save(); notifyOrder(o);
+        DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
@@ -1366,7 +1399,7 @@ const server = http.createServer((req, res) => {
           const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
             item: title, price, status: "done", ts: Date.now(),
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
-          DB.orders.push(o); save(); notifyOrder(o);
+          DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
           creditReferralOnOrder(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
@@ -1402,7 +1435,7 @@ const server = http.createServer((req, res) => {
         item: title + (quantity > 1 ? (" ×" + quantity) : ""), price: totalPrice,
         status: delivered ? "done" : "pending", ts: Date.now(), quantity,
         delivered: delivered || null, doneTs: delivered ? Date.now() : null };
-      DB.orders.push(o); save(); notifyOrder(o);
+      DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
       if (delivered) { creditReferralOnOrder(o); deliverStockToCustomer(o, title); }
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
@@ -1435,7 +1468,7 @@ const server = http.createServer((req, res) => {
           item: title, price, status: "done", ts: Date.now(),
           delivered: summary, doneTs: Date.now(),
           giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous };
-        DB.orders.push(o); save(); notifyOrder(o);
+        DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => send(res, 502, { error: "gift_failed", message: String(e.message || e) }));
@@ -1454,6 +1487,28 @@ const server = http.createServer((req, res) => {
         payments: DB.payments.filter(p => p.status === "checking" || p.status === "waiting").reverse(),
         orders: DB.orders.filter(o => o.status === "pending" || o.status === "processing").reverse()
       });
+    }
+    // Sotib olingan/yetkazilgan HAMMA narsa bo'yicha qidiruv — login/parol/link/gmail va
+    // h.k. qaysi buyurtmada kimga yuborilganini topish uchun (mijoz "olmadim" desa yoki
+    // noto'g'ri narsa berilgan bo'lsa — shu yerdan tekshiriladi). q bo'sh bo'lsa eng
+    // so'nggi yetkazilgan buyurtmalar (max 60) qaytariladi; q berilsa mahsulot nomi,
+    // yetkazilgan matn (login/parol/link ichida ham), xaridor ID/username, buyurtma
+    // raqami (#seq yoki VN-xxxxxx) bo'yicha (katta-kichik harf farqlanmaydi) qidiriladi.
+    if (url === "/api/admin/deliveries" && m === "GET") {
+      const qry = (q.get("q") || "").trim().toLowerCase();
+      let list = DB.orders.filter(o => !!o.delivered);
+      if (qry) {
+        list = list.filter(o =>
+          (o.delivered || "").toLowerCase().indexOf(qry) !== -1 ||
+          (o.item || "").toLowerCase().indexOf(qry) !== -1 ||
+          (o.uname || "").toLowerCase().indexOf(qry) !== -1 ||
+          String(o.uid || "").indexOf(qry) !== -1 ||
+          String(o.seq || "").indexOf(qry) !== -1 ||
+          (o.id || "").toLowerCase().indexOf(qry.replace(/^#/, "")) !== -1
+        );
+      }
+      list = list.slice().sort((x, y) => (y.ts || 0) - (x.ts || 0)).slice(0, 60);
+      return send(res, 200, { orders: list, total: list.length });
     }
     if (url === "/api/admin/payment" && m === "POST") {
       return readBody(req, res, b => {
