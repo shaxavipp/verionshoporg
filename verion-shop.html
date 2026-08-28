@@ -809,6 +809,7 @@ en:{
   adm_confirm:"Confirm",adm_cancel:"Cancel",adm_none:"Nothing pending",
   adm_search:"Client (ID or @username)",adm_find:"Find",adm_amountph:"Amount (sum)",adm_done:"Done ✓",
   a_history:"Full history",a_hist_title:"Client history",a_hist_topups:"Top-ups",a_hist_orders:"Purchases",
+  f_checking:"Checking",a_all_topups:"All top-ups",
   a_hist_delivered:"Delivered to client",a_hist_none:"No history yet",a_hist_back:"← Back",
   onb_sub:"Choose your language",
   guest_note:"Open the shop through the Telegram bot to place orders."
@@ -893,6 +894,7 @@ uz:{
   adm_confirm:"Tasdiqlash",adm_cancel:"Bekor",adm_none:"Hozircha bo'sh",
   adm_search:"Mijoz (ID yoki @username)",adm_find:"Qidirish",adm_amountph:"Summa (so'm)",adm_done:"Bajarildi ✓",
   a_history:"To'liq tarix",a_hist_title:"Mijoz tarixi",a_hist_topups:"To'ldirishlar",a_hist_orders:"Xaridlar",
+  f_checking:"Tekshirilmoqda",a_all_topups:"Barcha to'ldirishlar",
   a_hist_delivered:"Mijozga yetkazilgan",a_hist_none:"Hozircha tarix yo'q",a_hist_back:"← Orqaga",
   onb_sub:"Tilni tanlang",
   guest_note:"Buyurtma berish uchun do'konni Telegram bot orqali oching."
@@ -977,6 +979,7 @@ ru:{
   adm_confirm:"Подтвердить",adm_cancel:"Отмена",adm_none:"Пока пусто",
   adm_search:"Клиент (ID или @username)",adm_find:"Найти",adm_amountph:"Сумма (сум)",adm_done:"Готово ✓",
   a_history:"Полная история",a_hist_title:"История клиента",a_hist_topups:"Пополнения",a_hist_orders:"Покупки",
+  f_checking:"На проверке",a_all_topups:"Все пополнения",
   a_hist_delivered:"Выдано клиенту",a_hist_none:"Пока нет истории",a_hist_back:"← Назад",
   onb_sub:"Выберите язык",
   guest_note:"Чтобы заказывать, откройте магазин через Telegram-бота."
@@ -3893,6 +3896,7 @@ function deleteItem(id){
 function openAdminMoney(prefillQ,backFn){
   var sh=openSheet('<h2>'+esc(t("adm_money"))+'</h2>'
     +'<div class="sect" style="margin:12px 0 8px">'+esc(t("adm_pending"))+'</div><div id="amPay">…</div>'
+    +'<button class="btn sm gray" id="amAllTopupsBtn" style="width:100%;margin:8px 0 2px">'+ic("history",14)+' '+esc(t("a_all_topups"))+'</button>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_orders_p"))+'</div><div id="amOrd">…</div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("adm_search"))+'</div>'
     +'<div class="arow"><input id="admQ" placeholder="ID / @username" value="'+esc(prefillQ||"")+'"><button class="btn sm" id="admFind">'+esc(t("adm_find"))+'</button></div>'
@@ -3948,8 +3952,53 @@ function openAdminMoney(prefillQ,backFn){
       var hb=sh.querySelectorAll("[data-uhist]");for(var hh=0;hh<hb.length;hh++)hb[hh].addEventListener("click",function(){openAdminHistory(this.getAttribute("data-uhist"),function(){openAdminMoney();});});
     }).catch(function(){toast(t("srv_off"),true);});
   });
+  sh.querySelector("#amAllTopupsBtn").addEventListener("click",function(){openAdminAllTopups(function(){openAdminMoney();});});
   reload();
   if(prefillQ)sh.querySelector("#admFind").click();
+}
+
+/* Barcha to'ldirishlar (istalgan holatda) — filtr (holat) va qidiruv (ID/@username) bilan. */
+function openAdminAllTopups(backFn){
+  var filt="all";
+  var sh=openSheet('<h2>'+esc(t("a_all_topups"))+'</h2>'
+    +'<div class="chips" id="atFilters" style="margin:0 0 14px">'
+    +'<button data-atf="all" class="on">'+esc(t("f_all"))+'</button>'
+    +'<button data-atf="waiting">'+esc(t("f_pending"))+'</button>'
+    +'<button data-atf="checking">'+esc(t("f_checking"))+'</button>'
+    +'<button data-atf="done">'+esc(t("f_done"))+'</button>'
+    +'<button data-atf="cancelled">'+esc(t("f_cancelled"))+'</button>'
+    +'</div>'
+    +'<div class="arow"><input id="atQ" placeholder="ID / @username"><button class="btn sm" id="atFind">'+esc(t("adm_find"))+'</button></div>'
+    +'<div id="atList" style="margin-top:12px">…</div>',backFn||openAdmin);
+  function reload(){
+    var qv=(sh.querySelector("#atQ").value||"").trim();
+    var u="/api/admin/topups?status="+encodeURIComponent(filt)+(qv?"&q="+encodeURIComponent(qv):"");
+    sh.querySelector("#atList").innerHTML="…";
+    api(u).then(function(r){
+      var h="";
+      for(var i=0;i<r.payments.length;i++){
+        var p=r.payments[i];
+        var pb=PAY_BADGE[p.status]||PAY_BADGE.waiting;
+        h+='<div class="hcard"><div class="hc-head"><div class="hc-thumb" style="color:var(--mut)">'+ic("card",18)+'</div>'
+          +'<div class="hc-info"><div class="t">'+(p.uname?'@'+esc(p.uname):('ID '+esc(p.uid)))+'</div>'
+          +'<div class="s">'+esc(p.method||"")+'</div></div>'
+          +'<div class="hc-amt '+(AMT_CLASS[pb[0]]||"pos")+'">'+(pb[0]==="cncl"?"":"+")+esc(money(p.pay||p.amount))+'</div></div>'
+          +'<div class="hc-details">'
+          +'<div class="hc-drow"><span class="k">ID</span><span class="v code">'+esc(p.id)+'</span></div>'
+          +'<div class="hc-drow"><span class="k">'+esc(t("ord_status"))+'</span><span class="badge '+pb[0]+'">'+esc(t(pb[1]))+'</span></div>'
+          +'<div class="hc-date">'+ic("history",11)+' '+esc(fmtDate(p.ts))+'</div>'
+          +'</div></div>';
+      }
+      sh.querySelector("#atList").innerHTML=h||'<div class="paynote">'+esc(t("adm_none"))+'</div>';
+    }).catch(function(){sh.querySelector("#atList").innerHTML='<div class="paynote">'+esc(t("srv_off"))+'</div>';});
+  }
+  var chips=sh.querySelectorAll("[data-atf]");
+  for(var c=0;c<chips.length;c++)chips[c].addEventListener("click",function(){
+    for(var k=0;k<chips.length;k++)chips[k].classList.remove("on");
+    this.classList.add("on");filt=this.getAttribute("data-atf");haptic();reload();
+  });
+  sh.querySelector("#atFind").addEventListener("click",reload);
+  reload();
 }
 
 /* Mijozning to'liq tarixi: barcha to'ldirishlar + barcha xaridlar + yetkazilgan mahsulot (login/parol/promokod) */

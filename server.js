@@ -178,9 +178,12 @@ function expireOld() {
   // tugmasini bosib "checking" holatiga o'tgan bo'lsa ham, agar admin uni tasdiqlamasa,
   // vaqt oynasi (TOPUP_TTL) tugagandan keyin baribir "cancelled" bo'lib qoladi —
   // shu bilan admin panelida abadiy osilib qolmaydi.
+  let changed = false;
   for (const p of DB.payments) {
     if ((p.status === "waiting" || p.status === "checking") && now - p.ts > TOPUP_TTL) {
       p.status = "cancelled";
+      p.cancelledBy = "timeout";
+      changed = true;
       // Mijozga ham xabar boradi (ID ko'rsatilmaydi — faqat buyurtma va summa).
       tgSend(p.uid,
         "❌ To'lov bekor qilindi\n\n" +
@@ -188,8 +191,10 @@ function expireOld() {
         "▪️ Summa: " + (Number(p.amount) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm\n\n" +
         "Vaqt tugagani sababli to'lov avtomatik bekor qilindi. Qayta urinish uchun \"To'ldirish\" bo'limiga o'ting."
       );
+      notifyTopupChannel(p);
     }
   }
+  if (changed) save();
 }
 // To'lovni tasdiqlash (admin qo'lda ✅ bossa ham, SMS avtomat topsa ham shu funksiya ishlaydi)
 function confirmPayment(p, source) {
@@ -197,6 +202,7 @@ function confirmPayment(p, source) {
   const acc = DB.users[String(p.uid)] || (DB.users[String(p.uid)] = { balance: 0 });
   acc.balance += p.amount;
   save();
+  notifyTopupChannel(p);
   return acc.balance;
 }
 function tgSend(chatId, text) {
@@ -432,6 +438,79 @@ function orderMessageText(o) {
 // yozuvni yangilab qo'yish uchun ishlatiladi, mijozga ikkinchi marta xabar bormasin.
 function notifyOrderChannel(o) {
   try { if (ORDER_NOTIFY_CHAT_ID) tgSend(ORDER_NOTIFY_CHAT_ID, orderMessageText(o)); } catch (e) {}
+}
+
+/* ---------- Balansni to'ldirish so'rovlari — kanalga yuborish ----------
+   TZ: "barcha to'ldirish so'rovlari kanalga yuborilib turishi kerak, o'z vaqti bilan,
+   holati (kutilmoqda/tekshirilmoqda/tasdiqlangan/bekor qilingan) qanday bo'lsa shunday
+   ko'rinsin". Har bir to'lov uchun bitta xabar yuboriladi va keyinchalik holat
+   o'zgarganda (mijoz "to'ladim" bosganda, admin/SMS tasdiqlaganda yoki bekor
+   qilinganda) O'SHA XABARNING O'ZI tahrirlanadi — kanal keraksiz xabarlar bilan
+   to'lib ketmasligi uchun. Agar biror sabab bilan tahrirlab bo'lmasa (masalan xabar
+   admin tomonidan qo'lda o'chirib yuborilgan bo'lsa), avtomatik yangi xabar yuboriladi.
+   Har bir yozuvda p.chanMsgId (kanal xabari ID) saqlanadi. */
+const CANCEL_REASON_LABEL = {
+  timeout: "vaqt tugashi bilan avtomatik",
+  user: "mijozning o'zi bekor qildi",
+  admin: "admin tomonidan bekor qilindi",
+  replaced: "mijoz yangi to'lov yaratgani uchun avtomatik bekor qilindi"
+};
+function topupStatusBlock(p) {
+  if (p.status === "waiting") return ["🕓 Holat: Kutilmoqda / Pending", null];
+  if (p.status === "checking") return ["🔎 Holat: Tekshirilmoqda / Checking", "Mijoz \"To'lov qildim\" tugmasini bosdi."];
+  if (p.status === "done") {
+    const who = p.confirmedBy === "sms" ? "avtomatik (SMS orqali)" : "admin tomonidan qo'lda";
+    const timeStr = p.doneTs ? new Date(p.doneTs).toLocaleTimeString("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" }) : "";
+    return ["✅ Holat: Tasdiqlandi / Confirmed", "Tasdiqlandi: " + who + (timeStr ? " — " + timeStr : "")];
+  }
+  if (p.status === "cancelled") {
+    return ["❌ Holat: Bekor qilindi / Cancelled", "Sabab: " + (CANCEL_REASON_LABEL[p.cancelledBy] || "noma'lum")];
+  }
+  return ["Holat: " + p.status, null];
+}
+function topupMessageText(p) {
+  const dt = new Date(p.ts || Date.now());
+  const dateStr = dt.toLocaleDateString("ru-RU", { timeZone: "Asia/Tashkent" }) + " " +
+    dt.toLocaleTimeString("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
+  const who = p.uname ? ("@" + p.uname) : ("ID: " + p.uid);
+  const sumStr = (Number(p.amount) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
+  const payStr = (Number(p.pay) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
+  const [statusLine, extraLine] = topupStatusBlock(p);
+  const lines = [
+    "💳 Balansni to'ldirish so'rovi",
+    "👤 " + who + " (ID: " + p.uid + ")",
+    "💰 Summa: " + sumStr + (p.pay !== p.amount ? " (to'lash kerak: " + payStr + ")" : ""),
+    p.method ? ("🏦 Usul: " + p.method) : null,
+    "🕐 Yaratildi: " + dateStr,
+    "#️⃣ " + p.id,
+    statusLine,
+    extraLine
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+// Kanaldagi xabarni tahrirlaydi; agar mumkin bo'lmasa (masalan xabar topilmasa),
+// yangi xabar yuborib, uning ID sini saqlaydi.
+function notifyTopupChannel(p) {
+  try {
+    if (!ORDER_NOTIFY_CHAT_ID || !BOT_TOKEN) return;
+    const text = topupMessageText(p);
+    if (p.chanMsgId) {
+      tgApiPost("editMessageText", { chat_id: ORDER_NOTIFY_CHAT_ID, message_id: p.chanMsgId, text: text })
+        .then(j => {
+          if (j && j.ok) return;
+          // "message is not modified" — e'tibor bermasa ham bo'ladi; boshqa xato bo'lsa yangi xabar yuboramiz.
+          const desc = String((j && j.description) || "").toLowerCase();
+          if (desc.indexOf("not modified") !== -1) return;
+          return tgApiPost("sendMessage", { chat_id: ORDER_NOTIFY_CHAT_ID, text: text }).then(j2 => {
+            if (j2 && j2.ok && j2.result) { p.chanMsgId = j2.result.message_id; save(); }
+          });
+        }).catch(() => {});
+    } else {
+      tgApiPost("sendMessage", { chat_id: ORDER_NOTIFY_CHAT_ID, text: text }).then(j => {
+        if (j && j.ok && j.result) { p.chanMsgId = j.result.message_id; save(); }
+      }).catch(() => {});
+    }
+  } catch (e) {}
 }
 // Yetkazilgan (delivered) mahsulot matnini (login/parol/link va h.k.) DELIVERY_LOG_CHAT_ID
 // kanaliga yozib qo'yadi — o.delivered bo'sh bo'lsa hech narsa qilmaydi. Juda uzun bo'lsa
@@ -1264,7 +1343,9 @@ const server = http.createServer((req, res) => {
       expireOld();
       // one active top-up per user
       for (const p of DB.payments)
-        if (p.uid === u.id && (p.status === "waiting")) p.status = "cancelled";
+        if (p.uid === u.id && (p.status === "waiting")) {
+          p.status = "cancelled"; p.cancelledBy = "replaced"; notifyTopupChannel(p);
+        }
       // unique payable amount: add smallest free delta (0..499 so'm)
       const active = new Set(DB.payments
         .filter(p => p.status === "waiting" || p.status === "checking").map(p => p.pay));
@@ -1272,6 +1353,7 @@ const server = http.createServer((req, res) => {
       const rec = { id: genId("TP"), uid: u.id, uname: u.username || null, type: "topup",
         amount, pay: amount + delta, method, status: "waiting", ts: Date.now() };
       user(u); DB.payments.push(rec); save();
+      notifyTopupChannel(rec);
       // 4 daqiqadan keyin ham to'lov hali "waiting" bo'lib qolsa (ya'ni mijoz hali to'lamagan/
       // "To'lov qildim" bosmagan bo'lsa) — rasmdagi Sara Stars boti kabi eslatma yuboriladi,
       // pastida ilovani qayta ochadigan tugma bilan (ID ko'rsatilmaydi).
@@ -1300,6 +1382,7 @@ const server = http.createServer((req, res) => {
       if (!p) return send(res, 404, { error: "not found" });
       if (p.status !== "waiting") return send(res, 409, { error: "state", status: p.status });
       p.status = "checking"; p.paidTs = Date.now(); save();
+      notifyTopupChannel(p);
       send(res, 200, { ok: true });
     });
   }
@@ -1315,7 +1398,7 @@ const server = http.createServer((req, res) => {
       expireOld();
       const p = DB.payments.find(x => x.id === b.id && x.uid === u.id);
       if (!p) return send(res, 404, { error: "not found" });
-      if (p.status === "waiting") { p.status = "cancelled"; save(); }
+      if (p.status === "waiting") { p.status = "cancelled"; p.cancelledBy = "user"; save(); notifyTopupChannel(p); }
       send(res, 200, { ok: true, status: p.status });
     });
   }
@@ -1510,6 +1593,25 @@ const server = http.createServer((req, res) => {
       list = list.slice().sort((x, y) => (y.ts || 0) - (x.ts || 0)).slice(0, 60);
       return send(res, 200, { orders: list, total: list.length });
     }
+    // Barcha to'ldirishlar (istalgan holatda) — mini-app admin panelidagi
+    // "Barcha to'ldirishlar" ro'yxati uchun. /api/admin/list faqat kutilayotgan/tekshirilayotganlarni
+    // qaytaradi, bu esa tasdiqlangan va bekor qilinganlarni ham (filtr va qidiruv bilan) beradi.
+    if (url === "/api/admin/topups" && m === "GET") {
+      expireOld();
+      const status = String(q.get("status") || "all");
+      const qry = (q.get("q") || "").trim().toLowerCase();
+      let list = DB.payments.slice();
+      if (status !== "all") list = list.filter(p => p.status === status);
+      if (qry) {
+        list = list.filter(p =>
+          (p.uname || "").toLowerCase().indexOf(qry) !== -1 ||
+          String(p.uid || "").indexOf(qry) !== -1 ||
+          (p.id || "").toLowerCase().indexOf(qry.replace(/^#/, "")) !== -1
+        );
+      }
+      list = list.slice().sort((x, y) => (y.ts || 0) - (x.ts || 0)).slice(0, 200);
+      return send(res, 200, { payments: list, total: list.length });
+    }
     if (url === "/api/admin/payment" && m === "POST") {
       return readBody(req, res, b => {
         const p = DB.payments.find(x => x.id === b.id);
@@ -1519,7 +1621,8 @@ const server = http.createServer((req, res) => {
           const balance = confirmPayment(p, "admin");
           return send(res, 200, { ok: true, balance: balance });
         }
-        p.status = "cancelled"; save(); return send(res, 200, { ok: true });
+        p.status = "cancelled"; p.cancelledBy = "admin"; save(); notifyTopupChannel(p);
+        return send(res, 200, { ok: true });
       });
     }
     if (url === "/api/admin/order" && m === "POST") {
