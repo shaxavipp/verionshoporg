@@ -17,6 +17,11 @@ const HTML_FILE = path.join(__dirname, "verion-shop.html");
 // "Variables"da ORDER_NOTIFY_CHAT_ID ni o'rnating (masalan -1001234567890). Bo'sh bo'lsa
 // hech qayerga yuborilmaydi, lekin mijozga xabar baribir boradi.
 const ORDER_NOTIFY_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
+// Balansni to'ldirish so'rovlari uchun ALOHIDA kanal — buyurtmalar bilan
+// aralashib ketmasligi uchun. Bo'sh qoldirilsa, avvalgidek ORDER_NOTIFY_CHAT_ID
+// ishlatiladi (ya'ni ikkalasi bir xil kanalga tushadi). Alohida kanal kerak bo'lsa,
+// Railway "Variables"da TOPUP_NOTIFY_CHAT_ID ni o'sha kanalning chat_id'siga o'rnating.
+const TOPUP_NOTIFY_CHAT_ID = process.env.TOPUP_NOTIFY_CHAT_ID || ORDER_NOTIFY_CHAT_ID || "";
 // Mijozga yetkazilgan (sotib olingan) mahsulot — login/parol, obuna linki, gmail va h.k. —
 // bu kanalga HAM doimiy nusxa sifatida yuboriladi. Muammo/nizo chiqqanda (mijoz "olmadim"
 // desa yoki noto'g'ri narsa yuborilgan bo'lsa) admin bu kanaldan aynan nima yuborilganini
@@ -492,21 +497,21 @@ function topupMessageText(p) {
 // yangi xabar yuborib, uning ID sini saqlaydi.
 function notifyTopupChannel(p) {
   try {
-    if (!ORDER_NOTIFY_CHAT_ID || !BOT_TOKEN) return;
+    if (!TOPUP_NOTIFY_CHAT_ID || !BOT_TOKEN) return;
     const text = topupMessageText(p);
     if (p.chanMsgId) {
-      tgApiPost("editMessageText", { chat_id: ORDER_NOTIFY_CHAT_ID, message_id: p.chanMsgId, text: text })
+      tgApiPost("editMessageText", { chat_id: TOPUP_NOTIFY_CHAT_ID, message_id: p.chanMsgId, text: text })
         .then(j => {
           if (j && j.ok) return;
           // "message is not modified" — e'tibor bermasa ham bo'ladi; boshqa xato bo'lsa yangi xabar yuboramiz.
           const desc = String((j && j.description) || "").toLowerCase();
           if (desc.indexOf("not modified") !== -1) return;
-          return tgApiPost("sendMessage", { chat_id: ORDER_NOTIFY_CHAT_ID, text: text }).then(j2 => {
+          return tgApiPost("sendMessage", { chat_id: TOPUP_NOTIFY_CHAT_ID, text: text }).then(j2 => {
             if (j2 && j2.ok && j2.result) { p.chanMsgId = j2.result.message_id; save(); }
           });
         }).catch(() => {});
     } else {
-      tgApiPost("sendMessage", { chat_id: ORDER_NOTIFY_CHAT_ID, text: text }).then(j => {
+      tgApiPost("sendMessage", { chat_id: TOPUP_NOTIFY_CHAT_ID, text: text }).then(j => {
         if (j && j.ok && j.result) { p.chanMsgId = j.result.message_id; save(); }
       }).catch(() => {});
     }
