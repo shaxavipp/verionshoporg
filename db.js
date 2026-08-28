@@ -136,7 +136,12 @@ function loadState(db) {
   const orderSeq = kvGet(db, "orderSeq", 0);
   const smsLog = kvGet(db, "smsLog", []);
   const notifState = kvGet(db, "notifState", {});
-  return { users, orders, payments, reviews, stock, settings, orderSeq, smsLog, notifState };
+  // Promo-kodlar va avtomatlashtirish sozlamalari — DB.settings ichida emas, alohida
+  // top-level maydonlar bo'lgani uchun (server.js'da shunday ishlatiladi) kv jadvalida
+  // o'z kalitlari bilan saqlanadi — xuddi smsLog/notifState kabi.
+  const promoCodes = kvGet(db, "promoCodes", {});
+  const automation = kvGet(db, "automation", {});
+  return { users, orders, payments, reviews, stock, settings, orderSeq, smsLog, notifState, promoCodes, automation };
 }
 
 // ---------- generic incremental sync yordamchilari ----------
@@ -222,6 +227,10 @@ function saveState(db, DB) {
       .run(JSON.stringify(DB.smsLog || []));
     db.prepare("INSERT INTO kv (key, value) VALUES ('notifState', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
       .run(JSON.stringify(DB.notifState || {}));
+    db.prepare("INSERT INTO kv (key, value) VALUES ('promoCodes', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+      .run(JSON.stringify(DB.promoCodes || {}));
+    db.prepare("INSERT INTO kv (key, value) VALUES ('automation', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+      .run(JSON.stringify(DB.automation || {}));
   });
 }
 
