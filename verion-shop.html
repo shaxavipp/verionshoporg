@@ -735,6 +735,9 @@ en:{
   tab_nakrutka:"Boosting",search_ph:"Search game or service",tab_all:"All",tab_extra1:"Category 5",tab_extra2:"Category 6",
   tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",tab_games:"Games",
   buy:"Buy now",in_stock:"in stock",out_stock:"Out of stock",empty_section:"Nothing here yet.",
+  promo_placeholder:"Promo code",promo_apply:"Apply",promo_discount:"Promo discount",promo_ok:"Promo code applied",promo_bad:"Invalid promo code",
+  loyalty_title:"Loyalty status",loyalty_next:"to next tier",
+  a_promo_title:"Promo codes",a_loyalty_title:"Loyalty program",a_automation_title:"Automation",a_analytics_export:"Export CSV",
   open_in_tg:"Open in Telegram to buy",order_created:"Order created — now pay",
   pay_title:"Payment",enter_amount:"Enter amount",min_note:"Minimum: 1 000 sum",pay_method:"Payment method",pw_change:"Change",
   soon:"Coming soon",card_transfer:"Card transfer",terminal:"Via terminal",visa_mc:"Visa / Mastercard",
@@ -820,6 +823,9 @@ uz:{
   tab_nakrutka:"Nakrutka",search_ph:"O'yin yoki xizmat qidirish",tab_all:"Barchasi",tab_extra1:"Kategoriya 5",tab_extra2:"Kategoriya 6",
   tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",tab_games:"O'yinlar",
   buy:"Sotib olish",in_stock:"dona bor",out_stock:"Tugagan",empty_section:"Hozircha bo'sh.",
+  promo_placeholder:"Promo-kod",promo_apply:"Qo'llash",promo_discount:"Promo-kod chegirmasi",promo_ok:"Promo-kod qo'llandi",promo_bad:"Promo-kod noto'g'ri yoki muddati o'tgan",
+  loyalty_title:"Sodiqlik statusi",loyalty_next:"keyingi bosqichgacha",
+  a_promo_title:"Promo-kodlar",a_loyalty_title:"Sodiqlik dasturi",a_automation_title:"Avtomatlashtirish",a_analytics_export:"CSV eksport",
   open_in_tg:"Xarid uchun Telegram orqali oching",order_created:"Buyurtma yaratildi — endi to'lang",
   pay_title:"To'lov",enter_amount:"Summani kiriting",min_note:"Eng kam: 1 000 so'm",pay_method:"To'lov usuli",pw_change:"O'zgartirish",
   soon:"Tez orada",card_transfer:"Kartaga o'tkazma",terminal:"Terminal orqali",visa_mc:"Visa / Mastercard",
@@ -905,6 +911,9 @@ ru:{
   tab_nakrutka:"Накрутка",search_ph:"Поиск игры или услуги",tab_all:"Все",tab_extra1:"Категория 5",tab_extra2:"Категория 6",
   tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",tab_games:"Игры",
   buy:"Купить",in_stock:"в наличии",out_stock:"Нет в наличии",empty_section:"Пока пусто.",
+  promo_placeholder:"Промокод",promo_apply:"Применить",promo_discount:"Скидка по промокоду",promo_ok:"Промокод применён",promo_bad:"Промокод неверен или истёк",
+  loyalty_title:"Статус лояльности",loyalty_next:"до следующего уровня",
+  a_promo_title:"Промокоды",a_loyalty_title:"Программа лояльности",a_automation_title:"Автоматизация",a_analytics_export:"Экспорт CSV",
   open_in_tg:"Для покупки откройте через Telegram",order_created:"Заказ создан — оплатите",
   pay_title:"Оплата",enter_amount:"Введите сумму",min_note:"Минимум: 1 000 сум",pay_method:"Способ оплаты",pw_change:"Изменить",
   soon:"Скоро",card_transfer:"Перевод на карту",terminal:"Через терминал",visa_mc:"Visa / Mastercard",
@@ -1199,6 +1208,11 @@ function toggleNotifEnabled(){
   }).catch(function(){});
 }
 var REFERRAL=null;
+var LOYALTY=null;
+function loadLoyalty(cb){
+  if(!tgUser()||typeof fetch!=="function")return;
+  api("/api/loyalty").then(function(r){LOYALTY=r;if(cb)cb();else if(S.lang)render();}).catch(function(){});
+}
 function loadReferral(cb){
   if(!tgUser()||typeof fetch!=="function")return;
   api("/api/referral").then(function(r){
@@ -1377,7 +1391,7 @@ function render(){
   requestAnimationFrame(positionNavPill);
 }
 var _navLangBuilt=null;
-function go(screen){if(screen==="home"){S.group=null;S.category=null;S.giftHub=null;}S.screen=screen;haptic();render();window.scrollTo(0,0);if(screen==="profile"&&REFERRAL===null)loadReferral();}
+function go(screen){if(screen==="home"){S.group=null;S.category=null;S.giftHub=null;}S.screen=screen;haptic();render();window.scrollTo(0,0);if(screen==="profile"&&REFERRAL===null)loadReferral();if(screen==="profile"&&LOYALTY===null)loadLoyalty();}
 
 function onboardingHTML(){
   return '<div id="onb">'
@@ -2320,51 +2334,85 @@ function openGiftBuy(it){
 /* ===== buy from balance ===== */
 function openBuyConfirm(it,qty){
   qty=Math.max(1,Math.min(10,Math.round(Number(qty)||1)));
-  var bal=ME.balance,price=it.price*qty;
-  var enough=bal!==null&&bal>=price;
+  var bal=ME.balance,subtotal=it.price*qty;
+  var promo=null; // {code,discount} — "Qo'llash" bosilib tasdiqlangandan keyin to'ladi
+  function total(){return Math.max(0,subtotal-(promo?promo.discount:0));}
+  function enough(){return bal!==null&&bal>=total();}
   var sh=openSheet(
     tileHTML(it,true)
     +'<h2>'+esc(t("buy_confirm"))+'</h2>'
-    +'<div class="refline"><span>'+esc(loc(it.title))+(qty>1?(' ×'+qty):'')+'</span><b>'+esc(money(price))+'</b></div>'
+    +'<div class="refline"><span>'+esc(loc(it.title))+(qty>1?(' ×'+qty):'')+'</span><b>'+esc(money(subtotal))+'</b></div>'
+    +'<div id="promoLine"></div>'
+    +'<div class="arow" style="margin:8px 0"><input id="promoInput" placeholder="'+esc(t("promo_placeholder"))+'" style="text-transform:uppercase"><button class="btn sm" id="promoApplyBtn">'+esc(t("promo_apply"))+'</button></div>'
+    +'<div id="promoMsg"></div>'
     +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
-    +(enough?'<div class="refline"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-price))+'</b></div>':'')
+    +'<div id="afterLine"></div>'
     +'<div style="height:12px"></div>'
-    +(enough
-      ?'<button class="btn big green" id="doBuy">'+esc(t("pay_from_balance"))+'</button>'
-      :'<div class="paynote">'+ic("warning",13)+' '+esc(t("need_more"))+'</div><button class="btn big" id="goTopup">'+ic("plus",15)+' '+esc(t("bal_topup"))+'</button>')
+    +'<div id="buyActionArea"></div>'
   );
-  var b=sh.querySelector("#doBuy");
-  if(b)b.addEventListener("click",function(){
-    b.disabled=true;b.textContent=t("processing");
-    api("/api/buy","POST",{itemId:it.id,quantity:qty}).then(function(r){
-      ME.balance=r.balance;haptic("ok");closeSheet();
-      loadMe(function(){
-        if(r.order&&r.order.delivered){showDeliveredSheet(it,r.order);}
-        else{toast(t("bought_ok"));}
-        go("orders");
+  function renderTotals(){
+    var pl=sh.querySelector("#promoLine");
+    pl.innerHTML=promo?('<div class="refline"><span>'+esc(t("promo_discount"))+' ('+esc(promo.code)+')</span><b style="color:var(--acc)">−'+esc(money(promo.discount))+'</b></div>'):'';
+    var al=sh.querySelector("#afterLine");
+    var ok=enough();
+    al.innerHTML=ok?('<div class="refline"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-total()))+'</b></div>'):'';
+    var area=sh.querySelector("#buyActionArea");
+    area.innerHTML=ok
+      ?'<button class="btn big green" id="doBuy">'+esc(t("pay_from_balance"))+' — '+esc(money(total()))+'</button>'
+      :'<div class="paynote">'+ic("warning",13)+' '+esc(t("need_more"))+'</div><button class="btn big" id="goTopup">'+ic("plus",15)+' '+esc(t("bal_topup"))+'</button>';
+    bindActionButtons();
+  }
+  function bindActionButtons(){
+    var b=sh.querySelector("#doBuy");
+    if(b)b.addEventListener("click",function(){
+      b.disabled=true;b.textContent=t("processing");
+      api("/api/buy","POST",{itemId:it.id,quantity:qty,promoCode:promo?promo.code:undefined}).then(function(r){
+        ME.balance=r.balance;haptic("ok");closeSheet();
+        loadMe(function(){
+          if(r.order&&r.order.delivered){showDeliveredSheet(it,r.order);}
+          else{toast(t("bought_ok"));}
+          go("orders");
+        });
+      }).catch(function(e){
+        var code=e.resp&&e.resp.error;
+        if(code==="balance"){closeSheet();toast(t("need_more"));go("pay");}
+        else if(code==="out_of_stock"){closeSheet();toast(t("out_stock"));render();}
+        else if(code==="no_username"){closeSheet();toast(t("need_username"));}
+        else if(code==="fragment_failed"){closeSheet();toast((e.resp.message)||t("fragment_err"));}
+        else if(code==="promo_invalid"){promo=null;renderTotals();toast(t("promo_bad"),true);}
+        else{
+          /* real network/server failure — keep the sheet open so the buyer can just retry, instead of losing context */
+          b.disabled=false;b.textContent=t("pay_from_balance");
+          var note=sh.querySelector("#doBuyErr");
+          if(!note){note=document.createElement("div");note.id="doBuyErr";note.className="paynote";note.style.color="var(--err)";b.insertAdjacentElement("afterend",note);}
+          note.innerHTML=ic("warning",13)+' '+esc(t("srv_off"));
+          haptic();
+        }
       });
+    });
+    var g=sh.querySelector("#goTopup");
+    if(g)g.addEventListener("click",function(){
+      var need=total()-(bal||0);
+      S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
+      closeSheet();go("pay");
+    });
+  }
+  sh.querySelector("#promoApplyBtn").addEventListener("click",function(){
+    var code=(sh.querySelector("#promoInput").value||"").trim().toUpperCase();
+    if(!code)return;
+    var btn=this;btn.disabled=true;
+    api("/api/promo/check","POST",{itemId:it.id,quantity:qty,code:code}).then(function(r){
+      btn.disabled=false;
+      promo={code:r.code,discount:r.discount};
+      sh.querySelector("#promoMsg").innerHTML='<div class="paynote" style="color:var(--acc)">'+ic("gift",13)+' '+esc(t("promo_ok"))+'</div>';
+      haptic("ok");renderTotals();
     }).catch(function(e){
-      var code=e.resp&&e.resp.error;
-      if(code==="balance"){closeSheet();toast(t("need_more"));go("pay");}
-      else if(code==="out_of_stock"){closeSheet();toast(t("out_stock"));render();}
-      else if(code==="no_username"){closeSheet();toast(t("need_username"));}
-      else if(code==="fragment_failed"){closeSheet();toast((e.resp.message)||t("fragment_err"));}
-      else{
-        /* real network/server failure — keep the sheet open so the buyer can just retry, instead of losing context */
-        b.disabled=false;b.textContent=t("pay_from_balance");
-        var note=sh.querySelector("#doBuyErr");
-        if(!note){note=document.createElement("div");note.id="doBuyErr";note.className="paynote";note.style.color="var(--err)";b.insertAdjacentElement("afterend",note);}
-        note.innerHTML=ic("warning",13)+' '+esc(t("srv_off"));
-        haptic();
-      }
+      btn.disabled=false;
+      sh.querySelector("#promoMsg").innerHTML='<div class="paynote" style="color:var(--err)">'+ic("warning",13)+' '+esc(t("promo_bad"))+'</div>';
+      haptic();
     });
   });
-  var g=sh.querySelector("#goTopup");
-  if(g)g.addEventListener("click",function(){
-    var need=price-(bal||0);
-    S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
-    closeSheet();go("pay");
-  });
+  renderTotals();
 }
 /* mijozga xarid qilinganidan so'ng darhol chiqadigan mahsulot (login/parol/promokod) oynasi */
 function showDeliveredSheet(it,order){
@@ -3069,6 +3117,31 @@ function openFavoritesSheet(){
   });
 }
 /* ===== do'stlarni taklif qilish — alohida oyna ===== */
+function openLoyaltySheet(){
+  if(LOYALTY===null){
+    loadLoyalty(function(){openLoyaltySheet();});
+    return;
+  }
+  var html='<h2>'+ic("trophy",20)+' '+esc(t("loyalty_title"))+'</h2>';
+  if(!LOYALTY.enabled){
+    html+='<div class="minnote" style="margin-top:14px">Hozircha yoqilmagan.</div>';
+    openSheet(html);
+    return;
+  }
+  html+='<div class="stats" style="margin:10px 0">'
+    +'<div class="stat"><div class="v">'+esc(LOYALTY.tier)+'</div><div class="k">Joriy status</div></div>'
+    +'<div class="stat"><div class="v">'+(LOYALTY.percent||0)+'%</div><div class="k">Keshbek foizi</div></div>'
+    +'<div class="stat"><div class="v">'+esc(money(LOYALTY.spent||0))+'</div><div class="k">Jami xarid</div></div>'
+    +'</div>';
+  if(LOYALTY.next){
+    html+='<div class="paynote">'+ic("trophy",13)+' "'+esc(LOYALTY.next.name)+'" bosqichigacha yana '+esc(money(LOYALTY.next.remaining))+' xarid qiling.</div>';
+  } else {
+    html+='<div class="paynote">'+ic("trophy",13)+' Siz eng yuqori bosqichdasiz! 🎉</div>';
+  }
+  html+='<div class="minnote" style="margin-top:10px">Jami olingan keshbek: '+esc(money(LOYALTY.earnedTotal||0))+'</div>'
+    +'<div style="height:14px"></div>';
+  openSheet(html);
+}
 function openReferralSheet(){
   if(REFERRAL===null){
     loadReferral(function(){openReferralSheet();});
@@ -3147,6 +3220,9 @@ function profileHTML(){
   var cnt=0,sum=0;
   for(var i=0;i<ME.orders.length;i++){if(ME.orders[i].status!=="cancelled"){cnt++;sum+=ME.orders[i].price;}}
   var refSub=(REFERRAL&&REFERRAL.enabled)?t("invite_bonus_hint").replace("{p}",REFERRAL.percent||0):t("invite_sub");
+  var loyaltySub=(LOYALTY&&LOYALTY.enabled)
+    ?(LOYALTY.tier+(LOYALTY.percent?(" · "+LOYALTY.percent+"% keshbek"):"")+(LOYALTY.next?(" · "+esc(t("loyalty_next"))+" "+money(LOYALTY.next.remaining)):""))
+    :"…";
   var idTxt=u?String(u.id):"—";
   var html='<div style="height:6px"></div>'
     +'<div class="card"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
@@ -3158,6 +3234,7 @@ function profileHTML(){
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     +'<div class="card">'
+    +svcRow('data-openloyalty="1"',"trophy","#f1c40f",t("loyalty_title"),loyaltySub,undefined,"profile:loyalty")
     +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")),undefined,"profile:favs")
     +svcRow('data-opennakrutka="1"',"trendUp","#2ecc71",t("nakrutka_title"),t("nakrutka_sub"),undefined,"profile:nakrutka")
     +svcRow('data-openref="1"',"gift","#9b59b6",t("invite_title"),refSub,undefined,"profile:invite")
@@ -3205,6 +3282,12 @@ function openAdmin(){
     +'<button class="btn gray" id="aReviewsBtn">'+ic("star",15)+' '+esc(t("a_reviews_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aReferralBtn">'+ic("gift",15)+' '+esc(t("a_referral_title"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aPromoBtn">'+ic("gift",15)+' '+esc(t("a_promo_title"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aLoyaltyBtn">'+ic("trophy",15)+' '+esc(t("a_loyalty_title"))+'</button>'
+    +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aAutomationBtn">'+ic("bolt",15)+' '+esc(t("a_automation_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aDashBtn">'+ic("trendUp",15)+' '+esc(t("a_dash_btn"))+'</button>'
     +'<div style="height:8px"></div>'
@@ -3255,6 +3338,9 @@ function openAdmin(){
   sh.querySelector("#aDeliveriesBtn").addEventListener("click",openAdminDeliveries);
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
   sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
+  sh.querySelector("#aPromoBtn").addEventListener("click",openAdminPromo);
+  sh.querySelector("#aLoyaltyBtn").addEventListener("click",openAdminLoyalty);
+  sh.querySelector("#aAutomationBtn").addEventListener("click",openAdminAutomation);
   sh.querySelector("#aDashBtn").addEventListener("click",openAdminDashboard);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
   sh.querySelector("#aUiEmojiBtn").addEventListener("click",openAdminUiEmoji);
@@ -3315,6 +3401,178 @@ function openAdminReferral(){
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
 }
+/* ===== admin: promo-kodlar ===== */
+function openAdminPromo(){
+  var html='<h2>'+esc(t("a_promo_title"))+'</h2>'
+    +'<div class="sect" style="margin:0 0 6px">Yangi promo-kod</div>'
+    +'<label>Kod</label><input id="pmCode" placeholder="WELCOME10" style="text-transform:uppercase">'
+    +'<div class="seg" id="pmType"><button data-v="percent" class="on">Foiz (%)</button><button data-v="fixed">Summa (so\'m)</button></div>'
+    +'<label>Qiymat</label><input id="pmValue" type="number" min="0" placeholder="10">'
+    +'<label>Maks. ishlatilish soni (0 = cheksiz)</label><input id="pmMax" type="number" min="0" value="0">'
+    +'<label>Bitta foydalanuvchiga limiti</label><input id="pmPerUser" type="number" min="0" value="1">'
+    +'<label>Min. buyurtma summasi (0 = shartsiz)</label><input id="pmMin" type="number" min="0" value="0">'
+    +'<label>Izoh (ixtiyoriy)</label><input id="pmNote" placeholder="Masalan: yangi mijozlar uchun">'
+    +'<div style="height:10px"></div><button class="btn" id="pmCreateBtn">Yaratish</button>'
+    +'<div class="sect" style="margin:18px 0 8px">Mavjud promo-kodlar</div>'
+    +'<div id="pmList">…</div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdmin);
+  var typeVal="percent";
+  var tbtns=sh.querySelectorAll("#pmType button");
+  for(var i=0;i<tbtns.length;i++)tbtns[i].addEventListener("click",function(){
+    for(var j=0;j<tbtns.length;j++)tbtns[j].classList.toggle("on",tbtns[j]===this);
+    typeVal=this.getAttribute("data-v");
+  });
+  function fmtExpiry(p){
+    var bits=[];
+    bits.push((p.usedCount||0)+"/"+(p.maxUses?p.maxUses:"∞")+" ishlatilgan");
+    if(p.minOrder)bits.push("min "+money(p.minOrder));
+    if(p.expiresAt)bits.push("muddati: "+new Date(p.expiresAt).toLocaleDateString());
+    return bits.join(" · ");
+  }
+  function loadList(){
+    api("/api/admin/promo/list").then(function(r){
+      var list=r.promoCodes||[];
+      if(!list.length){sh.querySelector("#pmList").innerHTML='<div class="d">Hozircha promo-kod yo\'q.</div>';return;}
+      sh.querySelector("#pmList").innerHTML=list.map(function(p){
+        var val=p.type==="percent"?(p.value+"%"):money(p.value);
+        return '<div class="card" style="padding:10px 12px;margin-bottom:8px">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center">'
+          +'<b style="font-family:monospace">'+esc(p.code)+'</b><span style="color:'+(p.active?"var(--acc)":"var(--mut)")+'">'+(p.active?"faol":"o\'chirilgan")+'</span>'
+          +'</div>'
+          +'<div class="d" style="margin:4px 0">'+esc(val)+' chegirma · '+esc(fmtExpiry(p))+(p.note?(" · "+esc(p.note)):"")+'</div>'
+          +'<div style="display:flex;gap:8px;margin-top:6px">'
+          +'<button class="btn sm gray" data-toggle="'+esc(p.code)+'">'+(p.active?"O\'chirish":"Yoqish")+'</button>'
+          +'<button class="btn sm red" data-del="'+esc(p.code)+'">O\'chirib tashlash</button>'
+          +'</div></div>';
+      }).join("");
+      var tb=sh.querySelectorAll("[data-toggle]");
+      for(var k=0;k<tb.length;k++)tb[k].addEventListener("click",function(){
+        api("/api/admin/promo/toggle","POST",{code:this.getAttribute("data-toggle")}).then(function(){haptic("ok");loadList();});
+      });
+      var db=sh.querySelectorAll("[data-del]");
+      for(var k2=0;k2<db.length;k2++)db[k2].addEventListener("click",function(){
+        if(!confirm("Promo-kodni butunlay o\'chirib tashlaysizmi?"))return;
+        api("/api/admin/promo/delete","POST",{code:this.getAttribute("data-del")}).then(function(){haptic("ok");loadList();});
+      });
+    }).catch(function(){});
+  }
+  loadList();
+  sh.querySelector("#pmCreateBtn").addEventListener("click",function(){
+    var code=(sh.querySelector("#pmCode").value||"").trim().toUpperCase();
+    var value=Number(sh.querySelector("#pmValue").value)||0;
+    if(!code||!value){toast("Kod va qiymatni kiriting",true);return;}
+    var btn=this;btn.disabled=true;
+    api("/api/admin/promo/create","POST",{
+      code:code,type:typeVal,value:value,
+      maxUses:Number(sh.querySelector("#pmMax").value)||0,
+      perUserLimit:Number(sh.querySelector("#pmPerUser").value)||1,
+      minOrder:Number(sh.querySelector("#pmMin").value)||0,
+      note:sh.querySelector("#pmNote").value||""
+    }).then(function(){
+      btn.disabled=false;haptic("ok");toast("Promo-kod yaratildi");
+      sh.querySelector("#pmCode").value="";sh.querySelector("#pmValue").value="";sh.querySelector("#pmNote").value="";
+      loadList();
+    }).catch(function(){btn.disabled=false;toast("Xatolik",true);});
+  });
+}
+/* ===== admin: sodiqlik dasturi ===== */
+function openAdminLoyalty(){
+  var html='<h2>'+esc(t("a_loyalty_title"))+'</h2>'
+    +'<div class="switch"><span style="font-size:13.5px">Yoqilgan</span><button class="swbtn" id="lyEnabled"><i></i></button></div>'
+    +'<div class="d" style="margin:4px 0 10px">Mijoz umumiy xarid summasiga qarab avtomatik bosqichga o\'tadi va shu bosqich foizida har xariddan keshbek oladi.</div>'
+    +'<div id="lyTiers"></div>'
+    +'<button class="btn gray sm" id="lyAddTier">+ Bosqich qo\'shish</button>'
+    +'<div style="height:12px"></div><button class="btn" id="lySaveBtn">'+esc(t("a_save"))+'</button>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdmin);
+  var tiers=[];
+  function renderTiers(){
+    sh.querySelector("#lyTiers").innerHTML=tiers.map(function(tr,idx){
+      return '<div class="card" style="padding:10px 12px;margin-bottom:8px">'
+        +'<label>Nomi</label><input data-tf="name" data-i="'+idx+'" value="'+esc(tr.name)+'">'
+        +'<label>Shu summadan boshlab (so\'m)</label><input data-tf="minSpent" data-i="'+idx+'" type="number" min="0" value="'+esc(tr.minSpent)+'">'
+        +'<label>Keshbek foizi (%)</label><input data-tf="percent" data-i="'+idx+'" type="number" min="0" max="100" value="'+esc(tr.percent)+'">'
+        +'<div style="height:6px"></div><button class="btn sm red" data-rmtier="'+idx+'">O\'chirish</button>'
+        +'</div>';
+    }).join("");
+    var fs=sh.querySelectorAll("[data-tf]");
+    for(var i=0;i<fs.length;i++)fs[i].addEventListener("change",function(){
+      var idx=Number(this.getAttribute("data-i")),field=this.getAttribute("data-tf");
+      tiers[idx][field]=field==="name"?this.value:Number(this.value)||0;
+    });
+    var rms=sh.querySelectorAll("[data-rmtier]");
+    for(var j=0;j<rms.length;j++)rms[j].addEventListener("click",function(){
+      tiers.splice(Number(this.getAttribute("data-rmtier")),1);renderTiers();
+    });
+  }
+  var enabled=true;
+  api("/api/admin/loyalty-settings").then(function(r){
+    enabled=r.enabled!==false;
+    sh.querySelector("#lyEnabled").classList.toggle("on",enabled);
+    tiers=(r.tiers||[]).map(function(x){return {name:x.name,minSpent:x.minSpent,percent:x.percent};});
+    renderTiers();
+  }).catch(function(){});
+  sh.querySelector("#lyEnabled").addEventListener("click",function(){enabled=!enabled;this.classList.toggle("on",enabled);});
+  sh.querySelector("#lyAddTier").addEventListener("click",function(){tiers.push({name:"Yangi",minSpent:0,percent:0});renderTiers();});
+  sh.querySelector("#lySaveBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    api("/api/admin/loyalty-settings","POST",{enabled:enabled,tiers:tiers}).then(function(){
+      haptic("ok");toast(t("a_saved"));btn.disabled=false;
+    }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
+}
+/* ===== admin: avtomatlashtirish (stock ogohlantirish + "sizni sog'indik") ===== */
+function openAdminAutomation(){
+  var html='<h2>'+esc(t("a_automation_title"))+'</h2>'
+    +'<div class="sect" style="margin:0 0 6px">Zaxira tugashi</div>'
+    +'<div class="switch"><span style="font-size:13.5px">Zaxira tugaganda adminga xabar</span><button class="swbtn" id="atStockAlert"><i></i></button></div>'
+    +'<div class="sect" style="margin:16px 0 6px">"Sizni sog\'indik" (winback)</div>'
+    +'<div class="switch"><span style="font-size:13.5px">Yoqilgan</span><button class="swbtn" id="atWinback"><i></i></button></div>'
+    +'<label>Necha kun xarid qilmasa</label><input id="atDays" type="number" min="1" value="14">'
+    +'<label>Bonus summasi (so\'m, 0 = faqat xabar)</label><input id="atBonus" type="number" min="0" value="0">'
+    +'<label>Bir mijozga qayta yuborilmaydigan oraliq (kun)</label><input id="atCooldown" type="number" min="1" value="30">'
+    +'<label>Xabar matni (bo\'sh — standart)</label><textarea id="atMsg" rows="3" placeholder="Sizni sog\'indik! Yangi aksiyalarimiz bor 🎁"></textarea>'
+    +'<div style="height:12px"></div><button class="btn" id="atSaveBtn">'+esc(t("a_save"))+'</button>'
+    +'<div style="height:8px"></div><button class="btn gray" id="atRunBtn">Hozir ishga tushirish</button>'
+    +'<div class="d" id="atLastRun" style="margin-top:8px"></div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdmin);
+  var stockAlert=true,winback=false;
+  function load(){
+    api("/api/admin/automation-settings").then(function(r){
+      stockAlert=r.stockAlertEnabled!==false;winback=!!r.winbackEnabled;
+      sh.querySelector("#atStockAlert").classList.toggle("on",stockAlert);
+      sh.querySelector("#atWinback").classList.toggle("on",winback);
+      sh.querySelector("#atDays").value=r.winbackDays||14;
+      sh.querySelector("#atBonus").value=r.winbackBonus||0;
+      sh.querySelector("#atCooldown").value=r.winbackCooldownDays||30;
+      sh.querySelector("#atMsg").value=r.winbackMessage||"";
+      sh.querySelector("#atLastRun").textContent=r.lastRunTs?("Oxirgi tekshiruv: "+new Date(r.lastRunTs).toLocaleString()):"Hali ishga tushmagan.";
+    }).catch(function(){});
+  }
+  load();
+  sh.querySelector("#atStockAlert").addEventListener("click",function(){stockAlert=!stockAlert;this.classList.toggle("on",stockAlert);});
+  sh.querySelector("#atWinback").addEventListener("click",function(){winback=!winback;this.classList.toggle("on",winback);});
+  sh.querySelector("#atSaveBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    api("/api/admin/automation-settings","POST",{
+      stockAlertEnabled:stockAlert,winbackEnabled:winback,
+      winbackDays:Number(sh.querySelector("#atDays").value)||14,
+      winbackBonus:Number(sh.querySelector("#atBonus").value)||0,
+      winbackCooldownDays:Number(sh.querySelector("#atCooldown").value)||30,
+      winbackMessage:sh.querySelector("#atMsg").value||""
+    }).then(function(){haptic("ok");toast(t("a_saved"));btn.disabled=false;})
+      .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
+  sh.querySelector("#atRunBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;btn.textContent="Ishlamoqda...";
+    api("/api/admin/automation/run-winback","POST",{}).then(function(r){
+      btn.disabled=false;btn.textContent="Hozir ishga tushirish";
+      haptic("ok");toast((r.sent||0)+" ta mijozga xabar yuborildi");load();
+    }).catch(function(){btn.disabled=false;btn.textContent="Hozir ishga tushirish";toast(t("srv_off"),true);});
+  });
+}
 /* ===== admin: statistika paneli (dashboard) — TZ band 5 =====
    /api/admin/dashboard'dan bugun/hafta/oy savdosi, oxirgi 30 kunlik grafik (tashqi
    kutubxonasiz, sof SVG), eng ko'p sotilgan 5 mahsulot va yangi/faol foydalanuvchilarni oladi. */
@@ -3335,8 +3593,38 @@ function openAdminDashboard(){
     +'<div class="stat"><div class="v" id="dashNewWeekly">…</div><div class="k">'+esc(t("a_dash_newusers_weekly"))+'</div></div>'
     +'<div class="stat"><div class="v" id="dashActive">…</div><div class="k">'+esc(t("a_dash_active"))+'</div></div>'
     +'</div>'
+    +'<div class="sect" style="margin:14px 0 6px">Qaytmagan mijozlar (30+ kun)</div>'
+    +'<div id="dashChurn">…</div>'
+    +'<div class="sect" style="margin:14px 0 8px">'+esc(t("a_analytics_export"))+'</div>'
+    +'<button class="btn gray sm" id="expOrders">Buyurtmalar (CSV)</button>'
+    +'<div style="height:6px"></div>'
+    +'<button class="btn gray sm" id="expPayments">To\'lovlar (CSV)</button>'
+    +'<div style="height:6px"></div>'
+    +'<button class="btn gray sm" id="expUsers">Foydalanuvchilar (CSV)</button>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
+  function downloadCSV(type){
+    var initData=(TG&&TG.initData)?TG.initData:"";
+    fetch("/api/admin/export-csv?type="+encodeURIComponent(type),{headers:{"X-Init-Data":initData}})
+      .then(function(r){
+        if(!r.ok)throw new Error("http");
+        var cd=r.headers.get("Content-Disposition")||"";
+        var m=cd.match(/filename="([^"]+)"/);
+        var filename=m?m[1]:(type+".csv");
+        return r.blob().then(function(b){return {blob:b,filename:filename};});
+      })
+      .then(function(res){
+        var url=URL.createObjectURL(res.blob);
+        var a=document.createElement("a");
+        a.href=url;a.download=res.filename;document.body.appendChild(a);a.click();
+        setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},200);
+        haptic("ok");
+      })
+      .catch(function(){toast(t("srv_off"),true);});
+  }
+  sh.querySelector("#expOrders").addEventListener("click",function(){downloadCSV("orders");});
+  sh.querySelector("#expPayments").addEventListener("click",function(){downloadCSV("payments");});
+  sh.querySelector("#expUsers").addEventListener("click",function(){downloadCSV("users");});
   api("/api/admin/dashboard").then(function(d){
     sh.querySelector("#dashToday").textContent=money(d.sales.today);
     sh.querySelector("#dashWeek").textContent=money(d.sales.week);
@@ -3358,6 +3646,20 @@ function openAdminDashboard(){
     sh.querySelector("#dashNewDaily").textContent=d.newUsers.daily;
     sh.querySelector("#dashNewWeekly").textContent=d.newUsers.weekly;
     sh.querySelector("#dashActive").textContent=d.activeUsers;
+    var churnHtml;
+    if(!d.churnUsers||!d.churnUsers.length){
+      churnHtml='<div class="paynote">Hozircha yo\'q — barcha mijozlar faol.</div>';
+    } else {
+      churnHtml=d.churnUsers.map(function(cu){
+        var last=cu.lastOrderTs?new Date(cu.lastOrderTs).toLocaleDateString():"—";
+        return '<div class="card" style="padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px">'
+          +'<div style="flex:1;font-size:13.5px">'+esc(cu.name||("ID "+cu.uid))+(cu.uname?(" · @"+esc(cu.uname)):"")
+          +'<div class="d" style="font-size:11px">Oxirgi xarid: '+last+'</div></div>'
+          +'<div style="font-weight:700;font-size:13px;opacity:.8">'+esc(money(cu.totalSpent))+'</div>'
+          +'</div>';
+      }).join("");
+    }
+    sh.querySelector("#dashChurn").innerHTML=churnHtml;
   }).catch(function(){toast(t("srv_off"),true);});
 }
 // Oxirgi 30 kunlik savdo uchun oddiy SVG grafik (chiziq + fon ustunlar) — tashqi kutubxonasiz.
@@ -5068,6 +5370,8 @@ function bind(){
   if(invBtn)invBtn.addEventListener("click",openReferralSheet);
   els=document.querySelectorAll("[data-openref]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openReferralSheet);
+  els=document.querySelectorAll("[data-openloyalty]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",openLoyaltySheet);
   els=document.querySelectorAll("[data-chip]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     S.topup.amount=Number(this.getAttribute("data-chip"));haptic();render();
@@ -5178,6 +5482,7 @@ function boot(){
   loadReviews();
   loadLeaderboard();
   loadReferral();
+  loadLoyalty();
   setInterval(tickTimer,1000);
   setInterval(rotateReviewWidget,4500);
   setInterval(function(){

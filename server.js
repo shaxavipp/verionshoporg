@@ -85,6 +85,33 @@ if (DB.settings.referral.shareText === undefined) DB.settings.referral.shareText
 if (!DB.settings.nakrutka) DB.settings.nakrutka = { usdRate: null, markupPercent: 0, hiddenServices: [] };
 if (!Array.isArray(DB.settings.nakrutka.hiddenServices)) DB.settings.nakrutka.hiddenServices = [];
 if (!DB.notifState) DB.notifState = {}; // TZ band 6: sevimli mahsulot stock/narx bildirishnomalari holati
+// Promo-kodlar: code -> {code,type("percent"|"fixed"),value,maxUses,usedCount,perUserLimit,
+// usedBy:{uid:son},minOrder,expiresAt,active,createdAt,note}
+if (!DB.promoCodes) DB.promoCodes = {};
+// Sodiqlik dasturi: umumiy xarid summasiga qarab avtomatik status (Bronze/Silver/Gold...) —
+// har bosqich shu bosqichdan boshlab beriladigan qo'shimcha keshbek foizini bildiradi
+// (mijoz xarid qilganda balansiga avtomatik qo'shiladi, referral bonusi kabi).
+if (!DB.settings.loyalty) DB.settings.loyalty = {
+  enabled: true,
+  tiers: [
+    { name: "Bronze", minSpent: 0, percent: 0 },
+    { name: "Silver", minSpent: 300000, percent: 2 },
+    { name: "Gold", minSpent: 1000000, percent: 5 }
+  ]
+};
+// Avtomatlashtirish sozlamalari: stock tugaganda adminga ogohlantirish (doim yoqilgan) va
+// uzoq vaqt xarid qilmagan mijozlarga "sizni sog'indik" xabar + bonus (avtomatik, davriy).
+if (!DB.automation) DB.automation = {
+  winbackEnabled: false,
+  winbackDays: 14,          // shuncha kun xarid qilmasa "sog'indik" xabari boradi
+  winbackBonus: 0,          // shu summa balansga avtomatik qo'shiladi (0 — faqat xabar, bonussiz)
+  winbackMessage: "",       // bo'sh bo'lsa standart matn ishlatiladi
+  winbackCooldownDays: 30,  // bir mijozga qayta "sog'indik" xabari yuborilmaydigan minimal oraliq
+  lastRunTs: 0,
+  stockAlertEnabled: true   // zaxira (stock) tugaganda adminga xabar
+};
+if (DB.automation.winbackEnabled === undefined) DB.automation.winbackEnabled = false;
+if (DB.automation.stockAlertEnabled === undefined) DB.automation.stockAlertEnabled = true;
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
 let saveT = null;
@@ -177,6 +204,142 @@ function creditReferralOnOrder(order) {
       bonus.toLocaleString("ru-RU") + " so'm bonus qo'shildi.");
   } catch (e) {}
 }
+/* ---------- promo-kodlar ---------- */
+function normPromo(code) { return String(code || "").trim().toUpperCase().replace(/\s+/g, ""); }
+// Kodni tekshiradi (sarflamasdan) — checkout'da "Qo'llash" bosilganda yoki xarid tasdiqlanishidan
+// oldin chaqiriladi. subtotal — chegirmagacha bo'lgan umumiy summa.
+function validatePromo(code, uid, subtotal) {
+  const c = normPromo(code);
+  if (!c) return { ok: false, reason: "empty" };
+  const p = DB.promoCodes[c];
+  if (!p) return { ok: false, reason: "not_found" };
+  if (!p.active) return { ok: false, reason: "inactive" };
+  if (p.expiresAt && Date.now() > p.expiresAt) return { ok: false, reason: "expired" };
+  if (p.maxUses && (p.usedCount || 0) >= p.maxUses) return { ok: false, reason: "limit" };
+  const usedByThis = (p.usedBy && p.usedBy[String(uid)]) || 0;
+  if (p.perUserLimit && usedByThis >= p.perUserLimit) return { ok: false, reason: "already_used" };
+  if (p.minOrder && subtotal < p.minOrder) return { ok: false, reason: "min_order", minOrder: p.minOrder };
+  const discount = p.type === "fixed"
+    ? Math.min(Math.round(Number(p.value) || 0), subtotal)
+    : Math.round(subtotal * (Math.min(100, Math.max(0, Number(p.value) || 0)) / 100));
+  return { ok: true, promo: p, discount: Math.max(0, discount) };
+}
+function consumePromo(promo, uid) {
+  promo.usedCount = (promo.usedCount || 0) + 1;
+  if (!promo.usedBy) promo.usedBy = {};
+  promo.usedBy[String(uid)] = (promo.usedBy[String(uid)] || 0) + 1;
+}
+
+/* ---------- sodiqlik dasturi (loyalty) ---------- */
+// Foydalanuvchining hozirgacha "done" bo'lgan buyurtmalari bo'yicha umumiy xarid summasi.
+function userTotalSpent(uid) {
+  let sum = 0;
+  for (const o of DB.orders) if (o.status === "done" && String(o.uid) === String(uid)) sum += Number(o.price) || 0;
+  return sum;
+}
+// Xarid summasiga qarab eng yuqori mos bosqichni qaytaradi (tiers minSpent bo'yicha o'sish tartibida
+// saqlanadi deb hisoblanmaydi — shu yerda o'zimiz saralaymiz).
+function loyaltyTierFor(spent) {
+  const tiers = (DB.settings.loyalty && DB.settings.loyalty.tiers) || [];
+  const sorted = tiers.slice().sort((a, b) => (Number(a.minSpent) || 0) - (Number(b.minSpent) || 0));
+  let cur = sorted[0] || { name: "—", minSpent: 0, percent: 0 };
+  let next = null;
+  for (let i = 0; i < sorted.length; i++) {
+    if (spent >= (Number(sorted[i].minSpent) || 0)) { cur = sorted[i]; next = sorted[i + 1] || null; }
+  }
+  return { tier: cur, next };
+}
+// Xarid "done" bo'lganda chaqiriladi — mijoz joriy bosqichi bo'yicha keshbek foizini
+// balansiga avtomatik qo'shadi (referral bonusi bilan bir xil naqd usulda, bir buyurtma
+// uchun faqat bir marta).
+function creditLoyaltyOnOrder(order) {
+  try {
+    if (!order || order.status !== "done") return;
+    const ls = DB.settings.loyalty || {};
+    if (!ls.enabled) return;
+    const acc = DB.users[String(order.uid)];
+    if (!acc) return;
+    const already = acc.loyaltyCreditedOrders || (acc.loyaltyCreditedOrders = []);
+    if (already.indexOf(order.id) !== -1) return;
+    const spent = userTotalSpent(order.uid); // shu buyurtma bilan birga hisoblangan umumiy summa
+    const { tier } = loyaltyTierFor(spent);
+    const pct = Number(tier.percent) || 0;
+    if (pct <= 0) { already.push(order.id); return; }
+    const bonus = Math.floor((Number(order.price) || 0) * pct / 100);
+    if (bonus <= 0) { already.push(order.id); return; }
+    acc.balance = (acc.balance || 0) + bonus;
+    acc.loyaltyEarnedTotal = (acc.loyaltyEarnedTotal || 0) + bonus;
+    acc.loyaltyTier = tier.name;
+    already.push(order.id);
+    save();
+    tgSend(order.uid, "🏅 " + tier.name + " status bonusi: balansingizga " +
+      bonus.toLocaleString("ru-RU") + " so'm keshbek qo'shildi.");
+  } catch (e) {}
+}
+
+/* ---------- avtomatlashtirish ---------- */
+// Zaxira (stock) tugab qolganda — barcha adminlarga (ADMIN_IDS) darhol xabar. Buy va admin
+// stock/remove nuqtalarida chaqiriladi. Bir mahsulot uchun ketma-ket ko'p marta yubormaslik
+// uchun DB.automation.stockAlertSent[itemId] bilan belgilanadi, zaxira qayta to'ldirilganda
+// (stock/add) tozalanadi.
+function checkStockAlert(itemId, title) {
+  try {
+    if (!DB.automation || !DB.automation.stockAlertEnabled) return;
+    const list = DB.stock[itemId];
+    if (!Array.isArray(list) || list.length > 0) return;
+    if (!DB.automation.stockAlertSent) DB.automation.stockAlertSent = {};
+    if (DB.automation.stockAlertSent[itemId]) return; // allaqachon xabar berilgan
+    DB.automation.stockAlertSent[itemId] = Date.now();
+    save();
+    const text = "⚠️ Zaxira tugadi\n\n▪️ Mahsulot: " + (title || itemId) +
+      "\n\nIltimos admin panel orqali yangi zaxira qo'shing.";
+    for (const aid of ADMIN_IDS) tgSend(aid, text);
+  } catch (e) {}
+}
+// "Sizni sog'indik" — winback: DB.automation.winbackDays kun davomida hech narsa xarid
+// qilmagan (lekin avval kamida bitta "done" buyurtmasi bo'lgan) mijozlarga avtomatik xabar
+// (va agar sozlangan bo'lsa — bonus) yuboradi. Har bir mijozga winbackCooldownDays dan
+// tez-tez yuborilmaydi. setInterval orqali davriy chaqiriladi (pastda).
+function runWinbackCheck() {
+  try {
+    const A = DB.automation || {};
+    if (!A.winbackEnabled) return;
+    const now = Date.now();
+    const inactiveMs = (Number(A.winbackDays) || 14) * 24 * 60 * 60 * 1000;
+    const cooldownMs = (Number(A.winbackCooldownDays) || 30) * 24 * 60 * 60 * 1000;
+    const lastOrderByUid = {};
+    for (const o of DB.orders) {
+      if (o.status !== "done") continue;
+      const k = String(o.uid);
+      if (!lastOrderByUid[k] || o.ts > lastOrderByUid[k]) lastOrderByUid[k] = o.ts;
+    }
+    let sentCount = 0;
+    for (const uid of Object.keys(lastOrderByUid)) {
+      const lastTs = lastOrderByUid[uid];
+      if (now - lastTs < inactiveMs) continue; // hali "uzoq vaqt" hisoblanmaydi
+      const acc = DB.users[uid];
+      if (!acc) continue;
+      if (acc.winbackSentTs && now - acc.winbackSentTs < cooldownMs) continue; // yaqinda yuborilgan
+      acc.winbackSentTs = now;
+      if (A.winbackBonus > 0) acc.balance = (acc.balance || 0) + Number(A.winbackBonus);
+      sentCount++;
+      const msg = (A.winbackMessage && A.winbackMessage.trim()) ||
+        "😔 Sizni sog'indik! Ancha bo'ldi xarid qilmagansiz.";
+      const bonusLine = A.winbackBonus > 0
+        ? ("\n\n🎁 Sizga " + Number(A.winbackBonus).toLocaleString("ru-RU") + " so'm bonus balansingizga qo'shildi — foydalaning!")
+        : "";
+      tgSend(uid, msg + bonusLine);
+    }
+    DB.automation.lastRunTs = now;
+    if (sentCount > 0) save(); else save();
+    return sentCount;
+  } catch (e) { return 0; }
+}
+// Har 12 soatda avtomatik tekshiradi (server doim ishlab turgan taqdirda). Birinchi tekshiruv
+// 2 daqiqadan keyin (server to'liq ishga tushgach) boshlanadi.
+setTimeout(() => { try { runWinbackCheck(); } catch (e) {} }, 2 * 60 * 1000);
+setInterval(() => { try { runWinbackCheck(); } catch (e) {} }, 12 * 60 * 60 * 1000);
+
 function expireOld() {
   const now = Date.now();
   // Vaqt tugagach to'lov TO'LIQ bekor bo'lishi kerak — foydalanuvchi "To'lov qildim"
@@ -1176,6 +1339,37 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  /* ===== promo-kod tekshirish (checkout, hali sarflamasdan) ===== */
+  if (url === "/api/promo/check" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    return readBody(req, res, b => {
+      const cat = catalogArr();
+      const it = cat && cat.find(x => x.id === b.itemId && x.active !== false);
+      if (!it) return send(res, 404, { error: "no item" });
+      const price = Math.round(Number(it.price) || 0);
+      const quantity = Math.max(1, Math.min(10, Math.round(Number(b.quantity) || 1)));
+      const subtotal = price * quantity;
+      const r = validatePromo(b.code, u.id, subtotal);
+      if (!r.ok) return send(res, 409, { error: "promo_invalid", reason: r.reason, minOrder: r.minOrder });
+      return send(res, 200, { ok: true, code: r.promo.code, discount: r.discount, total: subtotal - r.discount });
+    });
+  }
+
+  /* ===== sodiqlik dasturi — mening statusim ===== */
+  if (url === "/api/loyalty" && m === "GET") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    const ls = DB.settings.loyalty || {};
+    const spent = userTotalSpent(u.id);
+    const { tier, next } = loyaltyTierFor(spent);
+    return send(res, 200, {
+      enabled: !!ls.enabled, spent, tier: tier.name, percent: Number(tier.percent) || 0,
+      next: next ? { name: next.name, minSpent: next.minSpent, remaining: Math.max(0, next.minSpent - spent) } : null,
+      earnedTotal: Number((DB.users[String(u.id)] || {}).loyaltyEarnedTotal) || 0
+    });
+  }
+
   /* ===== Nakrutka (SMM) — xizmatlar ro'yxati + buyurtma berish ===== */
   // Yashirilgan xizmatlar chiqarib tashlanadi, narxga admin belgilagan ustama (markup)
   // qo'shiladi — frontendga tayyor (ustama bilan) narx va joriy kurs birga yuboriladi.
@@ -1505,7 +1699,14 @@ const server = http.createServer((req, res) => {
         return send(res, 409, { error: "out_of_stock" });
       if (isStockItem && quantity > listCheck.length)
         return send(res, 409, { error: "out_of_stock", available: listCheck.length });
-      const totalPrice = price * quantity;
+      let totalPrice = price * quantity;
+      let promoApplied = null;
+      if (b.promoCode) {
+        const pv = validatePromo(b.promoCode, u.id, totalPrice);
+        if (!pv.ok) return send(res, 409, { error: "promo_invalid", reason: pv.reason, minOrder: pv.minOrder });
+        totalPrice = Math.max(0, totalPrice - pv.discount);
+        promoApplied = { code: pv.promo.code, discount: pv.discount };
+      }
       if (acc.balance < totalPrice) return send(res, 402, { error: "balance", need: totalPrice - acc.balance });
       // Zaxirada (stock) tayyor mahsulot bo'lsa — so'ralgan miqdorni olib, shu mijozga qat'iy
       // biriktiramiz (boshqa hech kimga qayta berilmaydi), balansdan yechamiz va darhol
@@ -1522,9 +1723,13 @@ const server = http.createServer((req, res) => {
       const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
         item: title + (quantity > 1 ? (" ×" + quantity) : ""), price: totalPrice,
         status: delivered ? "done" : "pending", ts: Date.now(), quantity,
-        delivered: delivered || null, doneTs: delivered ? Date.now() : null };
-      DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
-      if (delivered) { creditReferralOnOrder(o); deliverStockToCustomer(o, title); }
+        delivered: delivered || null, doneTs: delivered ? Date.now() : null,
+        promoCode: promoApplied ? promoApplied.code : null, promoDiscount: promoApplied ? promoApplied.discount : 0 };
+      DB.orders.push(o); save();
+      if (promoApplied) consumePromo(DB.promoCodes[promoApplied.code], u.id);
+      notifyOrder(o); logDeliveryToChannel(o);
+      if (Array.isArray(list)) checkStockAlert(it.id, title);
+      if (delivered) { creditReferralOnOrder(o); creditLoyaltyOnOrder(o); deliverStockToCustomer(o, title); }
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     });
   }
@@ -1639,12 +1844,19 @@ const server = http.createServer((req, res) => {
           o.status = "done"; o.doneTs = Date.now();
           save();
           creditReferralOnOrder(o);
+          creditLoyaltyOnOrder(o);
           tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
           notifyOrderChannel(o);
         }
         else { o.status = "cancelled"; // refund
           const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
           acc.balance += o.price;
+          // Promo-kod ishlatilgan bo'lsa — bekor qilinganda foydalanish limitini bo'shatamiz.
+          if (o.promoCode && DB.promoCodes[o.promoCode]) {
+            const p = DB.promoCodes[o.promoCode];
+            p.usedCount = Math.max(0, (p.usedCount || 0) - 1);
+            if (p.usedBy && p.usedBy[String(o.uid)]) p.usedBy[String(o.uid)] = Math.max(0, p.usedBy[String(o.uid)] - 1);
+          }
           save();
           tgSend(o.uid, "❌ Buyurtmangiz bekor qilindi, mablag' balansingizga qaytarildi: " + o.item);
           notifyOrderChannel(o);
@@ -1702,6 +1914,7 @@ const server = http.createServer((req, res) => {
         if (!lines.length) return send(res, 400, { error: "empty" });
         if (!DB.stock[itemId]) DB.stock[itemId] = [];
         DB.stock[itemId] = DB.stock[itemId].concat(lines);
+        if (DB.automation && DB.automation.stockAlertSent) delete DB.automation.stockAlertSent[itemId]; // qayta to'ldirildi — keyingi tugashda yana ogohlantiradi
         save();
         checkFavoriteStock(itemId); // TZ band 6: 0dan 1+ ga o'tsa sevimli belgilaganlarga xabar
         return send(res, 200, { ok: true, count: DB.stock[itemId].length });
@@ -1716,6 +1929,7 @@ const server = http.createServer((req, res) => {
         DB.stock[itemId].splice(idx, 1);
         save();
         checkFavoriteStock(itemId);
+        checkStockAlert(itemId, itemId);
         return send(res, 200, { ok: true, count: DB.stock[itemId].length });
       });
     }
@@ -1805,7 +2019,26 @@ const server = http.createServer((req, res) => {
       for (const o of doneOrders) if ((o.ts || 0) >= sevenDaysAgo) activeUidSet[o.uid] = true;
       const activeUsers = Object.keys(activeUidSet).length;
 
-      return send(res, 200, { sales, dailySales, topProducts, newUsers, activeUsers });
+      // "Qaytmagan" mijozlar — avval kamida bitta xarid qilgan, lekin oxirgi 30 kunda
+      // hech narsa olmagan foydalanuvchilar (eng ko'p sarflaganlar birinchi), top 20.
+      const lastOrderByUid = {}, spentByUid = {};
+      for (const o of doneOrders) {
+        const k = String(o.uid);
+        if (!lastOrderByUid[k] || o.ts > lastOrderByUid[k]) lastOrderByUid[k] = o.ts;
+        spentByUid[k] = (spentByUid[k] || 0) + (Number(o.price) || 0);
+      }
+      const thirtyDaysAgo = now - 30 * dayMs;
+      const churnUsers = Object.keys(lastOrderByUid)
+        .filter(k => lastOrderByUid[k] < thirtyDaysAgo)
+        .map(k => ({
+          uid: k, uname: (DB.users[k] && DB.users[k].uname) || null,
+          name: (DB.users[k] && DB.users[k].name) || "",
+          lastOrderTs: lastOrderByUid[k], totalSpent: spentByUid[k] || 0
+        }))
+        .sort((a, b) => b.totalSpent - a.totalSpent)
+        .slice(0, 20);
+
+      return send(res, 200, { sales, dailySales, topProducts, newUsers, activeUsers, churnUsers, churnCount: churnUsers.length });
     }
     if (url === "/api/admin/referral-settings" && m === "GET") {
       return send(res, 200, DB.settings.referral || {});
@@ -1821,6 +2054,134 @@ const server = http.createServer((req, res) => {
         send(res, 200, { ok: true, referral: DB.settings.referral });
       });
     }
+    /* ----- promo-kodlar (admin) ----- */
+    if (url === "/api/admin/promo/list" && m === "GET") {
+      const list = Object.values(DB.promoCodes).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      return send(res, 200, { promoCodes: list });
+    }
+    if (url === "/api/admin/promo/create" && m === "POST") {
+      return readBody(req, res, b => {
+        const code = normPromo(b.code);
+        if (!code) return send(res, 400, { error: "no_code" });
+        const type = b.type === "fixed" ? "fixed" : "percent";
+        const value = Math.max(0, Number(b.value) || 0);
+        if (!value) return send(res, 400, { error: "no_value" });
+        DB.promoCodes[code] = {
+          code, type, value,
+          maxUses: Math.max(0, Number(b.maxUses) || 0),        // 0 = cheksiz
+          perUserLimit: Math.max(0, Number(b.perUserLimit) || 1),
+          minOrder: Math.max(0, Number(b.minOrder) || 0),
+          expiresAt: b.expiresAt ? Number(b.expiresAt) : null,
+          active: true, usedCount: 0, usedBy: {},
+          note: String(b.note || "").slice(0, 200),
+          createdAt: Date.now()
+        };
+        save();
+        send(res, 200, { ok: true, promo: DB.promoCodes[code] });
+      });
+    }
+    if (url === "/api/admin/promo/toggle" && m === "POST") {
+      return readBody(req, res, b => {
+        const p = DB.promoCodes[normPromo(b.code)];
+        if (!p) return send(res, 404, { error: "not found" });
+        p.active = !p.active;
+        save();
+        send(res, 200, { ok: true, active: p.active });
+      });
+    }
+    if (url === "/api/admin/promo/delete" && m === "POST") {
+      return readBody(req, res, b => {
+        const code = normPromo(b.code);
+        if (!DB.promoCodes[code]) return send(res, 404, { error: "not found" });
+        delete DB.promoCodes[code];
+        save();
+        send(res, 200, { ok: true });
+      });
+    }
+
+    /* ----- sodiqlik dasturi sozlamalari (admin) ----- */
+    if (url === "/api/admin/loyalty-settings" && m === "GET") {
+      return send(res, 200, DB.settings.loyalty || {});
+    }
+    if (url === "/api/admin/loyalty-settings" && m === "POST") {
+      return readBody(req, res, b => {
+        const tiers = Array.isArray(b.tiers) ? b.tiers.map(t => ({
+          name: String(t.name || "").slice(0, 30) || "Tier",
+          minSpent: Math.max(0, Number(t.minSpent) || 0),
+          percent: Math.max(0, Math.min(100, Number(t.percent) || 0))
+        })) : (DB.settings.loyalty && DB.settings.loyalty.tiers) || [];
+        DB.settings.loyalty = { enabled: !!b.enabled, tiers };
+        save();
+        send(res, 200, { ok: true, loyalty: DB.settings.loyalty });
+      });
+    }
+
+    /* ----- avtomatlashtirish sozlamalari (admin) ----- */
+    if (url === "/api/admin/automation-settings" && m === "GET") {
+      return send(res, 200, DB.automation || {});
+    }
+    if (url === "/api/admin/automation-settings" && m === "POST") {
+      return readBody(req, res, b => {
+        DB.automation = {
+          winbackEnabled: !!b.winbackEnabled,
+          winbackDays: Math.max(1, Number(b.winbackDays) || 14),
+          winbackBonus: Math.max(0, Number(b.winbackBonus) || 0),
+          winbackMessage: String(b.winbackMessage || "").slice(0, 500),
+          winbackCooldownDays: Math.max(1, Number(b.winbackCooldownDays) || 30),
+          lastRunTs: (DB.automation && DB.automation.lastRunTs) || 0,
+          stockAlertEnabled: !!b.stockAlertEnabled,
+          stockAlertSent: (DB.automation && DB.automation.stockAlertSent) || {}
+        };
+        save();
+        send(res, 200, { ok: true, automation: DB.automation });
+      });
+    }
+    // Admin qo'lda ham "sog'indik" tekshiruvini darhol ishga tushira oladi (kutmasdan).
+    if (url === "/api/admin/automation/run-winback" && m === "POST") {
+      const sent = runWinbackCheck();
+      return send(res, 200, { ok: true, sent: sent || 0 });
+    }
+    // Bitta mahsulot uchun stock-alert belgisini tozalash (zaxira yangi qo'shilganda chaqiriladi).
+    if (url === "/api/admin/automation/clear-stock-alert" && m === "POST") {
+      return readBody(req, res, b => {
+        if (DB.automation && DB.automation.stockAlertSent) delete DB.automation.stockAlertSent[b.itemId];
+        save();
+        send(res, 200, { ok: true });
+      });
+    }
+
+    /* ----- CSV eksport (admin) ----- */
+    if (url === "/api/admin/export-csv" && m === "GET") {
+      const type = q.get("type") || "orders";
+      function csvEsc(v) {
+        const s = v === null || v === undefined ? "" : String(v);
+        return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }
+      let rows = [];
+      if (type === "orders") {
+        rows.push(["id", "seq", "uid", "uname", "item", "price", "status", "promoCode", "promoDiscount", "date"]);
+        for (const o of DB.orders) rows.push([o.id, o.seq, o.uid, o.uname || "", o.item, o.price, o.status,
+          o.promoCode || "", o.promoDiscount || 0, new Date(o.ts).toISOString()]);
+      } else if (type === "payments") {
+        rows.push(["id", "uid", "amount", "status", "date"]);
+        for (const p of DB.payments) rows.push([p.id, p.uid, p.amount, p.status, new Date(p.ts).toISOString()]);
+      } else if (type === "users") {
+        rows.push(["uid", "uname", "name", "balance", "totalSpent", "loyaltyTier", "registered"]);
+        for (const k of Object.keys(DB.users)) {
+          const uu = DB.users[k];
+          rows.push([k, uu.uname || "", uu.name || "", uu.balance || 0, userTotalSpent(k),
+            uu.loyaltyTier || "", new Date(uu.ts || 0).toISOString()]);
+        }
+      } else return send(res, 400, { error: "bad type" });
+      const csv = rows.map(r => r.map(csvEsc).join(",")).join("\n");
+      res.writeHead(200, {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="' + type + "-" + Date.now() + '.csv"'
+      });
+      res.end("\uFEFF" + csv); // BOM — Excel'da kirill/lotin harflari to'g'ri ochilishi uchun
+      return;
+    }
+
     if (url === "/api/admin/users" && m === "GET") {
       const sortBy = q.get("sort") || "recent"; // recent | balance
       let list = Object.keys(DB.users).map(k => ({ uid: Number(k), uname: DB.users[k].uname,
