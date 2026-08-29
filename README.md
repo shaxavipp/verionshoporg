@@ -61,6 +61,22 @@ Admin panelda mijozni qidirish (ID/@username) va balansga qo'lda +/− qilish ha
 
 Diqqat: bank SMS'dan AVTOMAT o'qish texnik jihatdan web-ilovada mumkin emas — tasdiqlash bir bosishlik qoldi. To'liq avtomat uchun keyinroq Click/Payme merchant yoki Telegram Stars ulanadi.
 
+## Kanallar — qaysi xabar qayerga tushadi
+
+Admin panel → **Kanallar (chat_id)**. Uchta mustaqil kanal:
+
+| Xabar | Nima ketadi |
+|---|---|
+| 🛍 **Buyurtmalar** | Har bir yangi buyurtma va uning holati (#226, Muvaffaqiyatli/Bekor qilindi) |
+| 💳 **To'lovlar** | Balansni to'ldirish so'rovlari (bitta xabar tahrirlanib boradi: Kutilmoqda → Tasdiqlandi) |
+| 🔑 **Yetkazilganlar** | Sotilgan mahsulot nusxasi (login/parol, link) — nizo chiqqanda dalil sifatida |
+
+chat_id — kanalning **raqamli** ID si (masalan `-1001234567890`), `@username` emas. Bot o'sha kanalda **admin** bo'lishi shart. Har birining yonida **Sinov xabari yuborish** tugmasi bor — bosib ko'rsangiz, kanal to'g'ri yoki Telegram xatosi (masalan "bot kanalda admin emas") darhol chiqadi.
+
+Bo'sh qoldirilgan kanal — o'sha turdagi xabar hech qayerga yuborilmaydi (mijozga baribir boradi). Yagona istisno: **Yetkazilganlar** bo'sh bo'lsa, buyurtmalar kanaliga yoziladi.
+
+Railway'dagi `ORDER_NOTIFY_CHAT_ID` / `TOPUP_NOTIFY_CHAT_ID` / `DELIVERY_LOG_CHAT_ID` o'zgaruvchilari faqat **birinchi ishga tushish** uchun standart qiymat bo'lib qoldi. Undan keyin admin paneldagi qiymat ustun turadi — kanalni almashtirish uchun qayta deploy kerak emas.
+
 ## Cheklovlar (Phase 2 rejasi)
 
 Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'yinlar, kichik kartochkalar, Dark/Light rejim), referral tizimi, buyurtmalar filtri, keyin Click/Payme/Telegram Stars.

@@ -3289,6 +3289,8 @@ function openAdmin(){
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aAutomationBtn">'+ic("bolt",15)+' '+esc(t("a_automation_title"))+'</button>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aChannelsBtn">'+ic("send",15)+' Kanallar (chat_id)</button>'
+    +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aDashBtn">'+ic("trendUp",15)+' '+esc(t("a_dash_btn"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
@@ -3341,6 +3343,7 @@ function openAdmin(){
   sh.querySelector("#aPromoBtn").addEventListener("click",openAdminPromo);
   sh.querySelector("#aLoyaltyBtn").addEventListener("click",openAdminLoyalty);
   sh.querySelector("#aAutomationBtn").addEventListener("click",openAdminAutomation);
+  sh.querySelector("#aChannelsBtn").addEventListener("click",openAdminChannels);
   sh.querySelector("#aDashBtn").addEventListener("click",openAdminDashboard);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
   sh.querySelector("#aUiEmojiBtn").addEventListener("click",openAdminUiEmoji);
@@ -3520,6 +3523,70 @@ function openAdminLoyalty(){
     api("/api/admin/loyalty-settings","POST",{enabled:enabled,tiers:tiers}).then(function(){
       haptic("ok");toast(t("a_saved"));btn.disabled=false;
     }).catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
+  });
+}
+/* ===== admin: kanallar — qaysi xabar qaysi kanalga ketishi =====
+   Uch xil xabar (buyurtma / balans to'ldirish / yetkazilgan mahsulot nusxasi) uchun
+   uchta alohida chat_id. Ilgari bular faqat Railway "Variables"da bo'lgani uchun
+   kanalni almashtirishga har safar qayta deploy kerak bo'lardi va bo'sh qolgani
+   jimgina buyurtma kanaliga tushib, buyurtmalar to'lovlar bilan aralashib ketardi.
+   Endi shu yerdan o'zgartiriladi va darhol kuchga kiradi. */
+function openAdminChannels(){
+  var html='<h2>Kanallar (chat_id)</h2>'
+    +'<div class="paynote" style="margin:0 0 10px">Har bir xabar turi uchun alohida kanal. '
+    +'chat_id — kanalning raqamli ID si (masalan <b>-1001234567890</b>), @username emas. '
+    +'Bot o\'sha kanalda <b>admin</b> bo\'lishi shart. Bo\'sh qoldirilsa — o\'sha turdagi xabar hech qayerga yuborilmaydi.</div>'
+    +'<label>🛍 Buyurtmalar kanali</label><input id="chOrder" type="text" inputmode="numeric" placeholder="-1001234567890">'
+    +'<div class="d" id="chOrderNote" style="margin:-4px 0 8px"></div>'
+    +'<button class="btn gray sm" data-test="order">Sinov xabari yuborish</button>'
+    +'<label style="margin-top:14px">💳 To\'lovlar (balans to\'ldirish) kanali</label><input id="chTopup" type="text" inputmode="numeric" placeholder="-1001234567890">'
+    +'<div class="d" id="chTopupNote" style="margin:-4px 0 8px"></div>'
+    +'<button class="btn gray sm" data-test="topup">Sinov xabari yuborish</button>'
+    +'<label style="margin-top:14px">🔑 Yetkazilganlar (login/parol nusxasi) kanali</label><input id="chDelivery" type="text" inputmode="numeric" placeholder="bo\'sh — buyurtmalar kanaliga">'
+    +'<div class="d" id="chDeliveryNote" style="margin:-4px 0 8px"></div>'
+    +'<button class="btn gray sm" data-test="delivery">Sinov xabari yuborish</button>'
+    +'<div style="height:14px"></div><button class="btn" id="chSaveBtn">'+esc(t("a_save"))+'</button>'
+    +'<div class="d" id="chStatus" style="margin-top:10px"></div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdmin);
+  function val(id){return sh.querySelector(id).value.trim();}
+  function load(){
+    api("/api/admin/channel-settings").then(function(r){
+      sh.querySelector("#chOrder").value=r.order||"";
+      sh.querySelector("#chTopup").value=r.topup||"";
+      sh.querySelector("#chDelivery").value=r.delivery||"";
+      var env=r.env||{};
+      sh.querySelector("#chOrderNote").textContent=env.order?("Railway qiymati: "+env.order):"";
+      sh.querySelector("#chTopupNote").textContent=env.topup?("Railway qiymati: "+env.topup):"";
+      sh.querySelector("#chDeliveryNote").textContent=(r.effective&&r.effective.delivery&&!r.delivery)
+        ?("Bo'sh — buyurtmalar kanaliga yoziladi ("+r.effective.delivery+")"):"";
+      sh.querySelector("#chStatus").textContent=r.botToken?"":"⚠️ BOT_TOKEN o'rnatilmagan — hech qanday xabar yuborilmaydi.";
+    }).catch(function(){toast(t("srv_off"),true);});
+  }
+  load();
+  var tbtns=sh.querySelectorAll("[data-test]");
+  for(var i=0;i<tbtns.length;i++)tbtns[i].addEventListener("click",function(){
+    var kind=this.getAttribute("data-test");
+    var id=kind==="order"?"#chOrder":kind==="topup"?"#chTopup":"#chDelivery";
+    var btn=this;btn.disabled=true;
+    api("/api/admin/channel-test","POST",{kind:kind,chatId:val(id)}).then(function(r){
+      btn.disabled=false;haptic("ok");
+      toast("✅ Yuborildi"+(r.title?(" → "+r.title):""));
+    }).catch(function(e){
+      btn.disabled=false;
+      toast((e&&e.resp&&e.resp.error)||"Yuborilmadi",true);
+    });
+  });
+  sh.querySelector("#chSaveBtn").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    api("/api/admin/channel-settings","POST",{
+      order:val("#chOrder"),topup:val("#chTopup"),delivery:val("#chDelivery")
+    }).then(function(){
+      btn.disabled=false;haptic("ok");toast(t("a_saved"));load();
+    }).catch(function(e){
+      btn.disabled=false;
+      toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);
+    });
   });
 }
 /* ===== admin: avtomatlashtirish (stock ogohlantirish + "sizni sog'indik") ===== */

@@ -13,21 +13,19 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
-// Har bir buyurtma avtomatik shu guruh/kanalga (chat_id) e'lon qilinadi — Railway
-// "Variables"da ORDER_NOTIFY_CHAT_ID ni o'rnating (masalan -1001234567890). Bo'sh bo'lsa
-// hech qayerga yuborilmaydi, lekin mijozga xabar baribir boradi.
-const ORDER_NOTIFY_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
-// Balansni to'ldirish so'rovlari uchun ALOHIDA kanal — buyurtmalar bilan
-// aralashib ketmasligi uchun. Bo'sh qoldirilsa, avvalgidek ORDER_NOTIFY_CHAT_ID
-// ishlatiladi (ya'ni ikkalasi bir xil kanalga tushadi). Alohida kanal kerak bo'lsa,
-// Railway "Variables"da TOPUP_NOTIFY_CHAT_ID ni o'sha kanalning chat_id'siga o'rnating.
-const TOPUP_NOTIFY_CHAT_ID = process.env.TOPUP_NOTIFY_CHAT_ID || ORDER_NOTIFY_CHAT_ID || "";
-// Mijozga yetkazilgan (sotib olingan) mahsulot — login/parol, obuna linki, gmail va h.k. —
-// bu kanalga HAM doimiy nusxa sifatida yuboriladi. Muammo/nizo chiqqanda (mijoz "olmadim"
-// desa yoki noto'g'ri narsa yuborilgan bo'lsa) admin bu kanaldan aynan nima yuborilganini
-// istalgan vaqtda topa oladi — Telegram DM tarixiga bog'liq bo'lmay. Bo'sh bo'lsa (yoki
-// ORDER_NOTIFY_CHAT_ID bilan bir xil bo'lsa) — o'sha kanalning o'ziga yoziladi.
-const DELIVERY_LOG_CHAT_ID = process.env.DELIVERY_LOG_CHAT_ID || ORDER_NOTIFY_CHAT_ID || "";
+/* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
+   Uch xil xabar — uch xil kanal. Ilgari faqat Railway "Variables"dan o'qilardi va
+   birini o'zgartirish uchun har safar qayta deploy kerak bo'lardi; bundan tashqari
+   bo'sh qolgan o'zgaruvchi jimgina buyurtma kanaliga tushib, buyurtmalar bilan
+   to'lovlar bitta kanalda aralashib ketardi.
+
+   Endi manba ikkita: quyidagi env qiymatlari faqat STANDART (birinchi ishga tushish)
+   qiymati bo'lib qoladi, ustidan admin panel → "Kanallar (chat_id)" bo'limida
+   kiritilgan qiymat ishlaydi (DB.settings.channels). Ya'ni buyurtmani boshqa kanalga
+   ko'chirish uchun deploy ham, Railway ham kerak emas. */
+const ENV_ORDER_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
+const ENV_TOPUP_CHAT_ID = process.env.TOPUP_NOTIFY_CHAT_ID || "";
+const ENV_DELIVERY_CHAT_ID = process.env.DELIVERY_LOG_CHAT_ID || "";
 const TOPUP_TTL = 7 * 60 * 1000;           // payment window: 7 minutes
 const PAYMENT_REMINDER_DELAY = 4 * 60 * 1000; // 4 daqiqadan keyin ham to'lanmagan bo'lsa eslatma yuboriladi
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
@@ -84,6 +82,17 @@ if (DB.settings.referral.shareText === undefined) DB.settings.referral.shareText
 // yashirilgan xizmatlar ro'yxati ham shu yerda saqlanadi.
 if (!DB.settings.nakrutka) DB.settings.nakrutka = { usdRate: null, markupPercent: 0, hiddenServices: [] };
 if (!Array.isArray(DB.settings.nakrutka.hiddenServices)) DB.settings.nakrutka.hiddenServices = [];
+// Kanal chat_id'lari (buyurtma / to'lov / yetkazilgan nusxasi). Birinchi ishga tushishda
+// env qiymatlaridan olinadi, keyin admin panelidan o'zgartiriladi — env endi tegmaydi.
+// Ko'chirish paytida avvalgi xatti-harakat aynan saqlanadi: ilgari TOPUP_NOTIFY_CHAT_ID
+// bo'sh bo'lsa to'lovlar buyurtma kanaliga tushardi, shu sabab shu bir marta o'sha
+// qiymat ko'chiriladi — aks holda yangilanishdan keyin to'lovlar kanali "yo'qolib"
+// qolgandek bo'lardi. Keyin admin ularni bemalol ajratadi.
+if (!DB.settings.channels) DB.settings.channels = {
+  order: ENV_ORDER_CHAT_ID,
+  topup: ENV_TOPUP_CHAT_ID || ENV_ORDER_CHAT_ID,
+  delivery: ENV_DELIVERY_CHAT_ID
+};
 if (!DB.notifState) DB.notifState = {}; // TZ band 6: sevimli mahsulot stock/narx bildirishnomalari holati
 // Promo-kodlar: code -> {code,type("percent"|"fixed"),value,maxUses,usedCount,perUserLimit,
 // usedBy:{uid:son},minOrder,expiresAt,active,createdAt,note}
@@ -601,11 +610,25 @@ function orderMessageText(o) {
   ];
   return lines.join("\n");
 }
+/* ---------- Qaysi xabar qaysi kanalga ketishi ----------
+   Har uchala kanal bir-biridan mustaqil: bo'sh qoldirilgani jimgina boshqasiga
+   tushmaydi (ilgari shunday bo'lgani uchun to'lov so'rovlari buyurtma kanaliga
+   aralashib ketgan edi). Yagona istisno — "yetkazilgan nusxasi": u tarixan
+   buyurtma kanaliga yozilgan, shu sabab bo'sh bo'lsa o'sha yerda qoladi. */
+function channelCfg() {
+  if (!DB.settings) DB.settings = {};
+  if (!DB.settings.channels) DB.settings.channels = { order: ENV_ORDER_CHAT_ID, topup: ENV_TOPUP_CHAT_ID, delivery: ENV_DELIVERY_CHAT_ID };
+  return DB.settings.channels;
+}
+function chatIdOf(kind) { return String(channelCfg()[kind] || "").trim(); }
+function orderChatId() { return chatIdOf("order"); }
+function topupChatId() { return chatIdOf("topup"); }
+function deliveryChatId() { return chatIdOf("delivery") || orderChatId(); }
 // Faqat guruh/kanalga (mijozga qayta yubormasdan) — buyurtma holati keyinroq
 // o'zgarganda (masalan admin "bajarildi" qilib qo'lda yetkazganda) kanaldagi
 // yozuvni yangilab qo'yish uchun ishlatiladi, mijozga ikkinchi marta xabar bormasin.
 function notifyOrderChannel(o) {
-  try { if (ORDER_NOTIFY_CHAT_ID) tgSend(ORDER_NOTIFY_CHAT_ID, orderMessageText(o)); } catch (e) {}
+  try { const cid = orderChatId(); if (cid) tgSend(cid, orderMessageText(o)); } catch (e) {}
 }
 
 /* ---------- Balansni to'ldirish so'rovlari — kanalga yuborish ----------
@@ -660,27 +683,31 @@ function topupMessageText(p) {
 // yangi xabar yuborib, uning ID sini saqlaydi.
 function notifyTopupChannel(p) {
   try {
-    if (!TOPUP_NOTIFY_CHAT_ID || !BOT_TOKEN) return;
+    const cid = topupChatId();
+    if (!cid || !BOT_TOKEN) return;
     const text = topupMessageText(p);
+    // Kanal almashtirilgan bo'lsa eski xabar ID'si yangi kanalda mavjud emas —
+    // tahrirlash o'rniga yangi kanalga yangi xabar yuboriladi.
+    if (p.chanMsgId && p.chanChatId && String(p.chanChatId) !== cid) { p.chanMsgId = 0; p.chanChatId = ""; }
     if (p.chanMsgId) {
-      tgApiPost("editMessageText", { chat_id: TOPUP_NOTIFY_CHAT_ID, message_id: p.chanMsgId, text: text })
+      tgApiPost("editMessageText", { chat_id: cid, message_id: p.chanMsgId, text: text })
         .then(j => {
           if (j && j.ok) return;
           // "message is not modified" — e'tibor bermasa ham bo'ladi; boshqa xato bo'lsa yangi xabar yuboramiz.
           const desc = String((j && j.description) || "").toLowerCase();
           if (desc.indexOf("not modified") !== -1) return;
-          return tgApiPost("sendMessage", { chat_id: TOPUP_NOTIFY_CHAT_ID, text: text }).then(j2 => {
-            if (j2 && j2.ok && j2.result) { p.chanMsgId = j2.result.message_id; save(); }
+          return tgApiPost("sendMessage", { chat_id: cid, text: text }).then(j2 => {
+            if (j2 && j2.ok && j2.result) { p.chanMsgId = j2.result.message_id; p.chanChatId = cid; save(); }
           });
         }).catch(() => {});
     } else {
-      tgApiPost("sendMessage", { chat_id: TOPUP_NOTIFY_CHAT_ID, text: text }).then(j => {
-        if (j && j.ok && j.result) { p.chanMsgId = j.result.message_id; save(); }
+      tgApiPost("sendMessage", { chat_id: cid, text: text }).then(j => {
+        if (j && j.ok && j.result) { p.chanMsgId = j.result.message_id; p.chanChatId = cid; save(); }
       }).catch(() => {});
     }
   } catch (e) {}
 }
-// Yetkazilgan (delivered) mahsulot matnini (login/parol/link va h.k.) DELIVERY_LOG_CHAT_ID
+// Yetkazilgan (delivered) mahsulot matnini (login/parol/link va h.k.) "yetkazilganlar"
 // kanaliga yozib qo'yadi — o.delivered bo'sh bo'lsa hech narsa qilmaydi. Juda uzun bo'lsa
 // (masalan bir nechta dona birga sotilgan bo'lsa) — xabar o'rniga .txt fayl qilib yuboriladi
 // (deliverStockToCustomer'dagi bilan bir xil chegara/mantiq).
@@ -699,20 +726,22 @@ function deliveryLogText(o) {
 }
 function logDeliveryToChannel(o) {
   try {
-    if (!DELIVERY_LOG_CHAT_ID || !o || !o.delivered) return;
+    const cid = deliveryChatId();
+    if (!cid || !o || !o.delivered) return;
     const text = deliveryLogText(o);
-    if (text.length <= TG_TEXT_SAFE_LIMIT) { tgSend(DELIVERY_LOG_CHAT_ID, text); return; }
+    if (text.length <= TG_TEXT_SAFE_LIMIT) { tgSend(cid, text); return; }
     const buf = Buffer.from(text, "utf8");
-    tgSendDocument(DELIVERY_LOG_CHAT_ID, buf, "buyurtma-" + o.seq + ".txt", "🧾 Buyurtma #" + o.seq + " — yetkazilgan mahsulot")
-      .catch(() => tgSend(DELIVERY_LOG_CHAT_ID, text.slice(0, TG_TEXT_SAFE_LIMIT - 60) + "\n\n… (qisqartirildi, to'liqi admin panelda)"));
+    tgSendDocument(cid, buf, "buyurtma-" + o.seq + ".txt", "🧾 Buyurtma #" + o.seq + " — yetkazilgan mahsulot")
+      .catch(() => tgSend(cid, text.slice(0, TG_TEXT_SAFE_LIMIT - 60) + "\n\n… (qisqartirildi, to'liqi admin panelda)"));
   } catch (e) {}
 }
-// Buyurtma birinchi marta yaratilganda shu xabarni: 1) ORDER_NOTIFY_CHAT_ID guruh/kanaliga,
+// Buyurtma birinchi marta yaratilganda shu xabarni: 1) buyurtmalar kanaliga,
 // 2) mijozning o'ziga (o.uid) yuboradi — ikkalasi bir xil, rasmdagi kabi formatda.
 function notifyOrder(o) {
   try {
     const text = orderMessageText(o);
-    if (ORDER_NOTIFY_CHAT_ID) tgSend(ORDER_NOTIFY_CHAT_ID, text);
+    const cid = orderChatId();
+    if (cid) tgSend(cid, text);
     tgSend(o.uid, text);
   } catch (e) {}
 }
@@ -2113,6 +2142,57 @@ const server = http.createServer((req, res) => {
         DB.settings.loyalty = { enabled: !!b.enabled, tiers };
         save();
         send(res, 200, { ok: true, loyalty: DB.settings.loyalty });
+      });
+    }
+
+    /* ----- kanal sozlamalari: qaysi xabar qaysi chat_id'ga ketadi (admin) ----- */
+    if (url === "/api/admin/channel-settings" && m === "GET") {
+      const c = channelCfg();
+      return send(res, 200, {
+        order: String(c.order || ""),
+        topup: String(c.topup || ""),
+        delivery: String(c.delivery || ""),
+        // Amalda ishlatilayotgan qiymat (delivery bo'sh bo'lsa buyurtma kanaliga tushadi)
+        effective: { order: orderChatId(), topup: topupChatId(), delivery: deliveryChatId() },
+        env: { order: ENV_ORDER_CHAT_ID, topup: ENV_TOPUP_CHAT_ID, delivery: ENV_DELIVERY_CHAT_ID },
+        botToken: !!BOT_TOKEN
+      });
+    }
+    if (url === "/api/admin/channel-settings" && m === "POST") {
+      return readBody(req, res, b => {
+        // chat_id — "-1001234567890" ko'rinishidagi son (kanal uchun manfiy). Foydalanuvchi
+        // xato qilib @username yoki havola qo'yib yubormasligi uchun shaklini tekshiramiz.
+        const clean = v => String(v === undefined ? "" : v).trim();
+        const bad = [];
+        const out = {};
+        [["order", "Buyurtmalar"], ["topup", "To'lovlar"], ["delivery", "Yetkazilganlar"]].forEach(([k, label]) => {
+          const v = clean(b[k]);
+          if (v && !/^-?\d{5,20}$/.test(v)) bad.push(label);
+          out[k] = v;
+        });
+        if (bad.length) return send(res, 400, { error: "chat_id faqat raqam bo'lishi kerak (masalan -1001234567890): " + bad.join(", ") });
+        DB.settings.channels = out;
+        save();
+        send(res, 200, { ok: true, channels: out, effective: { order: orderChatId(), topup: topupChatId(), delivery: deliveryChatId() } });
+      });
+    }
+    // Saqlashdan oldin/keyin tekshirish: tanlangan kanalga sinov xabari yuboradi va
+    // Telegram javobini (xato bo'lsa sababini) qaytaradi — "bot kanalda admin emas",
+    // "chat not found" kabi xatolarni darhol ko'rish uchun.
+    if (url === "/api/admin/channel-test" && m === "POST") {
+      return readBody(req, res, b => {
+        if (!BOT_TOKEN) return send(res, 400, { error: "BOT_TOKEN o'rnatilmagan" });
+        const kind = String(b.kind || "order");
+        const LABEL = { order: "buyurtmalar", topup: "to'lovlar", delivery: "yetkazilganlar" };
+        const cid = String(b.chatId || "").trim() ||
+          (kind === "topup" ? topupChatId() : kind === "delivery" ? deliveryChatId() : orderChatId());
+        if (!cid) return send(res, 400, { error: "chat_id bo'sh" });
+        tgApiPost("sendMessage", { chat_id: cid, text: "✅ Verion Shop — sinov xabari (" + (LABEL[kind] || kind) + " kanali)" })
+          .then(j => {
+            if (j && j.ok) return send(res, 200, { ok: true, chatId: cid, title: (j.result && j.result.chat && j.result.chat.title) || "" });
+            send(res, 400, { error: (j && j.description) || "Telegram javob bermadi" });
+          })
+          .catch(() => send(res, 400, { error: "Telegram'ga ulanib bo'lmadi" }));
       });
     }
 
