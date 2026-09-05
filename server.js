@@ -9,7 +9,7 @@ const sdb = require("./db.js");
 
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN || "";
-const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249")
+const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");

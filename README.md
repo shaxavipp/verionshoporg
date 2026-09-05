@@ -28,7 +28,7 @@ Eslatma: Railway bepul rejada oylik limit bor; tugasa sayt to'xtaydi — tiiny.h
 | Nima | Qator |
 |---|---|
 | Support | `var SUPPORT_USERNAME="verionshop_support";` |
-| Adminlar | `var ADMIN_IDS=[5606872249];` |
+| Adminlar | `var ADMIN_IDS=[5606872249, 8684274899];` |
 | Kartalar | `var CARDS=[...]` (HUMO / UZCARD raqamlari va egasi) |
 | Video qo'llanma | `var SHOW_VIDEO_ROW=false;` → link tayyor bo'lganda `true` + `VIDEO_URL` |
 
