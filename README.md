@@ -40,6 +40,17 @@ Profil → **EGASI → Admin panel** (faqat ADMIN_IDS ro'yxatidagi Telegram akka
 
 Imkoniyatlar: mahsulot qo'shish/tahrirlash/o'chirish, narx/soni/kategoriya, galereyadan rasm, Aktiv/Noaktiv, jonli ko'rinish.
 
+**Kim admin ekanini SERVER hal qiladi** (`/api/me` → `isAdmin`). Ya'ni Railway'dagi `ADMIN_IDS` (yoki u bo'lmasa `server.js` dagi standart ro'yxat) ustun turadi — HTML ichidagi `var ADMIN_IDS=[...]` faqat internet/server javobi kelgunicha zaxira. Shu sababli ikkala ro'yxat bir-biriga to'g'ri kelmay qolsa ham admin panel ochilaveradi.
+
+**Admin panel ochilmasa** — Profil ekranida ismingiz ostidagi kichik satrga qarang: `v2026-09-05.1 · srv 2026-09-05.1`. Birinchisi — Telegram ko'rsatayotgan HTML, ikkinchisi — Railway'dagi server.
+
+| Ko'rinish | Ma'nosi | Yechim |
+|---|---|---|
+| Ikkalasi bir xil | Kod yangi, muammo ID da | `ID:` raqamingiz ro'yxatda bormi tekshiring |
+| `srv` raqami eski | Railway hali deploy qilmagan | Railway → Deployments → **Redeploy** |
+| `srv` ko'rinmaydi | Server javob bermayapti | Railway loglarini ko'ring |
+| `v` raqami eski | Telegram eski HTML'ni keshdan beryapti | Mini App'ni butunlay yopib qayta oching |
+
 **Umumiy katalog (Railway'da):** admin panelda o'zgartirish qilib **🌍 Nashr qilish** tugmasini bossangiz, katalog serverga saqlanadi va **barcha mijozlar darhol ko'radi**. Buning ishlashi uchun Railway'da bitta sozlama shart:
 
 1. Railway → service → **Variables** → **New Variable**: nomi `BOT_TOKEN`, qiymati — BotFather bergan bot token (`/mybots` → bot → API Token). Bu server "nashr qilayotgan odam rostdan admin ekanini" Telegram imzosi orqali tekshirishi uchun kerak — tokensiz nashr ishlamaydi (403).

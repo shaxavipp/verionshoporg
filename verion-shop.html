@@ -682,6 +682,10 @@ var CARDS=[
    Telegram IDs of admins, comma separated.
    ============================================================ */
 var ADMIN_IDS=[5606872249, 8684274899];
+/* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
+   birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
+   ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
+var CLIENT_BUILD="2026-09-05.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -714,7 +718,10 @@ try{if(TG&&TG.onEvent){TG.onEvent("viewportChanged",updateVH);TG.onEvent("safeAr
 function haptic(kind){try{if(TG&&TG.HapticFeedback){kind==="ok"?TG.HapticFeedback.notificationOccurred("success"):TG.HapticFeedback.impactOccurred("light");}}catch(e){}}
 function tgUser(){try{var u=TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user;return u||null;}catch(e){return null;}}
 function tgStartParam(){try{return (TG&&TG.initDataUnsafe&&TG.initDataUnsafe.start_param)||"";}catch(e){return "";}}
-function isAdmin(){if(!ADMIN_IDS||ADMIN_IDS.length===0)return true;var u=tgUser();return !!u&&ADMIN_IDS.indexOf(u.id)!==-1;}
+/* Admin tekshiruvi. Asosiy manba — SERVER (/api/me → isAdmin): shu yerdagi ro'yxat
+   bilan serverdagi ro'yxat farq qilib qolsa ham admin panel ochilaveradi. Server
+   javobi kelgunicha (yoki internet bo'lmasa) quyidagi ro'yxat zaxira bo'lib turadi. */
+function isAdmin(){if(ME&&ME.isAdmin===true)return true;if(!ADMIN_IDS||ADMIN_IDS.length===0)return true;var u=tgUser();return !!u&&ADMIN_IDS.indexOf(u.id)!==-1;}
 function openLink(url){try{if(TG&&TG.openTelegramLink&&url.indexOf("https://t.me/")===0){TG.openTelegramLink(url);return;}}catch(e){}try{window.open(url,"_blank");}catch(e){}}
 
 /* ===== safe storage ===== */
@@ -1112,7 +1119,7 @@ var S={
   groupDefs:Store.get("vn_groupdefs",[]), // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
   products:{search:"",filter:"all"} // "Mahsulotlar" bo'limi qidiruv/filtr holati
 };
-var ME={balance:null,payments:[],orders:[],favorites:[],notifEnabled:true}; // server account (loaded via /api/me)
+var ME={balance:null,payments:[],orders:[],favorites:[],notifEnabled:true,isAdmin:null,build:""}; // server account (loaded via /api/me)
 function persist(){
   Store.set("vn_lang",S.lang);Store.set("vn_orders",S.orders);Store.set("vn_custom",S.custom);
   Store.set("vn_over",S.over);Store.set("vn_removed",S.removed);Store.set("vn_imported",S.imported);
@@ -1190,7 +1197,7 @@ function loadMe(cb){
     var sig=JSON.stringify(r);
     var changed=sig!==_meSig;
     _meSig=sig;
-    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false};
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||""};
     ME_ERROR=false;
     if(cb)cb();else if(S.lang&&changed)render(); // balans/buyurtma o'zgarmagan bo'lsa qayta chizmaymiz
   }).catch(function(e){
@@ -3229,7 +3236,9 @@ function profileHTML(){
     +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px;display:flex;align-items:center;gap:5px">'
     +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+esc(idTxt)
     +(u?'<button data-copy="'+esc(idTxt)+'" style="background:none;border:none;color:var(--mut);padding:0;display:inline-flex" onclick="event.stopPropagation()">'+ic("clipboard",12)+'</button>':'')
-    +'</div></div></div></div>'
+    +'</div>'
+    +'<div class="d" style="font-weight:400;color:var(--mut);font-size:10px;opacity:.6">v'+esc(CLIENT_BUILD)+(ME.build?(' · srv '+esc(ME.build)):'')+'</div>'
+    +'</div></div></div>'
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'

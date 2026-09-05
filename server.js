@@ -11,6 +11,10 @@ const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN || "";
 const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
   .split(",").map(s => Number(s.trim())).filter(Boolean);
+/* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
+   shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
+   Kod o'zgarganda shu satrni yangilab qo'yiladi. */
+const BUILD = "2026-09-05.1";
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -1174,6 +1178,11 @@ function myView(uid) {
   const reviewedIds = new Set(DB.reviews.filter(mine).map(r => r.orderId));
   const acc = DB.users[String(uid)] || { balance: 0 };
   return {
+    /* Admin ekanini SERVER hal qiladi. Ilgari HTML ichidagi ADMIN_IDS ro'yxati
+       o'zi qaror qilardi — server bilan ro'yxat bir-biriga to'g'ri kelmay qolsa
+       yoki Telegram eski HTML'ni keshdan bersa, admin panel ochilmay qolardi. */
+    isAdmin: ADMIN_IDS.indexOf(Number(uid)) !== -1,
+    build: BUILD,
     balance: acc.balance,
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
