@@ -685,7 +685,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-09-05.1";
+var CLIENT_BUILD="2026-09-06.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -738,6 +738,11 @@ var Store=(function(){
 var I18N={
 en:{
   shop_sub:"Digital goods · fast delivery",
+  gate_title:"Start the bot",
+  gate_body:"Tap the button below and press START in the bot chat — then come back here. It takes one second and only has to be done once.",
+  gate_btn:"Start the bot",
+  gate_wait:"Waiting for START…",
+  gate_again:"I already pressed it — check again",
   nav_home:"Home",nav_products:"Products",nav_orders:"Orders",nav_pay:"Payment",nav_profile:"Profile",
   tab_nakrutka:"Boosting",search_ph:"Search game or service",tab_all:"All",tab_extra1:"Category 5",tab_extra2:"Category 6",
   tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",tab_games:"Games",
@@ -826,6 +831,11 @@ en:{
 },
 uz:{
   shop_sub:"Raqamli tovarlar · tez yetkazish",
+  gate_title:"Botni ishga tushiring",
+  gate_body:"Pastdagi tugmani bosing va bot chatida START ni bosing — so'ng shu yerga qayting. Bu bir soniya vaqt oladi va faqat bir marta kerak.",
+  gate_btn:"Botni ishga tushirish",
+  gate_wait:"START kutilmoqda…",
+  gate_again:"Bosdim — qayta tekshirish",
   nav_home:"Asosiy",nav_products:"Mahsulotlar",nav_orders:"Buyurtmalar",nav_pay:"To'lov",nav_profile:"Profil",
   tab_nakrutka:"Nakrutka",search_ph:"O'yin yoki xizmat qidirish",tab_all:"Barchasi",tab_extra1:"Kategoriya 5",tab_extra2:"Kategoriya 6",
   tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",tab_games:"O'yinlar",
@@ -914,6 +924,11 @@ uz:{
 },
 ru:{
   shop_sub:"Цифровые товары · быстрая доставка",
+  gate_title:"Запустите бота",
+  gate_body:"Нажмите кнопку ниже и нажмите START в чате бота — затем вернитесь сюда. Это занимает секунду и нужно сделать один раз.",
+  gate_btn:"Запустить бота",
+  gate_wait:"Ожидаем START…",
+  gate_again:"Уже нажал — проверить снова",
   nav_home:"Главная",nav_products:"Товары",nav_orders:"Заказы",nav_pay:"Оплата",nav_profile:"Профиль",
   tab_nakrutka:"Накрутка",search_ph:"Поиск игры или услуги",tab_all:"Все",tab_extra1:"Категория 5",tab_extra2:"Категория 6",
   tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",tab_games:"Игры",
@@ -1119,7 +1134,7 @@ var S={
   groupDefs:Store.get("vn_groupdefs",[]), // [{kind,key,label,img}] — admin panelda mahsulotdan mustaqil yaratilgan/tahrirlangan guruhlar
   products:{search:"",filter:"all"} // "Mahsulotlar" bo'limi qidiruv/filtr holati
 };
-var ME={balance:null,payments:[],orders:[],favorites:[],notifEnabled:true,isAdmin:null,build:""}; // server account (loaded via /api/me)
+var ME={balance:null,payments:[],orders:[],favorites:[],notifEnabled:true,isAdmin:null,build:"",started:null,bot:null}; // server account (loaded via /api/me)
 function persist(){
   Store.set("vn_lang",S.lang);Store.set("vn_orders",S.orders);Store.set("vn_custom",S.custom);
   Store.set("vn_over",S.over);Store.set("vn_removed",S.removed);Store.set("vn_imported",S.imported);
@@ -1191,14 +1206,22 @@ function resolveStartParamPay(){
   });
 }
 var _meSig="";
+var _startedRecheck=null;
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"||SESSION_EXPIRED){if(cb)cb();return;}
   api("/api/me").then(function(r){
     var sig=JSON.stringify(r);
     var changed=sig!==_meSig;
     _meSig=sig;
-    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||""};
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null};
     ME_ERROR=false;
+    // "Botni ishga tushirganmi" hali aniqlanmagan bo'lsa (server Telegram'dan
+    // javob kutyapti) — 20 soniyalik odatiy tekshiruvni kutmay, tezda qayta
+    // so'raymiz. Aks holda start bosmagan odam bir necha soniya ilovani ko'rib
+    // turib, keyin to'siqqa duch kelardi.
+    if(ME.started===null&&ME.bot&&ME.bot.gate&&tgUser()&&!_startedRecheck){
+      _startedRecheck=setTimeout(function(){_startedRecheck=null;loadMe();},1200);
+    }
     if(cb)cb();else if(S.lang&&changed)render(); // balans/buyurtma o'zgarmagan bo'lsa qayta chizmaymiz
   }).catch(function(e){
     if(e&&e.resp&&e.resp.error==="expired"){SESSION_EXPIRED=true;showExpiredNotice();}
@@ -1372,6 +1395,7 @@ function render(){
   document.documentElement.setAttribute("data-reduce-motion",S.reduceMotion?"1":"0");
   applyTGChrome();
   if(!S.lang){app.innerHTML=onboardingHTML();bindOnboarding();return;}
+  if(needStartGate()){app.innerHTML=startGateHTML();bindStartGate();return;}
   var screenWrap=document.getElementById("screenWrap");
   var navEl=document.getElementById("mainNav");
   if(!screenWrap||!navEl||_navLangBuilt!==S.lang){
@@ -1409,6 +1433,54 @@ function onboardingHTML(){
    +'<button data-lang="en"><span class="fl">🇬🇧</span> English</button>'
    +'</div></div>';
 }
+/* ===== "Botni ishga tushiring" to'sig'i =====
+   Ilovaga faqat botda /start bosgan odam kiradi. Buning ikki foydasi bor:
+   bot mijozga xabar yubora oladi (buyurtma, yetkazilgan mahsulot, eslatma) va
+   Telegram'ning "N oylik foydalanuvchi" hisobiga tushadi.
+   Muhim: allaqachon start bosgan ESKI mijozlarni server jimgina aniqlaydi
+   (sendChatAction), shuning uchun ular bu ekranni umuman ko'rmaydi. */
+function needStartGate(){
+  if(!tgUser())return false;                      // brauzerda ochilgan — imzo yo'q, to'smaymiz
+  if(SESSION_EXPIRED||ME_ERROR)return false;      // server javob bermayapti — ilovani yopib qo'ymaymiz
+  if(isAdmin())return false;                      // admin hech qachon bloklanmaydi
+  if(!ME.bot||!ME.bot.gate||!ME.bot.startLink)return false;
+  return ME.started===false;                      // null (hali aniqlanmagan) — to'smaymiz
+}
+function startGateHTML(){
+  return '<div id="onb">'
+   +'<div class="biglogo">'+ic("bolt",38)+'</div>'
+   +'<h1>'+esc(t("gate_title"))+'</h1>'
+   +'<p>'+esc(t("gate_body"))+'</p>'
+   +'<div class="langs">'
+   +'<button id="gateGo" style="justify-content:center;background:var(--grad);border-color:transparent;color:#fff">'+esc(t("gate_btn"))+'</button>'
+   +'<button id="gateChk" style="justify-content:center">'+esc(t("gate_again"))+'</button>'
+   +'</div>'
+   +'<p id="gateNote" style="margin:18px 0 0;font-size:12px;opacity:.65;min-height:16px"></p>'
+   +'</div>';
+}
+var GATE_TIMER=null;
+function bindStartGate(){
+  var go=document.getElementById("gateGo"),chk=document.getElementById("gateChk"),note=document.getElementById("gateNote");
+  var link=(ME.bot&&ME.bot.startLink)||"";
+  function openBot(){
+    haptic("ok");
+    if(note)note.textContent=t("gate_wait");
+    // openTelegramLink bot chatini ochadi va Telegram /start ni o'zi yuboradi.
+    try{if(TG&&TG.openTelegramLink){TG.openTelegramLink(link);return;}}catch(e){}
+    openLink(link);
+  }
+  if(go)go.addEventListener("click",openBot);
+  if(chk)chk.addEventListener("click",function(){if(note)note.textContent=t("gate_wait");loadMe();});
+  // Foydalanuvchi START bosib qaytganda ekran o'zi ochilishi uchun — davriy tekshiruv.
+  clearInterval(GATE_TIMER);
+  GATE_TIMER=setInterval(function(){
+    if(!document.getElementById("gateGo")){clearInterval(GATE_TIMER);GATE_TIMER=null;return;}
+    loadMe();
+  },2500);
+}
+document.addEventListener("visibilitychange",function(){
+  if(!document.hidden&&document.getElementById("gateGo"))loadMe();
+});
 function bindOnboarding(){
   var btns=document.querySelectorAll("#onb [data-lang]");
   for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){S.lang=this.getAttribute("data-lang");persist();haptic("ok");render();});
@@ -3300,6 +3372,8 @@ function openAdmin(){
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aChannelsBtn">'+ic("send",15)+' Kanallar (chat_id)</button>'
     +'<div style="height:8px"></div>'
+    +'<button class="btn gray" id="aBotBtn">'+ic("bolt",15)+' Bot va /start xabari</button>'
+    +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aDashBtn">'+ic("trendUp",15)+' '+esc(t("a_dash_btn"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
@@ -3353,6 +3427,7 @@ function openAdmin(){
   sh.querySelector("#aLoyaltyBtn").addEventListener("click",openAdminLoyalty);
   sh.querySelector("#aAutomationBtn").addEventListener("click",openAdminAutomation);
   sh.querySelector("#aChannelsBtn").addEventListener("click",openAdminChannels);
+  sh.querySelector("#aBotBtn").addEventListener("click",openAdminBot);
   sh.querySelector("#aDashBtn").addEventListener("click",openAdminDashboard);
   sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
   sh.querySelector("#aUiEmojiBtn").addEventListener("click",openAdminUiEmoji);
@@ -3596,6 +3671,71 @@ function openAdminChannels(){
       btn.disabled=false;
       toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);
     });
+  });
+}
+/* ===== admin: bot /start xabari va "start majburiy" to'sig'i ===== */
+function openAdminBot(){
+  var html='<h2>Bot va /start</h2>'
+    +'<div class="paynote" style="margin:0 0 10px">Foydalanuvchi botda <b>/start</b> bosganda banner rasm, salom matni va tugmalar chiqadi. '
+    +'Bu Telegram\'ning "oylik foydalanuvchilar" hisobiga ham kiradi.</div>'
+    +'<div class="d" id="btHook" style="margin:0 0 8px"></div>'
+    +'<button class="btn gray sm" id="btHookBtn">Webhookni qayta ulash</button>'
+    +'<label style="margin-top:14px">Salom matni</label>'
+    +'<textarea id="btGreet" class="exta" style="height:80px" placeholder="Xush kelibsiz, {name} ✌️"></textarea>'
+    +'<div class="d" style="margin:-4px 0 8px">O\'rin egallovchilar: <b>{name}</b> — ism, <b>{username}</b>, <b>{id}</b>. Bo\'sh qoldirsangiz standart matn ishlatiladi.</div>'
+    +'<label style="margin-top:6px">Kanal havolasi</label><input id="btChan" type="text" placeholder="https://t.me/verionshop">'
+    +'<label style="margin-top:12px">Qo\'llanma havolasi</label><input id="btGuide" type="text" placeholder="https://t.me/verionshop/12">'
+    +'<div class="switch" style="margin-top:14px"><span style="font-size:13.5px">Start bosmagan ilovaga kirmasin</span><button class="swbtn" id="btGate"><i></i></button></div>'
+    +'<div class="d" style="margin:4px 0 0">Yoqilganda: botni ishga tushirmagan odam ilovada "Botni ishga tushiring" ekranini ko\'radi. '
+    +'Ilgari start bosganlar va adminlar bu ekranni ko\'rmaydi.</div>'
+    +'<div style="height:14px"></div><button class="btn" id="btSave">'+esc(t("a_save"))+'</button>'
+    +'<div style="height:8px"></div><button class="btn gray" id="btTest">Menga sinov /start xabarini yuborish</button>'
+    +'<div class="d" id="btStat" style="margin-top:10px"></div>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdmin);
+  var GATE_ON=true;
+  function paint(r){
+    sh.querySelector("#btGreet").value=r.greeting||"";
+    sh.querySelector("#btGreet").setAttribute("placeholder",r.defaultGreeting||"");
+    sh.querySelector("#btChan").value=r.channelUrl||"";
+    sh.querySelector("#btGuide").value=r.guideUrl||"";
+    GATE_ON=!!r.gate;
+    sh.querySelector("#btGate").className="swbtn"+(GATE_ON?" on":"");
+    var w=r.webhook||{};
+    var hook=sh.querySelector("#btHook");
+    if(w.ours)hook.innerHTML='✅ Webhook ulangan — bot /start ga javob beradi.'+(w.lastError?('<br>⚠️ Oxirgi xato: '+esc(w.lastError)):"");
+    else if(w.url)hook.innerHTML='⚠️ Webhook BOSHQA manzilga ulangan:<br>'+esc(w.url);
+    else if(!r.publicUrl)hook.innerHTML='⚠️ Ilova manzili noma\'lum — Railway\'da <b>PUBLIC_URL</b> o\'zgaruvchisini qo\'shing.';
+    else hook.innerHTML='⚠️ Webhook ulanmagan — bot /start ga javob bermaydi.';
+    sh.querySelector("#btStat").textContent="Start bosganlar: "+(r.startedUsers||0)+" / "+(r.totalUsers||0)
+      +(r.bannerCached?" · banner keshlangan":"");
+  }
+  function load(){api("/api/admin/bot-settings").then(paint).catch(function(){toast(t("srv_off"),true);});}
+  load();
+  sh.querySelector("#btGate").addEventListener("click",function(){
+    GATE_ON=!GATE_ON;this.className="swbtn"+(GATE_ON?" on":"");haptic();
+  });
+  sh.querySelector("#btHookBtn").addEventListener("click",function(){
+    var b=this;b.disabled=true;
+    api("/api/admin/bot-webhook","POST",{}).then(function(){
+      b.disabled=false;haptic("ok");toast("✅ Webhook ulandi");load();
+    }).catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||"Ulanmadi",true);});
+  });
+  sh.querySelector("#btSave").addEventListener("click",function(){
+    var b=this;b.disabled=true;
+    api("/api/admin/bot-settings","POST",{
+      greeting:sh.querySelector("#btGreet").value,
+      channelUrl:sh.querySelector("#btChan").value.trim(),
+      guideUrl:sh.querySelector("#btGuide").value.trim(),
+      gate:GATE_ON
+    }).then(function(){b.disabled=false;haptic("ok");toast(t("a_saved"));load();})
+      .catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+  });
+  sh.querySelector("#btTest").addEventListener("click",function(){
+    var b=this;b.disabled=true;
+    api("/api/admin/bot-start-test","POST",{}).then(function(){
+      b.disabled=false;haptic("ok");toast("✅ Yuborildi — bot chatini oching");
+    }).catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||"Yuborilmadi",true);});
   });
 }
 /* ===== admin: avtomatlashtirish (stock ogohlantirish + "sizni sog'indik") ===== */

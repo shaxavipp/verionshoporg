@@ -72,6 +72,20 @@ Admin panelda mijozni qidirish (ID/@username) va balansga qo'lda +/− qilish ha
 
 Diqqat: bank SMS'dan AVTOMAT o'qish texnik jihatdan web-ilovada mumkin emas — tasdiqlash bir bosishlik qoldi. To'liq avtomat uchun keyinroq Click/Payme merchant yoki Telegram Stars ulanadi.
 
+## Bot: /start xabari va "start majburiy"
+
+Admin panel → **Bot va /start**.
+
+Foydalanuvchi botda `/start` bosganda banner rasm (`assets/start-banner.png`), salom matni va tugmalar chiqadi: **📱 Ilovani ochish** (mini-ilovani to'g'ridan-to'g'ri ochadi), **Kanal**, **Qo'llanma**, **🎧 Yordam**. Salom matnini va havolalarni admin panelda o'zgartirasiz; matnda `{name}`, `{username}`, `{id}` ishlaydi.
+
+Banner rasm Telegram'ga faqat **bir marta** yuklanadi — keyin `file_id` ishlatiladi, shuning uchun /start bir zumda javob beradi. Rasmni almashtirsangiz, `assets/start-banner.png` ni yangilab deploy qiling (yangi file_id o'zi olinadi).
+
+**Webhook.** Server ishga tushganda Telegram webhook'ini o'zi ulaydi — Railway'da qo'lda hech narsa sozlash shart emas (`RAILWAY_PUBLIC_DOMAIN` avtomatik o'qiladi; boshqa hostingda `PUBLIC_URL` o'zgaruvchisini qo'shing). Botga allaqachon boshqa manzil ulangan bo'lsa, uni jimgina bosib olmaydi — admin paneldagi **Webhookni qayta ulash** tugmasi majburan ulaydi. Maxfiy kalit o'zi yaratiladi, shuning uchun soxta "update" yuborib bo'lmaydi.
+
+**"Start bosmagan ilovaga kirmasin"** (standart holatda yoqilgan). Botni ishga tushirmagan odam ilovada *"Botni ishga tushiring"* ekranini ko'radi: tugma bot chatini ochadi, START bosilgach ekran **o'zi** yopiladi va ilova ochiladi. Bu Telegram'ning "N oylik foydalanuvchi" hisobini oshiradi va bot mijozga xabar (buyurtma, yetkazilgan mahsulot, eslatma) yubora olishini kafolatlaydi.
+
+Bu to'siqni **ko'rmaydiganlar**: ilgari start bosgan eski mijozlar (server buni `sendChatAction` orqali jimgina aniqlaydi — hech qanday xabar chiqmaydi), adminlar, va oddiy brauzerda ochganlar. To'siqni admin paneldagi tugma bilan butunlay o'chirish mumkin.
+
 ## Kanallar — qaysi xabar qayerga tushadi
 
 Admin panel → **Kanallar (chat_id)**. Uchta mustaqil kanal:

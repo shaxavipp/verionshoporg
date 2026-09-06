@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-09-05.1";
+const BUILD = "2026-09-06.1";
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -30,6 +30,17 @@ const HTML_FILE = path.join(__dirname, "verion-shop.html");
 const ENV_ORDER_CHAT_ID = process.env.ORDER_NOTIFY_CHAT_ID || "";
 const ENV_TOPUP_CHAT_ID = process.env.TOPUP_NOTIFY_CHAT_ID || "";
 const ENV_DELIVERY_CHAT_ID = process.env.DELIVERY_LOG_CHAT_ID || "";
+// Ilovaning tashqi manzili (https://...). Railway o'zi RAILWAY_PUBLIC_DOMAIN beradi,
+// shu sabab odatda hech narsa sozlash shart emas — bot webhook'i ham, "Ilovani ochish"
+// tugmasi ham shu manzildan quriladi.
+const PUBLIC_URL = String(
+  process.env.PUBLIC_URL ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? "https://" + process.env.RAILWAY_PUBLIC_DOMAIN : "")
+).trim().replace(/\/+$/, "");
+const BANNER_FILE = path.join(__dirname, "assets", "start-banner.png");
+// Yordam (support) akkaunti — /start xabaridagi "Yordam" tugmasi uchun.
+// Ilovadagi SUPPORT_USERNAME bilan bir xil bo'lishi kerak.
+const SUPPORT_USERNAME = String(process.env.SUPPORT_USERNAME || "verionshop_support").replace(/^@/, "");
 const TOPUP_TTL = 7 * 60 * 1000;           // payment window: 7 minutes
 const PAYMENT_REMINDER_DELAY = 4 * 60 * 1000; // 4 daqiqadan keyin ham to'lanmagan bo'lsa eslatma yuboriladi
 const MIN_TOPUP = 1000, MAX_TOPUP = 5000000;
@@ -96,6 +107,13 @@ if (!DB.settings.channels) DB.settings.channels = {
   order: ENV_ORDER_CHAT_ID,
   topup: ENV_TOPUP_CHAT_ID || ENV_ORDER_CHAT_ID,
   delivery: ENV_DELIVERY_CHAT_ID
+};
+// Bot /start xabari va "start bosmagan ilovaga kirmasin" to'sig'i.
+// greeting — bo'sh bo'lsa standart matn ishlatiladi; {name}/{username}/{id} o'rniga
+// qiymat qo'yiladi. bannerFileId — Telegram qaytargan file_id keshi: banner rasm
+// serverdan faqat BIR marta yuklanadi, keyingi barcha /start larda file_id yuboriladi.
+if (!DB.settings.bot) DB.settings.bot = {
+  greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: ""
 };
 if (!DB.notifState) DB.notifState = {}; // TZ band 6: sevimli mahsulot stock/narx bildirishnomalari holati
 // Promo-kodlar: code -> {code,type("percent"|"fixed"),value,maxUses,usedCount,perUserLimit,
@@ -586,6 +604,199 @@ function tgSendButton(chatId, text, btnText, url) {
     req.write(data); req.end();
   } catch (e) {}
 }
+/* ================= BOT: /start salomlashuvi va "start bosilmagan bo'lsa kirmasin" =================
+   Ilgari bot faqat xabar YUBORARDI, kelgan xabarlarni umuman o'qimasdi — shu sabab
+   foydalanuvchi /start bosganda hech narsa chiqmasdi. Endi Telegram update'lari
+   /api/tg-webhook ga keladi va /start ga banner rasm + tugmalar bilan javob beriladi.
+   Bu ayni paytda Telegram'ning "N oylik foydalanuvchi" hisobiga ham kiradi. */
+
+function botCfg() {
+  if (!DB.settings) DB.settings = {};
+  if (!DB.settings.bot) DB.settings.bot = { greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "" };
+  return DB.settings.bot;
+}
+// Webhook maxfiy kaliti — hech qanday sozlama talab qilmaydi, birinchi marta o'zi
+// yaratiladi va bazada saqlanadi. Telegram uni har so'rovda sarlavhada qaytaradi,
+// shuning uchun tashqaridan kimdir soxta "update" yubora olmaydi.
+function botHookSecret() {
+  const c = botCfg();
+  if (!c.hookSecret) { c.hookSecret = crypto.randomBytes(16).toString("hex"); save(); }
+  return c.hookSecret;
+}
+function miniAppUrl() {
+  if (PUBLIC_URL) return PUBLIC_URL;
+  if (BOT_USERNAME) return "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME;
+  return "";
+}
+// Ilovaga "start bosish" uchun havola: foydalanuvchi bosganda bot chati ochiladi va
+// Telegram /start ni o'zi yuboradi (avval boshlagan bo'lsa ham).
+function botStartLink(payload) {
+  if (!BOT_USERNAME) return "";
+  return "https://t.me/" + BOT_USERNAME + (payload ? "?start=" + encodeURIComponent(payload) : "");
+}
+function escHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+const DEFAULT_GREETING = "Xush kelibsiz, {name} ✌️";
+function greetingHtml(from) {
+  const c = botCfg();
+  const name = ((from.first_name || "") + " " + (from.last_name || "")).trim() || from.username || "do'stim";
+  const raw = (c.greeting && c.greeting.trim()) ? c.greeting : DEFAULT_GREETING;
+  // Matnni admin yozadi — HTML sifatida emas, oddiy matn sifatida qaraymiz; faqat
+  // {name} kabi o'rin egallovchilar almashtiriladi va <b> bilan qalinlashtiriladi.
+  return escHtml(raw)
+    .replace(/\{name\}/g, "<b>" + escHtml(name) + "</b>")
+    .replace(/\{username\}/g, escHtml(from.username ? "@" + from.username : ""))
+    .replace(/\{id\}/g, String(from.id));
+}
+function startKeyboard() {
+  const c = botCfg();
+  const rows = [];
+  const app = miniAppUrl();
+  if (app) {
+    // web_app tugmasi ilovani to'g'ridan-to'g'ri Telegram ichida ochadi (imzo bilan).
+    rows.push([PUBLIC_URL
+      ? { text: "📱 Ilovani ochish", web_app: { url: PUBLIC_URL } }
+      : { text: "📱 Ilovani ochish", url: app }]);
+  }
+  const second = [];
+  if (c.channelUrl) second.push({ text: "Kanal", url: c.channelUrl });
+  if (c.guideUrl) second.push({ text: "Qo'llanma", url: c.guideUrl });
+  if (second.length) rows.push(second);
+  if (SUPPORT_USERNAME) rows.push([{ text: "🎧 Yordam", url: "https://t.me/" + String(SUPPORT_USERNAME).replace(/^@/, "") }]);
+  return rows.length ? { inline_keyboard: rows } : undefined;
+}
+// Banner rasmni yuboradi. Birinchi safar fayl yuklanadi, Telegram bergan file_id
+// saqlanadi va keyingi safar faqat o'sha satr yuboriladi (tez va trafiksiz).
+async function sendStartCard(chatId, captionHtml) {
+  const c = botCfg();
+  const kb = startKeyboard();
+  if (c.bannerFileId) {
+    const r = await tgApiPost("sendPhoto", {
+      chat_id: chatId, photo: c.bannerFileId, caption: captionHtml,
+      parse_mode: "HTML", reply_markup: kb
+    });
+    if (r && r.ok) return r;
+    c.bannerFileId = ""; // file_id eskirgan bo'lsa — qaytadan yuklaymiz
+  }
+  let buf = null;
+  try { buf = fs.readFileSync(BANNER_FILE); } catch (e) {}
+  if (buf) {
+    try {
+      const r = await tgSendMediaMultipartKb(chatId, buf, captionHtml, kb);
+      const ph = r && r.result && r.result.photo;
+      if (ph && ph.length) { c.bannerFileId = ph[ph.length - 1].file_id; save(); }
+      return r;
+    } catch (e) { /* rasm ketmasa — pastda oddiy matn yuboriladi */ }
+  }
+  return tgApiPost("sendMessage", { chat_id: chatId, text: captionHtml, parse_mode: "HTML", reply_markup: kb });
+}
+// tgSendMediaMultipart bilan bir xil, faqat inline tugmalar ham biriktiriladi.
+function tgSendMediaMultipartKb(chatId, buffer, captionHtml, keyboard) {
+  return new Promise((resolve, reject) => {
+    if (!BOT_TOKEN || !chatId) return reject(new Error("no bot/chat"));
+    const boundary = "----VerionStart" + crypto.randomBytes(10).toString("hex");
+    const parts = [];
+    const field_ = (name, val) => parts.push(Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${val}\r\n`, "utf8"));
+    field_("chat_id", chatId);
+    if (captionHtml) { field_("caption", captionHtml); field_("parse_mode", "HTML"); }
+    if (keyboard) field_("reply_markup", JSON.stringify(keyboard));
+    parts.push(Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="photo"; filename="start.png"\r\nContent-Type: image/png\r\n\r\n`, "utf8"));
+    const body = Buffer.concat([...parts, buffer, Buffer.from(`\r\n--${boundary}--\r\n`, "utf8")]);
+    const req = https.request({
+      hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendPhoto", method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }
+    }, r => {
+      let out = ""; r.on("data", c => out += c);
+      r.on("end", () => {
+        try { const j = JSON.parse(out); j.ok ? resolve(j) : reject(new Error(j.description || "telegram_error")); }
+        catch (e) { reject(e); }
+      });
+    });
+    req.on("error", reject);
+    req.write(body); req.end();
+  });
+}
+// Foydalanuvchini "botni ishga tushirgan" deb belgilaydi (ilova to'sig'i shunga qaraydi).
+function markStarted(from) {
+  const acc = user(from);
+  const first = acc.started !== true;
+  acc.started = true;
+  if (first) acc.startedTs = Date.now();
+  save();
+  return acc;
+}
+async function handleBotUpdate(upd) {
+  const msg = upd && (upd.message || upd.edited_message);
+  if (!msg || !msg.from || msg.from.is_bot) return;
+  if (!msg.chat || msg.chat.type !== "private") return;   // guruh/kanal xabarlariga aralashmaymiz
+  const from = msg.from;
+  const acc = markStarted(from);
+  const text = String(msg.text || "").trim();
+
+  if (/^\/start(\s|$)/i.test(text)) {
+    const payload = text.slice(6).trim();
+    // Referal havolasi (t.me/bot?start=ref_123) — faqat YANGI foydalanuvchi uchun.
+    const mref = /^ref_(\d+)$/.exec(payload);
+    if (mref && !acc.referredBy) {
+      const refUid = Number(mref[1]);
+      if (refUid && refUid !== from.id) { acc.referredBy = refUid; save(); }
+    }
+    await sendStartCard(from.id, greetingHtml(from));
+    return;
+  }
+  // Boshqa har qanday xabar — qisqa javob va ilovaga tugma (bot hech qachon jim qolmaydi).
+  await tgApiPost("sendMessage", {
+    chat_id: from.id,
+    text: "Buyurtma berish uchun ilovani oching 👇",
+    reply_markup: startKeyboard()
+  });
+}
+/* Webhook'ni Telegram'da o'rnatish. Odatda hech narsa qilish shart emas: server
+   ko'tarilganda o'zi tekshiradi va kerak bo'lsa o'rnatadi. Agar botga ALLAQACHON
+   boshqa manzil ulangan bo'lsa — jimgina bosib olmaymiz, faqat ogohlantiramiz
+   (admin panelidagi "Webhookni ulash" tugmasi majburan qayta ulaydi). */
+async function ensureBotWebhook(force) {
+  if (!BOT_TOKEN) return { ok: false, reason: "no_token" };
+  const base = PUBLIC_URL;
+  if (!base) return { ok: false, reason: "no_url" };
+  const want = base + "/api/tg-webhook";
+  let cur = "";
+  try {
+    const info = await tgApiPost("getWebhookInfo", {});
+    cur = (info && info.ok && info.result && info.result.url) || "";
+  } catch (e) { return { ok: false, reason: "api_error", error: e.message }; }
+  if (cur === want && !force) return { ok: true, already: true, url: cur };
+  if (cur && cur !== want && !force) return { ok: false, reason: "foreign", url: cur };
+  try {
+    const r = await tgApiPost("setWebhook", {
+      url: want, secret_token: botHookSecret(),
+      allowed_updates: ["message"], drop_pending_updates: false
+    });
+    if (r && r.ok) return { ok: true, url: want, replaced: cur || undefined };
+    return { ok: false, reason: "set_failed", error: (r && r.description) || "" };
+  } catch (e) { return { ok: false, reason: "api_error", error: e.message }; }
+}
+/* Foydalanuvchi botni ilgari ishga tushirganmi — jimgina tekshirish.
+   "typing" ko'rsatkichi yuboriladi: hech qanday xabar chiqmaydi, lekin bot chatni
+   ocholmasa Telegram xato qaytaradi. Shu tufayli ESKI mijozlar (allaqachon start
+   bosganlar) to'siqni umuman ko'rmaydi. */
+const probing = new Set();
+function probeStarted(uid) {
+  if (probing.has(uid)) return;
+  probing.add(uid);
+  tgApiPost("sendChatAction", { chat_id: uid, action: "typing" })
+    .then(r => {
+      const acc = DB.users[String(uid)];
+      if (acc) { acc.started = !!(r && r.ok); save(); }
+    })
+    .catch(() => {})
+    .then(() => probing.delete(uid));
+}
+
 // Har bir yangi buyurtmaga ketma-ket raqam beradi: 56, 57, 58... — hech qachon
 // qaytarilmaydi va hech qachon orqaga siljimaydi (DB.orderSeq faylda saqlanadi).
 function nextOrderSeq() { DB.orderSeq = (DB.orderSeq || 0) + 1; return DB.orderSeq; }
@@ -1183,6 +1394,14 @@ function myView(uid) {
        yoki Telegram eski HTML'ni keshdan bersa, admin panel ochilmay qolardi. */
     isAdmin: ADMIN_IDS.indexOf(Number(uid)) !== -1,
     build: BUILD,
+    /* Botni ishga tushirganmi: true — bosgan, false — bosmagan, null — hali aniqlanmadi
+       (bunday holatda ilova to'siq ko'rsatmaydi, bir-ikki soniyadan keyin qayta so'raydi). */
+    started: acc.started === undefined ? null : acc.started === true,
+    bot: {
+      gate: !!(DB.settings.bot && DB.settings.bot.gate),
+      username: BOT_USERNAME,
+      startLink: botStartLink("app")
+    },
     balance: acc.balance,
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
@@ -1329,6 +1548,10 @@ const server = http.createServer((req, res) => {
       const refUid = Number(u._startParam.slice(4));
       if (refUid && refUid !== u.id) acc.referredBy = refUid;
     }
+    // Botni ishga tushirgan-tushirmagani hali noma'lum bo'lsa — fonda jimgina
+    // tekshiramiz. Javob shu so'rovni kutib turmaydi: started null qaytadi va
+    // ilova bir-ikki soniyadan keyin qayta so'raganda aniq qiymatni oladi.
+    if (acc.started === undefined) probeStarted(u.id);
     save();
     return send(res, 200, myView(u.id));
   }
@@ -2205,6 +2428,70 @@ const server = http.createServer((req, res) => {
       });
     }
 
+    /* ----- bot /start sozlamalari (admin) ----- */
+    if (url === "/api/admin/bot-settings" && m === "GET") {
+      const c = botCfg();
+      const started = Object.keys(DB.users).filter(k => DB.users[k].started === true).length;
+      tgApiPost("getWebhookInfo", {}).then(j => {
+        const r = (j && j.ok && j.result) || {};
+        send(res, 200, {
+          greeting: c.greeting || "", defaultGreeting: DEFAULT_GREETING,
+          channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
+          publicUrl: PUBLIC_URL, botUsername: BOT_USERNAME, startLink: botStartLink("app"),
+          bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
+          webhook: {
+            url: r.url || "", ours: !!(PUBLIC_URL && r.url === PUBLIC_URL + "/api/tg-webhook"),
+            pending: r.pending_update_count || 0, lastError: r.last_error_message || ""
+          }
+        });
+      }).catch(() => send(res, 200, {
+        greeting: c.greeting || "", defaultGreeting: DEFAULT_GREETING,
+        channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
+        publicUrl: PUBLIC_URL, botUsername: BOT_USERNAME, startLink: botStartLink("app"),
+        bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
+        webhook: { url: "", ours: false, pending: 0, lastError: "Telegram javob bermadi" }
+      }));
+      return;
+    }
+    if (url === "/api/admin/bot-settings" && m === "POST") {
+      return readBody(req, res, b => {
+        const c = botCfg();
+        const link = v => {
+          const s = String(v === undefined ? "" : v).trim();
+          if (!s) return "";
+          return /^https?:\/\//i.test(s) ? s : (/^@/.test(s) ? "https://t.me/" + s.slice(1) : "https://" + s);
+        };
+        if (b.greeting !== undefined) c.greeting = String(b.greeting).slice(0, 900);
+        if (b.channelUrl !== undefined) c.channelUrl = link(b.channelUrl);
+        if (b.guideUrl !== undefined) c.guideUrl = link(b.guideUrl);
+        if (b.gate !== undefined) c.gate = !!b.gate;
+        // Salom matni yoki tugmalar o'zgarsa banner o'zi o'zgarmaydi — file_id keshi qoladi.
+        save();
+        send(res, 200, { ok: true, bot: { greeting: c.greeting, channelUrl: c.channelUrl, guideUrl: c.guideUrl, gate: c.gate } });
+      });
+    }
+    // Webhook'ni majburan qayta ulash (botga boshqa manzil ulangan bo'lsa ham).
+    if (url === "/api/admin/bot-webhook" && m === "POST") {
+      return readBody(req, res, () => {
+        ensureBotWebhook(true).then(r => {
+          if (r.ok) return send(res, 200, { ok: true, url: r.url, replaced: r.replaced || "" });
+          send(res, 400, { error: r.reason === "no_url"
+            ? "Ilova manzili noma'lum: Railway'da PUBLIC_URL o'zgaruvchisini qo'shing"
+            : (r.error || r.reason) });
+        }).catch(e => send(res, 400, { error: e.message }));
+      });
+    }
+    // "/start" xabarini o'ziga sinov uchun yuborish.
+    if (url === "/api/admin/bot-start-test" && m === "POST") {
+      return readBody(req, res, () => {
+        sendStartCard(a.id, greetingHtml({ id: a.id, first_name: a.first_name || "Admin", username: a.username }))
+          .then(r => (r && r.ok !== false)
+            ? send(res, 200, { ok: true })
+            : send(res, 400, { error: (r && r.description) || "yuborilmadi" }))
+          .catch(e => send(res, 400, { error: e.message }));
+      });
+    }
+
     /* ----- avtomatlashtirish sozlamalari (admin) ----- */
     if (url === "/api/admin/automation-settings" && m === "GET") {
       return send(res, 200, DB.automation || {});
@@ -2472,6 +2759,19 @@ const server = http.createServer((req, res) => {
     return send(res, 404, { error: "unknown admin route" });
   }
 
+  /* ----- Telegram bot webhook: /start va boshqa xabarlar shu yerga keladi ----- */
+  if (url === "/api/tg-webhook" && m === "POST") {
+    if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
+    // Maxfiy kalit setWebhook paytida berilgan; Telegram uni har so'rovda qaytaradi.
+    if (req.headers["x-telegram-bot-api-secret-token"] !== botHookSecret())
+      return send(res, 401, { error: "bad secret" });
+    return readBody(req, res, b => {
+      send(res, 200, { ok: true });   // Telegram javobni kutib turmasin
+      Promise.resolve().then(() => handleBotUpdate(b))
+        .catch(e => console.log("[tg-webhook] xato: " + e.message));
+    });
+  }
+
   /* ----- Userbot webhook: Telethon skripti to'g'ridan-to'g'ri shu yerga SMS matnini yuboradi ----- */
   if (url === "/api/debug/status" && m === "GET") {
     if (!TG_WEBHOOK_SECRET || q.get("secret") !== TG_WEBHOOK_SECRET)
@@ -2681,4 +2981,15 @@ if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
+  // Bot webhook'ini o'zi ulaydi — Railway'da qo'lda hech narsa sozlash shart emas.
+  // getMe javobini (BOT_USERNAME) kutib, bir necha soniyadan keyin bajariladi.
+  if (BOT_TOKEN) setTimeout(() => {
+    ensureBotWebhook(false).then(r => {
+      if (r.ok && r.already) console.log("[bot] webhook allaqachon ulangan: " + r.url);
+      else if (r.ok) console.log("[bot] webhook ulandi: " + r.url);
+      else if (r.reason === "no_url") console.log("[bot] webhook ULANMADI: ilova manzili noma'lum (PUBLIC_URL yoki RAILWAY_PUBLIC_DOMAIN kerak)");
+      else if (r.reason === "foreign") console.log("[bot] webhook BOSHQA manzilga ulangan: " + r.url + " — admin panel > Bot va /start > \"Webhookni ulash\"");
+      else console.log("[bot] webhook xatosi: " + (r.error || r.reason));
+    }).catch(e => console.log("[bot] webhook xatosi: " + e.message));
+  }, 4000);
 });
