@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-09-06.3";
+const BUILD = "2026-09-06.4";
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -113,7 +113,7 @@ if (!DB.settings.channels) DB.settings.channels = {
 // qiymat qo'yiladi. bannerFileId — Telegram qaytargan file_id keshi: banner rasm
 // serverdan faqat BIR marta yuklanadi, keyingi barcha /start larda file_id yuboriladi.
 if (!DB.settings.bot) DB.settings.bot = {
-  greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: ""
+  greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "", publicUrl: ""
 };
 if (!DB.notifState) DB.notifState = {}; // TZ band 6: sevimli mahsulot stock/narx bildirishnomalari holati
 // Promo-kodlar: code -> {code,type("percent"|"fixed"),value,maxUses,usedCount,perUserLimit,
@@ -612,7 +612,7 @@ function tgSendButton(chatId, text, btnText, url) {
 
 function botCfg() {
   if (!DB.settings) DB.settings = {};
-  if (!DB.settings.bot) DB.settings.bot = { greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "" };
+  if (!DB.settings.bot) DB.settings.bot = { greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "", publicUrl: "" };
   return DB.settings.bot;
 }
 // Webhook maxfiy kaliti — hech qanday sozlama talab qilmaydi, birinchi marta o'zi
@@ -623,8 +623,32 @@ function botHookSecret() {
   if (!c.hookSecret) { c.hookSecret = crypto.randomBytes(16).toString("hex"); save(); }
   return c.hookSecret;
 }
-function miniAppUrl() {
+/* Ilovaning tashqi manzili. Uch manba, shu tartibda:
+   1) PUBLIC_URL / RAILWAY_PUBLIC_DOMAIN o'zgaruvchisi;
+   2) admin ilovani ochganda so'rovning Host sarlavhasidan o'rganilgan manzil;
+   3) yo'q.
+   2-manba faqat ADMIN imzosi bilan kelgan so'rovdan olinadi — aks holda kimdir
+   soxta Host sarlavhasi yuborib webhook'ni o'z domeniga burib yuborishi mumkin edi. */
+function publicBase() {
   if (PUBLIC_URL) return PUBLIC_URL;
+  return String(botCfg().publicUrl || "");
+}
+function rememberPublicBase(req) {
+  if (PUBLIC_URL) return;                       // env ustun turadi
+  const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
+  if (!host || !/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}(:\d+)?$/i.test(host)) return;  // domen bo'lsin (IP/localhost emas)
+  const proto = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+  if (proto && proto !== "https") return;       // Telegram webhook faqat https
+  const base = "https://" + host.replace(/:443$/, "");
+  const c = botCfg();
+  if (c.publicUrl === base) return;
+  c.publicUrl = base; save();
+  console.log("[bot] ilova manzili aniqlandi: " + base);
+  ensureBotWebhook(false).then(r => console.log("[bot] webhook: " + JSON.stringify(r))).catch(() => {});
+}
+function miniAppUrl() {
+  const base = publicBase();
+  if (base) return base;
   if (BOT_USERNAME) return "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME;
   return "";
 }
@@ -654,21 +678,25 @@ function greetingHtml(from) {
     .replace(/\{username\}/g, escHtml(from.username ? "@" + from.username : ""))
     .replace(/\{id\}/g, String(from.id));
 }
+/* Tugmalar joylashuvi: tepada bitta keng "Ilovani ochish", ostida qolganlari
+   ikkitadan yonma-yon. Qo'llanma havolasi bo'sh bo'lsa — o'sha tugma umuman
+   chiqmaydi va pastki qator "Kanal + Yordam" bo'lib qoladi (jami 3 ta tugma). */
 function startKeyboard() {
   const c = botCfg();
+  const base = publicBase();
   const rows = [];
   const app = miniAppUrl();
   if (app) {
     // web_app tugmasi ilovani to'g'ridan-to'g'ri Telegram ichida ochadi (imzo bilan).
-    rows.push([PUBLIC_URL
-      ? { text: "📱 Ilovani ochish", web_app: { url: PUBLIC_URL } }
+    rows.push([base
+      ? { text: "📱 Ilovani ochish", web_app: { url: base } }
       : { text: "📱 Ilovani ochish", url: app }]);
   }
-  const second = [];
-  if (c.channelUrl) second.push({ text: "Kanal", url: c.channelUrl });
-  if (c.guideUrl) second.push({ text: "Qo'llanma", url: c.guideUrl });
-  if (second.length) rows.push(second);
-  if (SUPPORT_USERNAME) rows.push([{ text: "🎧 Yordam", url: "https://t.me/" + String(SUPPORT_USERNAME).replace(/^@/, "") }]);
+  const extra = [];
+  if (c.channelUrl) extra.push({ text: "Kanal", url: c.channelUrl });
+  if (c.guideUrl) extra.push({ text: "Qo'llanma", url: c.guideUrl });
+  if (SUPPORT_USERNAME) extra.push({ text: "🎧 Yordam", url: "https://t.me/" + String(SUPPORT_USERNAME).replace(/^@/, "") });
+  for (let i = 0; i < extra.length; i += 2) rows.push(extra.slice(i, i + 2));
   return rows.length ? { inline_keyboard: rows } : undefined;
 }
 // Banner rasmni yuboradi. Birinchi safar fayl yuklanadi, Telegram bergan file_id
@@ -774,7 +802,7 @@ async function handleBotUpdate(upd) {
    (admin panelidagi "Webhookni ulash" tugmasi majburan qayta ulaydi). */
 async function ensureBotWebhook(force) {
   if (!BOT_TOKEN) return { ok: false, reason: "no_token" };
-  const base = PUBLIC_URL;
+  const base = publicBase();
   if (!base) return { ok: false, reason: "no_url" };
   const want = base + "/api/tg-webhook";
   let cur = "";
@@ -797,6 +825,30 @@ async function ensureBotWebhook(force) {
    "typing" ko'rsatkichi yuboriladi: hech qanday xabar chiqmaydi, lekin bot chatni
    ocholmasa Telegram xato qaytaradi. Shu tufayli ESKI mijozlar (allaqachon start
    bosganlar) to'siqni umuman ko'rmaydi. */
+/* Webhook holatini davriy tekshirib turadi va o'zi tuzatadi. Boot paytidagi
+   bitta urinish yetarli emas edi: o'sha payt tarmoq uzilsa yoki ilova manzili
+   hali noma'lum bo'lsa, bot butunlay jim qolib ketardi va buni hech kim
+   bilmasdi. Endi holat o'zgarganda log yoziladi va muammo bo'lsa adminga
+   Telegram orqali BIR marta xabar boradi (har qayta ishga tushishda emas). */
+let lastHookState = "";
+function reportWebhook(r, quiet) {
+  const state = r.ok ? "ok:" + (r.url || "") : (r.reason + ":" + (r.url || r.error || ""));
+  if (state === lastHookState) return;
+  lastHookState = state;
+  if (r.ok) console.log("[bot] webhook " + (r.already ? "allaqachon ulangan" : "ulandi") + ": " + r.url);
+  else if (r.reason === "no_url") console.log("[bot] webhook kutilmoqda: ilova manzili hali noma'lum (admin panelni bir marta oching yoki PUBLIC_URL qo'shing)");
+  else if (r.reason === "foreign") console.log("[bot] webhook BOSHQA manzilga ulangan: " + r.url);
+  else console.log("[bot] webhook xatosi: " + (r.error || r.reason));
+  if (quiet || r.ok || r.reason === "no_url" || r.reason === "no_token") return;
+  const c = botCfg();
+  if (c.hookAlert === state) return;            // bitta muammo haqida qayta-qayta yozmaymiz
+  c.hookAlert = state; save();
+  const msg = r.reason === "foreign"
+    ? "⚠️ Bot /start ga javob bermayapti: webhook boshqa manzilga ulangan (" + r.url + ").\n"
+      + "Admin panel → Bot va /start → «Webhookni qayta ulash»."
+    : "⚠️ Bot webhook'ini ulab bo'lmadi: " + (r.error || r.reason) + "\nAdmin panel → Bot va /start.";
+  for (const aid of ADMIN_IDS) tgSend(aid, msg);
+}
 const probing = new Set();
 function probeStarted(uid) {
   if (probing.has(uid)) return;
@@ -2047,6 +2099,9 @@ const server = http.createServer((req, res) => {
     if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
     const a = auth(req);
     if (!isAdm(a)) return send(res, 403, { error: "not admin" });
+    // Admin ilovani ochdi — demak so'rovdagi Host ilovaning haqiqiy tashqi
+    // manzili. Shu bilan bot webhook'i hech qanday sozlamasiz ulanadi.
+    rememberPublicBase(req);
 
     if (url === "/api/admin/list" && m === "GET") {
       expireOld();
@@ -2450,17 +2505,17 @@ const server = http.createServer((req, res) => {
         send(res, 200, {
           greeting: c.greeting || "", defaultGreeting: DEFAULT_GREETING,
           channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
-          publicUrl: PUBLIC_URL, botUsername: BOT_USERNAME, startLink: botStartLink("app"),
+          publicUrl: publicBase(), botUsername: BOT_USERNAME, startLink: botStartLink("app"),
           bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
           webhook: {
-            url: r.url || "", ours: !!(PUBLIC_URL && r.url === PUBLIC_URL + "/api/tg-webhook"),
+            url: r.url || "", ours: !!(publicBase() && r.url === publicBase() + "/api/tg-webhook"),
             pending: r.pending_update_count || 0, lastError: r.last_error_message || ""
           }
         });
       }).catch(() => send(res, 200, {
         greeting: c.greeting || "", defaultGreeting: DEFAULT_GREETING,
         channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
-        publicUrl: PUBLIC_URL, botUsername: BOT_USERNAME, startLink: botStartLink("app"),
+        publicUrl: publicBase(), botUsername: BOT_USERNAME, startLink: botStartLink("app"),
         bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
         webhook: { url: "", ours: false, pending: 0, lastError: "Telegram javob bermadi" }
       }));
@@ -2996,13 +3051,11 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
   // Bot webhook'ini o'zi ulaydi — Railway'da qo'lda hech narsa sozlash shart emas.
   // getMe javobini (BOT_USERNAME) kutib, bir necha soniyadan keyin bajariladi.
-  if (BOT_TOKEN) setTimeout(() => {
-    ensureBotWebhook(false).then(r => {
-      if (r.ok && r.already) console.log("[bot] webhook allaqachon ulangan: " + r.url);
-      else if (r.ok) console.log("[bot] webhook ulandi: " + r.url);
-      else if (r.reason === "no_url") console.log("[bot] webhook ULANMADI: ilova manzili noma'lum (PUBLIC_URL yoki RAILWAY_PUBLIC_DOMAIN kerak)");
-      else if (r.reason === "foreign") console.log("[bot] webhook BOSHQA manzilga ulangan: " + r.url + " — admin panel > Bot va /start > \"Webhookni ulash\"");
-      else console.log("[bot] webhook xatosi: " + (r.error || r.reason));
-    }).catch(e => console.log("[bot] webhook xatosi: " + e.message));
-  }, 4000);
+  if (BOT_TOKEN) {
+    // Birinchi urinish getMe javobidan (BOT_USERNAME) keyin.
+    setTimeout(() => { ensureBotWebhook(false).then(r => reportWebhook(r, true)).catch(() => {}); }, 4000);
+    // Keyin har 15 daqiqada tekshirib turadi — tarmoq uzilishi, Telegram
+    // tomonidan webhook o'chirilishi yoki manzil o'zgarishi o'zi tuzatiladi.
+    setInterval(() => { ensureBotWebhook(false).then(reportWebhook).catch(() => {}); }, 15 * 60 * 1000);
+  }
 });

@@ -685,7 +685,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-09-06.3";
+var CLIENT_BUILD="2026-09-06.4";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3693,7 +3693,7 @@ function openAdminBot(){
     +'<div class="d" id="btStat" style="margin-top:10px"></div>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
-  var GATE_ON=true;
+  var GATE_ON=true,_btRetried=false;
   function paint(r){
     sh.querySelector("#btGreet").value=r.greeting||"";
     sh.querySelector("#btGreet").setAttribute("placeholder",r.defaultGreeting||"");
@@ -3703,10 +3703,13 @@ function openAdminBot(){
     sh.querySelector("#btGate").className="swbtn"+(GATE_ON?" on":"");
     var w=r.webhook||{};
     var hook=sh.querySelector("#btHook");
-    if(w.ours)hook.innerHTML='✅ Webhook ulangan — bot /start ga javob beradi.'+(w.lastError?('<br>⚠️ Oxirgi xato: '+esc(w.lastError)):"");
-    else if(w.url)hook.innerHTML='⚠️ Webhook BOSHQA manzilga ulangan:<br>'+esc(w.url);
-    else if(!r.publicUrl)hook.innerHTML='⚠️ Ilova manzili noma\'lum — Railway\'da <b>PUBLIC_URL</b> o\'zgaruvchisini qo\'shing.';
-    else hook.innerHTML='⚠️ Webhook ulanmagan — bot /start ga javob bermaydi.';
+    if(w.ours)hook.innerHTML='✅ Webhook ulangan — bot /start ga javob beradi.<br><span style="opacity:.6">'+esc(r.publicUrl||"")+'</span>'
+      +(w.lastError?('<br>⚠️ Oxirgi xato: '+esc(w.lastError)):"");
+    else if(w.url)hook.innerHTML='⚠️ Webhook BOSHQA manzilga ulangan:<br>'+esc(w.url)+'<br>Pastdagi tugmani bosing.';
+    else if(!r.publicUrl)hook.innerHTML='⏳ Ilova manzili aniqlanmoqda — bir necha soniyadan keyin varaqni qayta oching.';
+    else hook.innerHTML='⏳ Webhook ulanmoqda… ('+esc(r.publicUrl)+')';
+    // Manzil endigina aniqlangan bo'lsa, ulanish fonda ketadi — bir marta qayta so'raymiz.
+    if(!w.ours&&!_btRetried){_btRetried=true;setTimeout(function(){if(sh.querySelector("#btHook"))load();},3000);}
     sh.querySelector("#btStat").textContent="Start bosganlar: "+(r.startedUsers||0)+" / "+(r.totalUsers||0)
       +(r.bannerCached?" · banner keshlangan":"");
   }
