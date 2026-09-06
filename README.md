@@ -78,9 +78,7 @@ Admin panel → **Bot va /start**.
 
 Foydalanuvchi botda `/start` bosganda banner rasm (`assets/start-banner.png`), salom matni va tugmalar chiqadi: **📱 Ilovani ochish** (mini-ilovani to'g'ridan-to'g'ri ochadi), **Kanal**, **Qo'llanma**, **🎧 Yordam**. Salom matnini va havolalarni admin panelda o'zgartirasiz; matnda `{name}`, `{username}`, `{id}` ishlaydi.
 
-Banner **keng** (1280×720). Kvadrat rasm Telegram chatida ekranning yarmini egallab, logo tugmalar ostida ko'rinmay qolardi.
-
-Rasm Telegram'ga faqat **bir marta** yuklanadi — keyin `file_id` ishlatiladi, shuning uchun /start bir zumda javob beradi. Rasmni almashtirish uchun `assets/start-banner.png` ni yangilab deploy qiling: fayl o'zgargani (hajm + vaqt) sezilib, kesh o'zi bekor bo'ladi va yangi rasm bir marta qayta yuklanadi. Qo'lda hech narsa tozalash shart emas.
+Banner kvadrat (1024×1024). Rasm Telegram'ga faqat **bir marta** yuklanadi — keyin `file_id` ishlatiladi, shuning uchun /start bir zumda javob beradi. Rasmni almashtirish uchun `assets/start-banner.png` ni yangilab deploy qiling: fayl o'zgargani (hajm + vaqt) sezilib, kesh o'zi bekor bo'ladi va yangi rasm bir marta qayta yuklanadi. Qo'lda hech narsa tozalash shart emas.
 
 **Webhook.** Server ishga tushganda Telegram webhook'ini o'zi ulaydi — Railway'da qo'lda hech narsa sozlash shart emas (`RAILWAY_PUBLIC_DOMAIN` avtomatik o'qiladi; boshqa hostingda `PUBLIC_URL` o'zgaruvchisini qo'shing). Botga allaqachon boshqa manzil ulangan bo'lsa, uni jimgina bosib olmaydi — admin paneldagi **Webhookni qayta ulash** tugmasi majburan ulaydi. Maxfiy kalit o'zi yaratiladi, shuning uchun soxta "update" yuborib bo'lmaydi.
 

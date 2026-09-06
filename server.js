@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-09-06.2";
+const BUILD = "2026-09-06.3";
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
