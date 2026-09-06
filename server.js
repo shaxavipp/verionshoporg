@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-09-06.4";
+const BUILD = "2026-09-06.5";
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -644,7 +644,9 @@ function rememberPublicBase(req) {
   if (c.publicUrl === base) return;
   c.publicUrl = base; save();
   console.log("[bot] ilova manzili aniqlandi: " + base);
-  ensureBotWebhook(false).then(r => console.log("[bot] webhook: " + JSON.stringify(r))).catch(() => {});
+  // Yangi ma'lumot — ulanishni qaytadan baholaymiz (polling'da turgan bo'lsa ham
+  // endi webhook'ni sinab ko'ramiz).
+  ensureBotConnection(true).then(r => reportWebhook(r, true)).catch(() => {});
 }
 function miniAppUrl() {
   const base = publicBase();
@@ -800,26 +802,107 @@ async function handleBotUpdate(upd) {
    ko'tarilganda o'zi tekshiradi va kerak bo'lsa o'rnatadi. Agar botga ALLAQACHON
    boshqa manzil ulangan bo'lsa — jimgina bosib olmaymiz, faqat ogohlantiramiz
    (admin panelidagi "Webhookni ulash" tugmasi majburan qayta ulaydi). */
+const DELIVERY_ERR_WINDOW = 30 * 60 * 1000;   // shuncha vaqt ichidagi xato "hozirgi muammo" hisoblanadi
+// Webhook o'rnatilgandan keyin shuncha vaqtdan so'ng "Telegram rostdan yetib
+// keldimi?" deb tekshiriladi. Yangi o'rnatilgan webhook'da xato tarixi hali
+// bo'lmaydi, shuning uchun darhol emas — bir daqiqacha kutiladi.
+const HOOK_VERIFY_MS = Number(process.env.BOT_HOOK_VERIFY_MS || 75000);
 async function ensureBotWebhook(force) {
   if (!BOT_TOKEN) return { ok: false, reason: "no_token" };
   const base = publicBase();
   if (!base) return { ok: false, reason: "no_url" };
   const want = base + "/api/tg-webhook";
-  let cur = "";
+  let cur = "", info = null;
   try {
-    const info = await tgApiPost("getWebhookInfo", {});
-    cur = (info && info.ok && info.result && info.result.url) || "";
+    const j = await tgApiPost("getWebhookInfo", {});
+    info = (j && j.ok && j.result) || {};
+    cur = info.url || "";
   } catch (e) { return { ok: false, reason: "api_error", error: e.message }; }
-  if (cur === want && !force) return { ok: true, already: true, url: cur };
+  // Telegram bizga yetib kelolmayaptimi? (masalan domen tashqaridan ochilmasa —
+  // "Connection timed out"). Shu holat polling rejimiga o'tish uchun signal.
+  const errAge = info.last_error_date ? (Date.now() - info.last_error_date * 1000) : Infinity;
+  const deliveryError = (cur === want && info.last_error_message && errAge < DELIVERY_ERR_WINDOW)
+    ? info.last_error_message : "";
+  if (cur === want && !force) return { ok: true, already: true, url: cur, deliveryError, pending: info.pending_update_count || 0 };
   if (cur && cur !== want && !force) return { ok: false, reason: "foreign", url: cur };
   try {
     const r = await tgApiPost("setWebhook", {
       url: want, secret_token: botHookSecret(),
       allowed_updates: ["message"], drop_pending_updates: false
     });
-    if (r && r.ok) return { ok: true, url: want, replaced: cur || undefined };
+    if (r && r.ok) return { ok: true, url: want, replaced: cur || undefined, deliveryError: force ? "" : deliveryError };
     return { ok: false, reason: "set_failed", error: (r && r.description) || "" };
   } catch (e) { return { ok: false, reason: "api_error", error: e.message }; }
+}
+
+/* ---------- Polling (getUpdates) — webhook ishlamaganda zaxira yo'l ----------
+   Webhook Telegram BIZGA murojaat qilishini talab qiladi. Agar domen tashqaridan
+   ochilmasa (Telegram "Connection timed out" deydi), bot butunlay jim qoladi.
+   Polling teskari yo'nalishda ishlaydi: server O'ZI Telegram'dan xabarlarni
+   so'rab turadi. Xabar yuborish allaqachon ishlayotgan bo'lsa, polling ham
+   ishlaydi — ya'ni bu holatda bot har doim javob beradi. */
+let POLLING = false, POLL_OFFSET = 0, POLL_REASON = "";
+async function pollLoop() {
+  while (POLLING) {
+    let r = null;
+    try {
+      r = await tgApiPost("getUpdates", { offset: POLL_OFFSET, timeout: 25, allowed_updates: ["message"] });
+    } catch (e) { await sleep(5000); continue; }
+    if (r && r.ok && Array.isArray(r.result)) {
+      for (const u of r.result) {
+        POLL_OFFSET = (u.update_id || 0) + 1;
+        try { await handleBotUpdate(u); } catch (e) { console.log("[bot] update xato: " + e.message); }
+      }
+      continue;                                   // darhol keyingi so'rov (long polling)
+    }
+    // 409 = webhook hali o'chmagan yoki boshqa nusxa ham so'rab turibdi
+    if (r && r.error_code === 409) { try { await tgApiPost("deleteWebhook", {}); } catch (e) {} await sleep(5000); }
+    else await sleep(3000);
+  }
+}
+async function startPolling(reason) {
+  if (POLLING) return;
+  POLLING = true; POLL_REASON = reason || "";
+  console.log("[bot] polling rejimi yoqildi" + (reason ? " (" + reason + ")" : ""));
+  try { await tgApiPost("deleteWebhook", { drop_pending_updates: false }); } catch (e) {}
+  pollLoop();
+}
+function stopPolling() { POLLING = false; POLL_REASON = ""; }
+
+let hookVerifyT = null;
+function scheduleHookVerify() {
+  clearTimeout(hookVerifyT);
+  hookVerifyT = setTimeout(() => {
+    ensureBotConnection(false).then(x => reportWebhook(x, true)).catch(() => {});
+  }, HOOK_VERIFY_MS);
+  if (hookVerifyT.unref) hookVerifyT.unref();
+}
+/* Ulanishni ta'minlaydi: avval webhook, u ishlamasa — polling.
+   c.mode: "auto" (standart) | "webhook" | "polling". */
+async function ensureBotConnection(force) {
+  if (!BOT_TOKEN) return { ok: false, reason: "no_token" };
+  const c = botCfg();
+  const mode = c.mode || "auto";
+  if (force) { c.autoPolling = false; save(); stopPolling(); }
+  if (mode === "polling") { await startPolling("qo'lda tanlandi"); return { ok: true, mode: "polling" }; }
+  if (mode === "auto" && c.autoPolling && !force) { await startPolling(c.autoPollingWhy || "avto"); return { ok: true, mode: "polling", auto: true, why: c.autoPollingWhy || "" }; }
+
+  const r = await ensureBotWebhook(force);
+  if (r.ok && !r.deliveryError) {
+    stopPolling();
+    // Endigina o'rnatildi — bir daqiqadan keyin Telegram yetib kela oldimi, tekshiramiz.
+    if (!r.already) scheduleHookVerify();
+    return Object.assign({ mode: "webhook" }, r);
+  }
+  if (mode === "webhook") return Object.assign({ mode: "webhook" }, r);   // majburiy webhook — pollingga o'tmaymiz
+
+  // "auto": webhook ulanmadi yoki Telegram yetib kelolmayapti → polling
+  const WHY_UZ = { no_url: "ilova manzili noma'lum", set_failed: "webhook o'rnatilmadi", api_error: "Telegram javob bermadi" };
+  const why = r.deliveryError || r.error || WHY_UZ[r.reason] || r.reason || "";
+  if (r.reason === "foreign") return Object.assign({ mode: "webhook" }, r); // begona webhook — admin hal qilsin
+  c.autoPolling = true; c.autoPollingWhy = why; save();
+  await startPolling(why);
+  return { ok: true, mode: "polling", auto: true, why, switchedFrom: r };
 }
 /* Foydalanuvchi botni ilgari ishga tushirganmi — jimgina tekshirish.
    "typing" ko'rsatkichi yuboriladi: hech qanday xabar chiqmaydi, lekin bot chatni
@@ -832,13 +915,16 @@ async function ensureBotWebhook(force) {
    Telegram orqali BIR marta xabar boradi (har qayta ishga tushishda emas). */
 let lastHookState = "";
 function reportWebhook(r, quiet) {
-  const state = r.ok ? "ok:" + (r.url || "") : (r.reason + ":" + (r.url || r.error || ""));
+  const state = (r.mode || "") + "|" + (r.ok ? "ok:" + (r.url || r.why || "") : (r.reason + ":" + (r.url || r.error || "")));
   if (state === lastHookState) return;
   lastHookState = state;
-  if (r.ok) console.log("[bot] webhook " + (r.already ? "allaqachon ulangan" : "ulandi") + ": " + r.url);
-  else if (r.reason === "no_url") console.log("[bot] webhook kutilmoqda: ilova manzili hali noma'lum (admin panelni bir marta oching yoki PUBLIC_URL qo'shing)");
+  if (r.mode === "polling") console.log("[bot] ulanish: POLLING" + (r.why ? " (webhook ishlamadi: " + r.why + ")" : ""));
+  else if (r.ok) console.log("[bot] webhook " + (r.already ? "allaqachon ulangan" : "ulandi") + ": " + r.url);
+  else if (r.reason === "no_url") console.log("[bot] ilova manzili hali noma'lum — admin panelni bir marta oching yoki PUBLIC_URL qo'shing");
   else if (r.reason === "foreign") console.log("[bot] webhook BOSHQA manzilga ulangan: " + r.url);
   else console.log("[bot] webhook xatosi: " + (r.error || r.reason));
+  // Adminga xabar faqat bot ROSTDAN javob bera olmayotgan holatda (polling ham
+  // ishlayotgan bo'lsa muammo yo'q — jimgina o'zi hal qilingan).
   if (quiet || r.ok || r.reason === "no_url" || r.reason === "no_token") return;
   const c = botCfg();
   if (c.hookAlert === state) return;            // bitta muammo haqida qayta-qayta yozmaymiz
@@ -846,7 +932,7 @@ function reportWebhook(r, quiet) {
   const msg = r.reason === "foreign"
     ? "⚠️ Bot /start ga javob bermayapti: webhook boshqa manzilga ulangan (" + r.url + ").\n"
       + "Admin panel → Bot va /start → «Webhookni qayta ulash»."
-    : "⚠️ Bot webhook'ini ulab bo'lmadi: " + (r.error || r.reason) + "\nAdmin panel → Bot va /start.";
+    : "⚠️ Botni Telegram'ga ulab bo'lmadi: " + (r.error || r.reason) + "\nAdmin panel → Bot va /start.";
   for (const aid of ADMIN_IDS) tgSend(aid, msg);
 }
 const probing = new Set();
@@ -2507,6 +2593,7 @@ const server = http.createServer((req, res) => {
           channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
           publicUrl: publicBase(), botUsername: BOT_USERNAME, startLink: botStartLink("app"),
           bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
+          mode: c.mode || "auto", polling: POLLING, pollingWhy: POLL_REASON,
           webhook: {
             url: r.url || "", ours: !!(publicBase() && r.url === publicBase() + "/api/tg-webhook"),
             pending: r.pending_update_count || 0, lastError: r.last_error_message || ""
@@ -2517,6 +2604,7 @@ const server = http.createServer((req, res) => {
         channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
         publicUrl: publicBase(), botUsername: BOT_USERNAME, startLink: botStartLink("app"),
         bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
+        mode: c.mode || "auto", polling: POLLING, pollingWhy: POLL_REASON,
         webhook: { url: "", ours: false, pending: 0, lastError: "Telegram javob bermadi" }
       }));
       return;
@@ -2533,18 +2621,24 @@ const server = http.createServer((req, res) => {
         if (b.channelUrl !== undefined) c.channelUrl = link(b.channelUrl);
         if (b.guideUrl !== undefined) c.guideUrl = link(b.guideUrl);
         if (b.gate !== undefined) c.gate = !!b.gate;
+        // Ulanish usuli: auto (webhook, ishlamasa polling) | webhook | polling
+        if (b.mode !== undefined && ["auto", "webhook", "polling"].indexOf(String(b.mode)) !== -1) {
+          c.mode = String(b.mode); c.autoPolling = false; c.autoPollingWhy = "";
+          save();
+          ensureBotConnection(true).catch(() => {});
+        }
         // Salom matni yoki tugmalar o'zgarsa banner o'zi o'zgarmaydi — file_id keshi qoladi.
         save();
-        send(res, 200, { ok: true, bot: { greeting: c.greeting, channelUrl: c.channelUrl, guideUrl: c.guideUrl, gate: c.gate } });
+        send(res, 200, { ok: true, bot: { greeting: c.greeting, channelUrl: c.channelUrl, guideUrl: c.guideUrl, gate: c.gate, mode: c.mode || "auto" } });
       });
     }
-    // Webhook'ni majburan qayta ulash (botga boshqa manzil ulangan bo'lsa ham).
+    // Ulanishni majburan qayta qurish (webhook'ni qayta o'rnatadi, polling'dan qaytaradi).
     if (url === "/api/admin/bot-webhook" && m === "POST") {
       return readBody(req, res, () => {
-        ensureBotWebhook(true).then(r => {
-          if (r.ok) return send(res, 200, { ok: true, url: r.url, replaced: r.replaced || "" });
+        ensureBotConnection(true).then(r => {
+          if (r.ok) return send(res, 200, { ok: true, mode: r.mode, url: r.url || "", replaced: r.replaced || "" });
           send(res, 400, { error: r.reason === "no_url"
-            ? "Ilova manzili noma'lum: Railway'da PUBLIC_URL o'zgaruvchisini qo'shing"
+            ? "Ilova manzili noma'lum: admin panelni ilova ichida oching yoki PUBLIC_URL qo'shing"
             : (r.error || r.reason) });
         }).catch(e => send(res, 400, { error: e.message }));
       });
@@ -3053,9 +3147,9 @@ server.listen(PORT, "0.0.0.0", () => {
   // getMe javobini (BOT_USERNAME) kutib, bir necha soniyadan keyin bajariladi.
   if (BOT_TOKEN) {
     // Birinchi urinish getMe javobidan (BOT_USERNAME) keyin.
-    setTimeout(() => { ensureBotWebhook(false).then(r => reportWebhook(r, true)).catch(() => {}); }, 4000);
+    setTimeout(() => { ensureBotConnection(false).then(r => reportWebhook(r, true)).catch(() => {}); }, 4000);
     // Keyin har 15 daqiqada tekshirib turadi — tarmoq uzilishi, Telegram
     // tomonidan webhook o'chirilishi yoki manzil o'zgarishi o'zi tuzatiladi.
-    setInterval(() => { ensureBotWebhook(false).then(reportWebhook).catch(() => {}); }, 15 * 60 * 1000);
+    setInterval(() => { ensureBotConnection(false).then(reportWebhook).catch(() => {}); }, 15 * 60 * 1000);
   }
 });

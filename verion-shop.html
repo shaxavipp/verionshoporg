@@ -685,7 +685,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-09-06.4";
+var CLIENT_BUILD="2026-09-06.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3679,7 +3679,12 @@ function openAdminBot(){
     +'<div class="paynote" style="margin:0 0 10px">Foydalanuvchi botda <b>/start</b> bosganda banner rasm, salom matni va tugmalar chiqadi. '
     +'Bu Telegram\'ning "oylik foydalanuvchilar" hisobiga ham kiradi.</div>'
     +'<div class="d" id="btHook" style="margin:0 0 8px"></div>'
-    +'<button class="btn gray sm" id="btHookBtn">Webhookni qayta ulash</button>'
+    +'<div class="seg" id="btModeSeg" style="margin:0 0 8px">'
+    +'<button data-mode="auto">Avto</button><button data-mode="webhook">Webhook</button><button data-mode="polling">So\'rov</button>'
+    +'</div>'
+    +'<div class="d" style="margin:-4px 0 8px">Avto — avval webhook, Telegram yeta olmasa o\'zi <b>so\'rov</b> (polling) rejimiga o\'tadi. '
+    +'So\'rov rejimida server Telegram\'dan xabarlarni o\'zi olib turadi — domen tashqaridan ochilmasa ham bot ishlaydi.</div>'
+    +'<button class="btn gray sm" id="btHookBtn">Ulanishni qayta qurish</button>'
     +'<label style="margin-top:14px">Salom matni</label>'
     +'<textarea id="btGreet" class="exta" style="height:150px" placeholder="Xush kelibsiz, {name} ✌️"></textarea>'
     +'<div class="d" style="margin:-4px 0 8px">O\'rin egallovchilar: <b>{name}</b> — ism, <b>{username}</b>, <b>{id}</b>. Bo\'sh qoldirsangiz standart matn ishlatiladi.</div>'
@@ -3693,7 +3698,7 @@ function openAdminBot(){
     +'<div class="d" id="btStat" style="margin-top:10px"></div>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
-  var GATE_ON=true,_btRetried=false;
+  var GATE_ON=true,_btRetried=false,MODE="auto";
   function paint(r){
     sh.querySelector("#btGreet").value=r.greeting||"";
     sh.querySelector("#btGreet").setAttribute("placeholder",r.defaultGreeting||"");
@@ -3701,15 +3706,22 @@ function openAdminBot(){
     sh.querySelector("#btGuide").value=r.guideUrl||"";
     GATE_ON=!!r.gate;
     sh.querySelector("#btGate").className="swbtn"+(GATE_ON?" on":"");
+    MODE=r.mode||"auto";
+    var mbs=sh.querySelectorAll("#btModeSeg button");
+    for(var i=0;i<mbs.length;i++)mbs[i].className=(mbs[i].getAttribute("data-mode")===MODE?"on":"");
     var w=r.webhook||{};
     var hook=sh.querySelector("#btHook");
-    if(w.ours)hook.innerHTML='✅ Webhook ulangan — bot /start ga javob beradi.<br><span style="opacity:.6">'+esc(r.publicUrl||"")+'</span>'
+    var okNow=r.polling||w.ours;
+    if(r.polling)hook.innerHTML='✅ Bot ulangan — <b>so\'rov (polling)</b> rejimi.<br>'
+      +'<span style="opacity:.6">Server Telegram\'dan xabarlarni o\'zi olib turadi.</span>'
+      +(r.pollingWhy?('<br><span style="opacity:.6">Sabab: '+esc(r.pollingWhy)+'</span>'):"");
+    else if(w.ours)hook.innerHTML='✅ Bot ulangan — <b>webhook</b>.<br><span style="opacity:.6">'+esc(r.publicUrl||"")+'</span>'
       +(w.lastError?('<br>⚠️ Oxirgi xato: '+esc(w.lastError)):"");
     else if(w.url)hook.innerHTML='⚠️ Webhook BOSHQA manzilga ulangan:<br>'+esc(w.url)+'<br>Pastdagi tugmani bosing.';
     else if(!r.publicUrl)hook.innerHTML='⏳ Ilova manzili aniqlanmoqda — bir necha soniyadan keyin varaqni qayta oching.';
-    else hook.innerHTML='⏳ Webhook ulanmoqda… ('+esc(r.publicUrl)+')';
-    // Manzil endigina aniqlangan bo'lsa, ulanish fonda ketadi — bir marta qayta so'raymiz.
-    if(!w.ours&&!_btRetried){_btRetried=true;setTimeout(function(){if(sh.querySelector("#btHook"))load();},3000);}
+    else hook.innerHTML='⏳ Ulanmoqda… ('+esc(r.publicUrl)+')';
+    // Ulanish fonda tugallanishi mumkin — bir marta qayta so'raymiz.
+    if(!okNow&&!_btRetried){_btRetried=true;setTimeout(function(){if(sh.querySelector("#btHook"))load();},3000);}
     sh.querySelector("#btStat").textContent="Start bosganlar: "+(r.startedUsers||0)+" / "+(r.totalUsers||0)
       +(r.bannerCached?" · banner keshlangan":"");
   }
@@ -3719,10 +3731,21 @@ function openAdminBot(){
     GATE_ON=!GATE_ON;this.className="swbtn"+(GATE_ON?" on":"");haptic();
   });
   sh.querySelector("#btHookBtn").addEventListener("click",function(){
-    var b=this;b.disabled=true;
-    api("/api/admin/bot-webhook","POST",{}).then(function(){
-      b.disabled=false;haptic("ok");toast("✅ Webhook ulandi");load();
+    var b=this;b.disabled=true;_btRetried=false;
+    api("/api/admin/bot-webhook","POST",{}).then(function(r){
+      b.disabled=false;haptic("ok");
+      toast("✅ Ulandi"+(r&&r.mode==="polling"?" (so'rov rejimi)":""));
+      setTimeout(load,1200);
     }).catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||"Ulanmadi",true);});
+  });
+  var modeBtns=sh.querySelectorAll("#btModeSeg button");
+  for(var mi=0;mi<modeBtns.length;mi++)modeBtns[mi].addEventListener("click",function(){
+    var v=this.getAttribute("data-mode");
+    if(v===MODE)return;
+    haptic();_btRetried=false;
+    api("/api/admin/bot-settings","POST",{mode:v}).then(function(){
+      toast(t("a_saved"));setTimeout(load,1500);
+    }).catch(function(e){toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
   });
   sh.querySelector("#btSave").addEventListener("click",function(){
     var b=this;b.disabled=true;

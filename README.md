@@ -86,7 +86,17 @@ Banner kvadrat (1024×1024). Rasm Telegram'ga faqat **bir marta** yuklanadi — 
 
 Ilova manzili uch manbadan olinadi, shu tartibda: `PUBLIC_URL` / `RAILWAY_PUBLIC_DOMAIN` o'zgaruvchisi → **admin ilovani ochganda so'rovning `Host` sarlavhasidan o'rganilgan manzil** → yo'q. Ikkinchi manba faqat admin imzosi bilan kelgan so'rovdan olinadi (aks holda kimdir soxta `Host` yuborib webhook'ni o'z domeniga burib yuborardi), va faqat haqiqiy domen + https bo'lsa qabul qilinadi. Ya'ni yangi hostingda ham admin panelni bir marta ochish kifoya.
 
-Botga allaqachon boshqa manzil ulangan bo'lsa, uni jimgina bosib olmaydi — admin paneldagi **Webhookni qayta ulash** tugmasi majburan ulaydi, va muammo haqida adminlarga bot orqali bir marta xabar boradi. Maxfiy kalit o'zi yaratiladi, shuning uchun soxta "update" yuborib bo'lmaydi.
+Botga allaqachon boshqa manzil ulangan bo'lsa, uni jimgina bosib olmaydi — admin paneldagi **Ulanishni qayta qurish** tugmasi majburan ulaydi, va muammo haqida adminlarga bot orqali bir marta xabar boradi. Maxfiy kalit o'zi yaratiladi, shuning uchun soxta "update" yuborib bo'lmaydi.
+
+**Ulanish usuli** (admin panelda: Avto / Webhook / So'rov):
+
+| Usul | Qanday ishlaydi |
+|---|---|
+| **Webhook** | Telegram BIZGA murojaat qiladi. Tez, lekin domen tashqaridan ochilishi shart. |
+| **So'rov (polling)** | Server O'ZI Telegram'dan xabarlarni olib turadi (`getUpdates`). Domen tashqaridan ochilmasa ham ishlaydi. |
+| **Avto** (standart) | Avval webhook. Telegram yeta olmasa (masalan `Connection timed out`) — bir daqiqa ichida o'zi so'rov rejimiga o'tadi va bot ishlayveradi. |
+
+Ya'ni domen Telegram uchun yopiq bo'lsa ham bot jim qolmaydi. Domen tuzalgach **Ulanishni qayta qurish** bosilsa yana webhook'ga qaytadi.
 
 **"Start bosmagan ilovaga kirmasin"** (standart holatda yoqilgan). Botni ishga tushirmagan odam ilovada *"Botni ishga tushiring"* ekranini ko'radi: tugma bot chatini ochadi, START bosilgach ekran **o'zi** yopiladi va ilova ochiladi. Bu Telegram'ning "N oylik foydalanuvchi" hisobini oshiradi va bot mijozga xabar (buyurtma, yetkazilgan mahsulot, eslatma) yubora olishini kafolatlaydi.
 
