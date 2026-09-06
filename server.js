@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-09-06.1";
+const BUILD = "2026-09-06.2";
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -638,7 +638,11 @@ function escHtml(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-const DEFAULT_GREETING = "Xush kelibsiz, {name} ✌️";
+const DEFAULT_GREETING = "👋 Xush kelibsiz, {name} ✌️\n\n"
+  + "Verion Shop — o'yin donatlari, obunalar va raqamli xizmatlar bitta joyda.\n"
+  + "Buyurtma bir daqiqada, yetkazish avtomatik.\n\n"
+  + "⚡️ Tez, arzon va ishonchli.\n\n"
+  + "🙏 Bizni tanlaganingiz uchun rahmat!";
 function greetingHtml(from) {
   const c = botCfg();
   const name = ((from.first_name || "") + " " + (from.last_name || "")).trim() || from.username || "do'stim";
@@ -669,9 +673,18 @@ function startKeyboard() {
 }
 // Banner rasmni yuboradi. Birinchi safar fayl yuklanadi, Telegram bergan file_id
 // saqlanadi va keyingi safar faqat o'sha satr yuboriladi (tez va trafiksiz).
+// Banner faylining "imzosi" (hajm + o'zgartirilgan vaqti). Rasmni almashtirib
+// deploy qilinganda file_id keshi o'z-o'zidan bekor bo'ladi — aks holda Telegram
+// eski rasmni ko'rsatib turaverardi.
+function bannerSig() {
+  try { const st = fs.statSync(BANNER_FILE); return st.size + "-" + Math.floor(st.mtimeMs); }
+  catch (e) { return ""; }
+}
 async function sendStartCard(chatId, captionHtml) {
   const c = botCfg();
   const kb = startKeyboard();
+  const sig = bannerSig();
+  if (c.bannerFileId && c.bannerSig !== sig) { c.bannerFileId = ""; save(); }
   if (c.bannerFileId) {
     const r = await tgApiPost("sendPhoto", {
       chat_id: chatId, photo: c.bannerFileId, caption: captionHtml,
@@ -686,7 +699,7 @@ async function sendStartCard(chatId, captionHtml) {
     try {
       const r = await tgSendMediaMultipartKb(chatId, buf, captionHtml, kb);
       const ph = r && r.result && r.result.photo;
-      if (ph && ph.length) { c.bannerFileId = ph[ph.length - 1].file_id; save(); }
+      if (ph && ph.length) { c.bannerFileId = ph[ph.length - 1].file_id; c.bannerSig = sig; save(); }
       return r;
     } catch (e) { /* rasm ketmasa — pastda oddiy matn yuboriladi */ }
   }
