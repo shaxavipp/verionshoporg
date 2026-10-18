@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-18.2";
+const BUILD = "2026-10-18.3";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1070,6 +1070,8 @@ function orderMessageText(o) {
   const lines = [
     "🛍 " + o.item,
     "👤 " + who,
+    // O'yin buyurtmasi: admin to'ldirishi uchun eng kerakli ma'lumot — o'yinchi ID'si.
+    ...(o.game && o.game.accountText ? ["🎮 " + (o.game.fields || []).map(f => f.label).join(" / ") + ": " + o.game.accountText] : []),
     "💰 " + priceStr,
     "🕐 " + dateStr,
     "#️⃣ #" + o.seq,
@@ -1665,6 +1667,13 @@ function myView(uid) {
 }
 
 /* ---------- server ---------- */
+/* O'yinlar do'koni (o'yinlar, paketlar, liniyalar) — alohida modulda: games.js */
+const GAMES = require("./games.js")({
+  getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
+  notifyOrder, notifyOrderChannel, tgSend, validatePromo, consumePromo,
+  creditReferralOnOrder, creditLoyaltyOnOrder, ADMIN_IDS, DATA_DIR
+});
+
 const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
@@ -1676,6 +1685,9 @@ const server = http.createServer((req, res) => {
   if (url === "/api/health" && m === "GET") {
     return send(res, 200, { app: "verion-shop", ok: true, build: BUILD, instance: INSTANCE_ID, time: Date.now() });
   }
+
+  // O'yinlar: /api/games*, /api/admin/games*, /gimg/* — modul o'zi javob beradi.
+  if (GAMES.handle(req, res, url, m)) return;
 
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {

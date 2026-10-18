@@ -115,6 +115,32 @@ Ya'ni domen Telegram uchun yopiq bo'lsa ham bot jim qolmaydi. Domen tuzalgach **
 
 Bu to'siqni **ko'rmaydiganlar**: ilgari start bosgan eski mijozlar (server buni `sendChatAction` orqali jimgina aniqlaydi — hech qanday xabar chiqmaydi), adminlar, va oddiy brauzerda ochganlar. To'siqni admin paneldagi tugma bilan butunlay o'chirish mumkin.
 
+## O'yinlar do'koni va liniyalar
+
+Bosh sahifa → **O'yinlar** → o'yin (Mobile Legends, PUBG Mobile, Free Fire…) → o'yin sahifasi: Player ID / Server ID, region va bo'lim tugmalari, paketlar (rasm yoki olmos/UC belgisi, HIT / 2x yorliqlari), pastda **Sotib olish**. Balans yetmasa — "Mablag' yetarli emas" jadvali va **To'ldirish** tugmasi. Kiritilgan ID keyingi safar o'zi to'ladi.
+
+Buyurtmada o'yinchi ID'si saqlanadi va kanalga `🎮 Player ID / Server ID: 12345678 (1234)` qatori bilan tushadi. Pul xarid paytida yechiladi; admin **Bekor qilish** bossa — o'zi qaytadi.
+
+**Admin panel → O'yinlar va liniyalar:**
+
+| Bo'lim | Nima qiladi |
+|---|---|
+| **Narxlar** | O'yinning barcha paketlari bitta ro'yxatda: narx yozing → kalit o'zi yoqiladi → **Saqlash**. Narxi 0 yoki o'chiq paket do'konda ko'rinmaydi. |
+| ✏️ (paket) | Nomi, region, bo'lim, belgi, HIT/2x yorlig'i, rasm, qaysi liniyalar to'ldiradi (SKU, tannarx). |
+| ✏️ (o'yin) | Nomi, avatar, banner, rang, mijozdan so'raladigan maydonlar va ularning formati, regionlar, bo'limlar. |
+| **Liniyalar** | Paketni kim to'ldiradi. Ustuvorlik bo'yicha sinab ko'riladi: biri ishlamasa — keyingisi. |
+
+Boshlang'ich holatda MLBB, PUBG Mobile va Free Fire o'zining standart paketlari bilan qo'shilgan, lekin **narxsiz va o'chiq** — narx yozmaguningizcha do'konda chiqmaydi.
+
+**Liniyalar.** Hozir bitta tur bor — **Qo'lda**: buyurtma kanalga tushadi, siz o'yinchi ID'siga to'ldirib **Bajarildi** bosasiz. Yetkazib beruvchi saytni API orqali ulash uchun o'sha saytning API hujjati va kalitlari kerak; u `games.js` da yangi liniya turi sifatida qo'shiladi (`registerLineType`) va admin panelda tanlanadigan bo'ladi. Shunda:
+
+- buyurtma avtomatik saytga yuboriladi; sayt "bajarildi" desa mijozga darhol xabar boradi;
+- sayt ishlamasa yoki balansi tugasa — keyingi liniya sinab ko'riladi; hech biri bajarmasa buyurtma kutilmoqda holida qoladi va adminga sababi bilan xabar boradi;
+- sayt kechikib bajarsa — server har daqiqada holatini so'rab turadi;
+- sayt ID tekshirishni qo'llasa — o'yin sahifasida **Tekshirish** tugmasi va nikneym chiqadi.
+
+Maxfiy kalitlar admin panelga hech qachon qaytarilmaydi. Tannarx, SKU va liniya ma'lumotlari mijozga yuborilmaydi.
+
 ## Kanallar — qaysi xabar qayerga tushadi
 
 Admin panel → **Kanallar (chat_id)**. Uchta mustaqil kanal:
