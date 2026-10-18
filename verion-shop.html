@@ -685,7 +685,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-09-06.5";
+var CLIENT_BUILD="2026-10-18.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3678,6 +3678,14 @@ function openAdminBot(){
   var html='<h2>Bot va /start</h2>'
     +'<div class="paynote" style="margin:0 0 10px">Foydalanuvchi botda <b>/start</b> bosganda banner rasm, salom matni va tugmalar chiqadi. '
     +'Bu Telegram\'ning "oylik foydalanuvchilar" hisobiga ham kiradi.</div>'
+    +'<div class="sect" style="margin:4px 0 6px">Ilova manzili</div>'
+    +'<div class="d" id="btUrlInfo" style="margin:0 0 8px"></div>'
+    +'<input id="btAppUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://verionshop-production.up.railway.app">'
+    +'<div class="d" style="margin:-4px 0 8px">Mijozlar ilovani shu manzil orqali ochadi: /start dagi tugma, chat pastidagi «Ilova» tugmasi va bot ulanishi. '
+    +'Saqlashdan oldin server manzilni o\'zi tekshiradi — xato manzil saqlanmaydi.</div>'
+    +'<button class="btn sm" id="btUrlSave">Tekshirib saqlash</button>'
+    +'<div class="d" id="btUrlRes" style="margin:8px 0 0"></div>'
+    +'<div class="sect" style="margin:16px 0 6px">Bot ulanishi</div>'
     +'<div class="d" id="btHook" style="margin:0 0 8px"></div>'
     +'<div class="seg" id="btModeSeg" style="margin:0 0 8px">'
     +'<button data-mode="auto">Avto</button><button data-mode="webhook">Webhook</button><button data-mode="polling">So\'rov</button>'
@@ -3699,6 +3707,49 @@ function openAdminBot(){
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
   var GATE_ON=true,_btRetried=false,MODE="auto";
+  var SRC_UZ={admin:"qo'lda belgilangan",env:"Railway'dagi PUBLIC_URL",railway:"Railway domeni",host:"ilova ochilgan domendan aniqlangan"};
+  function paintUrl(r){
+    var info=sh.querySelector("#btUrlInfo");
+    var h='Hozir: <b>'+esc(r.publicUrl||"—")+'</b>'+(r.urlSource?' <span style="opacity:.6">('+esc(SRC_UZ[r.urlSource]||r.urlSource)+')</span>':'');
+    var mb=r.menuButton;
+    if(mb&&mb.type==="web_app"){
+      var same=mb.url&&r.publicUrl&&mb.url.replace(/\/+$/,"")===r.publicUrl;
+      h+='<br>Pastki «'+esc(mb.text||"Ilova")+'» tugmasi: '+(same?'✅ ':'⚠️ ')+esc(mb.url||"—");
+    }else if(mb){
+      h+='<br>Pastki menyu tugmasi: <span style="opacity:.6">'+esc(mb.type||"yo\'q")+'</span> — saqlaganda «Ilova» tugmasi qo\'yiladi.';
+    }
+    if(r.railwayUrl&&r.railwayUrl!==r.publicUrl)
+      h+='<br><button class="btn gray sm" id="btUseRailway" style="margin-top:8px">Railway domenini ishlatish: '+esc(r.railwayUrl.replace(/^https:\/\//,""))+'</button>';
+    if(r.appUrl)
+      h+='<br><button class="btn gray sm" id="btUrlAuto" style="margin-top:8px">Avtomatik aniqlashga qaytish</button>';
+    info.innerHTML=h;
+    var inp=sh.querySelector("#btAppUrl");
+    if(!inp.value)inp.value=r.appUrl||r.publicUrl||"";
+    var ur=sh.querySelector("#btUseRailway");
+    if(ur)ur.addEventListener("click",function(){inp.value=r.railwayUrl;saveUrl(r.railwayUrl);});
+    var ua=sh.querySelector("#btUrlAuto");
+    if(ua)ua.addEventListener("click",function(){inp.value="";saveUrl("");});
+  }
+  function saveUrl(v){
+    var b=sh.querySelector("#btUrlSave"),res=sh.querySelector("#btUrlRes");
+    b.disabled=true;res.textContent="⏳ Tekshirilmoqda… (10 soniyagacha)";
+    api("/api/admin/app-url","POST",{url:v}).then(function(r){
+      b.disabled=false;haptic("ok");
+      var m=[];
+      if(r.appUrl)m.push("✅ Manzil ishlayapti"+(r.probe&&r.probe.ms!=null?(" ("+r.probe.ms+" ms)"):"")+" va saqlandi.");
+      else m.push("✅ Avtomatik aniqlashga qaytildi.");
+      if(r.menuButton)m.push(r.menuButton.ok?"✅ Pastki «"+(r.menuButton.text||"Ilova")+"» tugmasi yangilandi.":"⚠️ Menyu tugmasi: "+(r.menuButton.error||"xato"));
+      var c=r.connection||{};
+      if(c.ok)m.push("✅ Bot ulanishi: "+(c.mode==="polling"?"so'rov (polling)":"webhook")+".");
+      else if(c.error||c.reason)m.push("⚠️ Bot ulanishi: "+(c.error||c.reason));
+      res.innerHTML=m.map(esc).join("<br>");
+      sh.querySelector("#btAppUrl").value=r.appUrl||"";
+      setTimeout(load,1200);
+    }).catch(function(e){
+      b.disabled=false;
+      res.innerHTML="❌ "+esc((e&&e.resp&&e.resp.error)||t("srv_off"));
+    });
+  }
   function paint(r){
     sh.querySelector("#btGreet").value=r.greeting||"";
     sh.querySelector("#btGreet").setAttribute("placeholder",r.defaultGreeting||"");
@@ -3706,6 +3757,7 @@ function openAdminBot(){
     sh.querySelector("#btGuide").value=r.guideUrl||"";
     GATE_ON=!!r.gate;
     sh.querySelector("#btGate").className="swbtn"+(GATE_ON?" on":"");
+    paintUrl(r);
     MODE=r.mode||"auto";
     var mbs=sh.querySelectorAll("#btModeSeg button");
     for(var i=0;i<mbs.length;i++)mbs[i].className=(mbs[i].getAttribute("data-mode")===MODE?"on":"");
@@ -3730,6 +3782,7 @@ function openAdminBot(){
   sh.querySelector("#btGate").addEventListener("click",function(){
     GATE_ON=!GATE_ON;this.className="swbtn"+(GATE_ON?" on":"");haptic();
   });
+  sh.querySelector("#btUrlSave").addEventListener("click",function(){saveUrl(sh.querySelector("#btAppUrl").value.trim());});
   sh.querySelector("#btHookBtn").addEventListener("click",function(){
     var b=this;b.disabled=true;_btRetried=false;
     api("/api/admin/bot-webhook","POST",{}).then(function(r){

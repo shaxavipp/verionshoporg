@@ -82,6 +82,17 @@ Tugmalar: tepada bitta keng **📱 Ilovani ochish** (mini-ilovani to'g'ridan-to'
 
 Banner kvadrat (1024×1024). Rasm Telegram'ga faqat **bir marta** yuklanadi — keyin `file_id` ishlatiladi, shuning uchun /start bir zumda javob beradi. Rasmni almashtirish uchun `assets/start-banner.png` ni yangilab deploy qiling: fayl o'zgargani (hajm + vaqt) sezilib, kesh o'zi bekor bo'ladi va yangi rasm bir marta qayta yuklanadi. Qo'lda hech narsa tozalash shart emas.
 
+**Ilova manzili** (admin panel → Bot va /start → *Ilova manzili*). Mijozlar ilovani qaysi domen orqali ochishini bitta joyda belgilaydi: /start'dagi «Ilovani ochish» tugmasi, chat pastidagi «Ilova» menyu tugmasi va bot ulanishi — hammasi shu manzilga o'tadi. **Tekshirib saqlash** bosilganda server avval o'zini shu manzil orqali tekshiradi (`/api/health`); ochilmaydigan yoki boshqa saytga olib boradigan manzil saqlanmaydi. Railway domeni mavjud bo'lsa, uni bitta tugma bilan tanlash mumkin.
+
+Ilova `ERR_CONNECTION_TIMED_OUT` bilan ochilmasa (domen ba'zi tarmoqlardan ochilmayapti):
+
+1. Railway → service → **Settings → Networking**. `…up.railway.app` domeni bo'lmasa — **Generate Domain**.
+2. Brauzerda `https://<o'sha-domen>/api/health` ni oching — `"app":"verion-shop"` chiqishi kerak.
+3. Telefonda ilova → Admin panel → **Bot va /start** → **Railway domenini ishlatish** (yoki manzilni yozib **Tekshirib saqlash**).
+4. **@BotFather** → `/myapps` → botingiz → **Edit Web App URL** → o'sha manzil. (Bu havolani faqat BotFather o'zgartiradi — referal havolalari `t.me/<bot>/<ilova>` shu orqali ochiladi.)
+
+Domen tuzalgach o'sha joyda qayta `verionshop.uz` ni saqlash mumkin.
+
 **Webhook.** Server Telegram webhook'ini o'zi ulaydi va **har 15 daqiqada tekshirib turadi** — uzilib qolsa o'zi qayta ulaydi. Qo'lda hech narsa sozlash shart emas.
 
 Ilova manzili uch manbadan olinadi, shu tartibda: `PUBLIC_URL` / `RAILWAY_PUBLIC_DOMAIN` o'zgaruvchisi → **admin ilovani ochganda so'rovning `Host` sarlavhasidan o'rganilgan manzil** → yo'q. Ikkinchi manba faqat admin imzosi bilan kelgan so'rovdan olinadi (aks holda kimdir soxta `Host` yuborib webhook'ni o'z domeniga burib yuborardi), va faqat haqiqiy domen + https bo'lsa qabul qilinadi. Ya'ni yangi hostingda ham admin panelni bir marta ochish kifoya.

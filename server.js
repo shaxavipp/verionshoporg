@@ -14,7 +14,10 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-09-06.5";
+const BUILD = "2026-10-18.1";
+// Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
+// SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
+const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -113,7 +116,7 @@ if (!DB.settings.channels) DB.settings.channels = {
 // qiymat qo'yiladi. bannerFileId — Telegram qaytargan file_id keshi: banner rasm
 // serverdan faqat BIR marta yuklanadi, keyingi barcha /start larda file_id yuboriladi.
 if (!DB.settings.bot) DB.settings.bot = {
-  greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "", publicUrl: ""
+  greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "", publicUrl: "", appUrl: ""
 };
 if (!DB.notifState) DB.notifState = {}; // TZ band 6: sevimli mahsulot stock/narx bildirishnomalari holati
 // Promo-kodlar: code -> {code,type("percent"|"fixed"),value,maxUses,usedCount,perUserLimit,
@@ -612,7 +615,7 @@ function tgSendButton(chatId, text, btnText, url) {
 
 function botCfg() {
   if (!DB.settings) DB.settings = {};
-  if (!DB.settings.bot) DB.settings.bot = { greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "", publicUrl: "" };
+  if (!DB.settings.bot) DB.settings.bot = { greeting: "", channelUrl: "", guideUrl: "", gate: true, bannerFileId: "", hookSecret: "", publicUrl: "", appUrl: "" };
   return DB.settings.bot;
 }
 // Webhook maxfiy kaliti — hech qanday sozlama talab qilmaydi, birinchi marta o'zi
@@ -623,18 +626,24 @@ function botHookSecret() {
   if (!c.hookSecret) { c.hookSecret = crypto.randomBytes(16).toString("hex"); save(); }
   return c.hookSecret;
 }
-/* Ilovaning tashqi manzili. Uch manba, shu tartibda:
-   1) PUBLIC_URL / RAILWAY_PUBLIC_DOMAIN o'zgaruvchisi;
-   2) admin ilovani ochganda so'rovning Host sarlavhasidan o'rganilgan manzil;
-   3) yo'q.
+/* Ilovaning tashqi manzili. To'rt manba, shu tartibda:
+   1) admin panelda qo'lda kiritilgan va server tekshirgan manzil (appUrl);
+   2) PUBLIC_URL / RAILWAY_PUBLIC_DOMAIN o'zgaruvchisi;
+   3) admin ilovani ochganda so'rovning Host sarlavhasidan o'rganilgan manzil;
+   4) yo'q.
+   1-manba kerak bo'ldi: verionshop.uz domeni ba'zi tarmoqlardan (Telegram
+   serverlari, kompyuterdagi Telegram) ochilmay qoldi, Host'dan o'rganilgan
+   manzil esa aynan shu domen edi — bot tugmalari ham shu yerga olib borardi.
    2-manba faqat ADMIN imzosi bilan kelgan so'rovdan olinadi — aks holda kimdir
    soxta Host sarlavhasi yuborib webhook'ni o'z domeniga burib yuborishi mumkin edi. */
 function publicBase() {
+  const c = botCfg();
+  if (c.appUrl) return c.appUrl;                // admin panelda qo'lda tasdiqlangan manzil — eng ustun
   if (PUBLIC_URL) return PUBLIC_URL;
-  return String(botCfg().publicUrl || "");
+  return String(c.publicUrl || "");
 }
 function rememberPublicBase(req) {
-  if (PUBLIC_URL) return;                       // env ustun turadi
+  if (PUBLIC_URL || botCfg().appUrl) return;    // aniq berilgan manzil bo'lsa — Host'dan o'rganmaymiz
   const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
   if (!host || !/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}(:\d+)?$/i.test(host)) return;  // domen bo'lsin (IP/localhost emas)
   const proto = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
@@ -653,6 +662,56 @@ function miniAppUrl() {
   if (base) return base;
   if (BOT_USERNAME) return "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME;
   return "";
+}
+// Foydalanuvchi kiritgan manzilni "https://domen" ko'rinishiga keltiradi (yo'l, so'rov
+// qatori, oxirgi "/" tashlanadi). Yaroqsiz bo'lsa "" qaytaradi.
+function normalizeAppUrl(v) {
+  let s = String(v || "").trim();
+  if (!s) return "";
+  if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+  let u;
+  try { u = new URL(s); } catch (e) { return ""; }
+  if (u.protocol !== "https:") return "";      // Telegram mini-ilova va webhook faqat https
+  if (!/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/i.test(u.hostname)) return "";
+  return "https://" + u.hostname.toLowerCase() + (u.port && u.port !== "443" ? ":" + u.port : "");
+}
+/* Manzil rostdan SHU serverga olib keladimi — /api/health ni tashqi manzil orqali
+   so'rab tekshiramiz. Xato yozilgan yoki boshqa saytga qarab turgan manzilni
+   saqlab qo'yib, botni butunlay buzib qo'ymaslik uchun. */
+function probeAppUrl(base) {
+  return new Promise(resolve => {
+    const t0 = Date.now();
+    let done = false;
+    const finish = r => { if (!done) { done = true; resolve(Object.assign({ ms: Date.now() - t0 }, r)); } };
+    try {
+      const req = https.get(base + "/api/health", { timeout: 10000 }, r => {
+        let b = ""; r.on("data", c => { if (b.length < 4096) b += c; });
+        r.on("end", () => {
+          let j = null; try { j = JSON.parse(b); } catch (e) {}
+          if (r.statusCode === 200 && j && j.app === "verion-shop") finish({ ok: true, build: j.build, same: j.instance === INSTANCE_ID });
+          else finish({ ok: false, error: "bu manzilda Verion Shop serveri javob bermadi (HTTP " + r.statusCode + ")" });
+        });
+      });
+      req.on("timeout", () => { req.destroy(); finish({ ok: false, error: "javob kelmadi (10 soniya) — domen ochilmayapti" }); });
+      req.on("error", e => finish({ ok: false, error: e.code === "ENOTFOUND" ? "domen topilmadi (DNS)" : (e.code || e.message) }));
+    } catch (e) { finish({ ok: false, error: e.message }); }
+  });
+}
+/* Chat pastidagi "Ilova" menyu tugmasini shu manzilga yo'naltiradi (BotFather'dagi
+   Menu Button bilan bir xil narsa — chat_id'siz chaqirilsa barcha foydalanuvchilar
+   uchun standart tugma o'zgaradi). Tugma matni avvalgisi bo'lsa saqlanadi. */
+async function syncMenuButton(base) {
+  if (!BOT_TOKEN || !base) return { ok: false, error: "manzil yo'q" };
+  let text = "Ilova";
+  try {
+    const cur = await tgApiPost("getChatMenuButton", {});
+    const mb = cur && cur.ok && cur.result;
+    if (mb && mb.type === "web_app" && mb.text) text = mb.text;
+  } catch (e) {}
+  try {
+    const r = await tgApiPost("setChatMenuButton", { menu_button: { type: "web_app", text, web_app: { url: base } } });
+    return r && r.ok ? { ok: true, text } : { ok: false, error: (r && r.description) || "Telegram rad etdi" };
+  } catch (e) { return { ok: false, error: e.message }; }
 }
 // Ilovaga "start bosish" uchun havola: foydalanuvchi bosganda bot chati ochiladi va
 // Telegram /start ni o'zi yuboradi (avval boshlagan bo'lsa ham).
@@ -1567,6 +1626,13 @@ const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
+
+  /* Ochiq holat tekshiruvi: domen ishlayaptimi va qaysi build turibdi — brauzerda
+     https://<domen>/api/health ni ochib ko'rish mumkin. Admin manzilni saqlaganda
+     server ham shu orqali o'zini tekshiradi. */
+  if (url === "/api/health" && m === "GET") {
+    return send(res, 200, { app: "verion-shop", ok: true, build: BUILD, instance: INSTANCE_ID, time: Date.now() });
+  }
 
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {
@@ -2586,28 +2652,54 @@ const server = http.createServer((req, res) => {
     if (url === "/api/admin/bot-settings" && m === "GET") {
       const c = botCfg();
       const started = Object.keys(DB.users).filter(k => DB.users[k].started === true).length;
-      tgApiPost("getWebhookInfo", {}).then(j => {
-        const r = (j && j.ok && j.result) || {};
+      const safe = p => p.then(j => (j && j.ok ? j.result : null)).catch(() => null);
+      Promise.all([safe(tgApiPost("getWebhookInfo", {})), safe(tgApiPost("getChatMenuButton", {}))]).then(([wh, mb]) => {
+        const r = wh || {};
+        const base = publicBase();
+        const railway = process.env.RAILWAY_PUBLIC_DOMAIN ? "https://" + String(process.env.RAILWAY_PUBLIC_DOMAIN).replace(/^https?:\/\//, "").replace(/\/+$/, "") : "";
         send(res, 200, {
           greeting: c.greeting || "", defaultGreeting: DEFAULT_GREETING,
           channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
-          publicUrl: publicBase(), botUsername: BOT_USERNAME, startLink: botStartLink("app"),
+          publicUrl: base, botUsername: BOT_USERNAME, startLink: botStartLink("app"),
+          // Manzil qayerdan olingani — "nega bot tugmasi shu domenga olib boryapti?" savoliga javob
+          urlSource: c.appUrl ? "admin" : (process.env.PUBLIC_URL ? "env" : (railway ? "railway" : (c.publicUrl ? "host" : ""))),
+          appUrl: c.appUrl || "", envUrl: String(process.env.PUBLIC_URL || ""), railwayUrl: railway, learnedUrl: c.publicUrl || "",
+          menuButton: mb ? { type: mb.type || "", text: mb.text || "", url: (mb.web_app && mb.web_app.url) || "" } : null,
           bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
           mode: c.mode || "auto", polling: POLLING, pollingWhy: POLL_REASON,
-          webhook: {
-            url: r.url || "", ours: !!(publicBase() && r.url === publicBase() + "/api/tg-webhook"),
+          webhook: wh ? {
+            url: r.url || "", ours: !!(base && r.url === base + "/api/tg-webhook"),
             pending: r.pending_update_count || 0, lastError: r.last_error_message || ""
-          }
+          } : { url: "", ours: false, pending: 0, lastError: "Telegram javob bermadi" }
         });
-      }).catch(() => send(res, 200, {
-        greeting: c.greeting || "", defaultGreeting: DEFAULT_GREETING,
-        channelUrl: c.channelUrl || "", guideUrl: c.guideUrl || "", gate: !!c.gate,
-        publicUrl: publicBase(), botUsername: BOT_USERNAME, startLink: botStartLink("app"),
-        bannerCached: !!c.bannerFileId, startedUsers: started, totalUsers: Object.keys(DB.users).length,
-        mode: c.mode || "auto", polling: POLLING, pollingWhy: POLL_REASON,
-        webhook: { url: "", ours: false, pending: 0, lastError: "Telegram javob bermadi" }
-      }));
+      });
       return;
+    }
+    /* Ilova manzilini qo'lda belgilash. Avval server o'zini shu manzil orqali
+       tekshiradi (/api/health), keyin: bot tugmalari, chat pastidagi "Ilova"
+       menyu tugmasi va webhook hammasi shu manzilga o'tadi. Bo'sh yuborilsa —
+       avtomatik aniqlashga qaytadi. */
+    if (url === "/api/admin/app-url" && m === "POST") {
+      return readBody(req, res, async b => {
+        const c = botCfg();
+        const raw = String((b && b.url) || "").trim();
+        if (!raw) {
+          c.appUrl = ""; save();
+          const conn = await ensureBotConnection(true).catch(e => ({ ok: false, error: e.message }));
+          return send(res, 200, { ok: true, appUrl: "", publicUrl: publicBase(), connection: conn });
+        }
+        const base = normalizeAppUrl(raw);
+        if (!base) return send(res, 400, { error: "Manzil noto'g'ri. Masalan: https://verionshop-production.up.railway.app" });
+        const probe = await probeAppUrl(base);
+        if (!probe.ok) return send(res, 400, { error: base + " — " + probe.error, probe });
+        c.appUrl = base; save();
+        console.log("[bot] ilova manzili admin tomonidan belgilandi: " + base);
+        const [menu, conn] = await Promise.all([
+          syncMenuButton(base),
+          ensureBotConnection(true).catch(e => ({ ok: false, error: e.message }))
+        ]);
+        send(res, 200, { ok: true, appUrl: base, probe, menuButton: menu, connection: conn });
+      });
     }
     if (url === "/api/admin/bot-settings" && m === "POST") {
       return readBody(req, res, b => {
