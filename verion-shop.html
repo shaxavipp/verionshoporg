@@ -685,7 +685,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-18.1";
+var CLIENT_BUILD="2026-10-18.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3707,13 +3707,14 @@ function openAdminBot(){
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
   var GATE_ON=true,_btRetried=false,MODE="auto";
-  var SRC_UZ={admin:"qo'lda belgilangan",env:"Railway'dagi PUBLIC_URL",railway:"Railway domeni",host:"ilova ochilgan domendan aniqlangan"};
+  var SRC_UZ={admin:"qo'lda belgilangan",menu:"ko'k «Ilova» tugmasidan olingan",env:"Railway'dagi PUBLIC_URL",railway:"Railway domeni",host:"ilova ochilgan domendan aniqlangan"};
   function paintUrl(r){
     var info=sh.querySelector("#btUrlInfo");
-    var h='Hozir: <b>'+esc(r.publicUrl||"—")+'</b>'+(r.urlSource?' <span style="opacity:.6">('+esc(SRC_UZ[r.urlSource]||r.urlSource)+')</span>':'');
+    var h='Hozir: <b>'+esc(r.openUrl||r.publicUrl||"—")+'</b>'+(r.urlSource?' <span style="opacity:.6">('+esc(SRC_UZ[r.urlSource]||r.urlSource)+')</span>':'');
     var mb=r.menuButton;
     if(mb&&mb.type==="web_app"){
-      var same=mb.url&&r.publicUrl&&mb.url.replace(/\/+$/,"")===r.publicUrl;
+      var norm=function(u){return String(u||"").replace(/\/+$/,"");};
+      var same=mb.url&&norm(mb.url)===norm(r.openUrl||r.publicUrl);
       h+='<br>Pastki «'+esc(mb.text||"Ilova")+'» tugmasi: '+(same?'✅ ':'⚠️ ')+esc(mb.url||"—");
     }else if(mb){
       h+='<br>Pastki menyu tugmasi: <span style="opacity:.6">'+esc(mb.type||"yo\'q")+'</span> — saqlaganda «Ilova» tugmasi qo\'yiladi.';

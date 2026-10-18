@@ -82,7 +82,9 @@ Tugmalar: tepada bitta keng **📱 Ilovani ochish** (mini-ilovani to'g'ridan-to'
 
 Banner kvadrat (1024×1024). Rasm Telegram'ga faqat **bir marta** yuklanadi — keyin `file_id` ishlatiladi, shuning uchun /start bir zumda javob beradi. Rasmni almashtirish uchun `assets/start-banner.png` ni yangilab deploy qiling: fayl o'zgargani (hajm + vaqt) sezilib, kesh o'zi bekor bo'ladi va yangi rasm bir marta qayta yuklanadi. Qo'lda hech narsa tozalash shart emas.
 
-**Ilova manzili** (admin panel → Bot va /start → *Ilova manzili*). Mijozlar ilovani qaysi domen orqali ochishini bitta joyda belgilaydi: /start'dagi «Ilovani ochish» tugmasi, chat pastidagi «Ilova» menyu tugmasi va bot ulanishi — hammasi shu manzilga o'tadi. **Tekshirib saqlash** bosilganda server avval o'zini shu manzil orqali tekshiradi (`/api/health`); ochilmaydigan yoki boshqa saytga olib boradigan manzil saqlanmaydi. Railway domeni mavjud bo'lsa, uni bitta tugma bilan tanlash mumkin.
+**Ilova manzili.** /start'dagi «Ilovani ochish» tugmasi **chat pastidagi ko'k «Ilova» tugmasi bilan bir xil manzilni** ishlatadi — server uni Telegram'dan o'zi o'qiydi (har 15 daqiqada va admin panel ochilganda) va faqat u rostdan shu serverga olib borsa qabul qiladi. Ya'ni ko'k tugma ishlayotgan bo'lsa, /start tugmasi ham ishlaydi — hech narsa sozlash shart emas.
+
+Qo'lda belgilash ham mumkin (admin panel → Bot va /start → *Ilova manzili*) — u hammasidan ustun turadi. Mijozlar ilovani qaysi domen orqali ochishini bitta joyda belgilaydi: /start'dagi «Ilovani ochish» tugmasi, chat pastidagi «Ilova» menyu tugmasi va bot ulanishi — hammasi shu manzilga o'tadi. **Tekshirib saqlash** bosilganda server avval o'zini shu manzil orqali tekshiradi (`/api/health`); ochilmaydigan yoki boshqa saytga olib boradigan manzil saqlanmaydi. Railway domeni mavjud bo'lsa, uni bitta tugma bilan tanlash mumkin.
 
 Ilova `ERR_CONNECTION_TIMED_OUT` bilan ochilmasa (domen ba'zi tarmoqlardan ochilmayapti):
 
