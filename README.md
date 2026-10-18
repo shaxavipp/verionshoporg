@@ -132,12 +132,27 @@ Buyurtmada o'yinchi ID'si saqlanadi va kanalga `🎮 Player ID / Server ID: 1234
 
 Boshlang'ich holatda MLBB, PUBG Mobile va Free Fire o'zining standart paketlari bilan qo'shilgan, lekin **narxsiz va o'chiq** — narx yozmaguningizcha do'konda chiqmaydi.
 
-**Liniyalar.** Hozir bitta tur bor — **Qo'lda**: buyurtma kanalga tushadi, siz o'yinchi ID'siga to'ldirib **Bajarildi** bosasiz. Yetkazib beruvchi saytni API orqali ulash uchun o'sha saytning API hujjati va kalitlari kerak; u `games.js` da yangi liniya turi sifatida qo'shiladi (`registerLineType`) va admin panelda tanlanadigan bo'ladi. Shunda:
+**Liniyalar** (ustuvorlik tartibida sinab ko'riladi):
 
-- buyurtma avtomatik saytga yuboriladi; sayt "bajarildi" desa mijozga darhol xabar boradi;
-- sayt ishlamasa yoki balansi tugasa — keyingi liniya sinab ko'riladi; hech biri bajarmasa buyurtma kutilmoqda holida qoladi va adminga sababi bilan xabar boradi;
-- sayt kechikib bajarsa — server har daqiqada holatini so'rab turadi;
-- sayt ID tekshirishni qo'llasa — o'yin sahifasida **Tekshirish** tugmasi va nikneym chiqadi.
+| # | Liniya | Nima kerak | Qo'shimcha |
+|---|---|---|---|
+| 1 | **MooGold** | Partner ID, Secret key (MooGold menejeridan) | Katalog va rasm importi, holatni o'zi so'rab turadi |
+| 2 | **G2Bulk** | API key (G2Bulk Telegram botidan) | Katalog va rasm importi, holat callback orqali keladi |
+| 3 | **Smile.one** | UID, email, merchant key, region (br/ph/…) | **Tekshirish** tugmasi — nikni ko'rsatadi |
+| 4–5 | Bo'sh joy | — | Yangi sayt uchun ajratilgan |
+| — | **Qo'lda (zaxira)** | — | Hamma sayt rad etsa, buyurtma adminga tushadi |
+
+Sayt liniyalari kalit kiritilmaguncha **o'chiq**. Ulash: admin panel → O'yinlar va liniyalar → liniya ✏️ → kalitlar, kurs (saytdagi 1 birlik = necha so'm) va ustama % → **Saqlash** → **Sinash** (balans ko'rinadi) → **Katalogdan import**: saytdagi o'yinni tanlang, paketlarni belgilang — nomi tozalanadi ("Mobile Legends - 86 Diamonds" → "86 olmos"), narx kurs va ustama bo'yicha hisoblanadi, o'yin rasmi va paket rasmlari saytdan yuklab olinib o'zimizda saqlanadi. Har paketga "Qo'lda" zaxira ham qo'shiladi.
+
+**Pul xavfsizligi qoidalari:**
+
+- Sayt **aniq rad etsa** (balans yetmaydi, ID topilmadi, ulanib bo'lmadi) — keyingi liniya sinab ko'riladi.
+- Sayt javobi **tushunarsiz** bo'lsa yoki so'rov yuborilgandan keyin aloqa uzilsa — keyingi liniyaga **o'tilmaydi**: sayt buyurtmani bajargan bo'lishi mumkin va ikkinchi sayt ham to'ldirsa pul ikki marta ketadi. Buyurtma "❓ noaniq" bo'lib qoladi va adminga xabar boradi. Admin saytdan tekshirib "Bajarildi", "Bekor qilish" yoki (buyurtma yaratilmaganini tasdiqlab) "↻ qayta yuborish" bosadi.
+- Sayt qabul qilgan buyurtmani qayta yuborib bo'lmaydi.
+- Kalit noto'g'ri (HTTP 401) bo'lsa liniya o'zi o'chiriladi — qayta-qayta urinish saytda IP bloklanishiga olib kelishi mumkin.
+- MooGold'ga buyurtma ID'miz `partnerOrderId` sifatida yuboriladi — holat shu bo'yicha so'raladi.
+
+**Tekshirilmagan joylar.** Adapterlar ochiq hujjat va kutubxonalar asosida yozilgan va soxta sayt serverlari bilan sinalgan, lekin haqiqiy saytlarga ulanib ko'rilmagan (kalitlar yo'q edi). G2Bulk'ning javob formati hujjatda to'liq ko'rinmadi; Smile.one'ning 200 dan boshqa kodlari ochiq emas — shuning uchun ular tushunarsiz bo'lsa "noaniq" holatga tushadi. Har sayt bilan **birinchi buyurtmani eng arzon paket bilan** qiling va saytdagi natijani solishtiring.
 
 Maxfiy kalitlar admin panelga hech qachon qaytarilmaydi. Tannarx, SKU va liniya ma'lumotlari mijozga yuborilmaydi.
 

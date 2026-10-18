@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-18.3";
+const BUILD = "2026-10-19.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1671,7 +1671,8 @@ function myView(uid) {
 const GAMES = require("./games.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
   notifyOrder, notifyOrderChannel, tgSend, validatePromo, consumePromo,
-  creditReferralOnOrder, creditLoyaltyOnOrder, ADMIN_IDS, DATA_DIR
+  creditReferralOnOrder, creditLoyaltyOnOrder, ADMIN_IDS, DATA_DIR,
+  publicBase: () => publicBase()   // G2Bulk callback_url uchun
 });
 
 const server = http.createServer((req, res) => {

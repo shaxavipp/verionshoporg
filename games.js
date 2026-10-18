@@ -38,6 +38,8 @@ module.exports = function createGames(ctx) {
     }
   };
   function registerLineType(name, impl) { LINE_TYPES[name] = impl; }
+  // MooGold, G2Bulk, Smile.one — lines.js
+  try { require("./lines.js").register(registerLineType); } catch (e) { console.log("[games] lines.js yuklanmadi: " + e.message); }
 
   /* ---------- ombor ---------- */
   function store() {
@@ -48,6 +50,23 @@ module.exports = function createGames(ctx) {
     if (!Array.isArray(s.games)) s.games = [];
     if (!Array.isArray(s.packages)) s.packages = [];
     if (!Array.isArray(s.lines)) s.lines = [];
+    // 2-versiya: uchta sayt liniyasi va ikkita bo'sh joy. Kalitsiz bo'lgani uchun
+    // o'chiq holda qo'shiladi; "Qo'lda" eng oxirgi zaxira bo'lib qoladi.
+    if ((s.linesV || 1) < 2) {
+      const want = [
+        { id: "moogold", name: "1-liniya · MooGold", type: "moogold", priority: 10 },
+        { id: "g2bulk", name: "2-liniya · G2Bulk", type: "g2bulk", priority: 20 },
+        { id: "smileone", name: "3-liniya · Smile.one", type: "smileone", priority: 30 },
+        { id: "slot4", name: "4-liniya · bo'sh joy", type: "manual", priority: 40, note: "Yangi sayt uchun ajratilgan" },
+        { id: "slot5", name: "5-liniya · bo'sh joy", type: "manual", priority: 50, note: "Yangi sayt uchun ajratilgan" }
+      ];
+      for (const w of want) if (!s.lines.some(l => l.id === w.id))
+        s.lines.push(Object.assign({ enabled: false, config: { rate: "", markup: "" }, note: "" }, w));
+      const man = s.lines.find(l => l.id === "manual");
+      if (man) { man.priority = 100; if (/^Qo'lda$/.test(man.name)) man.name = "Qo'lda (zaxira)"; }
+      s.linesV = 2;
+      ctx.save();
+    }
     return s;
   }
   const gameById = id => store().games.find(g => g.id === id);
@@ -96,11 +115,72 @@ module.exports = function createGames(ctx) {
     };
   }
 
+  /* ---------- saytdan rasm yuklash ----------
+     Rasmlar sayt serveridan bir marta yuklab olinadi va /gimg/ ostida saqlanadi:
+     mijoz ilovasi begona saytga murojaat qilmaydi (tez, va sayt rasmni o'chirsa ham qoladi). */
+  function fetchImage(url, depth) {
+    return new Promise(resolve => {
+      let u; try { u = new URL(url); } catch (e) { return resolve(""); }
+      if (u.protocol !== "https:" && u.protocol !== "http:") return resolve("");
+      const mod = u.protocol === "https:" ? require("https") : require("http");
+      let done = false; const fin = v => { if (!done) { done = true; resolve(v); } };
+      const req = mod.get(u, { timeout: 15000, headers: { "User-Agent": "VerionShop/1.0" } }, r => {
+        if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location && (depth || 0) < 3) {
+          r.resume(); return fetchImage(new URL(r.headers.location, u).toString(), (depth || 0) + 1).then(fin);
+        }
+        const ct = String(r.headers["content-type"] || "").toLowerCase();
+        const ext = /png/.test(ct) ? "png" : /jpe?g/.test(ct) ? "jpg" : /webp/.test(ct) ? "webp" : "";
+        if (r.statusCode !== 200 || !ext) { r.resume(); return fin(""); }
+        const chunks = []; let size = 0;
+        r.on("data", c => { size += c.length; if (size > MAX_IMG) { req.destroy(); fin(""); } else chunks.push(c); });
+        r.on("end", () => {
+          const buf = Buffer.concat(chunks);
+          if (!buf.length) return fin("");
+          const file = crypto.createHash("sha1").update(buf).digest("hex") + "." + ext;
+          fs.writeFile(path.join(IMG_DIR, file), buf, err => fin(err ? "" : "/gimg/" + file));
+        });
+        r.on("error", () => fin(""));
+      });
+      req.on("timeout", () => req.destroy());
+      req.on("error", () => fin(""));
+    });
+  }
+  /* Saytdagi nomni do'kon ko'rinishiga keltiradi:
+     "Mobile Legends (BR) - 86 Diamonds" → { name: "86", sub: "olmos", icon: "diamond" } */
+  function smartName(raw, gameName) {
+    let t = String(raw || "").replace(/\s+/g, " ").trim();
+    if (gameName) t = t.replace(new RegExp("^" + gameName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*[-–:|]?\\s*", "i"), "");
+    t = t.replace(/^\([^)]*\)\s*[-–:]?\s*/, "");
+    const m = /(\d[\d,. ]*(?:\s*\+\s*\d[\d,. ]*)?)\s*(diamonds?|dias?|dm|💎|olmos|uc|unknown cash|coins?|crystals?|gems?)\b/i.exec(t);
+    if (m) {
+      const unit = m[2].toLowerCase();
+      const isUc = /^uc|unknown/.test(unit);
+      const isGem = /diamond|dia|dm|💎|olmos|gem|crystal/.test(unit);
+      return { name: m[1].replace(/[ ,]/g, "").replace(/\+/g, "+"), sub: isUc ? "UC" : isGem ? "olmos" : unit, icon: isUc ? "uc" : isGem ? "diamond" : "coin" };
+    }
+    if (/weekly/i.test(t) && /pass/i.test(t)) return { name: "Haftalik propusk", sub: "", icon: "pass" };
+    if (/twilight/i.test(t)) return { name: "Twilight propusk", sub: "", icon: "pass" };
+    if (/pass|propusk|weekly|prime|membership|card/i.test(t)) return { name: t.slice(0, 40), sub: "", icon: "pass" };
+    return { name: t.slice(0, 40) || String(raw || "").slice(0, 40), sub: "", icon: "diamond" };
+  }
+  function calcPrice(cost, rate, markup) {
+    const v = Number(cost) * Number(rate) * (1 + (Number(markup) || 0) / 100);
+    return v > 0 ? Math.ceil(v / 100) * 100 : 0;
+  }
+
   /* ---------- tekshiruvchilar ---------- */
   const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
   const slug = (v, max) => /^[a-z0-9][a-z0-9_-]*$/.test(String(v || "")) ? String(v).slice(0, max || 40) : "";
   const imgUrl = v => { const s = str(v, 500); return (!s || /^\/gimg\/[a-f0-9]{16,40}\.(png|jpe?g|webp)$/.test(s) || /^https:\/\//.test(s)) ? s : ""; };
   const ICONS = ["diamond", "uc", "pass", "coin", "gift"];
+  function cleanMeta(m) {
+    if (!m || typeof m !== "object") return undefined;
+    const out = {};
+    if (Array.isArray(m.fields)) out.fields = m.fields.slice(0, 3).map(f => str(f, 40)).filter(Boolean);
+    if (m.game) out.game = str(m.game, 60);
+    if (m.product) out.product = str(m.product, 60);
+    return Object.keys(out).length ? out : undefined;
+  }
   function safeRe(re) {
     if (!re) return "";
     const s = str(re, 120);
@@ -155,9 +235,20 @@ module.exports = function createGames(ctx) {
       .filter(x => x.line && x.line.enabled && LINE_TYPES[x.line.type])
       .sort((a, b) => (a.line.priority || 0) - (b.line.priority || 0));
   }
+  // Nikni tekshira oladigan liniya + o'sha liniyaga biriktirilgan shu o'yin paketi
+  // (Smile.one tekshiruvi uchun mahsulot kodi va productid kerak).
   function checkLineFor(game) {
-    return store().lines.filter(l => l.enabled && LINE_TYPES[l.type] && typeof LINE_TYPES[l.type].check === "function")
-      .sort((a, b) => (a.priority || 0) - (b.priority || 0))[0] || null;
+    const s = store();
+    const lines = s.lines.filter(l => l.enabled && LINE_TYPES[l.type] && typeof LINE_TYPES[l.type].check === "function")
+      .sort((a, b) => (a.priority || 0) - (b.priority || 0));
+    for (const l of lines) {
+      for (const p of s.packages) {
+        if (p.gameId !== game.id || !p.active) continue;
+        const r = (p.routes || []).find(x => x.lineId === l.id && x.sku);
+        if (r) return { line: l, route: r };
+      }
+    }
+    return null;
   }
   function markDone(o, line, res) {
     if (o.status !== "pending") return;
@@ -169,30 +260,53 @@ module.exports = function createGames(ctx) {
     ctx.tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
     ctx.notifyOrderChannel(o);
   }
+  function alertAdmins(text) { for (const aid of ctx.ADMIN_IDS) ctx.tgSend(aid, text); }
+  function lineEnv(line) {
+    const base = typeof ctx.publicBase === "function" ? ctx.publicBase() : "";
+    if (!base) return {};
+    if (!line.cbToken) { line.cbToken = crypto.randomBytes(12).toString("hex"); ctx.save(); }
+    return { callbackUrl: base + "/api/lines/cb/" + line.id + "/" + line.cbToken };
+  }
   // exclude — oldin sinab ko'rilgan (va "bajarilmadi" degan) liniyalar.
   async function fulfill(o, exclude) {
     const pkg = pkgById(o.game && o.game.packageId);
     if (!pkg || o.status !== "pending") return;
     const list = routesFor(pkg).filter(x => !(exclude && exclude.has(x.line.id)));
     o.attempts = o.attempts || [];
+    const failedHere = [];
     for (const { r, line } of list) {
       let res;
-      try { res = await LINE_TYPES[line.type].order(line, o, pkg, r); }
-      catch (e) { res = { state: "failed", message: String((e && e.message) || e) }; }
-      res = res || { state: "failed", message: "javob yo'q" };
+      try { res = await LINE_TYPES[line.type].order(line, o, pkg, r, lineEnv(line)); }
+      // Istisno — so'rov saytga yetib borgan-bormagani noma'lum. Xavfsiz tomonga: to'xtaymiz.
+      catch (e) { res = { state: "unknown", message: String((e && e.message) || e) }; }
+      res = res || { state: "unknown", message: "javob yo'q" };
       o.attempts.push({ lineId: line.id, at: Date.now(), state: res.state, message: str(res.message, 300), ref: str(res.ref, 120) });
+      if (res.disableLine && line.enabled) {
+        // Masalan kalit noto'g'ri (401). Qayta-qayta urinish saytda IP bloklanishiga olib
+        // kelishi mumkin (G2Bulk shunday ogohlantiradi) — liniyani o'chirib qo'yamiz.
+        line.enabled = false;
+        alertAdmins("⛔ " + line.name + " liniyasi o'chirildi: " + str(res.message, 200) + "\nAdmin panel → O'yinlar va liniyalar.");
+      }
       if (o.status !== "pending") { ctx.save(); return; }        // shu orada admin bekor qilgan
       if (res.state === "done") return markDone(o, line, res);
       if (res.state === "accepted") { o.line = { id: line.id, name: line.name, ref: str(res.ref, 120), state: "accepted" }; ctx.save(); return; }
-      if (res.state === "manual") { o.line = { id: line.id, name: line.name, state: "manual" }; ctx.save(); return; }
-      // "failed" — keyingi liniyaga o'tamiz
+      if (res.state === "unknown") {
+        o.line = { id: line.id, name: line.name, ref: str(res.ref, 120), state: "unknown", message: str(res.message, 300) };
+        ctx.save();
+        alertAdmins("❓ #" + o.seq + " " + o.item + " — " + line.name + " javobi tushunarsiz: " + str(res.message, 200)
+          + "\nSaytda buyurtma yaratilgan bo'lishi mumkin. Avval saytdan tekshiring, keyin \"Bajarildi\" yoki \"Bekor qilish\" bosing. Ikkinchi marta yuborilmadi.");
+        return;
+      }
+      if (res.state === "manual") {
+        o.line = { id: line.id, name: line.name, state: "manual" }; ctx.save();
+        if (failedHere.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — avtomatik liniyalar bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"));
+        return;
+      }
+      failedHere.push(line.name + ": " + (res.message || res.state));   // "failed" — keyingi liniyaga
     }
     o.line = { state: "manual", failedAll: list.length > 0 };
     ctx.save();
-    if (list.length) {
-      const why = o.attempts.slice(-list.length).map(a => (lineById(a.lineId) || {}).name + ": " + (a.message || a.state)).join("\n");
-      for (const aid of ctx.ADMIN_IDS) ctx.tgSend(aid, "⚠️ #" + o.seq + " " + o.item + " — hech bir liniya bajarmadi, qo'lda bajaring.\n" + why);
-    }
+    if (list.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — hech bir liniya bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"));
   }
   // "accepted" holatidagi buyurtmalarni sayt API'sidan so'rab turadi (status() bor turlar uchun).
   async function pollAccepted() {
@@ -212,7 +326,7 @@ module.exports = function createGames(ctx) {
     tried.add(failedLineId);
     fulfill(o, tried).catch(e => console.log("[games] fulfill xato: " + e.message));
   }
-  const pollTimer = setInterval(() => { pollAccepted().catch(() => {}); }, 60 * 1000);
+  const pollTimer = setInterval(() => { pollAccepted().catch(() => {}); }, Number(process.env.GAMES_POLL_MS) || 60 * 1000);
   if (pollTimer.unref) pollTimer.unref();
 
   /* ---------- yordamchilar ---------- */
@@ -273,11 +387,12 @@ module.exports = function createGames(ctx) {
         if (!g || !g.active) return sendJSON(res, 404, { error: "no game" });
         const c = cleanAccount(g, b.account);
         if (c.error) return sendJSON(res, 400, { error: c.error, field: c.field, label: c.label });
-        const line = checkLineFor(g);
-        if (!line) return sendJSON(res, 200, { ok: true, checked: false });
+        const cl = checkLineFor(g);
+        if (!cl) return sendJSON(res, 200, { ok: true, checked: false });
         if (!allowCheck(u.id)) return sendJSON(res, 429, { error: "too_many" });
         try {
-          const r = await LINE_TYPES[line.type].check(line, g, c.account);
+          const r = await LINE_TYPES[cl.line.type].check(cl.line, g, c.account, cl.route);
+          if (!r) return sendJSON(res, 200, { ok: true, checked: false });
           if (r && r.ok) return sendJSON(res, 200, { ok: true, checked: true, nickname: str(r.nickname, 60) });
           return sendJSON(res, 200, { ok: false, checked: true, message: str(r && r.message, 160) || "Akkaunt topilmadi" });
         } catch (e) { return sendJSON(res, 200, { ok: true, checked: false }); }
@@ -340,6 +455,29 @@ module.exports = function createGames(ctx) {
       return true;
     }
 
+    /* Sayt buyurtma holatini o'zi xabar qiladigan manzil (G2Bulk callback_url).
+       Manzilda har liniyaning maxfiy tokeni bor — begona odam soxta "bajarildi" yubora olmaydi. */
+    const cbm = /^\/api\/lines\/cb\/([a-z0-9_-]{1,40})\/([a-f0-9]{24})$/.exec(url);
+    if (cbm && m === "POST") {
+      const line = lineById(cbm[1]);
+      if (!line || !line.cbToken || line.cbToken !== cbm[2]) { sendJSON(res, 403, { error: "bad token" }); return true; }
+      ctx.readBody(req, res, b => {
+        sendJSON(res, 200, { ok: true });
+        const ordObj = (b && typeof b.order === "object" && b.order) || (b && typeof b.data === "object" && b.data) || b || {};
+        const keys = [ordObj.remark, b && b.remark, ordObj.id, ordObj.order_id, b && b.order_id].filter(Boolean).map(String);
+        const o = DBx().orders.find(x => x.status === "pending" && x.game && x.line && x.line.id === line.id
+          && (keys.indexOf(String(x.id)) !== -1 || (x.line.ref && keys.indexOf(String(x.line.ref)) !== -1)));
+        if (!o) return;
+        const w = require("./lines.js")._internal.g2StatusWord(ordObj.status || ordObj.order_status || (b && b.status));
+        if (w === "done") markDone(o, line, { ref: o.line.ref, message: "" });
+        else if (w === "failed") {
+          o.line.state = "failed"; o.line.message = str(ordObj.message || (b && b.message) || "sayt bekor qildi", 200); ctx.save();
+          alertAdmins("⚠️ #" + o.seq + " " + o.item + " — " + line.name + " bekor qildi: " + o.line.message + "\nQo'lda bajaring yoki bekor qiling.");
+        }
+      });
+      return true;
+    }
+
     /* ----- admin ----- */
     if (url.indexOf("/api/admin/games") !== 0) return false;
     if (!adminOnly(req, res)) return true;
@@ -349,7 +487,8 @@ module.exports = function createGames(ctx) {
       sendJSON(res, 200, {
         games: s.games, packages: s.packages, lines: s.lines.map(maskLine),
         lineTypes: Object.keys(LINE_TYPES).map(k => ({ key: k, label: LINE_TYPES[k].label, fields: LINE_TYPES[k].fields || [],
-          canCheck: typeof LINE_TYPES[k].check === "function" }))
+          canCheck: typeof LINE_TYPES[k].check === "function", canTest: typeof LINE_TYPES[k].test === "function",
+          canImport: typeof LINE_TYPES[k].packages === "function" }))
       });
       return true;
     }
@@ -417,10 +556,15 @@ module.exports = function createGames(ctx) {
         if (!id) id = g.id + "-" + crypto.randomBytes(4).toString("hex");
         const price = Math.round(Number(x.price) || 0);
         if (price < 0 || price > 100000000) return sendJSON(res, 400, { error: "Narx noto'g'ri" });
+        const prevPkg = pkgById(slug(x.id, 80));
         const routes = [];
-        for (const r of (Array.isArray(x.routes) ? x.routes : []).slice(0, 5)) {
+        for (const r of (Array.isArray(x.routes) ? x.routes : []).slice(0, 6)) {
           if (!lineById(String(r.lineId || ""))) continue;
-          routes.push({ lineId: String(r.lineId), sku: str(r.sku, 80), cost: Math.max(0, Number(r.cost) || 0) });
+          const sku = str(r.sku, 120);
+          // meta (sayt maydon nomlari, o'yin/mahsulot kodi) importdan keladi — admin formasi
+          // uni yubormasa, avvalgisi saqlanadi.
+          const old = prevPkg && (prevPkg.routes || []).find(z => z.lineId === r.lineId && z.sku === sku);
+          routes.push({ lineId: String(r.lineId), sku, cost: Math.max(0, Number(r.cost) || 0), meta: cleanMeta(r.meta || (old && old.meta)) });
         }
         const p = { id, gameId: g.id, region: slug(x.region, 16), tab: slug(x.tab, 16), name, sub: str(x.sub, 30),
           icon: ICONS.indexOf(x.icon) !== -1 ? x.icon : "diamond", img: imgUrl(x.img), badge: str(x.badge, 10),
@@ -503,8 +647,100 @@ module.exports = function createGames(ctx) {
         const o = DBx().orders.find(x => x.id === b.orderId);
         if (!o || !o.game) return sendJSON(res, 404, { error: "not found" });
         if (o.status !== "pending") return sendJSON(res, 409, { error: "state" });
+        // Sayt allaqachon qabul qilgan buyurtmani qayta yuborish = ikki marta to'ldirish.
+        const st = o.line && o.line.state;
+        if (st === "accepted") return sendJSON(res, 409, { error: "Sayt bu buyurtmani allaqachon qabul qilgan — qayta yuborilmaydi" });
+        // Noaniq holat: admin saytdan tekshirib, buyurtma YO'QLIGINI tasdiqlasagina.
+        if (st === "unknown" && b.confirmNotCreated !== true)
+          return sendJSON(res, 409, { error: "Avval saytdan tekshiring: buyurtma yaratilmaganini tasdiqlasangiz qayta yuboriladi", needConfirm: true });
         fulfill(o).then(() => sendJSON(res, 200, { ok: true, status: o.status, line: o.line, attempts: o.attempts }))
           .catch(e => sendJSON(res, 500, { error: e.message }));
+      });
+      return true;
+    }
+
+    // Liniyani sinash: kalit to'g'rimi, balans qancha.
+    if (url === "/api/admin/games/line-test" && m === "POST") {
+      ctx.readBody(req, res, async b => {
+        const l = lineById(str(b.id, 40)), T = l && LINE_TYPES[l.type];
+        if (!l || !T) return sendJSON(res, 404, { error: "Liniya topilmadi" });
+        if (typeof T.test !== "function") return sendJSON(res, 200, { ok: true, message: "Bu liniya saytga ulanmaydi — sinash shart emas." });
+        try { const r = await T.test(l); sendJSON(res, 200, { ok: !!(r && r.ok), message: str(r && r.message, 300) }); }
+        catch (e) { sendJSON(res, 200, { ok: false, message: str(e.message, 300) }); }
+      });
+      return true;
+    }
+    // Saytdagi katalog: code bo'lmasa — o'yinlar ro'yxati, code bo'lsa — paketlar.
+    if (url === "/api/admin/games/catalog" && m === "POST") {
+      ctx.readBody(req, res, async b => {
+        const l = lineById(str(b.lineId, 40)), T = l && LINE_TYPES[l.type];
+        if (!l || !T || typeof T.packages !== "function") return sendJSON(res, 400, { error: "Bu liniyada katalog yo'q" });
+        try {
+          if (!b.code) return sendJSON(res, 200, { ok: true, games: (await T.games(l)).slice(0, 400) });
+          const pk = await T.packages(l, str(b.code, 60));
+          const rate = Number(l.config.rate) || 0, markup = Number(l.config.markup) || 0;
+          pk.items = pk.items.slice(0, 300).map(x => Object.assign({ raw: x.name }, x, smartName(x.name, pk.name), { price: calcPrice(x.cost, rate, markup) }));
+          sendJSON(res, 200, { ok: true, pkg: pk, rate, markup });
+        } catch (e) { sendJSON(res, 400, { error: "Sayt: " + str(e.message, 200) }); }
+      });
+      return true;
+    }
+    /* Import: tanlangan paketlarni do'konga qo'shadi yoki yangilaydi.
+       Tannarx brauzerdan emas — serverning o'zi saytdan qayta oladi. Rasmlar saytdan
+       yuklab olinib o'zimizda saqlanadi. Har bir paketga "Qo'lda" zaxira liniyasi ham
+       qo'shiladi: sayt rad etsa buyurtma yo'qolmaydi. */
+    if (url === "/api/admin/games/import" && m === "POST") {
+      ctx.readBody(req, res, async b => {
+        const l = lineById(str(b.lineId, 40)), T = l && LINE_TYPES[l.type];
+        if (!l || !T || typeof T.packages !== "function") return sendJSON(res, 400, { error: "Bu liniyada katalog yo'q" });
+        const code = str(b.code, 60);
+        let pk;
+        try { pk = await T.packages(l, code); } catch (e) { return sendJSON(res, 400, { error: "Sayt: " + str(e.message, 200) }); }
+        let g = gameById(str(b.gameId, 40));
+        if (!g) {
+          const ng = b.newGame || {};
+          const id = slug(String(ng.id || "").toLowerCase(), 40);
+          if (!id) return sendJSON(res, 400, { error: "Yangi o'yin uchun ID kiriting (masalan: genshin)" });
+          if (gameById(id)) return sendJSON(res, 400, { error: "Bu ID band" });
+          g = { id, name: str(ng.name || pk.name || id, 60), img: "", banner: "", color: "#2f8fff",
+            fields: [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
+            regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: s.games.length + 1 };
+          s.games.push(g);
+        }
+        // O'yin avatari va banneri — saytdagi rasm (o'yinda hali rasm bo'lmasa).
+        if (pk.img && (!g.img || !g.banner)) {
+          const u = await fetchImage(pk.img);
+          if (u) { if (!g.img) g.img = u; if (!g.banner) g.banner = u; }
+        }
+        const region = slug(b.region, 16) || ((g.regions || [])[0] || {}).key || "";
+        const tab = slug(b.tab, 16) || ((g.tabs || [])[0] || {}).key || "";
+        const rate = Number(b.rate != null ? b.rate : l.config.rate) || 0;
+        const markup = Number(b.markup != null ? b.markup : l.config.markup) || 0;
+        const want = new Set((Array.isArray(b.skus) ? b.skus : []).map(x => String(x)));
+        const items = pk.items.filter(x => !want.size || want.has(String(x.sku)));
+        const meta = cleanMeta(Object.assign({ fields: pk.fields || [] }, pk.meta || {}));
+        const manual = lineById("manual");
+        let added = 0, updated = 0, imgs = 0, sort = s.packages.filter(p => p.gameId === g.id).length;
+        for (const it of items) {
+          const nm = smartName(it.name, pk.name || g.name);
+          const price = calcPrice(it.cost, rate, markup);
+          let p = s.packages.find(z => z.gameId === g.id && (z.routes || []).some(r => r.lineId === l.id && r.sku === String(it.sku)));
+          if (p) {
+            const r = p.routes.find(z => z.lineId === l.id && z.sku === String(it.sku));
+            r.cost = it.cost; r.meta = meta;
+            if (b.updatePrices && price > 0) p.price = price;
+            updated++;
+          } else {
+            p = { id: g.id + "-" + crypto.randomBytes(4).toString("hex"), gameId: g.id, region, tab, name: nm.name, sub: nm.sub,
+              icon: nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
+              routes: [{ lineId: l.id, sku: String(it.sku), cost: it.cost, meta }].concat(manual ? [{ lineId: "manual", sku: "", cost: 0 }] : []) };
+            s.packages.push(p);
+            added++;
+          }
+          if (b.images !== false && it.img && !p.img) { const u = await fetchImage(it.img); if (u) { p.img = u; imgs++; } }
+        }
+        ctx.save();
+        sendJSON(res, 200, { ok: true, gameId: g.id, added, updated, images: imgs, gameImage: !!g.img });
       });
       return true;
     }
@@ -513,5 +749,5 @@ module.exports = function createGames(ctx) {
     return true;
   }
 
-  return { handle, registerLineType, store, fulfill, pollAccepted };
+  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice };
 };
