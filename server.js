@@ -399,6 +399,58 @@ function expireOld() {
   if (changed) save();
 }
 // To'lovni tasdiqlash (admin qo'lda ✅ bossa ham, SMS avtomat topsa ham shu funksiya ishlaydi)
+/* ---------- Admin amallari (mini-ilova admin paneli VA admin bot ishlatadi) ---------- */
+function adminPaymentAction(id, action, by) {
+  const p = DB.payments.find(x => x.id === id);
+  if (!p) return { ok: false, code: 404, error: "not found" };
+  if (p.status === "done") return { ok: false, code: 409, error: "already done" };
+  if (p.status === "cancelled" && action !== "confirm") return { ok: false, code: 409, error: "already cancelled" };
+  if (action === "confirm") return { ok: true, balance: confirmPayment(p, by || "admin"), p };
+  p.status = "cancelled"; p.cancelledBy = by || "admin"; save(); notifyTopupChannel(p);
+  return { ok: true, p };
+}
+function adminOrderAction(id, action) {
+  const o = DB.orders.find(x => x.id === id);
+  if (!o) return { ok: false, code: 404, error: "not found" };
+  if (o.status !== "pending") return { ok: false, code: 409, error: "state" };
+  if (action === "done") {
+    o.status = "done"; o.doneTs = Date.now();
+    save();
+    creditReferralOnOrder(o);
+    creditLoyaltyOnOrder(o);
+    tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
+    notifyOrderChannel(o);
+  } else {
+    o.status = "cancelled"; // refund
+    const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
+    acc.balance += o.price;
+    // Promo-kod ishlatilgan bo'lsa — bekor qilinganda foydalanish limitini bo'shatamiz.
+    if (o.promoCode && DB.promoCodes[o.promoCode]) {
+      const p = DB.promoCodes[o.promoCode];
+      p.usedCount = Math.max(0, (p.usedCount || 0) - 1);
+      if (p.usedBy && p.usedBy[String(o.uid)]) p.usedBy[String(o.uid)] = Math.max(0, p.usedBy[String(o.uid)] - 1);
+    }
+    save();
+    tgSend(o.uid, "❌ Buyurtmangiz bekor qilindi, mablag' balansingizga qaytarildi: " + o.item);
+    notifyOrderChannel(o);
+  }
+  return { ok: true, o };
+}
+// Qo'lda balans o'zgartirish (admin panel va admin bot). delta > 0 — qo'shish, < 0 — yechish.
+function adminBalanceChange(uid, delta, by, note) {
+  const k = String(Number(uid) || 0);
+  if (!DB.users[k]) return { ok: false, code: 404, error: "no user" };
+  delta = Math.round(Number(delta) || 0);
+  if (!delta) return { ok: false, code: 400, error: "delta" };
+  const before = DB.users[k].balance;
+  DB.users[k].balance += delta;
+  if (DB.users[k].balance < 0) DB.users[k].balance = 0;
+  const applied = DB.users[k].balance - before;
+  DB.payments.push({ id: genId("MN"), uid: Number(k), uname: DB.users[k].uname, type: "manual",
+    amount: applied, pay: applied, method: "admin", status: "done", ts: Date.now(), by, note: String(note || "").slice(0, 120) });
+  save();
+  return { ok: true, balance: DB.users[k].balance, applied };
+}
 function confirmPayment(p, source) {
   p.status = "done"; p.doneTs = Date.now(); p.confirmedBy = source || "admin";
   const acc = DB.users[String(p.uid)] || (DB.users[String(p.uid)] = { balance: 0 });
@@ -1561,6 +1613,8 @@ function logSms(entry) {
 // "auth" (imzo yo'q/noto'g'ri) bilan "expired" (imzo to'g'ri, lekin muddati o'tgan) ni
 // bir-biridan ajratib, frontendga to'g'ri xabar qaytara oladi.
 const INITDATA_MAX_AGE = 24 * 60 * 60; // 24 soat
+/* Mini-ilova ikki botdan ochilishi mumkin: do'kon boti va admin bot ("Panelda ochish").
+   Imzo qaysi bot tokeni bilan to'g'ri chiqsa — u._via shu ("main" | "admin"). */
 function checkInitData(initData) {
   try {
     if (!initData || !BOT_TOKEN) return { reason: "auth", user: null };
@@ -1569,13 +1623,16 @@ function checkInitData(initData) {
     if (!hash) return { reason: "auth", user: null };
     params.delete("hash");
     const dcs = [...params.entries()].map(([k, v]) => k + "=" + v).sort().join("\n");
-    const secret = crypto.createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-    if (crypto.createHmac("sha256", secret).update(dcs).digest("hex") !== hash) return { reason: "auth", user: null };
+    const sigOf = tok => crypto.createHmac("sha256", crypto.createHmac("sha256", "WebAppData").update(tok).digest()).update(dcs).digest("hex");
+    let via = "";
+    if (sigOf(BOT_TOKEN) === hash) via = "main";
+    else { const at = adminBotToken(); if (at && sigOf(at) === hash) via = "admin"; }
+    if (!via) return { reason: "auth", user: null };
     const authDate = Number(params.get("auth_date") || 0);
     if (!authDate) return { reason: "auth", user: null };
     if ((Date.now() / 1000 - authDate) > INITDATA_MAX_AGE) return { reason: "expired", user: null };
     const u = JSON.parse(params.get("user") || "null");
-    if (u) u._startParam = params.get("start_param") || "";
+    if (u) { u._startParam = params.get("start_param") || ""; u._via = via; }
     return { reason: "ok", user: u };
   } catch (e) { return { reason: "auth", user: null }; }
 }
@@ -2361,43 +2418,15 @@ const server = http.createServer((req, res) => {
     }
     if (url === "/api/admin/payment" && m === "POST") {
       return readBody(req, res, b => {
-        const p = DB.payments.find(x => x.id === b.id);
-        if (!p) return send(res, 404, { error: "not found" });
-        if (p.status === "done") return send(res, 409, { error: "already done" });
-        if (b.action === "confirm") {
-          const balance = confirmPayment(p, "admin");
-          return send(res, 200, { ok: true, balance: balance });
-        }
-        p.status = "cancelled"; p.cancelledBy = "admin"; save(); notifyTopupChannel(p);
-        return send(res, 200, { ok: true });
+        const r = adminPaymentAction(b.id, b.action, "admin");
+        if (!r.ok) return send(res, r.code, { error: r.error });
+        return send(res, 200, r.balance != null ? { ok: true, balance: r.balance } : { ok: true });
       });
     }
     if (url === "/api/admin/order" && m === "POST") {
       return readBody(req, res, b => {
-        const o = DB.orders.find(x => x.id === b.id);
-        if (!o) return send(res, 404, { error: "not found" });
-        if (o.status !== "pending") return send(res, 409, { error: "state" });
-        if (b.action === "done") {
-          o.status = "done"; o.doneTs = Date.now();
-          save();
-          creditReferralOnOrder(o);
-          creditLoyaltyOnOrder(o);
-          tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
-          notifyOrderChannel(o);
-        }
-        else { o.status = "cancelled"; // refund
-          const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
-          acc.balance += o.price;
-          // Promo-kod ishlatilgan bo'lsa — bekor qilinganda foydalanish limitini bo'shatamiz.
-          if (o.promoCode && DB.promoCodes[o.promoCode]) {
-            const p = DB.promoCodes[o.promoCode];
-            p.usedCount = Math.max(0, (p.usedCount || 0) - 1);
-            if (p.usedBy && p.usedBy[String(o.uid)]) p.usedBy[String(o.uid)] = Math.max(0, p.usedBy[String(o.uid)] - 1);
-          }
-          save();
-          tgSend(o.uid, "❌ Buyurtmangiz bekor qilindi, mablag' balansingizga qaytarildi: " + o.item);
-          notifyOrderChannel(o);
-        }
+        const r = adminOrderAction(b.id, b.action);
+        if (!r.ok) return send(res, r.code, { error: r.error });
         return send(res, 200, { ok: true });
       });
     }
@@ -2914,15 +2943,9 @@ const server = http.createServer((req, res) => {
     }
     if (url === "/api/admin/balance" && m === "POST") {
       return readBody(req, res, b => {
-        const k = String(Number(b.uid) || 0);
-        if (!DB.users[k]) return send(res, 404, { error: "no user" });
-        const delta = Math.round(Number(b.delta) || 0);
-        if (!delta) return send(res, 400, { error: "delta" });
-        DB.users[k].balance += delta;
-        if (DB.users[k].balance < 0) DB.users[k].balance = 0;
-        DB.payments.push({ id: genId("MN"), uid: Number(k), uname: DB.users[k].uname, type: "manual",
-          amount: delta, pay: delta, method: "admin", status: "done", ts: Date.now(), by: a.id });
-        save(); return send(res, 200, { ok: true, balance: DB.users[k].balance });
+        const r = adminBalanceChange(b.uid, b.delta, a.id, b.note);
+        if (!r.ok) return send(res, r.code, { error: r.error });
+        return send(res, 200, { ok: true, balance: r.balance });
       });
     }
     /* ----- Nakrutka (SMM/JAP) admin ----- */
