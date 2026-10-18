@@ -14,10 +14,12 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.1";
+const BUILD = "2026-10-19.2";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
+// Alohida admin bot (adminbot.js). var — ishga tushishdan oldin chaqirilsa ham xato bermasin.
+var ADMINBOT = null;
 const MAX_BODY = 10 * 1024 * 1024;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
@@ -327,7 +329,7 @@ function checkStockAlert(itemId, title) {
     save();
     const text = "⚠️ Zaxira tugadi\n\n▪️ Mahsulot: " + (title || itemId) +
       "\n\nIltimos admin panel orqali yangi zaxira qo'shing.";
-    for (const aid of ADMIN_IDS) tgSend(aid, text);
+    notifyAdmins(text);
   } catch (e) {}
 }
 // "Sizni sog'indik" — winback: DB.automation.winbackDays kun davomida hech narsa xarid
@@ -399,6 +401,64 @@ function expireOld() {
   if (changed) save();
 }
 // To'lovni tasdiqlash (admin qo'lda ✅ bossa ham, SMS avtomat topsa ham shu funksiya ishlaydi)
+/* ---------- Admin bot tokeni ----------
+   Railway'dagi ADMIN_BOT_TOKEN yoki admin paneldan kiritilgan token (bazada). Do'kon
+   boti tokeni bilan bir xil bo'lishi mumkin emas — ikkita alohida bot kerak. */
+function adminBotToken() {
+  const t = String(process.env.ADMIN_BOT_TOKEN || (DB.settings && DB.settings.adminBot && DB.settings.adminBot.token) || "").trim();
+  return t && t !== BOT_TOKEN ? t : "";
+}
+// Adminlarga xabar: admin bot ishlayotgan bo'lsa — o'sha orqali, aks holda do'kon boti orqali.
+function notifyAdmins(text, opts) {
+  try { if (ADMINBOT && ADMINBOT.notify(text, opts)) return; } catch (e) {}
+  for (const aid of ADMIN_IDS) tgSend(aid, text);
+}
+
+/* ---------- Moliya hisoboti (admin bot "📊 Moliya" va mini-ilova "Moliya") ----------
+   Kirim — mijozlar to'ldirgan pul (qo'lda o'zgartirishlar alohida). Sotuv — bajarilgan
+   buyurtmalar. Tannarx — faqat yetkazib beruvchi saytdan bajarilgan o'yin buyurtmalari
+   uchun ma'lum (tannarx × kurs), shuning uchun foyda shu buyurtmalar bo'yicha hisoblanadi.
+   Mijozlar balansi — ular hali sarflamagan pul (bizning "qarzimiz"). */
+function computeFinance(period) {
+  const from = periodStart(period);
+  const inP = x => (Number(x.ts) || 0) >= from;
+  const sum = (a, f) => a.reduce((t, x) => t + (Number(f(x)) || 0), 0);
+  const pays = DB.payments.filter(inP);
+  const topups = pays.filter(p => p.status === "done" && p.type !== "manual");
+  const manual = pays.filter(p => p.status === "done" && p.type === "manual");
+  const orders = DB.orders.filter(inP);
+  const done = orders.filter(o => o.status === "done");
+  const cancelled = orders.filter(o => o.status === "cancelled");
+  const pendingO = DB.orders.filter(o => o.status === "pending" || o.status === "processing");
+  const pendingP = DB.payments.filter(p => p.status === "waiting" || p.status === "checking");
+  const withCost = done.filter(o => Number(o.costUzs) > 0);
+  const byMethod = {};
+  for (const p of topups) { const k = String(p.method || "boshqa"); byMethod[k] = (byMethod[k] || 0) + (Number(p.amount) || 0); }
+  const srcOf = o => o.game ? "games" : o.japOrderId ? "nakrutka" : (o.fragment !== undefined || o.giftRecipient) ? "telegram" : "shop";
+  const bySource = {};
+  for (const o of done) { const k = srcOf(o); const b = bySource[k] || (bySource[k] = { count: 0, sum: 0 }); b.count++; b.sum += Number(o.price) || 0; }
+  const byLine = {};
+  for (const o of done) if (o.game && o.line && o.line.id) {
+    const b = byLine[o.line.id] || (byLine[o.line.id] = { name: o.line.name || o.line.id, count: 0, sum: 0, cost: 0 });
+    b.count++; b.sum += Number(o.price) || 0; b.cost += Number(o.costUzs) || 0;
+  }
+  const users = Object.values(DB.users);
+  return {
+    period, from,
+    topups: { count: topups.length, sum: sum(topups, p => p.amount), byMethod },
+    manual: { count: manual.length, plus: sum(manual.filter(p => p.amount > 0), p => p.amount), minus: -sum(manual.filter(p => p.amount < 0), p => p.amount) },
+    sales: { count: done.length, sum: sum(done, o => o.price) },
+    refunds: { count: cancelled.length, sum: sum(cancelled, o => o.price) },
+    cost: { count: withCost.length, sum: sum(withCost, o => o.costUzs), revenue: sum(withCost, o => o.price) },
+    profit: sum(withCost, o => o.price - o.costUzs),
+    pendingOrders: { count: pendingO.length, sum: sum(pendingO, o => o.price) },
+    pendingPayments: { count: pendingP.length, sum: sum(pendingP, p => p.pay) },
+    liabilities: sum(users, u => u.balance),
+    users: { total: users.length, new: users.filter(u => (Number(u.ts) || 0) >= from).length },
+    bySource, byLine
+  };
+}
+
 /* ---------- Admin amallari (mini-ilova admin paneli VA admin bot ishlatadi) ---------- */
 function adminPaymentAction(id, action, by) {
   const p = DB.payments.find(x => x.id === id);
@@ -449,6 +509,7 @@ function adminBalanceChange(uid, delta, by, note) {
   DB.payments.push({ id: genId("MN"), uid: Number(k), uname: DB.users[k].uname, type: "manual",
     amount: applied, pay: applied, method: "admin", status: "done", ts: Date.now(), by, note: String(note || "").slice(0, 120) });
   save();
+  try { if (ADMINBOT && applied) ADMINBOT.onBalance({ uid: Number(k), applied, balance: DB.users[k].balance, by, note }); } catch (e) {}
   return { ok: true, balance: DB.users[k].balance, applied };
 }
 function confirmPayment(p, source) {
@@ -1087,7 +1148,7 @@ function reportWebhook(r, quiet) {
     ? "⚠️ Bot /start ga javob bermayapti: webhook boshqa manzilga ulangan (" + r.url + ").\n"
       + "Admin panel → Bot va /start → «Webhookni qayta ulash»."
     : "⚠️ Botni Telegram'ga ulab bo'lmadi: " + (r.error || r.reason) + "\nAdmin panel → Bot va /start.";
-  for (const aid of ADMIN_IDS) tgSend(aid, msg);
+  notifyAdmins(msg);
 }
 const probing = new Set();
 function probeStarted(uid) {
@@ -1150,6 +1211,7 @@ function deliveryChatId() { return chatIdOf("delivery") || orderChatId(); }
 // o'zgarganda (masalan admin "bajarildi" qilib qo'lda yetkazganda) kanaldagi
 // yozuvni yangilab qo'yish uchun ishlatiladi, mijozga ikkinchi marta xabar bormasin.
 function notifyOrderChannel(o) {
+  try { if (ADMINBOT) ADMINBOT.onOrder(o, "update"); } catch (e) {}
   try { const cid = orderChatId(); if (cid) tgSend(cid, orderMessageText(o)); } catch (e) {}
 }
 
@@ -1204,6 +1266,7 @@ function topupMessageText(p) {
 // Kanaldagi xabarni tahrirlaydi; agar mumkin bo'lmasa (masalan xabar topilmasa),
 // yangi xabar yuborib, uning ID sini saqlaydi.
 function notifyTopupChannel(p) {
+  try { if (ADMINBOT) ADMINBOT.onPayment(p); } catch (e) {}
   try {
     const cid = topupChatId();
     if (!cid || !BOT_TOKEN) return;
@@ -1260,6 +1323,7 @@ function logDeliveryToChannel(o) {
 // Buyurtma birinchi marta yaratilganda shu xabarni: 1) buyurtmalar kanaliga,
 // 2) mijozning o'ziga (o.uid) yuboradi — ikkalasi bir xil, rasmdagi kabi formatda.
 function notifyOrder(o) {
+  try { if (ADMINBOT) ADMINBOT.onOrder(o, "new"); } catch (e) {}
   try {
     const text = orderMessageText(o);
     const cid = orderChatId();
@@ -1601,6 +1665,7 @@ function extractInt(raw) {
   return isNaN(n) ? 0 : n;
 }
 function logSms(entry) {
+  try { if (ADMINBOT) ADMINBOT.onSms(entry); } catch (e) {}
   DB.smsLog.push(entry);
   if (DB.smsLog.length > SMS_LOG_MAX) DB.smsLog.splice(0, DB.smsLog.length - SMS_LOG_MAX);
   save();
@@ -1633,6 +1698,8 @@ function checkInitData(initData) {
     if ((Date.now() / 1000 - authDate) > INITDATA_MAX_AGE) return { reason: "expired", user: null };
     const u = JSON.parse(params.get("user") || "null");
     if (u) { u._startParam = params.get("start_param") || ""; u._via = via; }
+    // Admin bot orqali ochilgan ilova — faqat adminlar uchun.
+    if (via === "admin" && !(u && ADMIN_IDS.indexOf(Number(u.id)) !== -1)) return { reason: "auth", user: null };
     return { reason: "ok", user: u };
   } catch (e) { return { reason: "auth", user: null }; }
 }
@@ -1727,10 +1794,29 @@ function myView(uid) {
 /* O'yinlar do'koni (o'yinlar, paketlar, liniyalar) — alohida modulda: games.js */
 const GAMES = require("./games.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
-  notifyOrder, notifyOrderChannel, tgSend, validatePromo, consumePromo,
+  notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, validatePromo, consumePromo,
   creditReferralOnOrder, creditLoyaltyOnOrder, ADMIN_IDS, DATA_DIR,
   publicBase: () => publicBase()   // G2Bulk callback_url uchun
 });
+
+// Alohida admin bot (adminbot.js) — token bo'lsa ishga tushadi, bo'lmasa jim turadi.
+ADMINBOT = require("./adminbot.js")({
+  getDB: () => DB, save, ADMIN_IDS, token: adminBotToken,
+  appUrl: () => publicBase(), shopUsername: () => BOT_USERNAME,
+  finance: computeFinance, lineBalances: force => GAMES.lineBalances(force),
+  paymentAction: adminPaymentAction, orderAction: adminOrderAction, balanceChange: adminBalanceChange,
+  shopSend: tgSend, fallbackSend: tgSend, paymentText: topupMessageText, orderText: orderMessageText,
+  statusInfo: () => ({
+    build: BUILD,
+    shopBot: (BOT_USERNAME ? "@" + BOT_USERNAME + " · " : "") + (POLLING ? "so'rov (polling) rejimida" : "webhook rejimida"),
+    shopBotError: POLLING ? POLL_REASON : "",
+    pendingPayments: DB.payments.filter(p => p.status === "waiting" || p.status === "checking").length,
+    pendingOrders: DB.orders.filter(o => o.status === "pending" || o.status === "processing").length,
+    lastSmsTs: DB.smsLog.length ? DB.smsLog[DB.smsLog.length - 1].ts : 0,
+    lines: GAMES.store().lines.filter(l => l.type !== "manual").map(l => ({ name: l.name, enabled: !!l.enabled }))
+  })
+});
+setTimeout(() => { ADMINBOT.start().catch(e => console.log("[adminbot] " + e.message)); }, 1500).unref();
 
 const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
@@ -1883,7 +1969,10 @@ const server = http.createServer((req, res) => {
     // ilova bir-ikki soniyadan keyin qayta so'raganda aniq qiymatni oladi.
     if (acc.started === undefined) probeStarted(u.id);
     save();
-    return send(res, 200, myView(u.id));
+    const view = myView(u.id);
+    view.via = u._via || "main";
+    if (view.isAdmin) { const ab = ADMINBOT ? ADMINBOT.status() : {}; view.adminBot = { active: !!ab.active, username: ab.username || "" }; }
+    return send(res, 200, view);
   }
 
   // Foydalanuvchining Telegram profil rasmini server orqali olib beradi,
@@ -2940,6 +3029,42 @@ const server = http.createServer((req, res) => {
         save();
         send(res, 200, { ok: true, removed: before - DB.reviews.length });
       });
+    }
+    /* ----- Moliya hisoboti ----- */
+    if (url === "/api/admin/finance" && m === "GET") {
+      const period = q.get("period") || "today";
+      const f = computeFinance(["today", "week", "month", "all"].indexOf(period) !== -1 ? period : "today");
+      const withBal = q.get("balances") === "1";
+      if (!withBal) return send(res, 200, f);
+      return GAMES.lineBalances(q.get("force") === "1").then(b => send(res, 200, Object.assign(f, { lineBalances: b })))
+        .catch(() => send(res, 200, f));
+    }
+    /* ----- Admin bot sozlamasi (token faqat yoziladi, hech qachon qaytarilmaydi) ----- */
+    if (url === "/api/admin/adminbot" && m === "GET") {
+      const c = (DB.settings.adminBot || {});
+      return send(res, 200, Object.assign({ tokenSet: !!adminBotToken(), fromEnv: !!process.env.ADMIN_BOT_TOKEN,
+        notify: Object.assign({ orders: true, payments: true, sms: true }, c.notify || {}) }, ADMINBOT.status()));
+    }
+    if (url === "/api/admin/adminbot" && m === "POST") {
+      return readBody(req, res, b => {
+        const c = DB.settings.adminBot || (DB.settings.adminBot = {});
+        if (b.token !== undefined && !process.env.ADMIN_BOT_TOKEN) {
+          const t = String(b.token || "").trim();
+          if (t && !/^\d{5,}:[\w-]{30,}$/.test(t)) return send(res, 400, { error: "Token ko'rinishi noto'g'ri (masalan 1234567890:AA...)" });
+          if (t && t === BOT_TOKEN) return send(res, 400, { error: "Bu do'kon botining tokeni. Admin uchun BotFather'da ALOHIDA bot oching." });
+          c.token = t;
+        }
+        if (b.notify && typeof b.notify === "object") {
+          c.notify = Object.assign({}, c.notify);
+          for (const k of ["orders", "payments", "sms"]) if (typeof b.notify[k] === "boolean") c.notify[k] = b.notify[k];
+        }
+        save();
+        ADMINBOT.start().then(st => send(res, 200, Object.assign({ ok: true, tokenSet: !!adminBotToken() }, st)))
+          .catch(e => send(res, 200, { ok: false, error: String(e.message || e) }));
+      });
+    }
+    if (url === "/api/admin/adminbot-test" && m === "POST") {
+      return ADMINBOT.testMessage(a.id).then(r => send(res, 200, r));
     }
     if (url === "/api/admin/balance" && m === "POST") {
       return readBody(req, res, b => {

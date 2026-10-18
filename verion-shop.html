@@ -639,6 +639,18 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .stat:nth-child(3n+3) .v{color:var(--navy)}
 .stat .k{font-size:10px;color:var(--mut);margin-top:2px}
 
+/* admin: moliya */
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.fin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;min-width:0}
+.fin-card .k{font-size:11px;color:var(--mut);display:flex;align-items:center;gap:5px}
+.fin-card .v{font-size:16px;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fin-card .s{font-size:11px;color:var(--mut);margin-top:2px}
+.fin-card.big{grid-column:1/-1}
+.fin-card.good .v{color:#22c55e}.fin-card.bad .v{color:#ef4444}.fin-card.acc .v{color:var(--acc2)}
+.fin-list{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:4px 11px;margin:0 0 10px}
+.fin-list .r{display:flex;justify-content:space-between;gap:10px;padding:8px 0;font-size:13px;border-bottom:1px solid var(--line)}
+.fin-list .r:last-child{border-bottom:0}
+.fin-list .r b{white-space:nowrap}
 /* admin */
 .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .arow{display:flex;gap:8px}
@@ -763,7 +775,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.1";
+var CLIENT_BUILD="2026-10-19.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1301,14 +1313,29 @@ function resolveStartParamPay(){
 }
 var _meSig="";
 var _startedRecheck=null;
+/* Admin bot tugmalari ilovani ?admin=... bilan ochadi: 1 — admin panel, finance — moliya,
+   money — to'lovlar/buyurtmalar, u-<ID> — shu mijoz. */
+var _adminDeepDone=false;
+function handleAdminDeepLink(){
+  var v="";try{v=new URLSearchParams(location.search).get("admin")||"";}catch(e){}
+  if(!v&&ME.via==="admin")v="1";
+  if(!v||!isAdmin())return;
+  try{
+    if(v==="finance")openAdminFinance();
+    else if(v==="money")openAdminMoney();
+    else if(/^u-\d+$/.test(v))openAdminMoney(v.slice(2));
+    else openAdmin();
+  }catch(e){}
+}
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"||SESSION_EXPIRED){if(cb)cb();return;}
   api("/api/me").then(function(r){
     var sig=JSON.stringify(r);
     var changed=sig!==_meSig;
     _meSig=sig;
-    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null};
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null};
     ME_ERROR=false;
+    if(!_adminDeepDone){_adminDeepDone=true;setTimeout(handleAdminDeepLink,350);}
     // "Botni ishga tushirganmi" hali aniqlanmagan bo'lsa (server Telegram'dan
     // javob kutyapti) — 20 soniyalik odatiy tekshiruvni kutmay, tezda qayta
     // so'raymiz. Aks holda start bosmagan odam bir necha soniya ilovani ko'rib
@@ -3758,6 +3785,10 @@ function openAdmin(){
     +'<div class="stat"><div class="v" id="stBalances">…</div><div class="k">'+esc(t("a_st_balances"))+'</div></div></div>'
     +'<button class="btn" id="aMoney">'+ic("wallet",15)+' '+esc(t("adm_money"))+'</button>'
     +'<div style="height:8px"></div>'
+    +'<div class="arow"><button class="btn gray" id="aFinBtn">'+ic("trendUp",15)+' Moliya</button>'
+    +'<button class="btn gray" id="aAdminBotBtn">'+ic("bolt",15)+' Admin bot</button></div>'
+    +'<div class="d" id="aAdminBotNote" style="margin:6px 0 0"></div>'
+    +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aUsersBtn">'+ic("users",15)+' '+esc(t("a_users_title"))+'</button>'
     +'<div style="height:8px"></div>'
     +'<button class="btn gray" id="aDeliveriesBtn">'+ic("key",15)+' Sotilganlar / Yetkazilganlar qidiruvi</button>'
@@ -3823,6 +3854,12 @@ function openAdmin(){
     loadStatsPeriod(this.getAttribute("data-period"));
   });
   sh.querySelector("#aMoney").addEventListener("click",function(){openAdminMoney();});
+  sh.querySelector("#aFinBtn").addEventListener("click",function(){openAdminFinance(openAdmin);});
+  sh.querySelector("#aAdminBotBtn").addEventListener("click",function(){openAdminAdminBot(openAdmin);});
+  (function(){var n=sh.querySelector("#aAdminBotNote"),ab=ME.adminBot;if(!n)return;
+    if(ab&&ab.active&&ab.username){n.innerHTML='🛡 Admin bot ishlayapti: <a href="#" id="aAbLink">@'+esc(ab.username)+'</a> — to\'lov va buyurtmalar o\'sha yerga keladi.';
+      var l=n.querySelector("#aAbLink");if(l)l.addEventListener("click",function(e){e.preventDefault();openLink("https://t.me/"+ab.username);});}
+    else n.textContent="Admin bot hali ulanmagan — «Admin bot» tugmasini bosing.";})();
   sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
   sh.querySelector("#aDeliveriesBtn").addEventListener("click",openAdminDeliveries);
   sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
@@ -4494,6 +4531,115 @@ function openAdminImportPkgs(lineId,code){
   }).catch(function(e){body.innerHTML='<div class="paynote" style="color:var(--err)">❌ '+esc((e&&e.resp&&e.resp.error)||t("srv_off"))+'</div>';});
 }
 /* ===== admin: bot /start xabari va "start majburiy" to'sig'i ===== */
+/* ---------- Moliya (admin) — admin botdagi "📊 Moliya" ning to'liq ko'rinishi ---------- */
+var FIN_PERIOD="today";
+var FIN_SRC={games:"🎮 O'yinlar",telegram:"⭐ Telegram (Stars/Premium/Gift)",nakrutka:"📈 Nakrutka",shop:"🛍 Do'kon"};
+function openAdminFinance(backFn){
+  var html='<h2>Moliya</h2>'
+    +'<div class="paynote" style="margin:0 0 10px">Kirim — mijozlar to\'ldirgan pul. Sotuv — bajarilgan buyurtmalar. Foyda — saytdan avtomatik bajarilgan o\'yin buyurtmalari bo\'yicha (narx − tannarx). '
+    +'Mijozlar balansi — ular hali sarflamagan pul.</div>'
+    +'<div class="seg" id="finSeg" style="margin:0 0 10px"><button data-p="today">Bugun</button><button data-p="week">Hafta</button><button data-p="month">Oy</button><button data-p="all">Hammasi</button></div>'
+    +'<div id="finBody"><div class="d">Yuklanmoqda…</div></div>'
+    +'<div class="sect" style="margin:14px 0 6px">Saytlardagi balans</div>'
+    +'<div id="finBal" class="d">Liniyalar (MooGold, G2Bulk, Smile.one) balansini tekshirish uchun bosing.</div>'
+    +'<div style="height:8px"></div><button class="btn gray sm" id="finBalBtn">Saytlardan so\'rash</button>'
+    +'<div style="height:24px"></div>';
+  var sh=openSheet(html,backFn);
+  function card(k,v,sub,cls){return '<div class="fin-card'+(cls?" "+cls:"")+'"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div>'+(sub?'<div class="s">'+esc(sub)+'</div>':'')+'</div>';}
+  function list(title,rows){if(!rows.length)return "";return '<div class="sect" style="margin:6px 0 6px">'+esc(title)+'</div><div class="fin-list">'+rows.map(function(r){return '<div class="r"><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>';}).join("")+'</div>';}
+  function paint(f){
+    var b=sh.querySelector("#finBody");if(!b)return;
+    var h='<div class="fin-grid">'
+      +card("💰 Kirim",money(f.topups.sum),f.topups.count+" ta to'lov","acc")
+      +card("🛒 Sotuv",money(f.sales.sum),f.sales.count+" ta buyurtma")
+      +card("↩️ Qaytarilgan",money(f.refunds.sum),f.refunds.count+" ta",f.refunds.count?"bad":"")
+      +card("✍️ Qo'lda","+"+money(f.manual.plus),"−"+money(f.manual.minus)+" · "+f.manual.count+" ta")
+      +(f.cost.count?card("📦 Tannarx (sayt)",money(f.cost.sum),f.cost.count+" ta buyurtma")+card("💵 Foyda",money(f.profit),"sotuv "+money(f.cost.revenue),f.profit>=0?"good":"bad"):"")
+      +card("💼 Mijozlar balansida",money(f.liabilities),"ular hali sarflamagan pul","big")
+      +card("⏳ Kutilayotgan to'lov",money(f.pendingPayments.sum),f.pendingPayments.count+" ta")
+      +card("⏳ Bajarilmagan",money(f.pendingOrders.sum),f.pendingOrders.count+" ta buyurtma")
+      +card("👥 Mijozlar",String(f.users.total),f.period==="all"?"":"yangi: "+f.users.new)
+      +'</div>';
+    var m=Object.keys(f.topups.byMethod||{}).map(function(k){return [k,money(f.topups.byMethod[k])];});
+    var src=Object.keys(f.bySource||{}).map(function(k){var x=f.bySource[k];return [(FIN_SRC[k]||k)+" · "+x.count+" ta",money(x.sum)];});
+    var ln=Object.keys(f.byLine||{}).map(function(k){var x=f.byLine[k];return ["🔌 "+x.name+" · "+x.count+" ta"+(x.cost?" (tannarx "+money(x.cost)+")":""),money(x.sum)];});
+    h+=list("Kirim — to'lov usullari",m)+list("Sotuv — bo'limlar",src)+list("O'yinlar — liniyalar",ln);
+    h+='<button class="btn sm" id="finMoney">'+ic("wallet",15)+' Kutilayotgan to\'lov va buyurtmalar</button>';
+    b.innerHTML=h;
+    var mb=b.querySelector("#finMoney");if(mb)mb.addEventListener("click",function(){openAdminMoney();});
+  }
+  function load(p){
+    FIN_PERIOD=p;
+    var all=sh.querySelectorAll("#finSeg [data-p]");for(var i=0;i<all.length;i++)all[i].classList.toggle("on",all[i].getAttribute("data-p")===p);
+    api("/api/admin/finance?period="+encodeURIComponent(p)).then(paint).catch(function(){var b=sh.querySelector("#finBody");if(b)b.innerHTML='<div class="d">Yuklab bo\'lmadi.</div>';});
+  }
+  var segs=sh.querySelectorAll("#finSeg [data-p]");
+  for(var i=0;i<segs.length;i++)segs[i].addEventListener("click",function(){haptic();load(this.getAttribute("data-p"));});
+  sh.querySelector("#finBalBtn").addEventListener("click",function(){
+    var btn=this,box=sh.querySelector("#finBal");btn.disabled=true;box.textContent="So'ralmoqda…";
+    api("/api/admin/finance?period="+FIN_PERIOD+"&balances=1&force=1").then(function(f){
+      btn.disabled=false;var l=f.lineBalances||[];
+      if(!l.length){box.textContent="Yoqilgan sayt liniyasi yo'q (O'yinlar va liniyalar bo'limida yoqing).";return;}
+      box.innerHTML='<div class="fin-list">'+l.map(function(x){return '<div class="r"><span>'+(x.ok?"🟢 ":"🔴 ")+esc(x.name)+'</span><b>'+esc(x.message)+'</b></div>';}).join("")+'</div>';
+    }).catch(function(){btn.disabled=false;box.textContent="Xatolik.";});
+  });
+  load(FIN_PERIOD);
+}
+/* ---------- Admin bot sozlamasi ---------- */
+function openAdminAdminBot(backFn){
+  var html='<h2>Admin bot</h2>'
+    +'<div class="paynote" style="margin:0 0 10px">Alohida bot — faqat adminlar uchun. Har bir yangi to\'lov va buyurtma shu botga keladi, '
+    +'u yerdan ✅ tasdiqlash / ❌ bekor qilish, mijoz kartasi (balans ➕/➖, orderlar, slotlar), 📊 moliya, 📩 SMS kuzatuv va ⚙️ holat. '
+    +'Bot ichidagi «Admin panel» tugmasi shu panelni ochadi.</div>'
+    +'<div class="d" id="abState" style="margin:0 0 10px">…</div>'
+    +'<div class="sect" style="margin:4px 0 6px">Ulash</div>'
+    +'<div class="d" style="margin:0 0 8px">1) Telegram\'da <b>@BotFather</b> → /newbot → nom bering (masalan «Verion Admin»).<br>2) Bergan <b>tokenni</b> pastga qo\'ying va saqlang.<br>3) Yangi botga kirib <b>/start</b> bosing (har bir admin).</div>'
+    +'<input id="abToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="1234567890:AA...">'
+    +'<div class="arow" style="margin-top:8px"><button class="btn sm" id="abSave">Saqlash va ulash</button><button class="btn gray sm" id="abTest">Sinov xabari</button></div>'
+    +'<div class="d" id="abRes" style="margin:8px 0 0"></div>'
+    +'<div class="sect" style="margin:16px 0 4px">Bildirishnomalar</div>'
+    +'<div class="switch"><span style="font-size:13.5px">🛒 Yangi buyurtmalar</span><button class="swbtn" data-n="orders"><i></i></button></div>'
+    +'<div class="switch"><span style="font-size:13.5px">🧾 To\'lovlar va qo\'lda balans</span><button class="swbtn" data-n="payments"><i></i></button></div>'
+    +'<div class="switch"><span style="font-size:13.5px">📩 Mos kelmagan SMS</span><button class="swbtn" data-n="sms"><i></i></button></div>'
+    +'<div class="d" style="margin:4px 0 0">Muhim ogohlantirishlar (liniya xatosi, zaxira tugashi) har doim keladi. Admin botni hali ochmagan adminga ular do\'kon boti orqali boradi.</div>'
+    +'<div style="height:24px"></div>';
+  var sh=openSheet(html,backFn),ST=null;
+  function paint(r){
+    ST=r;var el=sh.querySelector("#abState");if(!el)return;
+    if(r.active)el.innerHTML='🟢 Ishlayapti: <a href="#" id="abOpen">@'+esc(r.username)+'</a>';
+    else if(r.tokenSet)el.innerHTML='🔴 Token bor, lekin bot ishlamayapti'+(r.error?': '+esc(r.error):'');
+    else el.textContent="⚪️ Ulanmagan — token kiriting.";
+    var o=el.querySelector("#abOpen");if(o)o.addEventListener("click",function(e){e.preventDefault();openLink("https://t.me/"+r.username);});
+    var inp=sh.querySelector("#abToken");
+    if(r.fromEnv){inp.disabled=true;inp.placeholder="Railway'dagi ADMIN_BOT_TOKEN ishlatilmoqda";}
+    else inp.placeholder=r.tokenSet?"•••••• (o'rnatilgan — almashtirish uchun yangisini kiriting)":"1234567890:AA...";
+    var sw=sh.querySelectorAll(".swbtn[data-n]");
+    for(var i=0;i<sw.length;i++)sw[i].className="swbtn"+((r.notify||{})[sw[i].getAttribute("data-n")]!==false?" on":"");
+    ME.adminBot={active:!!r.active,username:r.username||""};
+  }
+  api("/api/admin/adminbot").then(paint).catch(function(){sh.querySelector("#abState").textContent="Yuklab bo'lmadi.";});
+  sh.querySelector("#abSave").addEventListener("click",function(){
+    var v=sh.querySelector("#abToken").value.trim(),res=sh.querySelector("#abRes"),btn=this;
+    if(!v){res.textContent="Token kiriting.";return;}
+    btn.disabled=true;res.textContent="Ulanmoqda…";
+    api("/api/admin/adminbot","POST",{token:v}).then(function(r){
+      btn.disabled=false;sh.querySelector("#abToken").value="";
+      api("/api/admin/adminbot").then(paint);
+      if(r.active){res.innerHTML="✅ Ulandi: @"+esc(r.username)+". Endi botga kirib /start bosing.";haptic("ok");}
+      else res.textContent="⚠️ "+(r.error||"Ulanmadi");
+    }).catch(function(e){btn.disabled=false;res.textContent="⚠️ "+((e&&e.resp&&e.resp.error)||"Xatolik");});
+  });
+  sh.querySelector("#abTest").addEventListener("click",function(){
+    var res=sh.querySelector("#abRes");res.textContent="Yuborilmoqda…";
+    api("/api/admin/adminbot-test","POST",{}).then(function(r){res.textContent=r.ok?"✅ Xabar yuborildi — botni tekshiring.":"⚠️ "+(r.error||"yuborilmadi");}).catch(function(){res.textContent="Xatolik.";});
+  });
+  var sw=sh.querySelectorAll(".swbtn[data-n]");
+  for(var i=0;i<sw.length;i++)sw[i].addEventListener("click",function(){
+    var k=this.getAttribute("data-n"),on=!this.classList.contains("on"),n={};n[k]=on;
+    this.classList.toggle("on",on);haptic();
+    api("/api/admin/adminbot","POST",{notify:n}).then(function(){api("/api/admin/adminbot").then(paint);}).catch(function(){toast("Saqlanmadi",true);});
+  });
+}
 function openAdminBot(){
   var html='<h2>Bot va /start</h2>'
     +'<div class="paynote" style="margin:0 0 10px">Foydalanuvchi botda <b>/start</b> bosganda banner rasm, salom matni va tugmalar chiqadi. '

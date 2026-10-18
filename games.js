@@ -260,7 +260,16 @@ module.exports = function createGames(ctx) {
     ctx.tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
     ctx.notifyOrderChannel(o);
   }
-  function alertAdmins(text) { for (const aid of ctx.ADMIN_IDS) ctx.tgSend(aid, text); }
+  // Admin bot ulangan bo'lsa — o'sha orqali (buyurtma tugmalari bilan), aks holda do'kon boti.
+  function alertAdmins(text, o) {
+    if (typeof ctx.notifyAdmins === "function") return ctx.notifyAdmins(text, o ? { order: o } : undefined);
+    for (const aid of ctx.ADMIN_IDS) ctx.tgSend(aid, text);
+  }
+  // Tannarx (so'mda) — moliya hisobotidagi foyda uchun: saytdagi narx × liniya kursi.
+  function costUzs(r, line) {
+    const c = Number(r && r.cost) || 0, rate = Number(line && line.config && line.config.rate) || 0;
+    return c > 0 && rate > 0 ? Math.round(c * rate) : 0;
+  }
   function lineEnv(line) {
     const base = typeof ctx.publicBase === "function" ? ctx.publicBase() : "";
     if (!base) return {};
@@ -288,25 +297,26 @@ module.exports = function createGames(ctx) {
         alertAdmins("⛔ " + line.name + " liniyasi o'chirildi: " + str(res.message, 200) + "\nAdmin panel → O'yinlar va liniyalar.");
       }
       if (o.status !== "pending") { ctx.save(); return; }        // shu orada admin bekor qilgan
+      if (res.state === "done" || res.state === "accepted") o.costUzs = costUzs(r, line);
       if (res.state === "done") return markDone(o, line, res);
       if (res.state === "accepted") { o.line = { id: line.id, name: line.name, ref: str(res.ref, 120), state: "accepted" }; ctx.save(); return; }
       if (res.state === "unknown") {
         o.line = { id: line.id, name: line.name, ref: str(res.ref, 120), state: "unknown", message: str(res.message, 300) };
         ctx.save();
         alertAdmins("❓ #" + o.seq + " " + o.item + " — " + line.name + " javobi tushunarsiz: " + str(res.message, 200)
-          + "\nSaytda buyurtma yaratilgan bo'lishi mumkin. Avval saytdan tekshiring, keyin \"Bajarildi\" yoki \"Bekor qilish\" bosing. Ikkinchi marta yuborilmadi.");
+          + "\nSaytda buyurtma yaratilgan bo'lishi mumkin. Avval saytdan tekshiring, keyin \"Bajarildi\" yoki \"Bekor qilish\" bosing. Ikkinchi marta yuborilmadi.", o);
         return;
       }
       if (res.state === "manual") {
         o.line = { id: line.id, name: line.name, state: "manual" }; ctx.save();
-        if (failedHere.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — avtomatik liniyalar bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"));
+        if (failedHere.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — avtomatik liniyalar bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"), o);
         return;
       }
       failedHere.push(line.name + ": " + (res.message || res.state));   // "failed" — keyingi liniyaga
     }
     o.line = { state: "manual", failedAll: list.length > 0 };
     ctx.save();
-    if (list.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — hech bir liniya bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"));
+    if (list.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — hech bir liniya bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"), o);
   }
   // "accepted" holatidagi buyurtmalarni sayt API'sidan so'rab turadi (status() bor turlar uchun).
   async function pollAccepted() {
@@ -472,7 +482,7 @@ module.exports = function createGames(ctx) {
         if (w === "done") markDone(o, line, { ref: o.line.ref, message: "" });
         else if (w === "failed") {
           o.line.state = "failed"; o.line.message = str(ordObj.message || (b && b.message) || "sayt bekor qildi", 200); ctx.save();
-          alertAdmins("⚠️ #" + o.seq + " " + o.item + " — " + line.name + " bekor qildi: " + o.line.message + "\nQo'lda bajaring yoki bekor qiling.");
+          alertAdmins("⚠️ #" + o.seq + " " + o.item + " — " + line.name + " bekor qildi: " + o.line.message + "\nQo'lda bajaring yoki bekor qiling.", o);
         }
       });
       return true;
@@ -749,5 +759,20 @@ module.exports = function createGames(ctx) {
     return true;
   }
 
-  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice };
+  // Yoqilgan sayt liniyalarining balansi (moliya hisoboti uchun). Saytlarga tez-tez
+  // so'rov ketmasin — natija 5 daqiqa saqlanadi.
+  let balCache = { ts: 0, list: [] };
+  async function lineBalances(force) {
+    if (!force && Date.now() - balCache.ts < 5 * 60 * 1000) return balCache.list;
+    const lines = store().lines.filter(l => l.enabled && LINE_TYPES[l.type] && typeof LINE_TYPES[l.type].test === "function");
+    const list = await Promise.all(lines.map(async l => {
+      try {
+        const r = await Promise.race([LINE_TYPES[l.type].test(l), new Promise((_, rej) => setTimeout(() => rej(new Error("javob kelmadi")), 15000))]);
+        return { id: l.id, name: l.name, ok: !!(r && r.ok), message: str(r && r.message, 160) };
+      } catch (e) { return { id: l.id, name: l.name, ok: false, message: str(e.message, 160) }; }
+    }));
+    balCache = { ts: Date.now(), list };
+    return list;
+  }
+  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances };
 };

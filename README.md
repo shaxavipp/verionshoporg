@@ -156,6 +156,27 @@ Sayt liniyalari kalit kiritilmaguncha **o'chiq**. Ulash: admin panel → O'yinla
 
 Maxfiy kalitlar admin panelga hech qachon qaytarilmaydi. Tannarx, SKU va liniya ma'lumotlari mijozga yuborilmaydi.
 
+## Admin bot (alohida bot) va moliya
+
+Do'kon botidan tashqari **ikkinchi bot** — faqat adminlar uchun (`adminbot.js`). Ulash:
+
+1. Telegram'da @BotFather → `/newbot` → yangi bot oching (do'kon botining tokeni ishlamaydi).
+2. Admin panel → **Admin bot** → tokenni qo'ying → «Saqlash va ulash». (Yoki Railway'da `ADMIN_BOT_TOKEN` o'zgaruvchisi.)
+3. Har bir admin yangi botga kirib **/start** bosadi.
+
+Botda:
+- **🔍 Mijoz** — ID, @username, ism yuboring yoki mijoz xabarini forward qiling. Karta: ID, balans, «N order · xarid · to'ldirilgan», oxirgi orderlar, to'lov slotlari. Tugmalar: ➕ Balans, ➖ Yechish, 🛒 Orderlar, 🎟 Slotlar, 🔄 Yangilash, 🔍 Boshqa, 🌐 Panelda ochish.
+- **📊 Moliya** — bugun / hafta / oy / hammasi: kirim (to'lov usullari bo'yicha), sotuv (bo'limlar bo'yicha), qaytarilgan, tannarx va foyda (saytdan bajarilgan o'yin buyurtmalari), qo'lda +/−, mijozlar balansi, kutilayotgan pullar, saytlardagi balans.
+- **🧾 To'lovlar**, **🛒 Buyurtmalar** — kutilayotganlar, ✅ / ❌ tugmalari.
+- **📩 SMS** — avtomatik tasdiqlash jurnali; mos to'lov topilmagan SMS haqida darhol xabar.
+- **⚙️ Holat** — do'kon boti ulanishi, liniyalar, bildirishnomalarni yoqish/o'chirish.
+
+Yangi to'lov («to'ladim» bosilganda) va har bir buyurtma hamma adminlarga keladi; holat o'zgarsa o'sha xabarning o'zi yangilanadi. Pul bilan bog'liq har bir amal ikki bosqichli: ✅ → «Ha». Ikkinchi marta bosilsa pul qayta qo'shilmaydi. ➕ qilinganda mijozga do'kon boti orqali xabar boradi, ➖ da bormaydi. Boshqa adminlar har bir qo'lda o'zgartirishni ko'radi.
+
+Botdagi «Admin panel» tugmasi shu mini ilovani ochadi (`?admin=1`, `?admin=finance`, `?admin=u-<ID>`). Admin bot imzosi bilan ochilgan ilovaga faqat adminlar kira oladi. Mini ilovadagi **Moliya** bo'limi bot bilan bir xil hisobotni ko'rsatadi. Token hech qachon qaytarib ko'rsatilmaydi.
+
+Muhim ogohlantirishlar (liniya xatosi, zaxira tugashi, bot ulanmay qolishi) admin bot orqali keladi; admin botni hali ochmagan adminga ular do'kon boti orqali boradi.
+
 ## Kanallar — qaysi xabar qayerga tushadi
 
 Admin panel → **Kanallar (chat_id)**. Uchta mustaqil kanal:
