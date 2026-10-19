@@ -680,6 +680,26 @@ body.adm-open{overflow:hidden}
 .adm-badge{position:absolute;top:10px;right:10px;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:#ef4444;color:#fff;font-size:13px;font-weight:800;
   display:flex;align-items:center;justify-content:center}
 .adm-badge[hidden]{display:none}
+/* moliya grafiklari (dataviz: 2 seriya, bitta o'q, ingichka chiziqlar, legend + jadval) */
+.viz{--s1:#3987e5;--s2:#d95926;--grid:rgba(255,255,255,.07);--axis:var(--mut)}
+[data-theme="light"] .viz{--s1:#2a78d6;--s2:#eb6834;--grid:rgba(0,0,0,.07)}
+.viz-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 12px 8px;margin:0 0 10px;position:relative}
+.viz-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.viz-title{font-size:13px;font-weight:800}
+.viz-leg{display:flex;gap:12px;font-size:11.5px;color:var(--mut);flex-wrap:wrap}
+.viz-leg i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.viz-tbtn{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:999px;font-size:11px;padding:3px 9px;cursor:pointer}
+.viz svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.viz-tip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 9px;font-size:11.5px;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);white-space:nowrap;display:none;z-index:2}
+.viz-tip b{font-weight:800}
+.viz-tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.viz-table{width:100%;border-collapse:collapse;font-size:12px}
+.viz-table td,.viz-table th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}
+.viz-table td:first-child,.viz-table th:first-child{text-align:left}
+.viz-bars .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;margin:0 0 9px;font-size:12.5px}
+.viz-bars .track{grid-column:1/-1;height:10px}
+.viz-bars .bar{height:10px;border-radius:0 4px 4px 0;background:var(--s1);min-width:2px}
 /* admin: moliya */
 .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
 .fin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;min-width:0}
@@ -816,7 +836,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.7";
+var CLIENT_BUILD="2026-10-19.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1876,20 +1896,27 @@ function tileHTML(it,big){
   var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
 }
+// Mahsulot soni: zaxira ro'yxati bo'lsa — o'sha; admin "Soni"ni kiritgan bo'lsa — o'sha;
+// hech biri bo'lmasa null (cheklanmagan) — "undefined dona bor" chiqmasin.
+function stockOf(it){
+  if(StockCounts.hasOwnProperty(it.id))return Number(StockCounts[it.id])||0;
+  var n=Number(it.stock);return it.stock===""||it.stock==null||isNaN(n)?null:n;
+}
+function stockBadgeText(n){return n===null?"":(n<=0?t("out_stock"):n+" "+t("in_stock"));}
 function productGridHTML(items){
   var html='<div class="grid">';
   if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   for(var j=0;j<items.length;j++){
     var it=items[j];
-    var realStk=StockCounts.hasOwnProperty(it.id)?StockCounts[it.id]:it.stock;
-    var out=realStk<=0,hideStk=HIDE_STOCK_KINDS.indexOf(it.kind)!==-1;
+    var realStk=stockOf(it);
+    var out=realStk!==null&&realStk<=0,hideStk=HIDE_STOCK_KINDS.indexOf(it.kind)!==-1||realStk===null;
     var isFav=ME.favorites&&ME.favorites.indexOf(it.id)!==-1;
     html+='<button class="pcard" data-open="'+esc(it.id)+'">'
       +(tgUser()?('<span class="favbtn'+(isFav?" on":"")+'" data-fav="'+esc(it.id)+'">'+ic(isFav?"heartFill":"heart",15)+'</span>'):"")
       +tileHTML(it)
       +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div>'
       +(it.kind==="obuna"?('<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
-      +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+(out?esc(t("out_stock")):realStk+" "+esc(t("in_stock")))+'</span>')+'</div>'):"")
+      +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+esc(stockBadgeText(realStk))+'</span>')+'</div>'):"")
       +'</div></button>';
   }
   return html+'</div>';
@@ -2695,15 +2722,15 @@ function openProduct(id){
   // yuritilayotgan bo'lsa (StockCounts orqali), o'shani olamiz; aks holda admin panelidagi
   // "Soni" maydonini (it.stock). Shu bilan xarid qilingandan keyin son to'g'ri kamayib boradi,
   // admin qo'lda kiritgan eski raqamda "qotib" qolmaydi.
-  var realStock=StockCounts.hasOwnProperty(it.id)?StockCounts[it.id]:it.stock;
-  var out=realStock<=0,guest=!tgUser();
+  var realStock=stockOf(it);
+  var out=realStock!==null&&realStock<=0,guest=!tgUser();
   var MAX_QTY=10;
-  var qtyMax=it.kind==="obuna"?Math.max(1,Math.min(MAX_QTY,realStock||1)):1;
+  var qtyMax=it.kind==="obuna"?Math.max(1,Math.min(MAX_QTY,realStock===null?MAX_QTY:realStock)):1;
   var showQty=it.kind==="obuna"&&!out&&qtyMax>1;
   var sh=openSheet(
     tileHTML(it,true)
     +'<h2>'+esc(loc(it.title))+'</h2>'
-    +(it.kind==="obuna"?('<div class="cat">'+(out?esc(t("out_stock")):realStock+" "+esc(t("in_stock")))+'</div>'):"")
+    +(it.kind==="obuna"&&realStock!==null?('<div class="cat">'+esc(stockBadgeText(realStock))+'</div>'):"")
     +'<div class="desc">'+esc(loc(it.desc))+'</div>'
     +(showQty?(
       '<div class="qtyBlock">'
@@ -4616,6 +4643,76 @@ function openAdminImportPkgs(lineId,code){
   }).catch(function(e){body.innerHTML='<div class="paynote" style="color:var(--err)">❌ '+esc((e&&e.resp&&e.resp.error)||t("srv_off"))+'</div>';});
 }
 /* ===== admin: bot /start xabari va "start majburiy" to'sig'i ===== */
+/* ---------- Moliya grafiklari ---------- */
+function vizShort(n){n=Number(n)||0;var a=Math.abs(n);
+  if(a>=1e9)return (n/1e9).toFixed(a>=1e10?0:1).replace(/\.0$/,"")+" mlrd";
+  if(a>=1e6)return (n/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,"")+" mln";
+  if(a>=1e3)return Math.round(n/1e3)+" ming";return String(Math.round(n));}
+function vizDay(d){var p=String(d).split("-");return p[2]+"."+p[1];}
+// Ikki seriya (kirim, sotuv) — bir xil birlik (so'm), shuning uchun bitta o'q.
+function vizDailyHTML(daily){
+  if(!daily||!daily.length)return "";
+  return '<div class="viz viz-card" id="vizDaily"><div class="viz-head"><div class="viz-title">Kunlik kirim va sotuv · '+daily.length+' kun</div>'
+    +'<button class="viz-tbtn" id="vizTblBtn">Jadval</button></div>'
+    +'<div class="viz-leg"><span><i style="background:var(--s1)"></i>Kirim</span><span><i style="background:var(--s2)"></i>Sotuv</span></div>'
+    +'<div id="vizPlot"></div><div class="viz-tip" id="vizTip"></div><div id="vizTbl" hidden></div></div>';
+}
+function vizBindDaily(root,daily){
+  var box=root.querySelector("#vizDaily");if(!box)return;
+  var W=340,H=170,L=56,R=8,T=10,B=22,n=daily.length;
+  var max=0;daily.forEach(function(x){max=Math.max(max,x.topup,x.sales);});
+  // "Chiroyli" yuqori chegara: 1/2/5 × 10^k
+  var step=Math.pow(10,Math.floor(Math.log10(Math.max(max,1)/3))),nice=[1,2,5,10].map(function(k){return k*step;}).filter(function(v){return v*3>=max;})[0]||step*10;
+  var ymax=nice*3;
+  var x=function(i){return L+(n<2?0:(i*(W-L-R)/(n-1)));},y=function(v){return T+(H-T-B)*(1-v/ymax);};
+  var path=function(k){return daily.map(function(d,i){return (i?"L":"M")+x(i).toFixed(1)+" "+y(d[k]).toFixed(1);}).join("");};
+  var g='';
+  for(var j=0;j<=3;j++){var v=nice*j,yy=y(v).toFixed(1);
+    g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--grid)" stroke-width="1"/>'
+      +'<text x="'+(L-6)+'" y="'+yy+'" dy="3.5" text-anchor="end" font-size="9.5" fill="var(--axis)">'+vizShort(v)+'</text>';}
+  [0,Math.floor((n-1)/2),n-1].forEach(function(i){
+    g+='<text x="'+x(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="'+(i===0?"start":i===n-1?"end":"middle")+'" font-size="9.5" fill="var(--axis)">'+vizDay(daily[i].d)+'</text>';});
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Kunlik kirim va sotuv">'+g
+    +'<path d="'+path("topup")+'" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'<path d="'+path("sales")+'" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'<g id="vizHov" style="display:none"><line id="vizX" y1="'+T+'" y2="'+(H-B)+'" stroke="var(--axis)" stroke-width="1" stroke-dasharray="3 3"/>'
+    +'<circle id="vizD1" r="4.5" fill="var(--s1)" stroke="var(--card)" stroke-width="2"/><circle id="vizD2" r="4.5" fill="var(--s2)" stroke="var(--card)" stroke-width="2"/></g>'
+    +'<rect x="'+L+'" y="0" width="'+(W-L-R)+'" height="'+H+'" fill="transparent" id="vizHit"/></svg>';
+  box.querySelector("#vizPlot").innerHTML=svg;
+  var el=box.querySelector("svg"),hov=box.querySelector("#vizHov"),tip=box.querySelector("#vizTip");
+  function show(ev){
+    var r=el.getBoundingClientRect(),px=(ev.clientX-r.left)*W/r.width;
+    var i=Math.max(0,Math.min(n-1,Math.round((px-L)/((W-L-R)/Math.max(1,n-1)))));
+    var d=daily[i],xx=x(i);
+    hov.style.display="";box.querySelector("#vizX").setAttribute("x1",xx);box.querySelector("#vizX").setAttribute("x2",xx);
+    var c1=box.querySelector("#vizD1"),c2=box.querySelector("#vizD2");
+    c1.setAttribute("cx",xx);c1.setAttribute("cy",y(d.topup));c2.setAttribute("cx",xx);c2.setAttribute("cy",y(d.sales));
+    tip.innerHTML='<b>'+vizDay(d.d)+'</b><br><i style="background:var(--s1)"></i>Kirim: <b>'+esc(money(d.topup))+'</b><br><i style="background:var(--s2)"></i>Sotuv: <b>'+esc(money(d.sales))+'</b>';
+    tip.style.display="block";
+    var br=box.getBoundingClientRect(),left=ev.clientX-br.left+12;
+    if(left+tip.offsetWidth>br.width-4)left=ev.clientX-br.left-tip.offsetWidth-12;
+    tip.style.left=Math.max(4,left)+"px";tip.style.top=(r.top-br.top+6)+"px";
+  }
+  function hide(){hov.style.display="none";tip.style.display="none";}
+  el.addEventListener("pointermove",show);el.addEventListener("pointerdown",show);el.addEventListener("pointerleave",hide);
+  // Jadval ko'rinishi (rangsiz, ekran o'quvchi va aniq raqamlar uchun)
+  box.querySelector("#vizTblBtn").addEventListener("click",function(){
+    var tb=box.querySelector("#vizTbl"),pl=box.querySelector("#vizPlot");
+    if(tb.hidden){tb.innerHTML='<table class="viz-table"><tr><th>Kun</th><th>Kirim</th><th>Sotuv</th></tr>'
+      +daily.slice().reverse().map(function(d){return '<tr><td>'+vizDay(d.d)+'</td><td>'+esc(money(d.topup))+'</td><td>'+esc(money(d.sales))+'</td></tr>';}).join("")+'</table>';
+      tb.hidden=false;pl.hidden=true;this.textContent="Grafik";}
+    else{tb.hidden=true;pl.hidden=false;this.textContent="Jadval";}
+    hide();
+  });
+}
+// Bo'limlar bo'yicha sotuv — bitta rang, gorizontal ustunlar, qiymat yozuvi matn rangida.
+function vizBarsHTML(title,rows){
+  if(!rows.length)return "";
+  var max=Math.max.apply(null,rows.map(function(r){return r[1];}))||1;
+  return '<div class="viz viz-card viz-bars"><div class="viz-title" style="margin-bottom:10px">'+esc(title)+'</div>'
+    +rows.map(function(r){return '<div class="r"><span>'+esc(r[0])+'</span><b>'+esc(money(r[1]))+'</b>'
+      +'<div class="track"><div class="bar" style="width:'+(r[1]/max*100).toFixed(1)+'%"></div></div></div>';}).join("")+'</div>';
+}
 /* ---------- Moliya (admin) — admin botdagi "📊 Moliya" ning to'liq ko'rinishi ---------- */
 var FIN_PERIOD="today";
 var FIN_SRC={games:"🎮 O'yinlar",telegram:"⭐ Telegram (Stars/Premium/Gift)",nakrutka:"📈 Nakrutka",shop:"🛍 Do'kon"};
@@ -4646,12 +4743,14 @@ function openAdminFinance(backFn){
       +card("👥 Mijozlar",String(f.users.total),f.period==="all"?"":"yangi: "+f.users.new)
       +'</div>';
     var m=Object.keys(f.topups.byMethod||{}).map(function(k){return [k,money(f.topups.byMethod[k])];});
-    var src=Object.keys(f.bySource||{}).map(function(k){var x=f.bySource[k];return [(FIN_SRC[k]||k)+" · "+x.count+" ta",money(x.sum)];});
+    var srcBars=Object.keys(f.bySource||{}).map(function(k){var x=f.bySource[k];return [(FIN_SRC[k]||k)+" · "+x.count+" ta",x.sum];})
+      .sort(function(a,b){return b[1]-a[1];});
     var ln=Object.keys(f.byLine||{}).map(function(k){var x=f.byLine[k];return ["🔌 "+x.name+" · "+x.count+" ta"+(x.cost?" (tannarx "+money(x.cost)+")":""),money(x.sum)];});
-    h+=list("Kirim — to'lov usullari",m)+list("Sotuv — bo'limlar",src)+list("O'yinlar — liniyalar",ln);
+    h+=vizDailyHTML(f.daily)+vizBarsHTML("Sotuv — bo'limlar",srcBars)+list("Kirim — to'lov usullari",m)+list("O'yinlar — liniyalar",ln);
     h+='<button class="btn sm" id="finMoney">'+ic("wallet",15)+' Kutilayotgan to\'lov va buyurtmalar</button>';
     b.innerHTML=h;
     var mb=b.querySelector("#finMoney");if(mb)mb.addEventListener("click",function(){openAdminMoney();});
+    vizBindDaily(b,f.daily);
   }
   function load(p){
     FIN_PERIOD=p;

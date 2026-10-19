@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.7";
+const BUILD = "2026-10-19.8";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -465,8 +465,19 @@ function computeFinance(period) {
     pendingPayments: { count: pendingP.length, sum: sum(pendingP, p => p.pay) },
     liabilities: sum(users, u => u.balance),
     users: { total: users.length, new: users.filter(u => (Number(u.ts) || 0) >= from).length },
-    bySource, byLine
+    bySource, byLine, daily: dailySeries(period === "month" ? 30 : period === "all" ? 60 : 14)
   };
+}
+// Grafik uchun: oxirgi n kun (Toshkent vaqti) bo'yicha kirim va sotuv.
+function dailySeries(n) {
+  const OFF = 5 * 3600 * 1000, DAY = 86400000;
+  const today = Math.floor((Date.now() + OFF) / DAY);
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) out.push({ d: new Date((today - i) * DAY).toISOString().slice(0, 10), topup: 0, sales: 0 });
+  const idx = ts => { const k = Math.floor(((Number(ts) || 0) + OFF) / DAY) - (today - n + 1); return k >= 0 && k < n ? k : -1; };
+  for (const p of DB.payments) if (p.status === "done" && p.type !== "manual") { const k = idx(p.ts); if (k >= 0) out[k].topup += Number(p.amount) || 0; }
+  for (const o of DB.orders) if (o.status === "done") { const k = idx(o.ts); if (k >= 0) out[k].sales += Number(o.price) || 0; }
+  return out;
 }
 
 /* ---------- Admin amallari (mini-ilova admin paneli VA admin bot ishlatadi) ---------- */
@@ -1836,10 +1847,15 @@ setTimeout(() => {
    endpointlarini "bombardimon" qilishni to'xtatadi. Telegram webhook bundan mustasno. */
 const RL = new Map(), RL_WINDOW = 10000, RL_MAX = Number(process.env.RATE_LIMIT_POST || 40);
 function rateLimited(req) {
-  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || (req.socket && req.socket.remoteAddress) || "?";
+  // Kalit — imzosi to'g'ri Telegram foydalanuvchisi (mobil operatorlarda ko'p mijoz bitta IP'da
+  // bo'ladi, IP bo'yicha cheklash ularni bir-biriga to'sib qo'yardi). Imzosiz so'rovlar — IP bo'yicha;
+  // oxirgi qiymat Railway proksisi qo'shgani, birinchisini mijozning o'zi soxtalashtirishi mumkin.
+  let key = "";
+  if (req.headers["x-init-data"]) { const r = checkInitData(req.headers["x-init-data"]); if (r.user && r.user.id) key = "u" + r.user.id; }
+  if (!key) key = "ip" + (String(req.headers["x-forwarded-for"] || "").split(",").map(x => x.trim()).filter(Boolean).pop() || (req.socket && req.socket.remoteAddress) || "?");
   const now = Date.now();
-  let e = RL.get(ip);
-  if (!e || now - e.ts > RL_WINDOW) { e = { ts: now, n: 0 }; RL.set(ip, e); }
+  let e = RL.get(key);
+  if (!e || now - e.ts > RL_WINDOW) { e = { ts: now, n: 0 }; RL.set(key, e); }
   return ++e.n > RL_MAX;
 }
 setInterval(() => { const now = Date.now(); for (const [k, e] of RL) if (now - e.ts > RL_WINDOW) RL.delete(k); }, 60000).unref();
@@ -1852,7 +1868,7 @@ const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
-  if (m === "POST" && url !== "/api/tg-webhook" && rateLimited(req)) return send(res, 429, { error: "too_many" });
+  if (m === "POST" && url !== "/api/tg-webhook" && url.indexOf("/api/admin/") !== 0 && rateLimited(req)) return send(res, 429, { error: "too_many" });
 
   /* Ochiq holat tekshiruvi: domen ishlayaptimi va qaysi build turibdi — brauzerda
      https://<domen>/api/health ni ochib ko'rish mumkin. Admin manzilni saqlaganda
