@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.12";
+const BUILD = "2026-10-19.13";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1840,7 +1840,9 @@ ADMINBOT = require("./adminbot.js")({
   aiAdminOp: (tok, id) => (AI ? AI.runAdminOp(tok, id) : "AI ulanmagan"),
   aiRelease: uid => { if (AI) AI.release(uid); },
   // Operator javobi: Telegram'da ham, ilovadagi chat oynasida ham ko'rinadi.
-  operatorReply: (uid, text) => { tgSend(uid, "👨‍💼 Operator: " + text); if (AI) AI.log(uid, "admin", text); },
+  operatorReply: (uid, text) => { tgSend(uid, "👨‍💼 Operator: " + text); if (AI) { AI.log(uid, "admin", text); AI.dequeue(uid); } },
+  aiOp: () => (AI ? AI.opPublic() : null),
+  aiOpSet: b => (AI ? AI.opSet(b) : "AI yo'q"),
   aiOn: () => !!(AI && AI.ready()),
   statusInfo: () => ({
     build: BUILD,
@@ -1858,6 +1860,13 @@ var AI = require("./ai.js")({
   shopApi: (method, payload) => tgApiPost(method, payload).catch(e => ({ ok: false, description: e.message })),
   supportUsername: () => SUPPORT_USERNAME,
   notifyHandoff: (from, reason, last) => ADMINBOT.customerEvent(from, "🙋 Mijoz operatorni so'radi" + (reason ? ": " + reason : ""), last, true),
+  notifyQueued: (from, reason, last, st) => ADMINBOT.customerEvent(from, "⏳ Navbatga qo'shildi (operator " + (st.reason === "busy" ? "band" : "faol emas") + ")" + (reason ? ": " + reason : ""), last, true),
+  knowledge: () => {
+    const r = DB.settings.referral || {}, l = DB.settings.loyalty || {};
+    return { minTopup: MIN_TOPUP, maxTopup: MAX_TOPUP, ttlMin: Math.round(TOPUP_TTL / 60000),
+      referral: r.enabled !== false && Number(r.percent) > 0 ? Number(r.percent) : 0,
+      loyalty: l.enabled && Array.isArray(l.tiers) ? l.tiers.map(t => t.name + " — " + Number(t.minSpent).toLocaleString("ru-RU").replace(/,/g, " ") + " so'mdan, " + (Number(t.percent) || 0) + "%").join("; ") : "" };
+  },
   forwardToAdmins: (from, text) => ADMINBOT.customerEvent(from, "💬 Mijoz support'ga yozdi", text, false),
   finance: p => computeFinance(["today", "week", "month", "all"].indexOf(p) !== -1 ? p : "today"),
   findCustomer: q => ADMINBOT.findCustomerText(q),

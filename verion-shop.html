@@ -873,7 +873,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.12";
+var CLIENT_BUILD="2026-10-19.13";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4871,7 +4871,7 @@ function supRender(){
   if(SUP.waiting&&Date.now()-SUP.waiting<60000)h+='<div class="sup-typing"><i></i><i></i><i></i></div>';
   box.innerHTML=h;box.scrollTop=box.scrollHeight;
   var st=document.getElementById("supSub");
-  if(st&&SUP.state)st.textContent=SUP.state.human?"👨‍💼 Operator bilan suhbat":(SUP.state.ai?"✨ AI yordamchi · bir necha soniyada javob":"Operator odatda tez javob beradi");
+  if(st&&SUP.state)st.textContent=SUP.state.human?"👨‍💼 Operator bilan suhbat":SUP.state.queued?"⏳ Operator navbatida · AI yordam beradi":(SUP.state.ai?"✨ AI 24/7 · operator "+(SUP.state.opAvailable?"onlayn":"oflayn ("+SUP.state.opHours+")"):(SUP.state.opAvailable?"Operator onlayn":"Operator ish vaqti: "+SUP.state.opHours));
   var cs=box.querySelectorAll("[data-supconf]");
   for(var i=0;i<cs.length;i++)cs[i].addEventListener("click",function(){
     var b=this;b.disabled=true;haptic();
@@ -4888,7 +4888,7 @@ function supRender(){
 }
 function supPoll(){
   return api("/api/support/history?after="+SUP.last).then(function(r){
-    SUP.state={ai:r.ai,human:r.human,operator:r.operator};
+    SUP.state={ai:r.ai,human:r.human,queued:r.queued,opAvailable:r.opAvailable,opHours:r.opHours,operator:r.operator};
     (r.messages||[]).forEach(function(m){
       if(SUP.msgs.some(function(x){return x.id===m.id;}))return;
       SUP.msgs.push(m);SUP.last=Math.max(SUP.last,m.id);
@@ -4965,7 +4965,13 @@ function openAdminAi(backFn){
     +'<input id="aiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-...">'
     +'<label>Model</label><select id="aiModel"></select>'
     +'<div class="d" style="margin:-4px 0 8px">Opus — eng aqlli; Sonnet — tezroq va 2 baravar arzon; Haiku — juda arzon, oddiy savollar uchun.</div></div>'
-    +'<div class="switch"><span style="font-size:13.5px">🛍 Mijozlarga javob bersin (do\'kon boti)</span><button class="swbtn" id="aiSup"><i></i></button></div>'
+    +'<div class="switch"><span style="font-size:13.5px">🛍 AI mijozlarga javob bersin (24/7)</span><button class="swbtn" id="aiSup"><i></i></button></div>'
+    +'<div class="sect" style="margin:14px 0 6px">👨‍💼 Operator (jonli javob)</div>'
+    +'<div class="d" id="opState" style="margin:0 0 6px"></div>'
+    +'<div class="switch"><span style="font-size:13.5px">Operator supporti yoqilgan</span><button class="swbtn" id="opOn"><i></i></button></div>'
+    +'<div class="switch"><span style="font-size:13.5px">🟡 Hozir bandman</span><button class="swbtn" id="opBusy"><i></i></button></div>'
+    +'<div class="arow"><div style="flex:1"><label>Ish boshlanishi</label><input id="opFrom" type="time"></div><div style="flex:1"><label>Ish tugashi</label><input id="opTo" type="time"></div></div>'
+    +'<div class="d" style="margin:2px 0 10px">Operator band, o\'chiq yoki ish vaqtidan tashqarida bo\'lsa, mijozga «operator hozir faol emas — sizni navbatga qo\'shdim» deyiladi va AI o\'zi yordam beradi. Navbat admin botda: 👨‍💼 Operator.</div>'
     +'<div class="switch"><span style="font-size:13.5px">🛡 Admin botda yordamchi</span><button class="swbtn" id="aiAdm"><i></i></button></div>'
     +'<label>Do\'kon haqida qo\'shimcha ma\'lumot va qoidalar</label>'
     +'<textarea id="aiExtra" class="exta" style="height:140px" placeholder="Masalan: Ish vaqti 9:00–23:00. O\'yin valyutasi 5–30 daqiqada tushadi. AI obunalar 1–12 soat ichida ulanadi. Qaytarish faqat buyurtma bajarilmagan bo\'lsa."></textarea>'
@@ -4993,6 +4999,10 @@ function openAdminAi(backFn){
     sh.querySelector("#aiAdm").className="swbtn"+(r.admin?" on":"");
     sh.querySelector("#aiExtra").value=r.extra||"";
     sh.querySelector("#aiLimit").value=r.dailyLimit;sh.querySelector("#aiHand").value=r.handoffMin;
+    var op=r.op||{};
+    sh.querySelector("#opOn").className="swbtn"+(op.enabled?" on":"");sh.querySelector("#opBusy").className="swbtn"+(op.busy?" on":"");
+    sh.querySelector("#opFrom").value=op.from||"10:00";sh.querySelector("#opTo").value=op.to||"22:00";
+    sh.querySelector("#opState").textContent=(op.available?"🟢 Hozir faol":op.reason==="busy"?"🟡 Band":op.reason==="off"?"⚪️ O'chiq — faqat AI":"🌙 Ish vaqtidan tashqarida")+" · navbatda: "+((op.queue||[]).length)+" ta";
     var d=r.today||{};
     sh.querySelector("#aiStats").innerHTML=card("💬 Mijoz xabarlari",String(d.msgs||0),(d.users||0)+" ta mijoz")+card("🛒 AI orqali buyurtma",String(d.orders||0),"")
       +card("🙋 Operatorga",String(d.handoffs||0),"")+card("🔤 Token",vizShort((d.inTok||0)+(d.outTok||0)),"kesh: "+vizShort(d.cacheRead||0));
@@ -5005,11 +5015,12 @@ function openAdminAi(backFn){
   var pb=sh.querySelectorAll("#aiProv [data-p]");
   for(var pi=0;pi<pb.length;pi++)pb[pi].addEventListener("click",function(){PROV=this.getAttribute("data-p");showProv();haptic();});
   function load(){api("/api/admin/ai").then(paint).catch(function(){sh.querySelector("#aiState").textContent="Yuklab bo'lmadi.";});}
-  ["#aiSup","#aiAdm"].forEach(function(x){sh.querySelector(x).addEventListener("click",function(){this.classList.toggle("on");});});
+  ["#aiSup","#aiAdm","#opOn","#opBusy"].forEach(function(x){sh.querySelector(x).addEventListener("click",function(){this.classList.toggle("on");});});
   function body(){
     var b={model:sh.querySelector("#aiModel").value,support:sh.querySelector("#aiSup").classList.contains("on"),admin:sh.querySelector("#aiAdm").classList.contains("on"),
       extra:sh.querySelector("#aiExtra").value,dailyLimit:Number(sh.querySelector("#aiLimit").value)||40,handoffMin:Number(sh.querySelector("#aiHand").value)||60};
     var k=sh.querySelector("#aiKey").value.trim();if(k)b.key=k;
+    b.op={enabled:sh.querySelector("#opOn").classList.contains("on"),busy:sh.querySelector("#opBusy").classList.contains("on"),from:sh.querySelector("#opFrom").value||"10:00",to:sh.querySelector("#opTo").value||"22:00"};
     b.provider=PROV;b.geminiModel=sh.querySelector("#aiGemModel").value||undefined;
     var gk=sh.querySelector("#aiGemKeys").value.trim();if(gk)b.geminiKeys=gk;
     return b;

@@ -217,6 +217,15 @@ Ilovaning har bir ekranida o'ng pastda **🎧 suzuvchi tugma** bor. «Qo'llab-qu
 - Bot va ilova — **bitta suhbat**: botda boshlangan yozishma ilovada ham ko'rinadi (oxirgi 60 ta xabar).
 - Chat yopiq paytda yangi javob kelsa, tugmada qizil nuqta chiqadi.
 
+## Operator: faol / band / ish vaqti
+
+AI 24/7 ishlaydi. Operator (admin) esa ish vaqtida javob beradi, standart vaqt 10:00–22:00 (Toshkent). Boshqaruv ikki joyda: admin bot → «👨‍💼 Operator» (yoki `/operator`, `/band`) va mini ilova → AI yordamchi → Operator.
+
+- **Faol:** mijoz operator so'rasa, jonli suhbat boshlanadi, admin «✍️ Javob yozish» orqali javob beradi.
+- **Band, o'chiq yoki ish vaqtidan tashqarida:** mijozga «Hozir operator band (faol emas) — sizni navbatga qo'shdim; faol bo'lishi bilan javob beradi (ish vaqti 10:00–22:00)» deyiladi. Shu orada AI muammoni o'zi hal qilishga harakat qiladi. Navbat admin botda turadi, operator javob yozgach mijoz navbatdan chiqadi.
+
+AI'ning bilimlar bazasi do'kon sozlamalaridan avtomatik tuziladi: to'ldirish tartibi va muddati, o'yin ID qayerdan topilishi, AI obunalar, Stars/Premium, nakrutka, qaytarish qoidasi, referal %, sodiqlik darajalari, ish vaqti. Admin panelda yozilgan «qo'shimcha ma'lumot» bularning hammasidan ustun turadi.
+
 ## Admin bot (alohida bot) va moliya
 
 Do'kon botidan tashqari **ikkinchi bot** — faqat adminlar uchun (`adminbot.js`). Ulash:

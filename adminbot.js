@@ -75,7 +75,7 @@ module.exports = function createAdminBot(ctx) {
     return { text, web_app: { url: base.replace(/\/+$/, "") + "/?admin=" + encodeURIComponent(view || "1") } };
   }
   const kbd = rows => ({ inline_keyboard: rows.map(r => r.filter(Boolean)).filter(r => r.length) });
-  const MENU = { keyboard: [[{ text: "🛠 Admin panel" }], [{ text: "📊 Moliya" }, { text: "🧾 To'lovlar" }], [{ text: "🛒 Buyurtmalar" }, { text: "🔍 Mijoz" }], [{ text: "📩 SMS" }, { text: "⚙️ Holat" }]],
+  const MENU = { keyboard: [[{ text: "🛠 Admin panel" }], [{ text: "👨‍💼 Operator" }], [{ text: "📊 Moliya" }, { text: "🧾 To'lovlar" }], [{ text: "🛒 Buyurtmalar" }, { text: "🔍 Mijoz" }], [{ text: "📩 SMS" }, { text: "⚙️ Holat" }]],
     resize_keyboard: true, is_persistent: true };
   const errText = e => ({ "already done": "Bu to'lov allaqachon tasdiqlangan.", "already cancelled": "Bu to'lov allaqachon bekor qilingan.",
     "not found": "Topilmadi.", state: "Buyurtma holati o'zgargan (allaqachon bajarilgan yoki bekor qilingan).", "no user": "Mijoz topilmadi." }[e] || ("Xato: " + e));
@@ -229,6 +229,23 @@ module.exports = function createAdminBot(ctx) {
     return [L.join("\n"), kbd(rows)];
   }
 
+  /* ---------- Operator: holat, ish vaqti, navbat ---------- */
+  function operatorView() {
+    const o = ctx.aiOp ? ctx.aiOp() : null;
+    if (!o) return ["AI moduli ulanmagan.", null];
+    const L = ["👨‍💼 Operator (jonli support)", "",
+      "Holat: " + (o.available ? "🟢 FAOL — mijozlar operatorga ulanadi" : o.reason === "busy" ? "🟡 BAND — mijozlar navbatga yoziladi, AI yordam beradi" : o.reason === "off" ? "⚪️ O'CHIQ — faqat AI javob beradi" : "🌙 Ish vaqtidan tashqarida — navbat"),
+      "Ish vaqti: " + o.hours + " (Toshkent) · AI: 24/7", "",
+      "📋 Navbat: " + (o.queue.length ? o.queue.length + " ta mijoz" : "bo'sh")];
+    const rows = [[btn(o.enabled ? "⚪️ O'chirish" : "🟢 Yoqish", "op:en"), btn(o.busy ? "🟢 Bo'shman" : "🟡 Bandman", "op:busy")]];
+    o.queue.slice(0, 10).forEach((q, i) => {
+      L.push((i + 1) + ") " + (q.name || "Mijoz") + (q.uname ? " @" + q.uname : "") + " · " + dt(q.ts) + (q.reason ? "\n    " + String(q.reason).slice(0, 80) : ""));
+      rows.push([btn("✍️ " + (i + 1) + ") javob", "hr:" + q.uid), btn("👤", "uc:" + q.uid)]);
+    });
+    rows.push([btn("🔄 Yangilash", "opv")]);
+    return [L.join("\n"), kbd(rows)];
+  }
+
   /* ---------- Moliya ---------- */
   const PERIODS = { today: "Bugun", week: "Shu hafta", month: "Shu oy", all: "Hammasi" };
   const SRC = { games: "🎮 O'yinlar", telegram: "⭐ Telegram (Stars/Premium/Gift)", nakrutka: "📈 Nakrutka", shop: "🛍 Do'kon" };
@@ -372,7 +389,7 @@ module.exports = function createAdminBot(ctx) {
     if (!text) return;
     const [cmdRaw, ...rest] = text.split(/\s+/);
     const cmd = cmdRaw.toLowerCase().replace(/@\w+$/, ""), arg = rest.join(" ");
-    const MAP = { "📊 moliya": "/moliya", "🧾 to'lovlar": "/tolovlar", "🛒 buyurtmalar": "/buyurtmalar", "🔍 mijoz": "/mijoz", "📩 sms": "/sms", "⚙️ holat": "/holat", "🛠 admin panel": "/panel" };
+    const MAP = { "👨‍💼 operator": "/operator", "📊 moliya": "/moliya", "🧾 to'lovlar": "/tolovlar", "🛒 buyurtmalar": "/buyurtmalar", "🔍 mijoz": "/mijoz", "📩 sms": "/sms", "⚙️ holat": "/holat", "🛠 admin panel": "/panel" };
     const menuCmd = MAP[text.toLowerCase()];
     const c = menuCmd || (cmd[0] === "/" ? cmd : "");
     if (c) waiting.delete(from);
@@ -383,6 +400,8 @@ module.exports = function createAdminBot(ctx) {
       case "/buyurtmalar": return sendView(chat, ordersView());
       case "/sms": return sendView(chat, smsView());
       case "/holat": return sendView(chat, statusView());
+      case "/operator": case "/navbat": return sendView(chat, operatorView());
+      case "/band": { const o = ctx.aiOp && ctx.aiOp(); if (o) ctx.aiOpSet({ busy: !o.busy }); return sendView(chat, operatorView()); }
       case "/panel": {
         const w = webApp("🛠 ADMIN PANELNI OCHISH", "1");
         return send(chat, w ? "🛠 Admin panel — hamma bo'limlar bitta joyda. Pastdagi tugmani bosing 👇"
@@ -433,6 +452,12 @@ module.exports = function createAdminBot(ctx) {
       if (k === "PD" || k === "PX" || k === "OD" || k === "OX") { const t = execute(k, arg, from); await edit(chat, mid, t); return ans(t.slice(0, 190)); }
       if (k === "B") { const [t, uid] = runBalance(arg, from); await edit(chat, mid, t); if (uid) await showCard(chat, uid); return ans(); }
       if (k === "no") { await edit(chat, mid, "↩️ Bekor qilindi, hech narsa o'zgarmadi."); return ans(); }
+      if (k === "op") {
+        const o = ctx.aiOp && ctx.aiOp();
+        if (o) ctx.aiOpSet(arg === "en" ? { enabled: !o.enabled } : { busy: !o.busy });
+        const [t, kb] = operatorView(); await edit(chat, mid, t, kb); return ans("Saqlandi");
+      }
+      if (k === "opv") { const [t, kb] = operatorView(); await edit(chat, mid, t, kb); return ans("Yangilandi"); }
       if (k === "aia") { const t = ctx.aiAdminOp(arg, from); await edit(chat, mid, t); return ans(t.slice(0, 190)); }
       if (k === "hr") { waiting.set(from, { kind: "reply", uid: Number(arg), ts: Date.now() }); await send(chat, "✍️ " + who(arg) + " ga javob yozing:", { force_reply: true, input_field_placeholder: "Javob matni" }); return ans(); }
       if (k === "hx") { ctx.aiRelease(Number(arg)); ctx.shopSend(Number(arg), "🤖 Suhbatni yana AI yordamchi davom ettiradi. Savolingiz bo'lsa yozing."); await send(chat, "🤖 " + who(arg) + " — AI'ga qaytarildi."); return ans("AI'ga qaytarildi"); }
@@ -559,7 +584,7 @@ module.exports = function createAdminBot(ctx) {
     await api("setMyCommands", { commands: [
       { command: "moliya", description: "📊 Moliya hisoboti" }, { command: "tolovlar", description: "🧾 Kutilayotgan to'lovlar" },
       { command: "buyurtmalar", description: "🛒 Bajarilmagan buyurtmalar" }, { command: "mijoz", description: "🔍 Mijoz kartasi" },
-      { command: "sms", description: "📩 SMS kuzatuv" }, { command: "holat", description: "⚙️ Holat va sozlamalar" },
+      { command: "sms", description: "📩 SMS kuzatuv" }, { command: "holat", description: "⚙️ Holat va sozlamalar" }, { command: "operator", description: "👨‍💼 Operator: faol/band, navbat" }, { command: "band", description: "🟡 Band / bo'sh (almashtirish)" },
       { command: "panel", description: "🌐 Admin panel" }, { command: "menu", description: "Menyu" }] });
     if (gen !== st.gen) return status();
     st.active = true; st.startedAt = Date.now();
