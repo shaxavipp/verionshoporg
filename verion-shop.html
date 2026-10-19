@@ -117,6 +117,9 @@ header .htx{min-width:0}
 header .hn{font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
 header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .hctrl{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.hbtn.hbtn.hbtn-adm{display:inline-flex;align-items:center;gap:5px;background:var(--grad);color:#fff;border-color:transparent;font-weight:700}
+.hbtn.hbtn-adm svg{width:14px;height:14px}
+.card-adm{border-color:rgba(59,130,246,.55)!important;box-shadow:0 0 0 1px rgba(59,130,246,.25),0 6px 20px rgba(59,130,246,.15)}
 .hbtn{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 10px;
   font-size:11.5px;font-weight:800;color:var(--txt);white-space:nowrap;transition:transform .18s var(--spring)}
 .hbtn:active{transform:scale(.9)}
@@ -775,7 +778,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.2";
+var CLIENT_BUILD="2026-10-19.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1615,6 +1618,7 @@ function headerHTML(){
     +'<div class="hun">'+(u&&u.username?'@'+esc(u.username):'')+'</div>'
     +'</div></div>'
     +'<div class="hctrl">'
+    +(isAdmin()?'<button id="hAdminBtn" class="hbtn hbtn-adm" aria-label="Admin panel">'+ic("tools",14)+'<span>Admin</span></button>':'')
     +'<button id="hLangBtn" class="hbtn">'+S.lang.toUpperCase()+'</button>'
     +'<button id="hThemeBtn" class="hbtn hbtn-ic">'+(S.theme==="light"?ic("sun",15):ic("moon",15))+'</button>'
     +'</div></header>';
@@ -3743,6 +3747,8 @@ function profileHTML(){
     +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
     +'<div class="stat"><div class="v">'+esc(money(sum))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
     +'<div class="stat"><div class="v">'+balHTML()+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
+    // Admin panel — eng tepada, darhol ko'rinsin (ilgari sahifa oxirida edi va topilmasdi).
+    +(isAdmin()?'<div class="card card-adm">'+svcRow('id="adminBtnRow"',"tools","#3b82f6",t("a_panel"),t("a_panel_sub"),undefined,"profile:admin")+'</div>':'')
     +'<div class="card">'
     +svcRow('data-openloyalty="1"',"trophy","#f1c40f",t("loyalty_title"),loyaltySub,undefined,"profile:loyalty")
     +svcRow('data-openfavs="1"',"heart","#e74c3c",t("fav_title"),(ME.favorites&&ME.favorites.length?ME.favorites.length+" "+esc(t("group_count_unit")):t("fav_empty")),undefined,"profile:favs")
@@ -3757,11 +3763,6 @@ function profileHTML(){
     +svcRow('',"bolt","#8e6fef",t("reduce_motion"),t("reduce_motion_sub"),'<button class="swbtn'+(S.reduceMotion?" on":"")+'" id="reduceMotionBtn"><i></i></button>',"profile:motion")
     +svcRow('',"bell","#e67e22",t("notif_title"),t("notif_sub"),'<button class="swbtn'+(ME.notifEnabled?" on":"")+'" id="notifEnabledBtn"><i></i></button>',"profile:notif")
     +'</div>';
-  if(isAdmin()){
-    html+='<div class="card">'
-      +svcRow('id="adminBtnRow"',"tools","#7f8c8d",t("a_panel"),t("a_panel_sub"),undefined,"profile:admin")
-      +'</div>';
-  }
   html+='<div style="height:24px"></div>';
   return html;
 }
@@ -3770,6 +3771,7 @@ function profileHTML(){
 function openAdmin(){
   var html='<h2>'+esc(t("a_panel"))+'</h2>'
     +'<div style="height:8px"></div>'
+    +'<div id="aAbCard"></div>'
     +'<div class="sect" style="margin:0 0 6px">'+esc(t("a_stats_title"))+'</div>'
     +'<div class="seg" id="statsPeriodSeg">'
     +'<button data-period="today" class="on">'+esc(t("period_today"))+'</button>'
@@ -3856,6 +3858,7 @@ function openAdmin(){
   sh.querySelector("#aMoney").addEventListener("click",function(){openAdminMoney();});
   sh.querySelector("#aFinBtn").addEventListener("click",function(){openAdminFinance(openAdmin);});
   sh.querySelector("#aAdminBotBtn").addEventListener("click",function(){openAdminAdminBot(openAdmin);});
+  paintAdminBotCard(sh.querySelector("#aAbCard"));
   (function(){var n=sh.querySelector("#aAdminBotNote"),ab=ME.adminBot;if(!n)return;
     if(ab&&ab.active&&ab.username){n.innerHTML='🛡 Admin bot ishlayapti: <a href="#" id="aAbLink">@'+esc(ab.username)+'</a> — to\'lov va buyurtmalar o\'sha yerga keladi.';
       var l=n.querySelector("#aAbLink");if(l)l.addEventListener("click",function(e){e.preventDefault();openLink("https://t.me/"+ab.username);});}
@@ -4584,6 +4587,36 @@ function openAdminFinance(backFn){
     }).catch(function(){btn.disabled=false;box.textContent="Xatolik.";});
   });
   load(FIN_PERIOD);
+}
+/* Admin panel tepasidagi karta: admin bot ulanmagan bo'lsa — token shu yerning o'zida kiritiladi. */
+function paintAdminBotCard(box){
+  if(!box)return;
+  api("/api/admin/adminbot").then(function(r){
+    ME.adminBot={active:!!r.active,username:r.username||""};
+    if(r.active){box.innerHTML="";return;}
+    box.innerHTML='<div class="card card-adm" style="padding:14px;margin:0 0 12px">'
+      +'<div style="font-weight:800;font-size:15px;margin-bottom:6px">🛡 Admin botni ulash</div>'
+      +'<div class="d" style="margin:0 0 8px">1) @BotFather → /newbot → yangi bot oching.<br>2) Bergan tokenni shu yerga qo\'ying va «Ulash» bosing.<br>3) Yangi botga kirib /start bosing.'
+      +(r.tokenSet&&r.error?'<br><b>⚠️ '+esc(r.error)+'</b>':'')+'</div>'
+      +(r.fromEnv?'<div class="d">Railway\'dagi ADMIN_BOT_TOKEN ishlatilmoqda.</div>'
+        :'<input id="aAbTok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="1234567890:AA...">'
+        +'<button class="btn" id="aAbSave" style="margin-top:8px">Ulash</button>')
+      +'<div class="d" id="aAbRes" style="margin:8px 0 0"></div></div>';
+    var b=box.querySelector("#aAbSave");if(!b)return;
+    b.addEventListener("click",function(){
+      var v=box.querySelector("#aAbTok").value.trim(),res=box.querySelector("#aAbRes");
+      if(!v){res.textContent="Token kiriting.";return;}
+      b.disabled=true;res.textContent="Ulanmoqda…";
+      api("/api/admin/adminbot","POST",{token:v}).then(function(x){
+        b.disabled=false;
+        if(x.active){ME.adminBot={active:true,username:x.username||""};haptic("ok");
+          box.innerHTML='<div class="card card-adm" style="padding:14px;margin:0 0 12px">✅ Ulandi: <b>@'+esc(x.username)+'</b><br><span class="d">Endi shu botga kirib /start bosing.</span>'
+            +'<button class="btn" id="aAbOpen" style="margin-top:8px">Botni ochish</button></div>';
+          var o=box.querySelector("#aAbOpen");if(o)o.addEventListener("click",function(){openLink("https://t.me/"+x.username);});
+        }else res.textContent="⚠️ "+(x.error||"Ulanmadi");
+      }).catch(function(e){b.disabled=false;res.textContent="⚠️ "+((e&&e.resp&&e.resp.error)||"Xatolik");});
+    });
+  }).catch(function(){});
 }
 /* ---------- Admin bot sozlamasi ---------- */
 function openAdminAdminBot(backFn){
@@ -6618,6 +6651,8 @@ function bind(){
     var idx=LANG_ORDER.indexOf(S.lang);S.lang=LANG_ORDER[(idx+1)%LANG_ORDER.length];
     persist();haptic();render();
   });
+  var hab=document.getElementById("hAdminBtn");
+  if(hab)hab.addEventListener("click",function(){haptic();openAdmin();});
   var htc=document.getElementById("hThemeBtn");
   if(htc)htc.addEventListener("click",function(){
     S.theme=S.theme==="light"?"dark":"light";Store.set("vn_theme",S.theme);haptic();render();
