@@ -477,7 +477,8 @@ module.exports = function createAi(ctx) {
       if (raw === "-") c.geminiKeys = [];
       else if (raw) {
         const ks = raw.split(/[\s,]+/).map(x => x.trim()).filter(Boolean);
-        if (ks.some(k => !/^[A-Za-z0-9_-]{30,60}$/.test(k))) return "Gemini kaliti ko'rinishi noto'g'ri (AIza... bilan boshlanadi)";
+        // Eski kalitlar "AIza...", yangilari "AQ...." (nuqtali, uzunroq) — ikkalasi ham qabul qilinadi.
+        if (ks.some(k => !/^[A-Za-z0-9._-]{20,300}$/.test(k))) return "Gemini kaliti ko'rinishi noto'g'ri (AIza... yoki AQ.... bilan boshlanadi)";
         c.geminiKeys = ks.slice(0, 10);
       }
     }

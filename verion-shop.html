@@ -836,7 +836,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.10";
+var CLIENT_BUILD="2026-10-19.11";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4816,7 +4816,7 @@ function openAdminAi(backFn){
     +'<div id="aiGem">'
     +'<div class="d" style="margin:0 0 8px"><b>aistudio.google.com/apikey</b> → «Create API key». Bepul, karta kerak emas. Bepul limit kuniga cheklangan — '
     +'2–3 ta kalitni <b>har birini alohida loyihada</b> («Create API key in new project») yarating va hammasini shu yerga qo\'ying: biri limitga yetsa keyingisi ishlaydi.</div>'
-    +'<textarea id="aiGemKeys" class="exta" style="height:80px" placeholder="AIza... (har qatorda bitta kalit)" autocapitalize="off" spellcheck="false"></textarea>'
+    +'<textarea id="aiGemKeys" class="exta" style="height:80px" placeholder="AIza... yoki AQ.... (har qatorda bitta kalit)" autocapitalize="off" spellcheck="false"></textarea>'
     +'<label>Gemini modeli</label><select id="aiGemModel"></select></div>'
     +'<div id="aiCla">'
     +'<div class="sect" style="margin:4px 0 6px">Claude API kaliti</div>'
@@ -4842,7 +4842,7 @@ function openAdminAi(backFn){
     st.innerHTML=(r.provider==="claude"&&!r.sdk)?'🔴 Serverda Claude paketi o\'rnatilmagan — Railway qayta deploy qilsin.'
       :r.ready?((r.support||r.admin)?'🟢 Ishlayapti ('+(r.provider==="gemini"?"Gemini":"Claude")+')':'⚪️ Kalit bor, lekin o\'chirilgan')+(r.humans?' · operator bilan: '+r.humans+' ta mijoz':''):'⚪️ Kalit kiritilmagan';
     var gk=sh.querySelector("#aiGemKeys");
-    gk.placeholder=r.geminiFromEnv?"Railway'dagi GEMINI_API_KEYS ishlatilmoqda":(r.geminiKeys?r.geminiKeys+" ta kalit o'rnatilgan — almashtirish uchun yangilarini yozing (o'chirish: -)":"AIza... (har qatorda bitta kalit)");
+    gk.placeholder=r.geminiFromEnv?"Railway'dagi GEMINI_API_KEYS ishlatilmoqda":(r.geminiKeys?r.geminiKeys+" ta kalit o'rnatilgan — almashtirish uchun yangilarini yozing (o'chirish: -)":"AIza... yoki AQ.... (har qatorda bitta kalit)");
     sh.querySelector("#aiGemModel").innerHTML=r.geminiModels.map(function(m){return '<option value="'+esc(m.id)+'"'+(m.id===r.geminiModel?" selected":"")+'>'+esc(m.label)+'</option>';}).join("");
     var inp=sh.querySelector("#aiKey");
     if(r.fromEnv){inp.disabled=true;inp.placeholder="Railway'dagi ANTHROPIC_API_KEY ishlatilmoqda";}
