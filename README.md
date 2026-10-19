@@ -205,6 +205,8 @@ Do'kon botiga yozgan mijozga AI o'zi javob beradi (`ai.js`). Mijoz qaysi tilda y
 
 **Admin botda:** oddiy tilda so'rash mumkin, masalan «bugungi foyda qancha?», «kutilayotgan to'lovlar», «Ali ismli mijoz», «ChatGPT Plus narxini 290 ming qil». Narx yoki balansni o'zgartirish faqat «✅ Ha» tugmasi bosilgandan keyin bajariladi.
 
+**Bepul variant — Gemini:** aistudio.google.com/apikey → «Create API key». Karta kerak emas. Admin panel → ✨ AI yordamchi → «🆓 Gemini» bo'limiga kalitlarni har qatorga bittadan yozing (yoki Railway'da `GEMINI_API_KEYS=k1,k2`). Bepul limit cheklangan, shuning uchun 2–3 ta kalitni **har birini alohida loyihada** yarating: biri limitga (429) yetsa, avtomatik keyingisi ishlatiladi. Standart model — `gemini-3.5-flash-lite`. Vositalar va xavfsizlik qoidalari Claude bilan bir xil.
+
 **Sozlash:** Admin panel → ✨ AI yordamchi. Bu yerda Claude API kaliti (console.anthropic.com, `sk-ant-…`; yoki Railway'da `ANTHROPIC_API_KEY`), model, yoqish/o'chirish, do'kon qoidalari (ish vaqti, yetkazib berish muddati…), kunlik limit va bugungi statistika bor. Standart model — Claude Opus 5.5. Arzonroq variantlar: Sonnet 5.5 yoki Haiku 5.5. API ishlamasa, mijozga support username'i yuboriladi.
 
 ## Admin bot (alohida bot) va moliya

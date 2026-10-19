@@ -20,6 +20,14 @@ const crypto = require("crypto");
 let Anthropic = null;
 try { const m = require("@anthropic-ai/sdk"); Anthropic = m.default || m; } catch (e) { /* paket o'rnatilmagan */ }
 
+// Gemini (Google AI Studio) — bepul tarifi bor. Bepul limit model bo'yicha farq qiladi;
+// har bir kalit alohida Google loyihasida yaratilsa, rotatsiya limitni ko'paytiradi.
+const GEMINI_MODELS = [
+  { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite — bepul, tez (tavsiya)" },
+  { id: "gemini-3.5-flash", label: "Gemini 3.5 Flash — aqlliroq, sekinroq" },
+  { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite — muqobil" }
+];
+const GEMINI_BASE = () => String(process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com").replace(/\/+$/, "");
 const MODELS = [
   { id: "claude-opus-5-5", label: "Claude Opus 5.5 — eng aqlli" },
   { id: "claude-sonnet-5-5", label: "Claude Sonnet 5.5 — tez va arzonroq" },
@@ -40,7 +48,10 @@ module.exports = function createAi(ctx) {
     return c;
   }
   const apiKey = () => String(process.env.ANTHROPIC_API_KEY || cfg().key || "").trim();
-  const ready = () => !!(Anthropic && apiKey());
+  // Tanlanmagan bo'lsa: Claude kaliti bor — Claude, aks holda bepul Gemini.
+  const provider = () => { const p = cfg().provider; return p === "gemini" || p === "claude" ? p : (apiKey() ? "claude" : "gemini"); };
+  const geminiKeys = () => String(process.env.GEMINI_API_KEYS || "").split(",").concat(cfg().geminiKeys || []).map(k => String(k).trim()).filter(Boolean);
+  const ready = () => provider() === "gemini" ? geminiKeys().length > 0 : !!(Anthropic && apiKey());
   let client = null, clientKey = "";
   function api() {
     const k = apiKey();
@@ -81,6 +92,84 @@ module.exports = function createAi(ctx) {
   }
   // Agent sikli: modelga vositalar beriladi, chaqiruvlar bajariladi, natija qaytariladi.
   async function runAgent(system, tools, impl, history, userText, effort) {
+    if (provider() === "gemini") return runGemini(system, tools, impl, history, userText);
+    return runClaude(system, tools, impl, history, userText, effort);
+  }
+  /* ---------- Gemini (REST, generateContent + function calling) ---------- */
+  const coolUntil = {};    // kalit -> vaqt (429 dan keyin dam oladi)
+  let gIdx = 0;
+  function gSchema(sc) {   // JSON Schema → Gemini (OpenAPI) sxemasi
+    const t = String(sc.type || "string").toUpperCase();
+    const o = { type: t };
+    if (sc.description) o.description = sc.description;
+    if (sc.enum) o.enum = sc.enum;
+    if (t === "OBJECT") {
+      o.properties = {};
+      for (const k of Object.keys(sc.properties || {})) o.properties[k] = gSchema(sc.properties[k]);
+      if ((sc.required || []).length) o.required = sc.required;
+    }
+    return o;
+  }
+  async function geminiCall(body) {
+    const keys = geminiKeys();
+    if (!keys.length) throw new Error("Gemini kaliti kiritilmagan");
+    const model = cfg().geminiModel || GEMINI_MODELS[0].id;
+    let lastErr = null;
+    for (let n = 0; n < keys.length; n++) {
+      const key = keys[(gIdx + n) % keys.length];
+      if ((coolUntil[key] || 0) > Date.now()) continue;
+      const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 60000);
+      let r, j = null;
+      try {
+        r = await fetch(GEMINI_BASE() + "/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+          method: "POST", signal: ac.signal, headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body) });
+        try { j = await r.json(); } catch (e) {}
+      } catch (e) { lastErr = new Error("Gemini bilan aloqa yo'q: " + S(e.message, 120)); continue; }
+      finally { clearTimeout(tm); }
+      if (r.ok) { gIdx = (gIdx + n + 1) % keys.length; return j || {}; }
+      const msg = S(j && j.error && j.error.message, 200) || ("HTTP " + r.status);
+      lastErr = Object.assign(new Error(msg), { status: r.status });
+      if (r.status === 429) { coolUntil[key] = Date.now() + (/per ?day|PerDay/i.test(msg) ? 6 * 3600000 : 60000); continue; }   // limit — keyingi kalit
+      if (r.status === 401 || r.status === 403) { coolUntil[key] = Date.now() + 3600000; continue; }                            // yaroqsiz kalit
+      if (r.status >= 500) continue;
+      throw lastErr;                                                                                                              // 400/404 — boshqa kalit ham yordam bermaydi
+    }
+    throw lastErr || new Error("Barcha Gemini kalitlari limitda — birozdan keyin urinib ko'ring");
+  }
+  async function runGemini(system, tools, impl, history, userText) {
+    const contents = history.map(h => ({ role: h.role === "assistant" ? "model" : "user", parts: [{ text: h.text }] }));
+    contents.push({ role: "user", parts: [{ text: userText }] });
+    const decl = tools.map(t => Object.assign({ name: t.name, description: t.description },
+      Object.keys(t.input_schema.properties || {}).length ? { parameters: gSchema(t.input_schema) } : {}));
+    const actions = [];
+    for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
+      const j = await geminiCall({ systemInstruction: { parts: [{ text: system }] }, contents,
+        tools: decl.length ? [{ functionDeclarations: decl }] : undefined, generationConfig: { maxOutputTokens: 2000 } });
+      const um = j.usageMetadata || {};
+      addUsage({ input_tokens: (um.promptTokenCount || 0) - (um.cachedContentTokenCount || 0), cache_read_input_tokens: um.cachedContentTokenCount || 0,
+        output_tokens: (um.candidatesTokenCount || 0) + (um.thoughtsTokenCount || 0) });
+      const cand = (j.candidates || [])[0];
+      if (!cand || cand.finishReason === "SAFETY" || (j.promptFeedback && j.promptFeedback.blockReason))
+        return { text: "Kechirasiz, bu savolga javob bera olmayman. Boshqa savol bo'lsa, yozing.", actions };
+      const parts = (cand.content && cand.content.parts) || [];
+      const calls = parts.filter(x => x.functionCall);
+      const text = parts.filter(x => x.text && !x.thought).map(x => x.text).join("").trim();
+      if (!calls.length) return { text, actions };
+      // Modelning javobi (thoughtSignature bilan) o'zgarmasdan qaytariladi.
+      contents.push({ role: "model", parts });
+      const resp = [];
+      for (const c of calls) {
+        const name = c.functionCall.name, args = c.functionCall.args || {};
+        let out;
+        try { out = impl[name] ? await impl[name](args, actions) : { error: "Bunday vosita yo'q" }; }
+        catch (e) { out = { error: S(e.message, 200) }; }
+        resp.push({ functionResponse: { name, response: { result: out || {} } } });
+      }
+      contents.push({ role: "user", parts: resp });
+    }
+    return { text: "Kechirasiz, so'rovingiz juda murakkab bo'lib ketdi. Operatorni chaqiraymi?", actions };
+  }
+  async function runClaude(system, tools, impl, history, userText, effort) {
     const messages = history.map(h => ({ role: h.role, content: h.text }));
     messages.push({ role: "user", content: userText });
     const actions = [];
@@ -366,7 +455,8 @@ module.exports = function createAi(ctx) {
   /* ---------- sozlama API (mini ilova admin paneli) ---------- */
   function publicCfg() {
     const c = cfg(), st = stats();
-    return { keySet: !!apiKey(), fromEnv: !!process.env.ANTHROPIC_API_KEY, sdk: !!Anthropic, model: c.model, models: MODELS,
+    return { provider: provider(), geminiKeys: geminiKeys().length, geminiFromEnv: !!process.env.GEMINI_API_KEYS, geminiModel: c.geminiModel || GEMINI_MODELS[0].id, geminiModels: GEMINI_MODELS,
+      ready: ready(), keySet: !!apiKey(), fromEnv: !!process.env.ANTHROPIC_API_KEY, sdk: !!Anthropic, model: c.model, models: MODELS,
       support: !!c.support, admin: !!c.admin, extra: c.extra || "", dailyLimit: Number(c.dailyLimit) || 40, handoffMin: Number(c.handoffMin) || 60,
       today: { msgs: st.msgs, users: Object.keys(st.users).length, orders: st.orders, handoffs: st.handoffs, errors: st.errors, inTok: st.inTok, cacheRead: st.cacheRead, outTok: st.outTok },
       humans: Object.keys(human()).filter(k => human()[k] > Date.now()).length };
@@ -379,6 +469,18 @@ module.exports = function createAi(ctx) {
       c.key = k;
     }
     if (b.model !== undefined) { if (!MODELS.some(m => m.id === b.model)) return "Model noto'g'ri"; c.model = b.model; }
+    if (b.provider !== undefined) c.provider = b.provider === "gemini" ? "gemini" : "claude";
+    if (b.geminiModel !== undefined) { const gm = S(b.geminiModel, 60).trim(); if (!/^gemini-[a-z0-9.-]+$/i.test(gm)) return "Gemini model nomi noto'g'ri"; c.geminiModel = gm; }
+    if (b.geminiKeys !== undefined) {
+      // Bo'sh qoldirilsa — eski kalitlar qoladi; "-" yozilsa — hammasi o'chiriladi.
+      const raw = String(b.geminiKeys || "").trim();
+      if (raw === "-") c.geminiKeys = [];
+      else if (raw) {
+        const ks = raw.split(/[\s,]+/).map(x => x.trim()).filter(Boolean);
+        if (ks.some(k => !/^[A-Za-z0-9_-]{30,60}$/.test(k))) return "Gemini kaliti ko'rinishi noto'g'ri (AIza... bilan boshlanadi)";
+        c.geminiKeys = ks.slice(0, 10);
+      }
+    }
     if (b.support !== undefined) c.support = !!b.support;
     if (b.admin !== undefined) c.admin = !!b.admin;
     if (b.extra !== undefined) c.extra = S(b.extra, 4000);
@@ -388,6 +490,12 @@ module.exports = function createAi(ctx) {
     return "";
   }
   async function testKey() {
+    if (provider() === "gemini") {
+      try {
+        const r = await runGemini("Qisqa javob bering.", [], {}, [], "Salom! Bir so'z bilan javob bering.");
+        return { ok: true, message: "Ishlayapti (Gemini " + (cfg().geminiModel || GEMINI_MODELS[0].id) + "): " + S(r.text, 80) };
+      } catch (e) { return { ok: false, message: (e && e.status ? "HTTP " + e.status + ": " : "") + S(e && e.message, 200) }; }
+    }
     if (!Anthropic) return { ok: false, message: "@anthropic-ai/sdk paketi o'rnatilmagan (npm install)" };
     if (!apiKey()) return { ok: false, message: "Kalit kiritilmagan" };
     try {

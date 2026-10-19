@@ -836,7 +836,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.9";
+var CLIENT_BUILD="2026-10-19.10";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4811,11 +4811,19 @@ function openAdminAi(backFn){
     +'(pul faqat mijoz <b>«✅ Tasdiqlash»</b> tugmasini bosganda yechiladi), balans va buyurtma holatini ko\'rsatadi, hal qila olmasa <b>operatorga</b> (admin botga) uzatadi. '
     +'Admin botda esa oddiy tilda so\'rash mumkin: «bugungi foyda qancha?», «ChatGPT Plus narxini 290 ming qil».<br>AI chegirma bera olmaydi, pul qaytara olmaydi va balans qo\'sha olmaydi.</div>'
     +'<div class="d" id="aiState" style="margin:0 0 10px">…</div>'
+    +'<div class="sect" style="margin:4px 0 6px">AI provayder</div>'
+    +'<div class="seg" id="aiProv" style="margin:0 0 8px"><button data-p="gemini">🆓 Gemini (bepul)</button><button data-p="claude">Claude (pullik, aqlliroq)</button></div>'
+    +'<div id="aiGem">'
+    +'<div class="d" style="margin:0 0 8px"><b>aistudio.google.com/apikey</b> → «Create API key». Bepul, karta kerak emas. Bepul limit kuniga cheklangan — '
+    +'2–3 ta kalitni <b>har birini alohida loyihada</b> («Create API key in new project») yarating va hammasini shu yerga qo\'ying: biri limitga yetsa keyingisi ishlaydi.</div>'
+    +'<textarea id="aiGemKeys" class="exta" style="height:80px" placeholder="AIza... (har qatorda bitta kalit)" autocapitalize="off" spellcheck="false"></textarea>'
+    +'<label>Gemini modeli</label><select id="aiGemModel"></select></div>'
+    +'<div id="aiCla">'
     +'<div class="sect" style="margin:4px 0 6px">Claude API kaliti</div>'
     +'<div class="d" style="margin:0 0 8px">console.anthropic.com → API Keys → Create Key. Kalit <b>sk-ant-</b> bilan boshlanadi. Hisobga to\'lov (kredit) qo\'shilgan bo\'lishi kerak.</div>'
     +'<input id="aiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-...">'
     +'<label>Model</label><select id="aiModel"></select>'
-    +'<div class="d" style="margin:-4px 0 8px">Opus — eng aqlli; Sonnet — tezroq va 2 baravar arzon; Haiku — juda arzon, oddiy savollar uchun.</div>'
+    +'<div class="d" style="margin:-4px 0 8px">Opus — eng aqlli; Sonnet — tezroq va 2 baravar arzon; Haiku — juda arzon, oddiy savollar uchun.</div></div>'
     +'<div class="switch"><span style="font-size:13.5px">🛍 Mijozlarga javob bersin (do\'kon boti)</span><button class="swbtn" id="aiSup"><i></i></button></div>'
     +'<div class="switch"><span style="font-size:13.5px">🛡 Admin botda yordamchi</span><button class="swbtn" id="aiAdm"><i></i></button></div>'
     +'<label>Do\'kon haqida qo\'shimcha ma\'lumot va qoidalar</label>'
@@ -4830,8 +4838,12 @@ function openAdminAi(backFn){
   function card(k,v,sub){return '<div class="fin-card"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div>'+(sub?'<div class="s">'+esc(sub)+'</div>':'')+'</div>';}
   function paint(r){
     var st=sh.querySelector("#aiState");
-    st.innerHTML=!r.sdk?'🔴 Serverda AI paketi o\'rnatilmagan — Railway qayta deploy qilsin.'
-      :r.keySet?((r.support||r.admin)?'🟢 Ishlayapti':'⚪️ Kalit bor, lekin o\'chirilgan')+(r.humans?' · operator bilan: '+r.humans+' ta mijoz':''):'⚪️ Kalit kiritilmagan';
+    PROV=r.provider;showProv();
+    st.innerHTML=(r.provider==="claude"&&!r.sdk)?'🔴 Serverda Claude paketi o\'rnatilmagan — Railway qayta deploy qilsin.'
+      :r.ready?((r.support||r.admin)?'🟢 Ishlayapti ('+(r.provider==="gemini"?"Gemini":"Claude")+')':'⚪️ Kalit bor, lekin o\'chirilgan')+(r.humans?' · operator bilan: '+r.humans+' ta mijoz':''):'⚪️ Kalit kiritilmagan';
+    var gk=sh.querySelector("#aiGemKeys");
+    gk.placeholder=r.geminiFromEnv?"Railway'dagi GEMINI_API_KEYS ishlatilmoqda":(r.geminiKeys?r.geminiKeys+" ta kalit o'rnatilgan — almashtirish uchun yangilarini yozing (o'chirish: -)":"AIza... (har qatorda bitta kalit)");
+    sh.querySelector("#aiGemModel").innerHTML=r.geminiModels.map(function(m){return '<option value="'+esc(m.id)+'"'+(m.id===r.geminiModel?" selected":"")+'>'+esc(m.label)+'</option>';}).join("");
     var inp=sh.querySelector("#aiKey");
     if(r.fromEnv){inp.disabled=true;inp.placeholder="Railway'dagi ANTHROPIC_API_KEY ishlatilmoqda";}
     else inp.placeholder=r.keySet?"•••••• (o'rnatilgan — almashtirish uchun yangisini yozing)":"sk-ant-...";
@@ -4844,15 +4856,25 @@ function openAdminAi(backFn){
     sh.querySelector("#aiStats").innerHTML=card("💬 Mijoz xabarlari",String(d.msgs||0),(d.users||0)+" ta mijoz")+card("🛒 AI orqali buyurtma",String(d.orders||0),"")
       +card("🙋 Operatorga",String(d.handoffs||0),"")+card("🔤 Token",vizShort((d.inTok||0)+(d.outTok||0)),"kesh: "+vizShort(d.cacheRead||0));
   }
+  var PROV="gemini";
+  function showProv(){
+    var b=sh.querySelectorAll("#aiProv [data-p]");for(var i=0;i<b.length;i++)b[i].classList.toggle("on",b[i].getAttribute("data-p")===PROV);
+    sh.querySelector("#aiGem").style.display=PROV==="gemini"?"":"none";sh.querySelector("#aiCla").style.display=PROV==="claude"?"":"none";
+  }
+  var pb=sh.querySelectorAll("#aiProv [data-p]");
+  for(var pi=0;pi<pb.length;pi++)pb[pi].addEventListener("click",function(){PROV=this.getAttribute("data-p");showProv();haptic();});
   function load(){api("/api/admin/ai").then(paint).catch(function(){sh.querySelector("#aiState").textContent="Yuklab bo'lmadi.";});}
   ["#aiSup","#aiAdm"].forEach(function(x){sh.querySelector(x).addEventListener("click",function(){this.classList.toggle("on");});});
   function body(){
     var b={model:sh.querySelector("#aiModel").value,support:sh.querySelector("#aiSup").classList.contains("on"),admin:sh.querySelector("#aiAdm").classList.contains("on"),
       extra:sh.querySelector("#aiExtra").value,dailyLimit:Number(sh.querySelector("#aiLimit").value)||40,handoffMin:Number(sh.querySelector("#aiHand").value)||60};
-    var k=sh.querySelector("#aiKey").value.trim();if(k)b.key=k;return b;
+    var k=sh.querySelector("#aiKey").value.trim();if(k)b.key=k;
+    b.provider=PROV;b.geminiModel=sh.querySelector("#aiGemModel").value||undefined;
+    var gk=sh.querySelector("#aiGemKeys").value.trim();if(gk)b.geminiKeys=gk;
+    return b;
   }
   function save(then){
-    return api("/api/admin/ai","POST",body()).then(function(r){sh.querySelector("#aiKey").value="";paint(r);haptic("ok");if(then)then();else toast(t("a_saved"));})
+    return api("/api/admin/ai","POST",body()).then(function(r){sh.querySelector("#aiKey").value="";sh.querySelector("#aiGemKeys").value="";paint(r);haptic("ok");if(then)then();else toast(t("a_saved"));})
       .catch(function(e){toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
   }
   sh.querySelector("#aiSave").addEventListener("click",function(){save();});
