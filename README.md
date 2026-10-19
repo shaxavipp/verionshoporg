@@ -209,6 +209,14 @@ Do'kon botiga yozgan mijozga AI o'zi javob beradi (`ai.js`). Mijoz qaysi tilda y
 
 **Sozlash:** Admin panel → ✨ AI yordamchi. Bu yerda Claude API kaliti (console.anthropic.com, `sk-ant-…`; yoki Railway'da `ANTHROPIC_API_KEY`), model, yoqish/o'chirish, do'kon qoidalari (ish vaqti, yetkazib berish muddati…), kunlik limit va bugungi statistika bor. Standart model — Claude Opus 5.5. Arzonroq variantlar: Sonnet 5.5 yoki Haiku 5.5. API ishlamasa, mijozga support username'i yuboriladi.
 
+## Ilovadagi support chat
+
+Ilovaning har bir ekranida o'ng pastda **🎧 suzuvchi tugma** bor. «Qo'llab-quvvatlash» tugmalari ham shu chatni ochadi. Bosilganda to'liq ekranli chat oynasi ochiladi, mashhur saytlardagi kabi: xabarlar, "yozmoqda…" belgisi, tezkor savollar (Narxlar, MLBB olmos, ChatGPT Plus, buyurtma, to'ldirish, Operator), AI tugmalari («✅ Tasdiqlash», «💳 Balansni to'ldirish»…).
+
+- Avval AI yordamchi javob beradi. Operator chaqirilsa yoki AI o'chiq bo'lsa, xabar admin botga boradi. Operator «✍️ Javob yozish» bilan javob beradi va javob **ham ilova chatida, ham Telegram'da** ko'rinadi.
+- Bot va ilova — **bitta suhbat**: botda boshlangan yozishma ilovada ham ko'rinadi (oxirgi 60 ta xabar).
+- Chat yopiq paytda yangi javob kelsa, tugmada qizil nuqta chiqadi.
+
 ## Admin bot (alohida bot) va moliya
 
 Do'kon botidan tashqari **ikkinchi bot** — faqat adminlar uchun (`adminbot.js`). Ulash:

@@ -700,6 +700,43 @@ body.adm-open{overflow:hidden}
 .viz-bars .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;margin:0 0 9px;font-size:12.5px}
 .viz-bars .track{grid-column:1/-1;height:10px}
 .viz-bars .bar{height:10px;border-radius:0 4px 4px 0;background:var(--s1);min-width:2px}
+/* support chat (ilova ichida, mashhur saytlardagi kabi) */
+.sup-fab{position:fixed;right:16px;bottom:calc(98px + env(safe-area-inset-bottom));z-index:59;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(37,99,235,.45);transition:transform .2s}
+.sup-fab:active{transform:scale(.92)}
+.sup-fab svg{width:26px;height:26px}
+.sup-fab .dot{position:absolute;top:4px;right:4px;width:13px;height:13px;border-radius:50%;background:#ef4444;border:2px solid var(--bg)}
+body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab{display:none}
+.sup{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;flex-direction:column;animation:supIn .25s var(--ease)}
+@keyframes supIn{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.sup-head{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;border-bottom:1px solid var(--line);background:var(--hdrbg);backdrop-filter:blur(14px)}
+.sup-av{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;position:relative;flex:0 0 auto}
+.sup-av i{position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid var(--bg)}
+.sup-t{flex:1;min-width:0}.sup-t b{display:block;font-size:16px}.sup-t span{font-size:12px;color:var(--mut)}
+.sup-x{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--txt);font-size:18px;cursor:pointer}
+.sup-body{flex:1;overflow-y:auto;padding:14px 12px 8px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch}
+.sup-m{max-width:84%;padding:9px 12px;border-radius:18px;font-size:14.5px;line-height:1.4;word-wrap:break-word;white-space:normal}
+.sup-m.u{align-self:flex-end;background:var(--grad);color:#fff;border-bottom-right-radius:6px}
+.sup-m.a{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px}
+.sup-m.s{align-self:center;background:transparent;color:var(--mut);font-size:12.5px;text-align:center;max-width:92%}
+.sup-m .who{font-size:11px;font-weight:800;color:var(--acc2);margin-bottom:3px}
+.sup-m .tm{font-size:10px;opacity:.6;margin-top:3px;text-align:right}
+.sup-acts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.sup-acts button{border:none;border-radius:12px;padding:10px 12px;font-weight:800;font-size:13.5px;cursor:pointer;background:var(--grad);color:#fff;text-align:center}
+.sup-acts button.o{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.sup-acts button:disabled{opacity:.5}
+.sup-typing{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;display:flex;gap:4px}
+.sup-typing i{width:7px;height:7px;border-radius:50%;background:var(--mut);animation:supDot 1.2s infinite}
+.sup-typing i:nth-child(2){animation-delay:.2s}.sup-typing i:nth-child(3){animation-delay:.4s}
+@keyframes supDot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.sup-chips{display:flex;gap:6px;overflow-x:auto;padding:6px 12px;scrollbar-width:none}
+.sup-chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer}
+.sup-bar{display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--hdrbg)}
+.sup-bar textarea{flex:1;margin:0;min-height:44px;max-height:120px;resize:none;border-radius:22px;padding:11px 14px;font-size:15px;line-height:1.35}
+.sup-send{width:44px;height:44px;border-radius:50%;border:none;background:var(--grad);color:#fff;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.sup-send svg{width:20px;height:20px}
+.sup-welcome{text-align:center;color:var(--mut);font-size:13px;padding:16px 10px}
+.sup-welcome b{display:block;color:var(--txt);font-size:17px;margin:8px 0 4px}
 /* admin: moliya */
 .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
 .fin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;min-width:0}
@@ -836,7 +873,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.11";
+var CLIENT_BUILD="2026-10-19.12";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4804,6 +4841,110 @@ function paintAdminBotCard(box){
     });
   }).catch(function(){});
 }
+/* ===== Support chat — ilova ichida (AI yordamchi + operator; bot bilan bitta suhbat) ===== */
+var SUP={open:false,last:0,timer:null,waiting:0,state:null,msgs:[]};
+function supSeenKey(){var u=tgUser();return "vn_sup_seen_"+(u?u.id:0);}
+function supFabHTML(){return tgUser()?'<button class="sup-fab" id="supFab" aria-label="Yordam">'+ic("headset",26)+'<span class="dot" id="supDot" hidden></span></button>':"";}
+function supEnsureFab(){
+  if(!tgUser()||document.getElementById("supFab"))return;
+  var d=document.createElement("div");d.innerHTML=supFabHTML();var b=d.firstChild;document.body.appendChild(b);
+  b.addEventListener("click",function(){haptic();openSupportChat();});
+}
+function supFmtTime(ts){var d=new Date(ts);return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
+function supMsgHTML(m){
+  if(m.from==="system")return '<div class="sup-m s">'+esc(m.text).replace(/\n/g,"<br>")+'</div>';
+  var mine=m.from==="user";
+  var acts="";
+  if(m.actions&&m.actions.length){
+    acts='<div class="sup-acts">'+m.actions.map(function(a){
+      return a.type==="confirm"?'<button data-supconf="'+esc(a.token)+'">'+esc(a.label)+'</button>'
+        :'<button class="o" data-supopen="'+esc(a.section)+'">'+esc(a.label)+'</button>';}).join("")+'</div>';
+  }
+  return '<div class="sup-m '+(mine?"u":"a")+'">'+(mine?"":'<div class="who">'+(m.from==="admin"?"👨‍💼 Operator":"✨ Verion AI")+'</div>')
+    +esc(m.text).replace(/\n/g,"<br>")+acts+'<div class="tm">'+supFmtTime(m.ts)+'</div></div>';
+}
+function supRender(){
+  var box=document.getElementById("supBody");if(!box)return;
+  var h=SUP.msgs.length?"":'<div class="sup-welcome">'+ic("headset",34)+'<b>Salom! Qanday yordam kerak?</b>Narxlar, buyurtma, to\'lov — istalgan savolni yozing. '
+    +(SUP.state&&SUP.state.ai?'AI yordamchi darhol javob beradi, kerak bo\'lsa operatorni chaqiradi.':'Operator tez orada javob beradi.')+'</div>';
+  h+=SUP.msgs.map(supMsgHTML).join("");
+  if(SUP.waiting&&Date.now()-SUP.waiting<60000)h+='<div class="sup-typing"><i></i><i></i><i></i></div>';
+  box.innerHTML=h;box.scrollTop=box.scrollHeight;
+  var st=document.getElementById("supSub");
+  if(st&&SUP.state)st.textContent=SUP.state.human?"👨‍💼 Operator bilan suhbat":(SUP.state.ai?"✨ AI yordamchi · bir necha soniyada javob":"Operator odatda tez javob beradi");
+  var cs=box.querySelectorAll("[data-supconf]");
+  for(var i=0;i<cs.length;i++)cs[i].addEventListener("click",function(){
+    var b=this;b.disabled=true;haptic();
+    api("/api/support/confirm","POST",{token:b.getAttribute("data-supconf")}).then(function(r){
+      haptic("ok");toast("✅ Buyurtma qabul qilindi");if(r.balance!=null){ME.balance=r.balance;}supPoll();loadMe();
+    }).catch(function(e){b.disabled=false;var r=e&&e.resp;toast((r&&r.message)||t("srv_off"),true);
+      if(r&&r.error==="balance"){closeSupportChat();go("pay");}});
+  });
+  var os=box.querySelectorAll("[data-supopen]");
+  for(var j=0;j<os.length;j++)os[j].addEventListener("click",function(){
+    var sec=this.getAttribute("data-supopen");closeSupportChat();
+    if(sec==="pay"||sec==="orders")go(sec);else if(sec==="home")go("home");else{S.screen="home";S.category=sec;render();window.scrollTo(0,0);}
+  });
+}
+function supPoll(){
+  return api("/api/support/history?after="+SUP.last).then(function(r){
+    SUP.state={ai:r.ai,human:r.human,operator:r.operator};
+    (r.messages||[]).forEach(function(m){
+      if(SUP.msgs.some(function(x){return x.id===m.id;}))return;
+      SUP.msgs.push(m);SUP.last=Math.max(SUP.last,m.id);
+      if(m.from!=="user")SUP.waiting=0;
+    });
+    if(SUP.open){try{Store.set(supSeenKey(),SUP.last);}catch(e){}}
+    supRender();
+  }).catch(function(){});
+}
+function openSupportChat(prefill){
+  if(!tgUser()){openLink("https://t.me/"+SUPPORT_USERNAME);return;}
+  closeSheet();
+  var old=document.getElementById("supChat");if(old)old.remove();
+  var el=document.createElement("div");el.className="sup";el.id="supChat";
+  el.innerHTML='<div class="sup-head"><div class="sup-av">V<i></i></div><div class="sup-t"><b>Verion yordam</b><span id="supSub">…</span></div>'
+    +'<button class="sup-x" id="supTg" aria-label="Telegram" title="Telegram">'+ic("send",16)+'</button><button class="sup-x" id="supClose" aria-label="close">✕</button></div>'
+    +'<div class="sup-body" id="supBody"></div>'
+    +'<div class="sup-chips" id="supChips">'+["💎 Narxlar","🎮 MLBB olmos","✨ ChatGPT Plus","📦 Buyurtmam qayerda?","💳 Balansni qanday to'ldiraman?","👨‍💼 Operator"].map(function(c){return '<button>'+esc(c)+'</button>';}).join("")+'</div>'
+    +'<div class="sup-bar"><textarea id="supIn" rows="1" placeholder="Xabar yozing…"></textarea><button class="sup-send" id="supSend" aria-label="send">'+ic("send",20)+'</button></div>';
+  document.body.appendChild(el);document.body.classList.add("sup-open");
+  SUP.open=true;
+  var inp=el.querySelector("#supIn");
+  function sendText(txt){
+    txt=String(txt||"").trim();if(!txt)return;
+    var tmp={id:-Date.now(),from:"user",text:txt,ts:Date.now()};SUP.msgs.push(tmp);SUP.waiting=Date.now();supRender();
+    inp.value="";inp.style.height="";
+    api("/api/support/send","POST",{text:txt}).then(function(){
+      SUP.msgs=SUP.msgs.filter(function(x){return x!==tmp;});supPoll();
+    }).catch(function(){SUP.waiting=0;toast(t("srv_off"),true);supRender();});
+  }
+  el.querySelector("#supSend").addEventListener("click",function(){haptic();sendText(inp.value);});
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendText(inp.value);}});
+  inp.addEventListener("input",function(){this.style.height="";this.style.height=Math.min(120,this.scrollHeight)+"px";});
+  var chips=el.querySelectorAll("#supChips button");
+  for(var i=0;i<chips.length;i++)chips[i].addEventListener("click",function(){haptic();
+    var txt=this.textContent.replace(/^\S+\s/,"");sendText(/Operator/.test(txt)?"Operator bilan gaplashmoqchiman":txt);});
+  el.querySelector("#supClose").addEventListener("click",function(){haptic();closeSupportChat();});
+  el.querySelector("#supTg").addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
+  var dot=document.getElementById("supDot");if(dot)dot.hidden=true;
+  supRender();supPoll().then(function(){if(prefill)sendText(prefill);});
+  clearInterval(SUP.timer);SUP.timer=setInterval(function(){if(SUP.open)supPoll();},2500);
+  setTimeout(function(){try{inp.focus();}catch(e){}},300);
+}
+function closeSupportChat(){
+  SUP.open=false;clearInterval(SUP.timer);SUP.timer=null;
+  var el=document.getElementById("supChat");if(el)el.remove();document.body.classList.remove("sup-open");
+}
+// Yopiq paytda operator yoki AI yangi xabar yozgan bo'lsa — tugmada qizil nuqta.
+function supCheckUnread(){
+  if(!tgUser()||SUP.open)return;
+  api("/api/support/history?after="+(Number(Store.get(supSeenKey(),0))||0)).then(function(r){
+    var n=(r.messages||[]).filter(function(m){return m.from==="admin"||m.from==="ai";}).length;
+    var dot=document.getElementById("supDot");if(dot)dot.hidden=!n;
+  }).catch(function(){});
+}
+setInterval(supCheckUnread,30000);
 /* ---------- AI yordamchi (Claude) sozlamasi ---------- */
 function openAdminAi(backFn){
   var html='<h2>✨ AI yordamchi</h2>'
@@ -6964,7 +7105,8 @@ function bind(){
   els=document.querySelectorAll("[data-viewalllb]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openLeaderboardSheet);
   els=document.querySelectorAll("[data-support]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){haptic();openSupportChat();});
+  supEnsureFab();
   els=document.querySelectorAll("[data-retrybal]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();loadMe();});
   els=document.querySelectorAll("[data-openvid]");

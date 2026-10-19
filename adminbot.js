@@ -401,7 +401,7 @@ module.exports = function createAdminBot(ctx) {
       if (w.kind === "reply") {
         // Operator javobi — do'kon boti orqali mijozga.
         waiting.delete(from);
-        ctx.shopSend(w.uid, "👨‍💼 Operator: " + text);
+        if (ctx.operatorReply) ctx.operatorReply(w.uid, text); else ctx.shopSend(w.uid, "👨‍💼 Operator: " + text);
         return send(chat, "✅ Yuborildi → " + who(w.uid), kbd([[btn("✍️ Yana yozish", "hr:" + w.uid), btn("🤖 AI'ga qaytarish", "hx:" + w.uid)]]));
       }
       return proposeBalance(chat, from, w, text);

@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.11";
+const BUILD = "2026-10-19.12";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1839,6 +1839,8 @@ ADMINBOT = require("./adminbot.js")({
   aiAdmin: (id, text) => (AI ? AI.onAdminText(id, text) : Promise.resolve(null)),
   aiAdminOp: (tok, id) => (AI ? AI.runAdminOp(tok, id) : "AI ulanmagan"),
   aiRelease: uid => { if (AI) AI.release(uid); },
+  // Operator javobi: Telegram'da ham, ilovadagi chat oynasida ham ko'rinadi.
+  operatorReply: (uid, text) => { tgSend(uid, "👨‍💼 Operator: " + text); if (AI) AI.log(uid, "admin", text); },
   aiOn: () => !!(AI && AI.ready()),
   statusInfo: () => ({
     build: BUILD,
@@ -1856,7 +1858,7 @@ var AI = require("./ai.js")({
   shopApi: (method, payload) => tgApiPost(method, payload).catch(e => ({ ok: false, description: e.message })),
   supportUsername: () => SUPPORT_USERNAME,
   notifyHandoff: (from, reason, last) => ADMINBOT.customerEvent(from, "🙋 Mijoz operatorni so'radi" + (reason ? ": " + reason : ""), last, true),
-  forwardToAdmins: (from, text) => ADMINBOT.customerEvent(from, "💬 Mijoz yozdi (operator rejimi)", text, false),
+  forwardToAdmins: (from, text) => ADMINBOT.customerEvent(from, "💬 Mijoz support'ga yozdi", text, false),
   finance: p => computeFinance(["today", "week", "month", "all"].indexOf(p) !== -1 ? p : "today"),
   findCustomer: q => ADMINBOT.findCustomerText(q),
   lineBalances: f => allLineBalances(f),
@@ -2221,6 +2223,33 @@ const server = http.createServer((req, res) => {
       send(res, 200, { ok: true, order: o, balance: acc.balance });
     }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     return;
+  }
+
+  /* ===== Ilovadagi support chat (AI + operator, bot bilan bitta suhbat) ===== */
+  if (url === "/api/support/history" && m === "GET") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    return send(res, 200, Object.assign({ messages: AI.history(u.id, q.get("after")) }, AI.supportState(u.id)));
+  }
+  if (url === "/api/support/send" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    return readBody(req, res, b => {
+      const text = String((b && b.text) || "").trim();
+      if (!text) return send(res, 400, { error: "empty" });
+      user(u);
+      // Javobni kutmaymiz — ilova /history orqali so'rab turadi ("yozmoqda…" ko'rsatadi).
+      AI.reply(u, text, "app").catch(() => {});
+      send(res, 200, { ok: true });
+    });
+  }
+  if (url === "/api/support/confirm" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    return readBody(req, res, b => {
+      const r = AI.confirm(u, b && b.token);
+      send(res, r.ok ? 200 : (r.code || 400), r.ok ? { ok: true, order: r.order, balance: r.balance, message: r.message } : { error: r.code === 402 ? "balance" : "failed", message: r.message, need: r.need });
+    });
   }
 
   /* ===== Sevimlilar (wishlist) ===== */

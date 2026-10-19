@@ -312,62 +312,117 @@ module.exports = function createAi(ctx) {
     }
     return rows.length ? { inline_keyboard: rows } : undefined;
   }
-  // Do'kon botiga kelgan oddiy xabar. true — AI javob berdi (yoki operatorga yo'naltirdi).
-  function onCustomerMessage(from, text) {
-    const c = cfg();
-    if (!c.support || !ready() || !text) return false;
-    const uid = from.id;
+  /* ---------- Umumiy suhbat yozuvi (bot + ilova bitta suhbat) ----------
+     DB.settings.support[uid] = [{ id, from: "user"|"ai"|"admin"|"system", text, ts, actions?, via }] */
+  function thread(uid) {
+    const D = DB(); const all = D.settings.support || (D.settings.support = {});
+    return all[String(uid)] || (all[String(uid)] = []);
+  }
+  let msgSeq = Date.now();
+  function log(uid, from, text, extra) {
+    const t = thread(uid);
+    const m = Object.assign({ id: ++msgSeq, from, text: S(text, 4000), ts: Date.now() }, extra || {});
+    t.push(m);
+    if (t.length > 60) t.splice(0, t.length - 60);
+    ctx.save();
+    return m;
+  }
+  // Ilova uchun tugmalar: tasdiqlash (token) va bo'lim ochish.
+  const appActions = actions => actions.map(a => a.callback_data ? { type: "confirm", token: a.callback_data.slice(4), label: a.text }
+    : { type: "open", section: a.section, label: a.text });
+  /* Yadro: bitta mijoz xabariga javob. via — "bot" yoki "app".
+     Natija: { kind: "ai"|"human"|"limit"|"off"|"error", text, actions } */
+  function reply(from, text, via) {
+    const c = cfg(), uid = from.id;
+    text = S(text, 2000).trim();
+    log(uid, "user", text, { via });
     const hu = human()[String(uid)];
-    if (hu && hu > Date.now()) { ctx.forwardToAdmins(from, text); return true; }
-    const st = stats();
-    const used = st.users[String(uid)] || 0;
+    if (hu && hu > Date.now()) { ctx.forwardToAdmins(from, text); return Promise.resolve({ kind: "human" }); }
+    if (!c.support || !ready()) {
+      // AI o'chiq — xabar to'g'ridan-to'g'ri operatorga.
+      ctx.forwardToAdmins(from, text);
+      return Promise.resolve({ kind: "off" });
+    }
+    const st = stats(), used = st.users[String(uid)] || 0;
     if (used >= (Number(c.dailyLimit) || 40)) {
-      ctx.shopApi("sendMessage", { chat_id: uid, text: "Bugungi savollar chegarasiga yetdingiz. Operator bilan bog'lanish: @" + ctx.supportUsername() });
-      return true;
+      ctx.forwardToAdmins(from, text);
+      const m = log(uid, "system", "Bugungi AI savollar chegarasiga yetdingiz — xabaringiz operatorga yuborildi.");
+      return Promise.resolve({ kind: "limit", text: m.text, actions: [] });
     }
     st.users[String(uid)] = used + 1; st.msgs++;
     const prev = busy.get(uid) || Promise.resolve();
     const job = prev.then(async () => {
-      ctx.shopApi("sendChatAction", { chat_id: uid, action: "typing" });
       const hist = chats.get(uid) || [];
       try {
-        const r = await runAgent(SUPPORT_SYSTEM(), SUPPORT_TOOLS, supportImpl(from), hist, S(text, 2000), "low");
-        const reply = r.text || "Tushunmadim, iltimos boshqacharoq yozing.";
-        hist.push({ role: "user", text: S(text, 2000) }, { role: "assistant", text: S(reply, 3000) });
+        const r = await runAgent(SUPPORT_SYSTEM(), SUPPORT_TOOLS, supportImpl(from), hist, text, "low");
+        const out = r.text || "Tushunmadim, iltimos boshqacharoq yozing.";
+        hist.push({ role: "user", text }, { role: "assistant", text: S(out, 3000) });
         chats.set(uid, hist.slice(-HISTORY_MAX));
-        await ctx.shopApi("sendMessage", { chat_id: uid, text: S(reply, 4000), reply_markup: keyboard(r.actions) });
+        log(uid, "ai", out, r.actions.length ? { actions: appActions(r.actions) } : undefined);
+        return { kind: "ai", text: out, actions: r.actions };
       } catch (e) {
         stats().errors++;
         console.log("[ai] mijoz xato: " + (e && e.status ? e.status + " " : "") + S(e && e.message, 200));
-        await ctx.shopApi("sendMessage", { chat_id: uid, text: "Hozir javob bera olmayapman. Operator: @" + ctx.supportUsername(), reply_markup: keyboard([{ section: "home", text: "📱 Ilovani ochish" }]) });
+        ctx.forwardToAdmins(from, text);
+        const m = log(uid, "system", "AI hozir javob bera olmayapti — xabaringiz operatorga yuborildi.");
+        return { kind: "error", text: m.text, actions: [] };
       }
-      ctx.save();
     });
     busy.set(uid, job.catch(() => {}));
+    return job;
+  }
+  // Do'kon botiga kelgan oddiy xabar. true — qayta ishlandi.
+  function onCustomerMessage(from, text) {
+    const c = cfg();
+    if (!c.support || !ready() || !text) return false;
+    const uid = from.id;
+    ctx.shopApi("sendChatAction", { chat_id: uid, action: "typing" });
+    reply(from, text, "bot").then(r => {
+      if (r.kind === "ai") return ctx.shopApi("sendMessage", { chat_id: uid, text: S(r.text, 4000), reply_markup: keyboard(r.actions) });
+      if (r.kind === "limit" || r.kind === "error") return ctx.shopApi("sendMessage", { chat_id: uid, text: r.text + " Operator: @" + ctx.supportUsername() });
+    }).catch(() => {});
     return true;
   }
-  // «✅ Tasdiqlash» tugmasi: shu yerda pul yechiladi (oddiy xarid funksiyasi orqali).
+  // Tasdiqlash (bot tugmasi ham, ilova tugmasi ham) — shu yerda pul yechiladi.
+  function confirm(from, token) {
+    const p = pending.get(String(token || ""));
+    if (!p || p.uid !== from.id || Date.now() - p.ts > 15 * 60000) return { ok: false, code: 410, message: "Bu tugma eskirgan. Qaytadan so'rang." };
+    pending.delete(String(token));          // bir martalik
+    const r = ctx.games.buyPackage({ id: from.id, username: from.username, first_name: from.first_name }, p.packageId, p.account);
+    if (!r.ok) {
+      const need = r.body && r.body.need;
+      return { ok: false, code: r.code, need, message: r.code === 402 ? "Balans yetmaydi — yana " + money(need) + " kerak. To'ldirgandan keyin qaytadan yozing."
+        : "Buyurtma berib bo'lmadi: " + ((r.body && (r.body.label || r.body.error)) || "xato") };
+    }
+    stats().orders++;
+    const text = "✅ Buyurtma #" + r.order.seq + " qabul qilindi: " + r.order.item + "\n💰 " + money(r.order.price) + "\n💼 Qolgan balans: " + money(r.balance) + "\nBajarilgach xabar keladi.";
+    log(from.id, "system", text);
+    const hist = chats.get(from.id) || []; hist.push({ role: "assistant", text: "[Mijoz tasdiqladi: buyurtma #" + r.order.seq + " yaratildi]" }); chats.set(from.id, hist.slice(-HISTORY_MAX));
+    return { ok: true, order: r.order, balance: r.balance, message: text };
+  }
   async function onCustomerCallback(cq) {
     const data = String(cq.data || "");
     if (!/^aib:/.test(data)) return false;
     const from = cq.from || {}, msg = cq.message || {};
-    const p = pending.get(data.slice(4));
     const answer = (text, alert) => ctx.shopApi("answerCallbackQuery", { callback_query_id: cq.id, text, show_alert: !!alert });
-    if (!p || p.uid !== from.id || Date.now() - p.ts > 15 * 60000) { await answer("Bu tugma eskirgan. Qaytadan so'rang.", true); return true; }
-    pending.delete(data.slice(4));          // bir martalik
-    const r = ctx.games.buyPackage({ id: from.id, username: from.username, first_name: from.first_name }, p.packageId, p.account);
+    const r = confirm(from, data.slice(4));
     if (!r.ok) {
-      const need = r.body && r.body.need;
-      await answer(r.code === 402 ? "Balans yetmaydi: yana " + money(need) + " kerak" : "Buyurtma berib bo'lmadi: " + ((r.body && (r.body.label || r.body.error)) || "xato"), true);
-      if (r.code === 402) await ctx.shopApi("sendMessage", { chat_id: from.id, text: "Balans yetmaydi — yana " + money(need) + " kerak. To'ldirgandan keyin qaytadan yozing.", reply_markup: keyboard([{ section: "pay", text: "💳 Balansni to'ldirish" }]) });
+      await answer(r.code === 402 ? "Balans yetmaydi: yana " + money(r.need) + " kerak" : r.message, true);
+      if (r.code === 402) await ctx.shopApi("sendMessage", { chat_id: from.id, text: r.message, reply_markup: keyboard([{ section: "pay", text: "💳 Balansni to'ldirish" }]) });
       return true;
     }
-    stats().orders++; ctx.save();
     await answer("✅ Buyurtma qabul qilindi");
     await ctx.shopApi("editMessageReplyMarkup", { chat_id: msg.chat && msg.chat.id, message_id: msg.message_id, reply_markup: { inline_keyboard: [] } });
-    await ctx.shopApi("sendMessage", { chat_id: from.id, text: "✅ Buyurtma #" + r.order.seq + " qabul qilindi: " + r.order.item + "\n💰 " + money(r.order.price) + "\n💼 Qolgan balans: " + money(r.balance) + "\nBajarilgach xabar keladi." });
-    const hist = chats.get(from.id) || []; hist.push({ role: "assistant", text: "[Mijoz tasdiqladi: buyurtma #" + r.order.seq + " yaratildi]" }); chats.set(from.id, hist.slice(-HISTORY_MAX));
+    await ctx.shopApi("sendMessage", { chat_id: from.id, text: r.message });
     return true;
+  }
+  // Ilovadagi chat oynasi uchun
+  function history(uid, after) {
+    const t = thread(uid), a = Number(after) || 0;
+    return t.filter(m => m.id > a).slice(-60).map(m => ({ id: m.id, from: m.from, text: m.text, ts: m.ts, actions: m.actions || undefined }));
+  }
+  function supportState(uid) {
+    return { ai: !!(cfg().support && ready()), human: isHuman(uid), operator: "@" + ctx.supportUsername() };
   }
   function release(uid) { delete human()[String(uid)]; ctx.save(); }
   function isHuman(uid) { const h = human()[String(uid)]; return !!(h && h > Date.now()); }
@@ -506,6 +561,6 @@ module.exports = function createAi(ctx) {
     } catch (e) { return { ok: false, message: (e && e.status ? "HTTP " + e.status + ": " : "") + S(e && e.message, 200) }; }
   }
 
-  return { onCustomerMessage, onCustomerCallback, onAdminText, runAdminOp, release, isHuman, publicCfg, saveCfg, testKey, ready,
+  return { onCustomerMessage, onCustomerCallback, reply, confirm, history, log, supportState, onAdminText, runAdminOp, release, isHuman, publicCfg, saveCfg, testKey, ready,
     _internal: { catalogSearch, runAgent, pending, chats } };
 };
