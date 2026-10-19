@@ -642,6 +642,44 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .stat:nth-child(3n+3) .v{color:var(--navy)}
 .stat .k{font-size:10px;color:var(--mut);margin-top:2px}
 
+/* admin boshqaruv paneli (to'liq ekran) */
+.adm{position:fixed;inset:0;z-index:90;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(env(safe-area-inset-top) + 0px) 0 env(safe-area-inset-bottom)}
+body.adm-open{overflow:hidden}
+.adm-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px 12px;background:var(--hdrbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.adm-h1{font-size:22px;font-weight:900;letter-spacing:-.3px}
+.adm-sub{font-size:11.5px;color:var(--mut);margin-top:2px}
+.adm-hbtns{display:flex;gap:8px}
+.adm-hb{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;height:38px;min-width:38px;padding:0 12px;font-size:15px;font-weight:700;cursor:pointer}
+.adm-body{padding:12px 16px}
+.adm-seg{margin:0 0 12px}
+.adm-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-kpi{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;min-height:104px;padding:14px;border-radius:18px;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);color:var(--txt);position:relative;overflow:hidden;font:inherit}
+.adm-kpi::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:var(--grad)}
+.adm-kpi .k{font-size:12.5px;color:var(--mut);font-weight:600}
+.adm-kpi .v{font-size:23px;font-weight:900;letter-spacing:-.4px;color:var(--acc2);line-height:1.15;word-break:break-word}
+.adm-kpi .s{font-size:12px;color:var(--mut)}
+.adm-kpi.hot{border-color:rgba(239,68,68,.6);box-shadow:0 0 0 1px rgba(239,68,68,.25)}
+.adm-kpi.hot .v{color:#ef4444}
+.adm-kpi:active,.adm-tile:active{transform:scale(.97)}
+.adm-mini{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:12px 2px}
+.adm-mini b{color:var(--txt)}
+.adm-search{display:flex;gap:8px;margin:0 0 12px}
+.adm-search input{flex:1;margin:0;height:48px;font-size:15px}
+.adm-search .btn{width:auto;margin:0;padding:0 16px;height:48px}
+.adm-sect{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin:16px 2px 8px}
+.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:112px;padding:14px;border-radius:18px;cursor:pointer;text-align:left;
+  background:var(--card);border:1px solid var(--line);color:var(--txt);font:inherit;transition:transform .15s}
+.adm-ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.adm-ic svg{width:26px;height:26px}
+.adm-tl{font-size:15.5px;font-weight:800;line-height:1.2}
+.adm-ts{font-size:12px;color:var(--mut);line-height:1.25}
+.adm-badge{position:absolute;top:10px;right:10px;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:#ef4444;color:#fff;font-size:13px;font-weight:800;
+  display:flex;align-items:center;justify-content:center}
+.adm-badge[hidden]{display:none}
 /* admin: moliya */
 .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
 .fin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;min-width:0}
@@ -778,7 +816,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.4";
+var CLIENT_BUILD="2026-10-19.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3768,61 +3806,109 @@ function profileHTML(){
 }
 
 /* ===== admin ===== */
+/* ===== Admin boshqaruv paneli — to'liq ekran. Admin botdan kirilganda o'zi ochiladi.
+   Tepada katta raqamlar, pastda hamma bo'limlar katta plitkalar ko'rinishida. Bo'limlar
+   (varaqlar) shu panel ustida ochiladi, yopilganda yana shu panel ko'rinadi. ===== */
+var ADM_PERIOD="today";
+var ADM_TILES=[
+  ["Asosiy",[
+    ["money","wallet","#3b82f6","To'lovlar va buyurtmalar","Tasdiqlash, bekor qilish"],
+    ["finance","trendUp","#22c55e","Moliya","Kirim, sotuv, foyda"],
+    ["users","users","#a855f7","Mijozlar","Ro'yxat, balans, tarix"],
+    ["adminbot","bolt","#f59e0b","Admin bot","Chatda boshqaruv"]]],
+  ["Do'kon",[
+    ["catalog","clipboard","#0ea5e9","Mahsulotlar","Katalog, narx, zaxira"],
+    ["games","gamepad","#ef4444","O'yinlar va liniyalar","MooGold, G2Bulk, Smile"],
+    ["nakrutka","trendUp","#10b981","Nakrutka","Xizmatlar, buyurtmalar"],
+    ["cats","clipboard","#6366f1","Kategoriyalar","Bo'limlar ko'rinishi"],
+    ["deliveries","key","#14b8a6","Yetkazilganlar","Sotilganlar qidiruvi"],
+    ["reviews","star","#eab308","Sharhlar","Tasdiqlash, tahrirlash"]]],
+  ["Marketing",[
+    ["promo","gift","#ec4899","Promo-kodlar","Chegirmalar"],
+    ["loyalty","trophy","#f59e0b","Sodiqlik","Bosqichlar, bonus"],
+    ["referral","gift","#8b5cf6","Referal","Taklif bonusi"],
+    ["broadcast","send","#06b6d4","Ommaviy xabar","Hammaga yuborish"]]],
+  ["Sozlamalar",[
+    ["bot","bolt","#3b82f6","Bot va /start","Ilova manzili, ulanish"],
+    ["channels","send","#0ea5e9","Kanallar","Buyurtma, to'lov kanali"],
+    ["automation","bolt","#22c55e","Avtomatlashtirish","Eslatmalar, ogohlantirish"],
+    ["dash","trendUp","#f97316","Statistika","Grafiklar"],
+    ["emoji","star","#a855f7","Premium emoji","To'lov / profil"],
+    ["backup","clipboard","#64748b","Zaxira nusxa","Bot orqali yuborish"]]]
+];
+function admTileAction(k){
+  var m={money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},
+    catalog:openAdminCatalog,games:openAdminGames,nakrutka:openAdminNakrutka,cats:openAdminCategories,deliveries:openAdminDeliveries,reviews:openAdminReviews,
+    promo:openAdminPromo,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
+    bot:openAdminBot,channels:openAdminChannels,automation:openAdminAutomation,dash:openAdminDashboard,emoji:openAdminUiEmoji,
+    backup:function(){
+      if(!confirm("Zaxira nusxa olib, bot orqali yuborilsinmi?"))return;
+      toast("Zaxira tayyorlanmoqda…");
+      api("/api/admin/backup-now","POST",{}).then(function(r){toast("✅ Zaxira tayyor — bot orqali yuborildi ("+((r.size||0)/1024).toFixed(0)+" KB)");haptic("ok");})
+        .catch(function(){toast("Xatolik: zaxira olinmadi",true);});
+    }};
+  if(m[k])m[k]();
+}
+function closeAdminHome(){var el=document.getElementById("admHome");if(el)el.remove();document.body.classList.remove("adm-open");}
 function openAdmin(){
-  var html='<h2>'+esc(t("a_panel"))+'</h2>'
-    +'<div style="height:8px"></div>'
-    +'<div id="aAbCard"></div>'
-    +'<div class="sect" style="margin:0 0 6px">'+esc(t("a_stats_title"))+'</div>'
-    +'<div class="seg" id="statsPeriodSeg">'
-    +'<button data-period="today" class="on">'+esc(t("period_today"))+'</button>'
-    +'<button data-period="week">'+esc(t("period_week"))+'</button>'
-    +'<button data-period="month">'+esc(t("period_month"))+'</button>'
-    +'<button data-period="all">'+esc(t("period_all"))+'</button>'
+  closeSheet();
+  var el=document.getElementById("admHome");
+  if(!el){el=document.createElement("div");el.id="admHome";el.className="adm";document.body.appendChild(el);}
+  document.body.classList.add("adm-open");
+  var tiles=ADM_TILES.map(function(sec){
+    return '<div class="adm-sect">'+esc(sec[0])+'</div><div class="adm-grid">'+sec[1].map(function(x){
+      return '<button class="adm-tile" data-adm="'+x[0]+'"><span class="adm-ic" style="background:'+x[2]+'22;color:'+x[2]+'">'+ic(x[1],26)+'</span>'
+        +'<span class="adm-tl">'+esc(x[3])+'</span><span class="adm-ts" id="admTs_'+x[0]+'">'+esc(x[4])+'</span>'
+        +(x[0]==="money"?'<span class="adm-badge" id="admBadge" hidden></span>':'')+'</button>';
+    }).join("")+'</div>';
+  }).join("");
+  el.innerHTML='<div class="adm-head"><div><div class="adm-h1">Admin panel</div><div class="adm-sub" id="admSub">v'+esc(CLIENT_BUILD)+'</div></div>'
+    +'<div class="adm-hbtns"><button class="adm-hb" id="admRefresh" aria-label="Yangilash">↻</button><button class="adm-hb adm-shop" id="admClose">Do\'kon '+'✕'+'</button></div></div>'
+    +'<div class="adm-body">'
+    +'<div class="seg adm-seg" id="admSeg"><button data-p="today">Bugun</button><button data-p="week">Hafta</button><button data-p="month">Oy</button><button data-p="all">Hammasi</button></div>'
+    +'<div class="adm-kpis">'
+    +'<button class="adm-kpi" data-adm="finance"><span class="k">💰 Kirim</span><span class="v" id="admK1">…</span><span class="s" id="admK1s"></span></button>'
+    +'<button class="adm-kpi" data-adm="finance"><span class="k">🛒 Sotuv</span><span class="v" id="admK2">…</span><span class="s" id="admK2s"></span></button>'
+    +'<button class="adm-kpi" data-adm="money" id="admK3b"><span class="k">🧾 Kutilayotgan to\'lov</span><span class="v" id="admK3">…</span><span class="s" id="admK3s"></span></button>'
+    +'<button class="adm-kpi" data-adm="money" id="admK4b"><span class="k">⏳ Bajarilmagan buyurtma</span><span class="v" id="admK4">…</span><span class="s" id="admK4s"></span></button>'
     +'</div>'
-    +'<div class="stats" style="margin:0 0 10px"><div class="stat"><div class="v" id="stUsers">…</div><div class="k">'+esc(t("a_st_users"))+'</div></div>'
-    +'<div class="stat"><div class="v" id="stOrders">…</div><div class="k">'+esc(t("a_st_orders"))+'</div></div>'
-    +'<div class="stat"><div class="v" id="stRevenue">…</div><div class="k">'+esc(t("a_st_revenue"))+'</div></div></div>'
-    +'<div class="stats" style="margin:0 0 6px"><div class="stat"><div class="v" id="stTopup">…</div><div class="k">'+esc(t("a_st_topup"))+'</div></div>'
-    +'<div class="stat"><div class="v" id="stPending">…</div><div class="k">'+esc(t("a_st_pending"))+'</div></div>'
-    +'<div class="stat"><div class="v" id="stBalances">…</div><div class="k">'+esc(t("a_st_balances"))+'</div></div></div>'
-    +'<button class="btn" id="aMoney">'+ic("wallet",15)+' '+esc(t("adm_money"))+'</button>'
+    +'<div class="adm-mini"><span>👥 Mijozlar: <b id="admUsers">…</b></span><span>💼 Balanslarda: <b id="admLiab">…</b></span></div>'
+    +'<form class="adm-search" id="admSearch"><input id="admQ" type="search" placeholder="🔍 Mijoz ID, @username, ism" autocomplete="off"><button class="btn sm" type="submit">Qidirish</button></form>'
+    +'<div id="aAbCard"></div>'
+    +tiles
+    +'<div style="height:30px"></div></div>';
+  function fill(f){
+    function set(id,v){var x=el.querySelector("#"+id);if(x)x.textContent=v;}
+    set("admK1",money(f.topups.sum));set("admK1s",f.topups.count+" ta to'lov");
+    set("admK2",money(f.sales.sum));set("admK2s",f.sales.count+" ta buyurtma");
+    set("admK3",String(f.pendingPayments.count));set("admK3s",money(f.pendingPayments.sum));
+    set("admK4",String(f.pendingOrders.count));set("admK4s",money(f.pendingOrders.sum));
+    set("admUsers",String(f.users.total)+(f.period!=="all"&&f.users.new?" (+"+f.users.new+")":""));set("admLiab",money(f.liabilities));
+    var k3=el.querySelector("#admK3b"),k4=el.querySelector("#admK4b");
+    if(k3)k3.classList.toggle("hot",f.pendingPayments.count>0);if(k4)k4.classList.toggle("hot",f.pendingOrders.count>0);
+    var n=f.pendingPayments.count+f.pendingOrders.count,bd=el.querySelector("#admBadge");
+    if(bd){bd.hidden=!n;bd.textContent=n>99?"99+":String(n);}
+  }
+  function load(p){
+    ADM_PERIOD=p;
+    var all=el.querySelectorAll("#admSeg [data-p]");for(var i=0;i<all.length;i++)all[i].classList.toggle("on",all[i].getAttribute("data-p")===p);
+    api("/api/admin/finance?period="+encodeURIComponent(p)).then(fill).catch(function(){});
+  }
+  var segs=el.querySelectorAll("#admSeg [data-p]");
+  for(var i=0;i<segs.length;i++)segs[i].addEventListener("click",function(){haptic();load(this.getAttribute("data-p"));});
+  var acts=el.querySelectorAll("[data-adm]");
+  for(var j=0;j<acts.length;j++)acts[j].addEventListener("click",function(){haptic();admTileAction(this.getAttribute("data-adm"));});
+  el.querySelector("#admClose").addEventListener("click",function(){haptic();closeAdminHome();});
+  el.querySelector("#admRefresh").addEventListener("click",function(){haptic();load(ADM_PERIOD);paintAdminBotCard(el.querySelector("#aAbCard"));});
+  el.querySelector("#admSearch").addEventListener("submit",function(e){e.preventDefault();var q=el.querySelector("#admQ").value.trim();if(q)openAdminMoney(q);});
+  paintAdminBotCard(el.querySelector("#aAbCard"));
+  var ab=ME.adminBot,sub=el.querySelector("#admSub");
+  if(sub)sub.textContent="v"+CLIENT_BUILD+(ab&&ab.active&&ab.username?" · 🛡 @"+ab.username:"");
+  load(ADM_PERIOD);
+}
+function openAdminCatalog(){
+  var html='<h2>Mahsulotlar va katalog</h2>'
     +'<div style="height:8px"></div>'
-    +'<div class="arow"><button class="btn gray" id="aFinBtn">'+ic("trendUp",15)+' Moliya</button>'
-    +'<button class="btn gray" id="aAdminBotBtn">'+ic("bolt",15)+' Admin bot</button></div>'
-    +'<div class="d" id="aAdminBotNote" style="margin:6px 0 0"></div>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aUsersBtn">'+ic("users",15)+' '+esc(t("a_users_title"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aDeliveriesBtn">'+ic("key",15)+' Sotilganlar / Yetkazilganlar qidiruvi</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aReviewsBtn">'+ic("star",15)+' '+esc(t("a_reviews_title"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aReferralBtn">'+ic("gift",15)+' '+esc(t("a_referral_title"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aPromoBtn">'+ic("gift",15)+' '+esc(t("a_promo_title"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aLoyaltyBtn">'+ic("trophy",15)+' '+esc(t("a_loyalty_title"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aAutomationBtn">'+ic("bolt",15)+' '+esc(t("a_automation_title"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aChannelsBtn">'+ic("send",15)+' Kanallar (chat_id)</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aBotBtn">'+ic("bolt",15)+' Bot va /start xabari</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aGamesBtn">'+ic("gamepad",15)+' O\'yinlar va liniyalar</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aDashBtn">'+ic("trendUp",15)+' '+esc(t("a_dash_btn"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aCatBtn">'+ic("clipboard",15)+' '+esc(t("a_categories"))+'</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aUiEmojiBtn">'+ic("star",15)+' Premium emoji (to\'lov / profil)</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aBroadcastBtn">'+ic("send",15)+' Ommaviy xabar (Broadcast)</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aBackupBtn">'+ic("clipboard",15)+' Zaxira nusxa olish</button>'
-    +'<div style="height:8px"></div>'
-    +'<button class="btn gray" id="aNakrutkaBtn">'+ic("trendUp",15)+' '+esc(t("a_nakrutka_title"))+'</button>'
-    +'<div style="height:10px"></div>'
     +'<button class="btn green" id="aPub">'+ic("globe",15)+' '+esc(t("a_publish"))+'</button>'
     +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
     +'<button class="btn" id="aNew">'+esc(t("a_new"))+'</button>'
@@ -3837,60 +3923,7 @@ function openAdmin(){
     +'<div style="height:8px"></div><button class="btn gray" id="aImpBtn">'+esc(t("a_import"))+'</button>'
     +'<div style="height:14px"></div><button class="btn red" id="aReset">'+esc(t("a_reset"))+'</button>'
     +'<div style="height:30px"></div>';
-  var sh=openSheet(html);
-  function loadStatsPeriod(period){
-    api("/api/admin/stats?period="+encodeURIComponent(period)).then(function(s){
-      sh.querySelector("#stUsers").textContent=s.users;
-      sh.querySelector("#stOrders").textContent=s.ordersCount;
-      sh.querySelector("#stRevenue").textContent=money(s.revenue);
-      sh.querySelector("#stTopup").textContent=money(s.topupSum);
-      sh.querySelector("#stPending").textContent=s.pendingPayments;
-      sh.querySelector("#stBalances").textContent=money(s.totalBalance);
-    }).catch(function(){});
-  }
-  loadStatsPeriod("today");
-  var pbtns=sh.querySelectorAll("#statsPeriodSeg [data-period]");
-  for(var pi=0;pi<pbtns.length;pi++)pbtns[pi].addEventListener("click",function(){
-    var all=sh.querySelectorAll("#statsPeriodSeg [data-period]");
-    for(var pj=0;pj<all.length;pj++)all[pj].classList.toggle("on",all[pj]===this);
-    loadStatsPeriod(this.getAttribute("data-period"));
-  });
-  sh.querySelector("#aMoney").addEventListener("click",function(){openAdminMoney();});
-  sh.querySelector("#aFinBtn").addEventListener("click",function(){openAdminFinance(openAdmin);});
-  sh.querySelector("#aAdminBotBtn").addEventListener("click",function(){openAdminAdminBot(openAdmin);});
-  paintAdminBotCard(sh.querySelector("#aAbCard"));
-  (function(){var n=sh.querySelector("#aAdminBotNote"),ab=ME.adminBot;if(!n)return;
-    if(ab&&ab.active&&ab.username){n.innerHTML='🛡 Admin bot ishlayapti: <a href="#" id="aAbLink">@'+esc(ab.username)+'</a> — to\'lov va buyurtmalar o\'sha yerga keladi.';
-      var l=n.querySelector("#aAbLink");if(l)l.addEventListener("click",function(e){e.preventDefault();openLink("https://t.me/"+ab.username);});}
-    else n.textContent="Admin bot hali ulanmagan — «Admin bot» tugmasini bosing.";})();
-  sh.querySelector("#aUsersBtn").addEventListener("click",openAdminUsers);
-  sh.querySelector("#aDeliveriesBtn").addEventListener("click",openAdminDeliveries);
-  sh.querySelector("#aReviewsBtn").addEventListener("click",openAdminReviews);
-  sh.querySelector("#aReferralBtn").addEventListener("click",openAdminReferral);
-  sh.querySelector("#aPromoBtn").addEventListener("click",openAdminPromo);
-  sh.querySelector("#aLoyaltyBtn").addEventListener("click",openAdminLoyalty);
-  sh.querySelector("#aAutomationBtn").addEventListener("click",openAdminAutomation);
-  sh.querySelector("#aChannelsBtn").addEventListener("click",openAdminChannels);
-  sh.querySelector("#aBotBtn").addEventListener("click",openAdminBot);
-  sh.querySelector("#aGamesBtn").addEventListener("click",openAdminGames);
-  sh.querySelector("#aDashBtn").addEventListener("click",openAdminDashboard);
-  sh.querySelector("#aCatBtn").addEventListener("click",openAdminCategories);
-  sh.querySelector("#aUiEmojiBtn").addEventListener("click",openAdminUiEmoji);
-  sh.querySelector("#aBroadcastBtn").addEventListener("click",openAdminBroadcast);
-  sh.querySelector("#aBackupBtn").addEventListener("click",function(){
-    var btn=sh.querySelector("#aBackupBtn");
-    btn.disabled=true;btn.textContent="Zaxira tayyorlanmoqda...";
-    api("/api/admin/backup-now","POST",{}).then(function(r){
-      toast("✅ Zaxira tayyor — bot orqali yuborildi ("+((r.size||0)/1024).toFixed(0)+" KB, "+(r.files||0)+" fayl)");
-      haptic("ok");
-      btn.disabled=false;btn.innerHTML=ic("clipboard",15)+' Zaxira nusxa olish';
-    }).catch(function(e){
-      toast("Xatolik: zaxira olinmadi",true);
-      btn.disabled=false;btn.innerHTML=ic("clipboard",15)+' Zaxira nusxa olish';
-    });
-  });
-  sh.querySelector("#aNakrutkaBtn").addEventListener("click",openAdminNakrutka);
-  var agb=sh.querySelector("#aGroupsBtn");if(agb)agb.addEventListener("click",openAdminGroups);
+  var sh=openSheet(html,openAdmin);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
   sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
   sh.querySelector("#aExp").value=JSON.stringify(catalog());
@@ -6301,7 +6334,7 @@ function openAdminForm(editId){
       +'<button class="btn sm red" id="stkClearBtn">'+ic("trash",14)+' '+esc(t("a_stock_clear"))+'</button></div></div>'
     ):"")
     +'<div style="height:30px"></div>';
-  var sh=openSheet(html,openAdmin);
+  var sh=openSheet(html,openAdminCatalog);
   function g(sel){return sh.querySelector(sel);}
   function readForm(){
     F.title=g("#f_title").value.trim();
@@ -6492,7 +6525,8 @@ function openAdminForm(editId){
       if(F.id){patchItem(F.id,data);toast(t("a_saved"));}
       else{data.id="c"+Date.now();S.custom.push(data);toast(t("a_added"));}
       persist();haptic("ok");closeSheet();
-      S.screen="home";S.tab=F.kind;render();
+      if(document.getElementById("admHome")){render();openAdminCatalog();}   // admin paneldan kelgan — katalogga qaytamiz
+      else{S.screen="home";S.tab=F.kind;render();}
     }
   });
   if(editId){

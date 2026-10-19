@@ -156,6 +156,16 @@ Sayt liniyalari kalit kiritilmaguncha **o'chiq**. Ulash: admin panel → O'yinla
 
 Maxfiy kalitlar admin panelga hech qachon qaytarilmaydi. Tannarx, SKU va liniya ma'lumotlari mijozga yuborilmaydi.
 
+## Admin panel
+
+Admin panel — to'liq ekranli boshqaruv paneli. Unga quyidagi joylardan kiriladi:
+- bosh sahifa tepasidagi «Admin» tugmasi;
+- profil tepasidagi «Admin panel» qatori;
+- do'kon botidagi `/admin` buyrug'i;
+- admin botdagi «🛠 Admin panel» tugmasi.
+
+Tepada katta raqamlar turadi: kirim, sotuv, kutilayotgan to'lov va bajarilmagan buyurtma. Ular bugun / hafta / oy / hammasi bo'yicha ko'rinadi, kutilayotganlar bo'lsa qizil rangda chiqadi. Pastda mijoz qidiruvi va barcha bo'limlar katta plitkalar ko'rinishida: Asosiy, Do'kon, Marketing, Sozlamalar. Admin bot hali ulanmagan bo'lsa, panel tepasida token kiritiladigan karta chiqadi.
+
 ## Admin bot (alohida bot) va moliya
 
 Do'kon botidan tashqari **ikkinchi bot** — faqat adminlar uchun (`adminbot.js`). Ulash:

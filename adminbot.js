@@ -75,7 +75,7 @@ module.exports = function createAdminBot(ctx) {
     return { text, web_app: { url: base.replace(/\/+$/, "") + "/?admin=" + encodeURIComponent(view || "1") } };
   }
   const kbd = rows => ({ inline_keyboard: rows.map(r => r.filter(Boolean)).filter(r => r.length) });
-  const MENU = { keyboard: [[{ text: "📊 Moliya" }, { text: "🧾 To'lovlar" }], [{ text: "🛒 Buyurtmalar" }, { text: "🔍 Mijoz" }], [{ text: "📩 SMS" }, { text: "⚙️ Holat" }]],
+  const MENU = { keyboard: [[{ text: "🛠 Admin panel" }], [{ text: "📊 Moliya" }, { text: "🧾 To'lovlar" }], [{ text: "🛒 Buyurtmalar" }, { text: "🔍 Mijoz" }], [{ text: "📩 SMS" }, { text: "⚙️ Holat" }]],
     resize_keyboard: true, is_persistent: true };
   const errText = e => ({ "already done": "Bu to'lov allaqachon tasdiqlangan.", "already cancelled": "Bu to'lov allaqachon bekor qilingan.",
     "not found": "Topilmadi.", state: "Buyurtma holati o'zgargan (allaqachon bajarilgan yoki bekor qilingan).", "no user": "Mijoz topilmadi." }[e] || ("Xato: " + e));
@@ -354,9 +354,11 @@ module.exports = function createAdminBot(ctx) {
   }
 
   /* ---------- Xabarlarni qayta ishlash ---------- */
-  function welcome(chat) {
+  async function welcome(chat) {
     const base = String(ctx.appUrl() || "");
     if (/^https:\/\//.test(base)) api("setChatMenuButton", { chat_id: chat, menu_button: { type: "web_app", text: "Admin panel", web_app: { url: base.replace(/\/+$/, "") + "/?admin=1" } } });
+    const w = webApp("🛠 ADMIN PANELNI OCHISH", "1");
+    if (w) await send(chat, "🛠 To'liq admin panel 👇", kbd([[w]]));
     return send(chat, "🛡 Verion Shop — admin bot\n\nBu yerda hamma narsani kuzatasiz va boshqarasiz:\n📊 Moliya — kirim, sotuv, foyda, balanslar\n🧾 To'lovlar — tasdiqlash / bekor qilish\n🛒 Buyurtmalar — bajarish / pulni qaytarish\n🔍 Mijoz — ID yoki @username yuboring (yoki uning xabarini forward qiling)\n📩 SMS — avtomatik tasdiqlash kuzatuvi\n⚙️ Holat — botlar, liniyalar, bildirishnomalar\n\nYangi to'lov va buyurtmalar shu yerga keladi. To'liq admin panel — pastdagi \"Admin panel\" tugmasida.", MENU);
   }
   async function sendView(chat, view) { const [t, k] = await view; return send(chat, t, k); }
@@ -370,7 +372,7 @@ module.exports = function createAdminBot(ctx) {
     if (!text) return;
     const [cmdRaw, ...rest] = text.split(/\s+/);
     const cmd = cmdRaw.toLowerCase().replace(/@\w+$/, ""), arg = rest.join(" ");
-    const MAP = { "📊 moliya": "/moliya", "🧾 to'lovlar": "/tolovlar", "🛒 buyurtmalar": "/buyurtmalar", "🔍 mijoz": "/mijoz", "📩 sms": "/sms", "⚙️ holat": "/holat" };
+    const MAP = { "📊 moliya": "/moliya", "🧾 to'lovlar": "/tolovlar", "🛒 buyurtmalar": "/buyurtmalar", "🔍 mijoz": "/mijoz", "📩 sms": "/sms", "⚙️ holat": "/holat", "🛠 admin panel": "/panel" };
     const menuCmd = MAP[text.toLowerCase()];
     const c = menuCmd || (cmd[0] === "/" ? cmd : "");
     if (c) waiting.delete(from);
@@ -381,7 +383,12 @@ module.exports = function createAdminBot(ctx) {
       case "/buyurtmalar": return sendView(chat, ordersView());
       case "/sms": return sendView(chat, smsView());
       case "/holat": return sendView(chat, statusView());
-      case "/panel": return send(chat, "🌐 Admin panel:", kbd([[webApp("🌐 Admin panelni ochish", "1") || btn("Ilova manzili aniqlanmagan", "st")]]));
+      case "/panel": {
+        const w = webApp("🛠 ADMIN PANELNI OCHISH", "1");
+        return send(chat, w ? "🛠 Admin panel — hamma bo'limlar bitta joyda. Pastdagi tugmani bosing 👇"
+          : "⚠️ Ilova manzili hali aniqlanmagan. Do'kon ilovasini bir marta admin sifatida oching yoki Admin panel → Bot va /start → Ilova manzili.",
+          w ? kbd([[w]]) : undefined);
+      }
       case "/mijoz": case "/u":
         if (!menuCmd && arg) return doFind(chat, arg);
         waiting.set(from, { kind: "find", ts: Date.now() });
