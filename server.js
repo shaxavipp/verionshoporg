@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.5";
+const BUILD = "2026-10-19.6";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -444,7 +444,7 @@ function computeFinance(period) {
   const withCost = done.filter(o => Number(o.costUzs) > 0);
   const byMethod = {};
   for (const p of topups) { const k = String(p.method || "boshqa"); byMethod[k] = (byMethod[k] || 0) + (Number(p.amount) || 0); }
-  const srcOf = o => o.game ? "games" : o.japOrderId ? "nakrutka" : (o.fragment !== undefined || o.giftRecipient) ? "telegram" : "shop";
+  const srcOf = o => o.game ? "games" : (o.japOrderId || String(o.itemId || "").indexOf("nk_") === 0) ? "nakrutka" : (o.fragment !== undefined || o.giftRecipient) ? "telegram" : "shop";
   const bySource = {};
   for (const o of done) { const k = srcOf(o); const b = bySource[k] || (bySource[k] = { count: 0, sum: 0 }); b.count++; b.sum += Number(o.price) || 0; }
   const byLine = {};
@@ -1221,7 +1221,7 @@ function orderMessageText(o) {
     "🛍 " + o.item,
     "👤 " + who,
     // O'yin buyurtmasi: admin to'ldirishi uchun eng kerakli ma'lumot — o'yinchi ID'si.
-    ...(o.game && o.game.accountText ? ["🎮 " + (o.game.fields || []).map(f => f.label).join(" / ") + ": " + o.game.accountText] : []),
+    ...(o.game && o.game.accountText ? [(/@/.test(o.game.accountText) ? "📧 " : "🎮 ") + (o.game.fields || []).map(f => f.label).join(" / ") + ": " + o.game.accountText] : []),
     "💰 " + priceStr,
     "🕐 " + dateStr,
     "#️⃣ #" + o.seq,
@@ -1555,7 +1555,6 @@ function giftBotCall(path, body) {
 // ---------- SMM "Nakrutka" — JustAnotherPanel (JAP) API integratsiyasi ----------
 // JAP_API_KEY Railway "Variables" orqali beriladi (hisobingiz sahifasida mavjud), kodga yozilmaydi.
 // JAP hujjatiga ko'ra so'rov POST, x-www-form-urlencoded formatida yuboriladi, javob JSON qaytadi.
-const JAP_API_URL = "https://justanotherpanel.com/api/v2";
 const JAP_API_KEY = process.env.JAP_API_KEY || "";
 // JAP narxlari USD'da beriladi — so'mga shu kursda o'giramiz. VAQTINCHALIK qiymat —
 // frontenddagi NAKRUTKA_USD_RATE bilan bir xil bo'lishi shart (keyinroq admin panelidan
@@ -1566,7 +1565,7 @@ function nkSettings() { return DB.settings.nakrutka || (DB.settings.nakrutka = {
 // Admin panelidan o'rnatilgan kurs bo'lsa o'shani, bo'lmasa ENV/standart qiymatni ishlatadi.
 function nkUsdRate() { const v = Number(nkSettings().usdRate); return v > 0 ? v : NAKRUTKA_USD_RATE; }
 function nkMarkupPct() { const v = Number(nkSettings().markupPercent); return v > 0 ? Math.min(v, 500) : 0; }
-function nkIsHidden(serviceId) { return (nkSettings().hiddenServices || []).indexOf(serviceId) !== -1; }
+function nkIsHidden(serviceId) { const k = String(serviceId); return (nkSettings().hiddenServices || []).some(h => String(h) === k); }
 // Faqat 4 ta asosiy ijtimoiy tarmoq mijozlarga ko'rsatiladi: Telegram, Instagram, TikTok, YouTube.
 // Boshqa barcha tarmoqlar (Facebook, Twitter, Spotify va h.k.) "other" deb belgilanadi va
 // /api/nakrutka/services javobidan to'liq chiqarib tashlanadi (faqat admin panelida ko'rinadi).
@@ -1583,44 +1582,6 @@ function nkAppOf(svc) {
 function nkAdjustedRate(rawRate) { return (Number(rawRate) || 0) * (1 + nkMarkupPct() / 100); }
 // Miqdor va JAP xom narxidan yakuniy so'm narxini hisoblaydi (ustama + joriy kurs bilan).
 function nkPriceUZS(rawRate, quantity) { return Math.round(quantity * nkAdjustedRate(rawRate) / 1000 * nkUsdRate()); }
-function japCall(params) {
-  return new Promise((resolve, reject) => {
-    if (!JAP_API_KEY) return reject(new Error("JAP_API_KEY sozlanmagan"));
-    const body = new URLSearchParams(Object.assign({ key: JAP_API_KEY }, params || {})).toString();
-    const u = new URL(JAP_API_URL);
-    const req = https.request({
-      hostname: u.hostname, path: u.pathname, method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(body) },
-      timeout: 20000
-    }, r => {
-      let buf = "";
-      r.on("data", c => buf += c);
-      r.on("end", () => { try { resolve(JSON.parse(buf || "{}")); } catch (e) { reject(new Error("JAP javobini o'qib bo'lmadi")); } });
-    });
-    req.on("timeout", () => req.destroy(new Error("timeout")));
-    req.on("error", reject);
-    req.write(body); req.end();
-  });
-}
-// Xizmatlar ro'yxati tez-tez o'zgarmaydi — har so'rovda JAP'ga murojaat qilmaslik uchun
-// 10 daqiqalik oddiy xotira-kesh (in-memory cache) ishlatamiz.
-let japServicesCache = { ts: 0, data: null };
-const JAP_CACHE_TTL = 10 * 60 * 1000;
-function getJapServices() {
-  const now = Date.now();
-  if (japServicesCache.data && now - japServicesCache.ts < JAP_CACHE_TTL)
-    return Promise.resolve(japServicesCache.data);
-  return japCall({ action: "services" }).then(list => {
-    if (!Array.isArray(list)) throw new Error("JAP xizmatlar ro'yxati noto'g'ri formatda");
-    // Faqat kerakli maydonlarni qoldiramiz (API kalit va boshqa ortiqcha narsa frontendga chiqmaydi)
-    const clean = list.map(s => ({
-      service: s.service, name: s.name, category: s.category,
-      rate: Number(s.rate) || 0, min: Number(s.min) || 0, max: Number(s.max) || 0
-    }));
-    japServicesCache = { ts: now, data: clean };
-    return clean;
-  });
-}
 // JAP'dan kelgan holat obyektini (masalan {status,remains,charge}) buyurtmaga qo'llaydi.
 // "Completed" bo'lsa — referal bonusi beriladi va mijozga xabar yuboriladi;
 // "Canceled/Refunded" bo'lsa — pul balansga bir martagina qaytariladi.
@@ -1653,30 +1614,9 @@ function applyJapStatusToOrder(o, j) {
 // bitta so'rovda ham qaytara oladi — action:"status", orders:"id1,id2,...").
 const NAKRUTKA_AUTO_REFRESH_MS = 7 * 60 * 1000; // har 7 daqiqada
 function autoRefreshNakrutkaOrders() {
-  if (!JAP_API_KEY) return;
-  const pending = DB.orders.filter(o => o.status === "processing" && o.japOrderId);
-  if (!pending.length) return;
-  const byJapId = {};
-  for (const o of pending) byJapId[String(o.japOrderId)] = o;
-  const ids = Object.keys(byJapId);
-  const chunks = [];
-  for (let i = 0; i < ids.length; i += 100) chunks.push(ids.slice(i, i + 100));
-  let p = Promise.resolve();
-  chunks.forEach(chunk => {
-    p = p.then(() => japCall({ action: "status", orders: chunk.join(",") }))
-      .then(resultMap => {
-        if (!resultMap || typeof resultMap !== "object") return;
-        let changed = false;
-        for (const jid of chunk) {
-          const o = byJapId[jid];
-          const j = resultMap[jid];
-          if (!o || !j || j.error) continue;
-          if (applyJapStatusToOrder(o, j)) changed = true;
-        }
-        if (changed) save();
-      })
-      .catch(e => console.log("[nakrutka-cron] xato: " + String((e && e.message) || e)));
-  });
+  // Har bir SMM panel (liniya) bo'yicha guruhlab, 100 tadan so'raladi.
+  SMM.refreshAll(applyJapStatusToOrder).then(ch => { if (ch) save(); })
+    .catch(e => console.log("[nakrutka-cron] xato: " + String((e && e.message) || e)));
 }
 setInterval(autoRefreshNakrutkaOrders, NAKRUTKA_AUTO_REFRESH_MS);
 // Masalan: "Kartangizga 50 038 so'm tushdi" yoki "+50,038 UZS" kabi matnlardan 50038 ni topadi.
@@ -1836,11 +1776,19 @@ const GAMES = require("./games.js")({
   publicBase: () => publicBase()   // G2Bulk callback_url uchun
 });
 
+// Nakrutka liniyalari (smm.js): JAP + boshqa SMM panellar.
+const SMM = require("./smm.js")({
+  getDB: () => DB, save, envKey: () => JAP_API_KEY, usdRate: () => nkUsdRate(), markup: () => nkMarkupPct()
+});
+// Moliya hisobotidagi "saytlardagi balans": o'yin liniyalari + SMM panellar.
+function allLineBalances(force) {
+  return Promise.all([GAMES.lineBalances(force).catch(() => []), SMM.balances().catch(() => [])]).then(([a, b]) => a.concat(b));
+}
 // Alohida admin bot (adminbot.js) — token bo'lsa ishga tushadi, bo'lmasa jim turadi.
 ADMINBOT = require("./adminbot.js")({
   getDB: () => DB, save, ADMIN_IDS, token: adminBotToken,
   appUrl: () => publicBase(), shopUsername: () => BOT_USERNAME,
-  finance: computeFinance, lineBalances: force => GAMES.lineBalances(force),
+  finance: computeFinance, lineBalances: force => allLineBalances(force),
   paymentAction: adminPaymentAction, orderAction: adminOrderAction, balanceChange: adminBalanceChange,
   shopSend: tgSend, fallbackSend: tgSend, paymentText: topupMessageText, orderText: orderMessageText,
   statusInfo: () => ({
@@ -2098,16 +2046,17 @@ const server = http.createServer((req, res) => {
   if (url === "/api/nakrutka/services" && m === "GET") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
-    if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
-    getJapServices()
-      .then(list => {
+    SMM.allServices(true)
+      .then(r => {
+        if (!r.configured) return send(res, 503, { error: "jap_not_configured" });
+        if (!r.list.length && r.errors.length) return send(res, 502, { error: "jap_failed", message: r.errors[0].error });
         // Faqat Telegram/Instagram/TikTok/YouTube xizmatlari mijozga chiqadi — qolgan
         // barcha tarmoqlar (masalan Facebook, Twitter, Spotify) bu yerda kesib tashlanadi.
-        const visible = list.filter(s => !nkIsHidden(s.service))
+        const visible = r.list.filter(s => !nkIsHidden(s.key))
           .map(s => Object.assign({ app: nkAppOf(s) }, s))
           .filter(s => NK_APPS.indexOf(s.app) !== -1)
-          .map(s => ({ service: s.service, name: s.name, category: s.category, app: s.app,
-            min: s.min, max: s.max, rate: Number(nkAdjustedRate(s.rate).toFixed(4)) }));
+          .map(s => ({ service: s.key, name: s.name, category: s.category, app: s.app,
+            min: s.min, max: s.max, rate: SMM.clientRate(SMM.lineById(s.lineId), s) }));
         send(res, 200, { services: visible, usdRate: nkUsdRate(), catMeta: nkCatMetaObj() });
       })
       .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
@@ -2118,32 +2067,51 @@ const server = http.createServer((req, res) => {
   if (url === "/api/nakrutka/buy" && m === "POST") {
     const u = auth(req);
     if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
-    if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
     return readBody(req, res, b => {
-      const serviceId = Number(b.service);
-      const link = String(b.link || "").trim();
+      const key = b.service;
+      const link = String(b.link || "").trim().slice(0, 500);
       const quantity = Math.round(Number(b.quantity) || 0);
-      if (!serviceId || !link || !quantity) return send(res, 400, { error: "invalid_input" });
-      getJapServices().then(list => {
-        const svc = list.find(s => s.service === serviceId);
-        if (!svc || nkIsHidden(serviceId)) return send(res, 404, { error: "no_service" });
+      if (!SMM.parseKey(key) || !link || !quantity) return send(res, 400, { error: "invalid_input" });
+      SMM.findService(key).then(found => {
+        if (!found || nkIsHidden(found.key)) return send(res, 404, { error: "no_service" });
+        const svc = found.svc;
         if (quantity < svc.min || quantity > svc.max)
           return send(res, 400, { error: "qty_range", min: svc.min, max: svc.max });
-        const price = nkPriceUZS(svc.rate, quantity);
+        const price = SMM.priceUZS(found.line, svc, quantity);
         const acc = user(u);
         if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
-        japCall({ action: "add", service: serviceId, link, quantity }).then(j => {
-          if (!j || !j.order) {
-            const msg = (j && j.error) || "JAP xatosi";
-            return send(res, 502, { error: "jap_failed", message: msg });
+        // Pul panelga yuborishdan OLDIN yechiladi (tekshiruv va yechish bitta sinxron qadamda).
+        acc.balance -= price;
+        const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: "nk_" + found.key,
+          item: svc.name, price, status: "processing", ts: Date.now(),
+          delivered: null, doneTs: null, japOrderId: null, japService: svc.service, smmLine: found.line.id, link, quantity };
+        DB.orders.push(o); save();
+        SMM.placeOrder(found, link, quantity).then(r => {
+          if (r.state === "failed") {
+            // Hech bir panel qabul qilmadi — buyurtma yaratilmagan: pulni qaytaramiz.
+            DB.orders = DB.orders.filter(x => x !== o);
+            acc.balance += price; save();
+            return send(res, 502, { error: "jap_failed", message: r.message });
           }
-          acc.balance -= price;
-          const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: "nk_" + serviceId,
-            item: svc.name, price, status: "processing", ts: Date.now(),
-            delivered: null, doneTs: null, japOrderId: j.order, japService: serviceId, link, quantity };
-          DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
+          o.smmLine = r.lineId; o.japService = r.service;
+          if (r.state === "accepted") {
+            o.japOrderId = r.ref;
+            if (r.backup) o.smmBackup = true;
+            save(); notifyOrder(o); logDeliveryToChannel(o);
+            if (r.backup) notifyAdmins("↪️ Nakrutka #" + o.seq + " zaxira liniyaga ketdi: " + r.lineName + "\nAsosiy rad etdi: " + (r.tried || []).join("; "));
+            return send(res, 200, { ok: true, order: o, balance: acc.balance });
+          }
+          // Noaniq — panel buyurtmani yaratgan bo'lishi mumkin: qayta yubormaymiz, admin hal qiladi.
+          o.smmUnknown = true; o.smmMessage = r.message; save();
+          notifyOrder(o);
+          notifyAdmins("❓ Nakrutka #" + o.seq + " " + o.item + " — " + r.lineName + " javobi tushunarsiz: " + r.message
+            + "\nPanelda buyurtma yaratilgan bo'lishi mumkin. Panelda tekshiring; yaratilmagan bo'lsa Admin panel → Nakrutka → «Bekor qilish» (pul qaytadi). Ikkinchi marta yuborilmadi.");
           send(res, 200, { ok: true, order: o, balance: acc.balance });
-        }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+        }).catch(e => {
+          o.smmUnknown = true; o.smmMessage = String(e.message || e); save();
+          notifyAdmins("❓ Nakrutka #" + o.seq + " — kutilmagan xato: " + o.smmMessage + ". Panelda tekshiring.");
+          send(res, 200, { ok: true, order: o, balance: acc.balance });
+        });
       }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     });
   }
@@ -2155,8 +2123,8 @@ const server = http.createServer((req, res) => {
     if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     const o = DB.orders.find(x => x.id === q.get("id") && x.uid === u.id);
     if (!o || !o.japOrderId) return send(res, 404, { error: "no_order" });
-    japCall({ action: "status", order: o.japOrderId }).then(j => {
-      if (!j || j.error) return send(res, 502, { error: "jap_failed", message: (j && j.error) || "JAP xatosi" });
+    SMM.status(o).then(j => {
+      if (!j || j.error) return send(res, 502, { error: "jap_failed", message: (j && j.error) || "Panel javob bermadi" });
       applyJapStatusToOrder(o, j);
       save();
       const acc = user(u);
@@ -3078,7 +3046,7 @@ const server = http.createServer((req, res) => {
       const f = computeFinance(["today", "week", "month", "all"].indexOf(period) !== -1 ? period : "today");
       const withBal = q.get("balances") === "1";
       if (!withBal) return send(res, 200, f);
-      return GAMES.lineBalances(q.get("force") === "1").then(b => send(res, 200, Object.assign(f, { lineBalances: b })))
+      return allLineBalances(q.get("force") === "1").then(b => send(res, 200, Object.assign(f, { lineBalances: b })))
         .catch(() => send(res, 200, f));
     }
     /* ----- Admin bot sozlamasi (token faqat yoziladi, hech qachon qaytarilmaydi) ----- */
@@ -3122,11 +3090,13 @@ const server = http.createServer((req, res) => {
       return send(res, 200, { orders: list.slice(0, 200) });
     }
     if (url === "/api/admin/nakrutka/balance" && m === "GET") {
-      if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
-      return japCall({ action: "balance" })
-        .then(j => send(res, 200, j))
-        .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
+      // Hamma panellar balansi; "balance" — eski ko'rinish uchun birinchi ishlayotgan panelniki.
+      return SMM.balances().then(lines => {
+        const first = lines.find(x => x.ok);
+        send(res, 200, { balance: first ? first.balance : null, currency: first ? first.currency : "USD", lines });
+      }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     }
+    if (SMM.handle(req, res, url, m, send, readBody)) return;
     // Bitta buyurtmani qo'lda JAP'dan yangilash yoki bekor qilib pulni qaytarish.
     if (url === "/api/admin/nakrutka/order" && m === "POST") {
       return readBody(req, res, b => {
@@ -3134,8 +3104,8 @@ const server = http.createServer((req, res) => {
         if (!o) return send(res, 404, { error: "not_found" });
         if (b.action === "refresh") {
           if (!o.japOrderId) return send(res, 400, { error: "no_jap_order" });
-          return japCall({ action: "status", order: o.japOrderId }).then(j => {
-            if (!j || j.error) return send(res, 502, { error: "jap_failed", message: (j && j.error) || "JAP xatosi" });
+          return SMM.status(o).then(j => {
+            if (!j || j.error) return send(res, 502, { error: "jap_failed", message: (j && j.error) || "Panel javob bermadi" });
             applyJapStatusToOrder(o, j); save();
             send(res, 200, { ok: true, order: o });
           }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
@@ -3172,17 +3142,21 @@ const server = http.createServer((req, res) => {
     // Xizmatlarni ko'rish/yashirish: admin JAP'dan kelgan HAMMA xizmatni ko'radi, ba'zilarini
     // mijozlardan yashirishi mumkin (masalan sifatsiz/keraksiz deb topganlarini).
     if (url === "/api/admin/nakrutka/services" && m === "GET") {
-      if (!JAP_API_KEY) return send(res, 503, { error: "jap_not_configured" });
-      return getJapServices()
-        .then(list => send(res, 200, { services: list, hidden: nkSettings().hiddenServices || [] }))
+      return SMM.allServices(false)
+        .then(r => {
+          if (!r.configured) return send(res, 503, { error: "jap_not_configured" });
+          send(res, 200, { services: r.list.map(x => Object.assign({}, x, { service: x.key })), hidden: nkSettings().hiddenServices || [],
+            errors: r.errors, backups: SMM.store().backups });
+        })
         .catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     }
     if (url === "/api/admin/nakrutka/toggle-service" && m === "POST") {
       return readBody(req, res, b => {
-        const id = Number(b.service);
-        if (!id) return send(res, 400, { error: "service" });
+        const pk = SMM.parseKey(b.service);
+        if (!pk) return send(res, 400, { error: "service" });
+        const id = SMM.keyOf(pk.lineId, pk.id);
         const s = nkSettings();
-        const idx = s.hiddenServices.indexOf(id);
+        const idx = s.hiddenServices.findIndex(h => String(h) === String(id));
         if (idx === -1) s.hiddenServices.push(id); else s.hiddenServices.splice(idx, 1);
         save();
         send(res, 200, { ok: true, hidden: s.hiddenServices });

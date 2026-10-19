@@ -186,7 +186,7 @@ module.exports = function createAdminBot(ctx) {
     list.slice(0, 12).forEach((o, i) => {
       L.push((i + 1) + ") " + (O_ICO[o.status] || "•") + " #" + o.seq + " " + o.item + " · " + money(o.price) + " · " + short(o.uid, o.uname) + " · " + dt(o.ts));
       if (o.game && o.game.accountText) L.push("    🎮 " + o.game.accountText + (o.line && o.line.state ? " · " + (o.line.name ? o.line.name + ": " : "") + (LINE_STATE[o.line.state] || o.line.state) : ""));
-      if (o.status === "processing") L.push("    ⏳ Nakrutka sayti bajarmoqda");
+      if (o.status === "processing") L.push(o.smmUnknown ? "    ❓ Panel javobi tushunarsiz — panelda tekshiring" : "    ⏳ Nakrutka paneli bajarmoqda");
       rows.push(o.status === "pending"
         ? [btn("✅ " + (i + 1) + ") #" + o.seq, "od:" + o.id), btn("❌", "ox:" + o.id), btn("👤", "uc:" + o.uid)]
         : [btn("👤 " + (i + 1) + ") #" + o.seq, "uc:" + o.uid)]);

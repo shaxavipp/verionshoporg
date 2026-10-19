@@ -67,6 +67,16 @@ module.exports = function createGames(ctx) {
       s.linesV = 2;
       ctx.save();
     }
+    // 3-versiya: "AI xizmatlar" bo'limi. O'yinlar bilan bir xil mexanizm (paketlar,
+    // liniyalar, zaxira), faqat akkaunt sifatida email so'raladi. Narxsiz va o'chiq —
+    // admin narx qo'yib yoqmaguncha do'konda ko'rinmaydi.
+    if ((s.aiV || 0) < 1) {
+      const ai = aiSeed();
+      for (const g of ai.games) if (!s.games.some(x => x.id === g.id)) s.games.push(g);
+      for (const p of ai.packages) if (!s.packages.some(x => x.id === p.id)) s.packages.push(p);
+      s.aiV = 1;
+      ctx.save();
+    }
     return s;
   }
   const gameById = id => store().games.find(g => g.id === id);
@@ -112,6 +122,29 @@ module.exports = function createGames(ctx) {
       ],
       packages: pk,
       lines: [{ id: "manual", name: "Qo'lda", type: "manual", enabled: true, priority: 100, config: {}, note: "" }]
+    };
+  }
+
+  const EMAIL_RE = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$";
+  function aiSeed() {
+    const E = [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }];
+    const G = (id, name, color, sort) => ({ id, name, section: "ai", img: "", banner: "", color, active: true, sort: 100 + sort,
+      fields: E, regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "sub", label: "Obunalar" }] });
+    const P = (gameId, key, name, sub, sort) => ({ id: gameId + "-" + key, gameId, region: "global", tab: "sub", name, sub, icon: "ai",
+      img: "", badge: "", price: 0, active: false, sort, routes: [{ lineId: "manual", sku: "", cost: 0 }] });
+    return {
+      games: [G("chatgpt", "ChatGPT", "#10a37f", 1), G("claude", "Claude", "#d97757", 2), G("gemini", "Google Gemini", "#4285f4", 3),
+        G("midjourney", "Midjourney", "#5b5bd6", 4), G("grok", "Grok", "#444b57", 5), G("perplexity", "Perplexity", "#20b8cd", 6),
+        G("cursor", "Cursor", "#3a3f4b", 7)],
+      packages: [
+        P("chatgpt", "plus-1m", "Plus", "1 oy", 1), P("chatgpt", "plus-3m", "Plus", "3 oy", 2), P("chatgpt", "pro-1m", "Pro", "1 oy", 3),
+        P("claude", "pro-1m", "Pro", "1 oy", 1), P("claude", "max5-1m", "Max 5x", "1 oy", 2),
+        P("gemini", "pro-1m", "AI Pro", "1 oy", 1), P("gemini", "pro-12m", "AI Pro", "12 oy", 2),
+        P("midjourney", "basic-1m", "Basic", "1 oy", 1), P("midjourney", "standard-1m", "Standard", "1 oy", 2),
+        P("grok", "super-1m", "SuperGrok", "1 oy", 1),
+        P("perplexity", "pro-1m", "Pro", "1 oy", 1), P("perplexity", "pro-12m", "Pro", "12 oy", 2),
+        P("cursor", "pro-1m", "Pro", "1 oy", 1)
+      ]
     };
   }
 
@@ -172,7 +205,7 @@ module.exports = function createGames(ctx) {
   const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
   const slug = (v, max) => /^[a-z0-9][a-z0-9_-]*$/.test(String(v || "")) ? String(v).slice(0, max || 40) : "";
   const imgUrl = v => { const s = str(v, 500); return (!s || /^\/gimg\/[a-f0-9]{16,40}\.(png|jpe?g|webp)$/.test(s) || /^https:\/\//.test(s)) ? s : ""; };
-  const ICONS = ["diamond", "uc", "pass", "coin", "gift"];
+  const ICONS = ["diamond", "uc", "pass", "coin", "gift", "ai"];
   function cleanMeta(m) {
     if (!m || typeof m !== "object") return undefined;
     const out = {};
@@ -191,9 +224,11 @@ module.exports = function createGames(ctx) {
   function cleanAccount(game, raw) {
     const out = {};
     for (const f of game.fields || []) {
-      const v = str(raw && raw[f.key], 32);
+      const email = f.type === "email";
+      const v = str(raw && raw[f.key], email ? 80 : 32).trim();
       if (!v) return { error: "required", field: f.key, label: f.label };
-      if (!/^[A-Za-z0-9_.-]+$/.test(v)) return { error: "format", field: f.key, label: f.label };
+      if (!(email ? /^[A-Za-z0-9_.+@-]+$/ : /^[A-Za-z0-9_.-]+$/).test(v)) return { error: "format", field: f.key, label: f.label };
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return { error: "format", field: f.key, label: f.label };
       if (f.re) { let ok = false; try { ok = new RegExp(f.re).test(v); } catch (e) { ok = true; } if (!ok) return { error: "format", field: f.key, label: f.label }; }
       out[f.key] = v;
     }
@@ -216,8 +251,8 @@ module.exports = function createGames(ctx) {
     const pk = s.packages.filter(p => p.active && p.price > 0 && s.games.some(g => g.id === p.gameId && g.active));
     const gids = new Set(pk.map(p => p.gameId));
     const games = s.games.filter(g => g.active && gids.has(g.id)).sort((a, b) => (a.sort || 0) - (b.sort || 0))
-      .map(g => ({ id: g.id, name: g.name, img: g.img || "", banner: g.banner || "", color: g.color || "",
-        fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "" })),
+      .map(g => ({ id: g.id, name: g.name, section: g.section === "ai" ? "ai" : "games", img: g.img || "", banner: g.banner || "", color: g.color || "",
+        fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
         regions: g.regions || [], tabs: g.tabs || [],
         canCheck: !!checkLineFor(g) }));
     const packages = pk.sort((a, b) => (a.sort || 0) - (b.sort || 0))
@@ -529,11 +564,11 @@ module.exports = function createGames(ctx) {
           const key = /^[A-Za-z][A-Za-z0-9_]{0,19}$/.test(String(f.key || "")) ? String(f.key) : "";
           const re = safeRe(f.re);
           if (!key || re === null) return sendJSON(res, 400, { error: "Maydon sozlamasi noto'g'ri: " + str(f.label || f.key, 30) });
-          fields.push({ key, label: str(f.label, 30) || key, ph: str(f.ph, 30), re });
+          fields.push(Object.assign({ key, label: str(f.label, 30) || key, ph: str(f.ph, 30), re }, f.type === "email" ? { type: "email" } : {}));
         }
         const list = (arr, n) => (Array.isArray(arr) ? arr : []).slice(0, n)
           .map(r => ({ key: slug(r.key, 16), label: str(r.label, 24) })).filter(r => r.key && r.label);
-        const g = { id, name, img: imgUrl(x.img), banner: imgUrl(x.banner),
+        const g = { id, name, section: x.section === "ai" ? "ai" : "games", img: imgUrl(x.img), banner: imgUrl(x.banner),
           color: /^#[0-9a-f]{6}$/i.test(String(x.color || "")) ? x.color : "",
           fields, regions: list(x.regions, 15), tabs: list(x.tabs, 8),
           active: x.active !== false, sort: Number(x.sort) || 0 };
@@ -712,8 +747,10 @@ module.exports = function createGames(ctx) {
           const id = slug(String(ng.id || "").toLowerCase(), 40);
           if (!id) return sendJSON(res, 400, { error: "Yangi o'yin uchun ID kiriting (masalan: genshin)" });
           if (gameById(id)) return sendJSON(res, 400, { error: "Bu ID band" });
-          g = { id, name: str(ng.name || pk.name || id, 60), img: "", banner: "", color: "#2f8fff",
-            fields: [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
+          const isAi = ng.section === "ai";
+          g = { id, name: str(ng.name || pk.name || id, 60), section: isAi ? "ai" : "games", img: "", banner: "", color: "#2f8fff",
+            fields: isAi ? [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }]
+              : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
             regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: s.games.length + 1 };
           s.games.push(g);
         }
@@ -742,7 +779,7 @@ module.exports = function createGames(ctx) {
             updated++;
           } else {
             p = { id: g.id + "-" + crypto.randomBytes(4).toString("hex"), gameId: g.id, region, tab, name: nm.name, sub: nm.sub,
-              icon: nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
+              icon: g.section === "ai" ? "ai" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
               routes: [{ lineId: l.id, sku: String(it.sku), cost: it.cost, meta }].concat(manual ? [{ lineId: "manual", sku: "", cost: 0 }] : []) };
             s.packages.push(p);
             added++;

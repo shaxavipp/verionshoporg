@@ -166,6 +166,24 @@ Admin panel — to'liq ekranli boshqaruv paneli. Unga quyidagi joylardan kirilad
 
 Tepada katta raqamlar turadi: kirim, sotuv, kutilayotgan to'lov va bajarilmagan buyurtma. Ular bugun / hafta / oy / hammasi bo'yicha ko'rinadi, kutilayotganlar bo'lsa qizil rangda chiqadi. Pastda mijoz qidiruvi va barcha bo'limlar katta plitkalar ko'rinishida: Asosiy, Do'kon, Marketing, Sozlamalar. Admin bot hali ulanmagan bo'lsa, panel tepasida token kiritiladigan karta chiqadi.
 
+## Nakrutka liniyalari (SMM panellar)
+
+Nakrutka endi bitta JAP emas, bir nechta SMM panel orqali ishlaydi (`smm.js`). Liniyalar: JustAnotherPanel, Peakerr, SMMKings va 2 ta bo'sh joy, kerak bo'lsa yana qo'shish mumkin. Ko'pchilik SMM panellar bir xil "API v2" ishlatadi, shuning uchun yangi panel ulash uchun **URL va API kalit** yetarli. Sozlash joyi: Admin panel → Nakrutka → Liniyalar → ✏️. U yerda kalit, ustuvorlik, alohida kurs va ustama kiritiladi, «Sinash» tugmasi balans va xizmatlar sonini ko'rsatadi.
+
+- JAP Railway'dagi `JAP_API_KEY` bilan avvalgidek ishlaydi. Uning xizmat ID'lari o'zgarmagan, boshqa panellarniki `liniya:ID` ko'rinishida (masalan `peakerr:1234`).
+- «Xizmatlari mijozlarga ko'rinsin» o'chirilsa, panel faqat zaxira bo'lib qoladi.
+- **Zaxira:** Xizmatlar ro'yxatida ↪️ tugmasi bilan xizmatga boshqa paneldagi zaxira xizmat biriktiriladi. Asosiy panel aniq rad etsa (balans tugagan, xizmat o'chgan) yoki unga umuman ulanib bo'lmasa, buyurtma zaxiraga ketadi.
+
+**Pul xavfsizligi:**
+- Pul panelga yuborishdan oldin yechiladi. Bir vaqtda bosilgan xaridlar balansdan ortiq sarflay olmaydi.
+- Hech bir panel qabul qilmasa, pul qaytadi va buyurtma yaratilmaydi.
+- Javob tushunarsiz bo'lsa yoki aloqa uzilsa, buyurtma zaxiraga yuborilmaydi va "noaniq" bo'lib qoladi, adminga xabar boradi. Admin panelni tekshiradi va kerak bo'lsa «Bekor qilish» bosadi, pul qaytadi.
+- Holat har bir panel bo'yicha avtomatik yangilanadi. Panellar balansi moliya hisobotida ham ko'rinadi.
+
+## AI xizmatlar
+
+Bosh sahifada «AI xizmatlar» bo'limi bor. Unda ChatGPT, Claude, Gemini, Midjourney, Grok, Perplexity va Cursor obunalari turadi. O'yinlar bilan bir xil mexanizmda ishlaydi: paketlar, liniyalar, zaxira, import va rasmlar. Farqi shundaki, mijozdan akkaunt **emaili** so'raladi. Paketlar narxsiz va o'chiq holda qo'shilgan: Admin panel → AI xizmatlar → Narxlar. Narx qo'yilgach do'konda ko'rinadi. Odatda «Qo'lda» liniyasi orqali bajariladi; saytdan import qilganda «＋ Yangi AI xizmat» tanlansa, MooGold yoki G2Bulk katalogidagi obunalar ham ulanadi.
+
 ## Admin bot (alohida bot) va moliya
 
 Do'kon botidan tashqari **ikkinchi bot** — faqat adminlar uchun (`adminbot.js`). Ulash:
