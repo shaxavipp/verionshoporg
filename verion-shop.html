@@ -836,7 +836,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.8";
+var CLIENT_BUILD="2026-10-19.9";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1378,6 +1378,10 @@ var _startedRecheck=null;
    money — to'lovlar/buyurtmalar, u-<ID> — shu mijoz. */
 var _adminDeepDone=false;
 function handleAdminDeepLink(){
+  // AI yordamchi tugmalari: ?open=pay|orders|games|ai|nakrutka|telegram — kerakli bo'lim ochiladi.
+  var op="";try{op=new URLSearchParams(location.search).get("open")||"";}catch(e){}
+  if(op==="pay"||op==="orders"){go(op);}
+  else if(["games","ai","nakrutka","telegram"].indexOf(op)!==-1){S.screen="home";S.category=op;render();}
   var v="";try{v=new URLSearchParams(location.search).get("admin")||"";}catch(e){}
   if(!v&&ME.via==="admin")v="1";
   if(!v||!isAdmin())return;
@@ -3866,7 +3870,8 @@ var ADM_TILES=[
     ["money","wallet","#3b82f6","To'lovlar va buyurtmalar","Tasdiqlash, bekor qilish"],
     ["finance","trendUp","#22c55e","Moliya","Kirim, sotuv, foyda"],
     ["users","users","#a855f7","Mijozlar","Ro'yxat, balans, tarix"],
-    ["adminbot","bolt","#f59e0b","Admin bot","Chatda boshqaruv"]]],
+    ["adminbot","bolt","#f59e0b","Admin bot","Chatda boshqaruv"],
+    ["aibot","sparkles","#8b5cf6","AI yordamchi","Mijozlar bilan o'zi gaplashadi"]]],
   ["Do'kon",[
     ["catalog","clipboard","#0ea5e9","Mahsulotlar","Katalog, narx, zaxira"],
     ["games","gamepad","#ef4444","O'yinlar va liniyalar","MooGold, G2Bulk, Smile"],
@@ -3889,7 +3894,7 @@ var ADM_TILES=[
     ["backup","clipboard","#64748b","Zaxira nusxa","Bot orqali yuborish"]]]
 ];
 function admTileAction(k){
-  var m={money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},
+  var m={money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},aibot:function(){openAdminAi(openAdmin);},
     catalog:openAdminCatalog,games:function(){openAdminGames("");},ai:function(){openAdminGames("ai");},nakrutka:openAdminNakrutka,cats:openAdminCategories,deliveries:openAdminDeliveries,reviews:openAdminReviews,
     promo:openAdminPromo,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
     bot:openAdminBot,channels:openAdminChannels,automation:openAdminAutomation,dash:openAdminDashboard,emoji:openAdminUiEmoji,
@@ -4798,6 +4803,64 @@ function paintAdminBotCard(box){
       }).catch(function(e){b.disabled=false;res.textContent="⚠️ "+((e&&e.resp&&e.resp.error)||"Xatolik");});
     });
   }).catch(function(){});
+}
+/* ---------- AI yordamchi (Claude) sozlamasi ---------- */
+function openAdminAi(backFn){
+  var html='<h2>✨ AI yordamchi</h2>'
+    +'<div class="paynote" style="margin:0 0 10px">Do\'kon botiga yozgan har bir mijozga AI o\'zi javob beradi: narxlarni aytadi, o\'yin va AI obuna buyurtmasini tayyorlaydi '
+    +'(pul faqat mijoz <b>«✅ Tasdiqlash»</b> tugmasini bosganda yechiladi), balans va buyurtma holatini ko\'rsatadi, hal qila olmasa <b>operatorga</b> (admin botga) uzatadi. '
+    +'Admin botda esa oddiy tilda so\'rash mumkin: «bugungi foyda qancha?», «ChatGPT Plus narxini 290 ming qil».<br>AI chegirma bera olmaydi, pul qaytara olmaydi va balans qo\'sha olmaydi.</div>'
+    +'<div class="d" id="aiState" style="margin:0 0 10px">…</div>'
+    +'<div class="sect" style="margin:4px 0 6px">Claude API kaliti</div>'
+    +'<div class="d" style="margin:0 0 8px">console.anthropic.com → API Keys → Create Key. Kalit <b>sk-ant-</b> bilan boshlanadi. Hisobga to\'lov (kredit) qo\'shilgan bo\'lishi kerak.</div>'
+    +'<input id="aiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-...">'
+    +'<label>Model</label><select id="aiModel"></select>'
+    +'<div class="d" style="margin:-4px 0 8px">Opus — eng aqlli; Sonnet — tezroq va 2 baravar arzon; Haiku — juda arzon, oddiy savollar uchun.</div>'
+    +'<div class="switch"><span style="font-size:13.5px">🛍 Mijozlarga javob bersin (do\'kon boti)</span><button class="swbtn" id="aiSup"><i></i></button></div>'
+    +'<div class="switch"><span style="font-size:13.5px">🛡 Admin botda yordamchi</span><button class="swbtn" id="aiAdm"><i></i></button></div>'
+    +'<label>Do\'kon haqida qo\'shimcha ma\'lumot va qoidalar</label>'
+    +'<textarea id="aiExtra" class="exta" style="height:140px" placeholder="Masalan: Ish vaqti 9:00–23:00. O\'yin valyutasi 5–30 daqiqada tushadi. AI obunalar 1–12 soat ichida ulanadi. Qaytarish faqat buyurtma bajarilmagan bo\'lsa."></textarea>'
+    +'<div class="arow"><div style="flex:1"><label>Kunlik limit (1 mijoz)</label><input id="aiLimit" type="number" min="1"></div>'
+    +'<div style="flex:1"><label>Operator rejimi, daqiqa</label><input id="aiHand" type="number" min="5"></div></div>'
+    +'<div class="arow" style="margin-top:8px"><button class="btn" id="aiSave">'+esc(t("a_save"))+'</button><button class="btn gray" id="aiTest">Sinash</button></div>'
+    +'<div class="d" id="aiRes" style="margin:8px 0 0"></div>'
+    +'<div class="sect" style="margin:16px 0 6px">Bugun</div><div id="aiStats" class="fin-grid"></div>'
+    +'<div style="height:24px"></div>';
+  var sh=openSheet(html,backFn);
+  function card(k,v,sub){return '<div class="fin-card"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div>'+(sub?'<div class="s">'+esc(sub)+'</div>':'')+'</div>';}
+  function paint(r){
+    var st=sh.querySelector("#aiState");
+    st.innerHTML=!r.sdk?'🔴 Serverda AI paketi o\'rnatilmagan — Railway qayta deploy qilsin.'
+      :r.keySet?((r.support||r.admin)?'🟢 Ishlayapti':'⚪️ Kalit bor, lekin o\'chirilgan')+(r.humans?' · operator bilan: '+r.humans+' ta mijoz':''):'⚪️ Kalit kiritilmagan';
+    var inp=sh.querySelector("#aiKey");
+    if(r.fromEnv){inp.disabled=true;inp.placeholder="Railway'dagi ANTHROPIC_API_KEY ishlatilmoqda";}
+    else inp.placeholder=r.keySet?"•••••• (o'rnatilgan — almashtirish uchun yangisini yozing)":"sk-ant-...";
+    sh.querySelector("#aiModel").innerHTML=r.models.map(function(m){return '<option value="'+esc(m.id)+'"'+(m.id===r.model?" selected":"")+'>'+esc(m.label)+'</option>';}).join("");
+    sh.querySelector("#aiSup").className="swbtn"+(r.support?" on":"");
+    sh.querySelector("#aiAdm").className="swbtn"+(r.admin?" on":"");
+    sh.querySelector("#aiExtra").value=r.extra||"";
+    sh.querySelector("#aiLimit").value=r.dailyLimit;sh.querySelector("#aiHand").value=r.handoffMin;
+    var d=r.today||{};
+    sh.querySelector("#aiStats").innerHTML=card("💬 Mijoz xabarlari",String(d.msgs||0),(d.users||0)+" ta mijoz")+card("🛒 AI orqali buyurtma",String(d.orders||0),"")
+      +card("🙋 Operatorga",String(d.handoffs||0),"")+card("🔤 Token",vizShort((d.inTok||0)+(d.outTok||0)),"kesh: "+vizShort(d.cacheRead||0));
+  }
+  function load(){api("/api/admin/ai").then(paint).catch(function(){sh.querySelector("#aiState").textContent="Yuklab bo'lmadi.";});}
+  ["#aiSup","#aiAdm"].forEach(function(x){sh.querySelector(x).addEventListener("click",function(){this.classList.toggle("on");});});
+  function body(){
+    var b={model:sh.querySelector("#aiModel").value,support:sh.querySelector("#aiSup").classList.contains("on"),admin:sh.querySelector("#aiAdm").classList.contains("on"),
+      extra:sh.querySelector("#aiExtra").value,dailyLimit:Number(sh.querySelector("#aiLimit").value)||40,handoffMin:Number(sh.querySelector("#aiHand").value)||60};
+    var k=sh.querySelector("#aiKey").value.trim();if(k)b.key=k;return b;
+  }
+  function save(then){
+    return api("/api/admin/ai","POST",body()).then(function(r){sh.querySelector("#aiKey").value="";paint(r);haptic("ok");if(then)then();else toast(t("a_saved"));})
+      .catch(function(e){toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+  }
+  sh.querySelector("#aiSave").addEventListener("click",function(){save();});
+  sh.querySelector("#aiTest").addEventListener("click",function(){
+    var res=sh.querySelector("#aiRes");res.textContent="Tekshirilmoqda…";
+    save(function(){api("/api/admin/ai-test","POST",{}).then(function(x){res.textContent=(x.ok?"✅ ":"❌ ")+x.message;}).catch(function(){res.textContent="Xatolik";});});
+  });
+  load();
 }
 /* ---------- Admin bot sozlamasi ---------- */
 function openAdminAdminBot(backFn){

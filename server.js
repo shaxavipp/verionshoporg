@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.8";
+const BUILD = "2026-10-19.9";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1009,6 +1009,12 @@ function markStarted(from) {
   return acc;
 }
 async function handleBotUpdate(upd) {
+  // AI yordamchining «✅ Tasdiqlash» tugmalari
+  if (upd && upd.callback_query) {
+    try { if (AI && await AI.onCustomerCallback(upd.callback_query)) return; } catch (e) { console.log("[ai] callback xato: " + e.message); }
+    tgApiPost("answerCallbackQuery", { callback_query_id: upd.callback_query.id }).catch(() => {});
+    return;
+  }
   const msg = upd && (upd.message || upd.edited_message);
   if (!msg || !msg.from || msg.from.is_bot) return;
   if (!msg.chat || msg.chat.type !== "private") return;   // guruh/kanal xabarlariga aralashmaymiz
@@ -1054,6 +1060,8 @@ async function handleBotUpdate(upd) {
       + (kb ? "" : "\n\n⚠️ Ilova manzili hali aniqlanmagan — admin panel tugmasi chiqmadi.") });
     return;
   }
+  // AI yordamchi yoqilgan bo'lsa — u javob beradi (yoki operator rejimida adminga uzatiladi).
+  try { if (AI && !upd.edited_message && AI.onCustomerMessage(from, text)) return; } catch (e) { console.log("[ai] xato: " + e.message); }
   // Boshqa har qanday xabar — qisqa javob va ilovaga tugma (bot hech qachon jim qolmaydi).
   await tgApiPost("sendMessage", {
     chat_id: from.id,
@@ -1086,12 +1094,15 @@ async function ensureBotWebhook(force) {
   const errAge = info.last_error_date ? (Date.now() - info.last_error_date * 1000) : Infinity;
   const deliveryError = (cur === want && info.last_error_message && errAge < DELIVERY_ERR_WINDOW)
     ? info.last_error_message : "";
-  if (cur === want && !force) return { ok: true, already: true, url: cur, deliveryError, pending: info.pending_update_count || 0 };
+  // AI yordamchining "✅ Tasdiqlash" tugmalari uchun callback_query ham kerak — eski
+  // (faqat "message") webhook bo'lsa qayta o'rnatamiz.
+  const hasCb = Array.isArray(info.allowed_updates) && info.allowed_updates.indexOf("callback_query") !== -1;
+  if (cur === want && !force && hasCb) return { ok: true, already: true, url: cur, deliveryError, pending: info.pending_update_count || 0 };
   if (cur && cur !== want && !force) return { ok: false, reason: "foreign", url: cur };
   try {
     const r = await tgApiPost("setWebhook", {
       url: want, secret_token: botHookSecret(),
-      allowed_updates: ["message"], drop_pending_updates: false
+      allowed_updates: ["message", "callback_query"], drop_pending_updates: false
     });
     if (r && r.ok) return { ok: true, url: want, replaced: cur || undefined, deliveryError: force ? "" : deliveryError };
     return { ok: false, reason: "set_failed", error: (r && r.description) || "" };
@@ -1109,7 +1120,7 @@ async function pollLoop() {
   while (POLLING) {
     let r = null;
     try {
-      r = await tgApiPost("getUpdates", { offset: POLL_OFFSET, timeout: 25, allowed_updates: ["message"] });
+      r = await tgApiPost("getUpdates", { offset: POLL_OFFSET, timeout: 25, allowed_updates: ["message", "callback_query"] });
     } catch (e) { await sleep(5000); continue; }
     if (r && r.ok && Array.isArray(r.result)) {
       for (const u of r.result) {
@@ -1825,6 +1836,10 @@ ADMINBOT = require("./adminbot.js")({
   finance: computeFinance, lineBalances: force => allLineBalances(force),
   paymentAction: adminPaymentAction, orderAction: adminOrderAction, balanceChange: adminBalanceChange,
   shopSend: tgSend, fallbackSend: tgSend, paymentText: topupMessageText, orderText: orderMessageText,
+  aiAdmin: (id, text) => (AI ? AI.onAdminText(id, text) : Promise.resolve(null)),
+  aiAdminOp: (tok, id) => (AI ? AI.runAdminOp(tok, id) : "AI ulanmagan"),
+  aiRelease: uid => { if (AI) AI.release(uid); },
+  aiOn: () => !!(AI && AI.ready()),
   statusInfo: () => ({
     build: BUILD,
     shopBot: (BOT_USERNAME ? "@" + BOT_USERNAME + " · " : "") + (POLLING ? "so'rov (polling) rejimida" : "webhook rejimida"),
@@ -1834,6 +1849,24 @@ ADMINBOT = require("./adminbot.js")({
     lastSmsTs: DB.smsLog.length ? DB.smsLog[DB.smsLog.length - 1].ts : 0,
     lines: GAMES.store().lines.filter(l => l.type !== "manual").map(l => ({ name: l.name, enabled: !!l.enabled }))
   })
+});
+// AI yordamchi (ai.js) — Claude; kalit admin paneldan yoki ANTHROPIC_API_KEY.
+var AI = require("./ai.js")({
+  getDB: () => DB, save, games: GAMES, catalogArr, appUrl: () => publicBase(),
+  shopApi: (method, payload) => tgApiPost(method, payload).catch(e => ({ ok: false, description: e.message })),
+  supportUsername: () => SUPPORT_USERNAME,
+  notifyHandoff: (from, reason, last) => ADMINBOT.customerEvent(from, "🙋 Mijoz operatorni so'radi" + (reason ? ": " + reason : ""), last, true),
+  forwardToAdmins: (from, text) => ADMINBOT.customerEvent(from, "💬 Mijoz yozdi (operator rejimi)", text, false),
+  finance: p => computeFinance(["today", "week", "month", "all"].indexOf(p) !== -1 ? p : "today"),
+  findCustomer: q => ADMINBOT.findCustomerText(q),
+  lineBalances: f => allLineBalances(f),
+  setPackagePrice: (id, price) => {
+    const p = GAMES.pkgById(id); if (!p) return { ok: false, error: "Paket topilmadi" };
+    p.price = Math.round(price); save();
+    const g = GAMES.gameById(p.gameId);
+    return { ok: true, name: (g ? g.name + " — " : "") + p.name };
+  },
+  balanceChange: adminBalanceChange
 });
 setTimeout(() => {
   ADMINBOT.start().catch(e => console.log("[adminbot] " + e.message));
@@ -3140,6 +3173,16 @@ const server = http.createServer((req, res) => {
           .catch(e => send(res, 200, { ok: false, error: String(e.message || e) }));
       });
     }
+    /* ----- AI yordamchi sozlamasi (kalit faqat yoziladi, qaytarilmaydi) ----- */
+    if (url === "/api/admin/ai" && m === "GET") return send(res, 200, AI.publicCfg());
+    if (url === "/api/admin/ai" && m === "POST") {
+      return readBody(req, res, b => {
+        const err = AI.saveCfg(b || {});
+        if (err) return send(res, 400, { error: err });
+        send(res, 200, Object.assign({ ok: true }, AI.publicCfg()));
+      });
+    }
+    if (url === "/api/admin/ai-test" && m === "POST") return AI.testKey().then(r => send(res, 200, r));
     if (url === "/api/admin/adminbot-test" && m === "POST") {
       return ADMINBOT.testMessage(a.id).then(r => send(res, 200, r));
     }

@@ -462,40 +462,9 @@ module.exports = function createGames(ctx) {
       const u = ctx.auth(req);
       if (!u) { sendJSON(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" }); return true; }
       ctx.readBody(req, res, b => {
-        const p = pkgById(str(b.packageId, 80));
-        const g = p && gameById(p.gameId);
-        if (!p || !g || !p.active || !g.active || !(p.price > 0)) return sendJSON(res, 404, { error: "no item" });
-        const c = cleanAccount(g, b.account);
-        if (c.error) return sendJSON(res, 400, { error: c.error, field: c.field, label: c.label });
-        let total = Math.round(p.price), promo = null;
-        if (b.promoCode) {
-          const pv = ctx.validatePromo(b.promoCode, u.id, total);
-          if (!pv.ok) return sendJSON(res, 409, { error: "promo_invalid", reason: pv.reason });
-          total = Math.max(0, total - pv.discount);
-          promo = { code: pv.promo.code, discount: pv.discount, ref: pv.promo };
-        }
-        const acc = ctx.user(u);
-        // Tekshiruv va yechish BIR xil sinxron qadamda — oraliqda await yo'q, shuning
-        // uchun bir vaqtda bosilgan ikki xarid balansdan ikki marta o'tib keta olmaydi.
-        if (acc.balance < total) return sendJSON(res, 402, { error: "balance", need: total - acc.balance });
-        acc.balance -= total;
-        const reg = (g.regions || []).find(r => r.key === p.region);
-        const item = g.name + " — " + p.name + (p.sub ? " " + p.sub : "") + (reg && (g.regions || []).length > 1 ? " [" + reg.label.replace(/^\S+\s/, "") + "]" : "");
-        const o = {
-          id: ctx.genId("VN"), seq: ctx.nextOrderSeq(), uid: u.id, uname: u.username || null,
-          itemId: "game:" + p.id, item, price: total, status: "pending", ts: Date.now(), quantity: 1,
-          delivered: null, doneTs: null,
-          promoCode: promo ? promo.code : null, promoDiscount: promo ? promo.discount : 0,
-          game: { gameId: g.id, gameName: g.name, packageId: p.id, region: p.region || "", account: c.account,
-            accountText: accountText(g, c.account), fields: (g.fields || []).map(f => ({ key: f.key, label: f.label })) },
-          line: null
-        };
-        DBx().orders.push(o);
-        if (promo) ctx.consumePromo(promo.ref, u.id);
-        ctx.save();
-        ctx.notifyOrder(o);
-        sendJSON(res, 200, { ok: true, order: o, balance: acc.balance });
-        setImmediate(() => fulfill(o).catch(e => console.log("[games] fulfill xato: " + e.message)));
+        const r = buyPackage(u, b.packageId, b.account, b.promoCode);
+        if (!r.ok) return sendJSON(res, r.code, r.body);
+        sendJSON(res, 200, { ok: true, order: r.order, balance: r.balance });
       });
       return true;
     }
@@ -811,5 +780,52 @@ module.exports = function createGames(ctx) {
     balCache = { ts: Date.now(), list };
     return list;
   }
-  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances };
+  /* Paket xaridi — mini ilova (/api/games/buy) va AI yordamchi shu bitta funksiyani
+     ishlatadi. Tekshiruv va yechish BIR xil sinxron qadamda — oraliqda await yo'q, shuning
+     uchun bir vaqtda bosilgan ikki xarid balansdan ikki marta o'tib keta olmaydi. */
+  function buyPackage(u, packageId, account, promoCode) {
+    const p = pkgById(str(packageId, 80));
+    const g = p && gameById(p.gameId);
+    if (!p || !g || !p.active || !g.active || !(p.price > 0)) return { ok: false, code: 404, body: { error: "no item" } };
+    const c = cleanAccount(g, account);
+    if (c.error) return { ok: false, code: 400, body: { error: c.error, field: c.field, label: c.label } };
+    let total = Math.round(p.price), promo = null;
+    if (promoCode) {
+      const pv = ctx.validatePromo(promoCode, u.id, total);
+      if (!pv.ok) return { ok: false, code: 409, body: { error: "promo_invalid", reason: pv.reason } };
+      total = Math.max(0, total - pv.discount);
+      promo = { code: pv.promo.code, discount: pv.discount, ref: pv.promo };
+    }
+    const acc = ctx.user(u);
+    if (acc.balance < total) return { ok: false, code: 402, body: { error: "balance", need: total - acc.balance } };
+    acc.balance -= total;
+    const reg = (g.regions || []).find(r => r.key === p.region);
+    const item = g.name + " — " + p.name + (p.sub ? " " + p.sub : "") + (reg && (g.regions || []).length > 1 ? " [" + reg.label.replace(/^\S+\s/, "") + "]" : "");
+    const o = {
+      id: ctx.genId("VN"), seq: ctx.nextOrderSeq(), uid: u.id, uname: u.username || null,
+      itemId: "game:" + p.id, item, price: total, status: "pending", ts: Date.now(), quantity: 1,
+      delivered: null, doneTs: null,
+      promoCode: promo ? promo.code : null, promoDiscount: promo ? promo.discount : 0,
+      game: { gameId: g.id, gameName: g.name, packageId: p.id, region: p.region || "", account: c.account,
+        accountText: accountText(g, c.account), fields: (g.fields || []).map(f => ({ key: f.key, label: f.label })) },
+      line: null
+    };
+    DBx().orders.push(o);
+    if (promo) ctx.consumePromo(promo.ref, u.id);
+    ctx.save();
+    ctx.notifyOrder(o);
+    setImmediate(() => fulfill(o).catch(e => console.log("[games] fulfill xato: " + e.message)));
+    return { ok: true, order: o, balance: acc.balance };
+  }
+  // AI uchun: buyurtmani yaratmasdan oldin tekshirish (narx, akkaunt formati).
+  function quotePackage(packageId, account) {
+    const p = pkgById(str(packageId, 80));
+    const g = p && gameById(p.gameId);
+    if (!p || !g || !p.active || !g.active || !(p.price > 0)) return { ok: false, error: "Bunday paket sotuvda yo'q" };
+    const c = cleanAccount(g, account);
+    if (c.error) return { ok: false, error: (c.error === "required" ? "Kerak: " : "Noto'g'ri format: ") + c.label, field: c.field };
+    return { ok: true, game: g, pkg: p, accountText: accountText(g, c.account), account: c.account, price: Math.round(p.price),
+      title: g.name + " — " + p.name + (p.sub ? " " + p.sub : "") };
+  }
+  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog };
 };

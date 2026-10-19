@@ -398,10 +398,24 @@ module.exports = function createAdminBot(ctx) {
     const w = waiting.get(from);
     if (w && Date.now() - w.ts < 15 * 60 * 1000) {
       if (w.kind === "find") { waiting.delete(from); return doFind(chat, text); }
+      if (w.kind === "reply") {
+        // Operator javobi — do'kon boti orqali mijozga.
+        waiting.delete(from);
+        ctx.shopSend(w.uid, "👨‍💼 Operator: " + text);
+        return send(chat, "✅ Yuborildi → " + who(w.uid), kbd([[btn("✍️ Yana yozish", "hr:" + w.uid), btn("🤖 AI'ga qaytarish", "hx:" + w.uid)]]));
+      }
       return proposeBalance(chat, from, w, text);
     }
     if (/^@?[A-Za-z][\w]{3,}$/.test(text) || /^\d{4,}$/.test(text)) return doFind(chat, text);
-    return send(chat, "Menyudan bo'lim tanlang yoki mijoz ID / @username yuboring.", MENU);
+    // Qolgan har qanday matn — AI boshqaruvchiga (masalan "bugungi foyda qancha?").
+    if (ctx.aiOn && ctx.aiOn()) {
+      api("sendChatAction", { chat_id: chat, action: "typing" });
+      try {
+        const r = await ctx.aiAdmin(from, text);
+        if (r) return send(chat, "🤖 " + r.text, r.buttons.length ? kbd(r.buttons.map(b => [btn(b.text, b.callback_data)]).concat([[btn("↩️ Yo'q", "no")]])) : undefined);
+      } catch (e) { return send(chat, "🤖 AI xatosi: " + String((e && e.message) || e).slice(0, 200)); }
+    }
+    return send(chat, "Menyudan bo'lim tanlang yoki mijoz ID / @username yuboring." + (ctx.aiOn ? "\n🤖 AI yordamchini Admin panel → AI yordamchi bo'limida yoqing — keyin oddiy tilda so'rash mumkin." : ""), MENU);
   }
   async function onCallback(cq) {
     const from = cq.from && cq.from.id, msg = cq.message || {}, chat = msg.chat && msg.chat.id, mid = msg.message_id;
@@ -419,6 +433,9 @@ module.exports = function createAdminBot(ctx) {
       if (k === "PD" || k === "PX" || k === "OD" || k === "OX") { const t = execute(k, arg, from); await edit(chat, mid, t); return ans(t.slice(0, 190)); }
       if (k === "B") { const [t, uid] = runBalance(arg, from); await edit(chat, mid, t); if (uid) await showCard(chat, uid); return ans(); }
       if (k === "no") { await edit(chat, mid, "↩️ Bekor qilindi, hech narsa o'zgarmadi."); return ans(); }
+      if (k === "aia") { const t = ctx.aiAdminOp(arg, from); await edit(chat, mid, t); return ans(t.slice(0, 190)); }
+      if (k === "hr") { waiting.set(from, { kind: "reply", uid: Number(arg), ts: Date.now() }); await send(chat, "✍️ " + who(arg) + " ga javob yozing:", { force_reply: true, input_field_placeholder: "Javob matni" }); return ans(); }
+      if (k === "hx") { ctx.aiRelease(Number(arg)); ctx.shopSend(Number(arg), "🤖 Suhbatni yana AI yordamchi davom ettiradi. Savolingiz bo'lsa yozing."); await send(chat, "🤖 " + who(arg) + " — AI'ga qaytarildi."); return ans("AI'ga qaytarildi"); }
       if (k === "f" || k === "fb") { await ans(k === "fb" ? "Saytlardan so'ralmoqda…" : ""); const [t, kb] = await financeView(arg, k === "fb"); return edit(chat, mid, t, kb); }
       if (k === "lp" || k === "lo" || k === "sm" || k === "st") {
         const [t, kb] = k === "lp" ? paymentsView() : k === "lo" ? ordersView() : k === "sm" ? smsView() : statusView();
@@ -562,6 +579,19 @@ module.exports = function createAdminBot(ctx) {
       ? "Avval @" + st.username + " botiga kirib /start bosing." : ((j && j.description) || "yuborilmadi") };
   }
 
-  return { start, stop, status, notify, onPayment, onOrder, onSms, onBalance, testMessage,
+  // Mijoz operator so'radi yoki operator rejimida yozdi — hamma adminlarga, javob tugmalari bilan.
+  function customerEvent(from, title, body, isHandoff) {
+    const uid = from.id;
+    const text = title + "\n👤 " + who(uid, from.username) + "\n\n" + String(body || "").slice(0, 2500);
+    const kb = kbd([[btn("✍️ Javob yozish", "hr:" + uid), btn("🤖 AI'ga qaytarish", "hx:" + uid)], [btn("👤 Mijoz", "uc:" + uid)]]);
+    if (!st.active) { for (const aid of admins()) ctx.fallbackSend(aid, text + "\n\n(Javob berish uchun admin botni ulang yoki @" + (from.username || uid) + " ga yozing)"); return; }
+    for (const aid of admins()) send(aid, text, kb).then(j => { if (!j || !j.ok) ctx.fallbackSend(aid, text); });
+  }
+  function findCustomerText(q) {
+    const list = findUsers(q);
+    if (!list.length) return null;
+    return { topildi: list.length, kartalar: list.slice(0, 3).map(cardText) };
+  }
+  return { start, stop, status, notify, onPayment, onOrder, onSms, onBalance, testMessage, customerEvent, findCustomerText,
     _internal: { parseAmount, cardText, financeView, paymentsView, ordersView, smsView, statusView, findUsers } };
 };

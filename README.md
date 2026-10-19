@@ -184,6 +184,29 @@ Nakrutka endi bitta JAP emas, bir nechta SMM panel orqali ishlaydi (`smm.js`). L
 
 Bosh sahifada «AI xizmatlar» bo'limi bor. Unda ChatGPT, Claude, Gemini, Midjourney, Grok, Perplexity va Cursor obunalari turadi. O'yinlar bilan bir xil mexanizmda ishlaydi: paketlar, liniyalar, zaxira, import va rasmlar. Farqi shundaki, mijozdan akkaunt **emaili** so'raladi. Paketlar narxsiz va o'chiq holda qo'shilgan: Admin panel → AI xizmatlar → Narxlar. Narx qo'yilgach do'konda ko'rinadi. Odatda «Qo'lda» liniyasi orqali bajariladi; saytdan import qilganda «＋ Yangi AI xizmat» tanlansa, MooGold yoki G2Bulk katalogidagi obunalar ham ulanadi.
 
+## AI yordamchi (Claude)
+
+Do'kon botiga yozgan mijozga AI o'zi javob beradi (`ai.js`). Mijoz qaysi tilda yozsa — o'zbek, rus yoki ingliz — shu tilda javob oladi.
+
+**AI nima qila oladi:**
+- Narxlar va mahsulotlarni do'kon serveridan haqiqiy ma'lumot asosida aytadi.
+- O'yin paketi va AI obuna buyurtmasini tayyorlaydi (Player ID yoki emailni so'raydi).
+- Mijozning balansi, buyurtma holati va kutilayotgan to'lovlarini ko'rsatadi.
+- Ilovaning kerakli bo'limini ochadigan tugma yuboradi (to'ldirish, buyurtmalar, nakrutka, Telegram).
+- Hal qila olmasa, suhbatni **operatorga** uzatadi.
+
+**Operatorga uzatish:** admin botga «🙋 Mijoz operatorni so'radi» xabari keladi, unda «✍️ Javob yozish» va «🤖 AI'ga qaytarish» tugmalari bor. Operator rejimida (standart 60 daqiqa) mijoz xabarlari to'g'ridan-to'g'ri adminga boradi.
+
+**Pul xavfsizligi:**
+- AI pul yechmaydi. Pul faqat mijoz «✅ Tasdiqlash — N so'm» tugmasini bosganda yechiladi. Xarid ilovadagi bilan bir xil funksiya orqali o'tadi.
+- Tugma bir martalik, 15 daqiqa amal qiladi va faqat o'sha mijoz bosa oladi.
+- AI chegirma bera olmaydi, pul qaytara olmaydi va balans qo'sha olmaydi: mijoz vositalarida bunday funksiya yo'q.
+- Karta raqamini AI yozmaydi.
+
+**Admin botda:** oddiy tilda so'rash mumkin, masalan «bugungi foyda qancha?», «kutilayotgan to'lovlar», «Ali ismli mijoz», «ChatGPT Plus narxini 290 ming qil». Narx yoki balansni o'zgartirish faqat «✅ Ha» tugmasi bosilgandan keyin bajariladi.
+
+**Sozlash:** Admin panel → ✨ AI yordamchi. Bu yerda Claude API kaliti (console.anthropic.com, `sk-ant-…`; yoki Railway'da `ANTHROPIC_API_KEY`), model, yoqish/o'chirish, do'kon qoidalari (ish vaqti, yetkazib berish muddati…), kunlik limit va bugungi statistika bor. Standart model — Claude Opus 5.5. Arzonroq variantlar: Sonnet 5.5 yoki Haiku 5.5. API ishlamasa, mijozga support username'i yuboriladi.
+
 ## Admin bot (alohida bot) va moliya
 
 Do'kon botidan tashqari **ikkinchi bot** — faqat adminlar uchun (`adminbot.js`). Ulash:
