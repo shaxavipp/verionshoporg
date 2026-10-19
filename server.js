@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.3";
+const BUILD = "2026-10-19.4";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -407,6 +407,16 @@ function expireOld() {
 function adminBotToken() {
   const t = String(process.env.ADMIN_BOT_TOKEN || (DB.settings && DB.settings.adminBot && DB.settings.adminBot.token) || "").trim();
   return t && t !== BOT_TOKEN ? t : "";
+}
+// Admin bot tokenini saqlash (admin panel va do'kon botidagi /adminbot buyrug'i). Xato bo'lsa matn qaytaradi.
+function setAdminBotToken(raw) {
+  if (process.env.ADMIN_BOT_TOKEN) return "Token Railway'dagi ADMIN_BOT_TOKEN orqali berilgan — o'sha yerda o'zgartiring.";
+  const t = String(raw || "").trim();
+  if (t && !/^\d{5,}:[\w-]{30,}$/.test(t)) return "Token ko'rinishi noto'g'ri (masalan 1234567890:AA...)";
+  if (t && t === BOT_TOKEN) return "Bu do'kon botining tokeni. Admin uchun BotFather'da ALOHIDA bot oching.";
+  const c = DB.settings.adminBot || (DB.settings.adminBot = {});
+  c.token = t; save();
+  return "";
 }
 // Adminlarga xabar: admin bot ishlayotgan bo'lsa — o'sha orqali, aks holda do'kon boti orqali.
 function notifyAdmins(text, opts) {
@@ -1004,6 +1014,33 @@ async function handleBotUpdate(upd) {
       if (refUid && refUid !== from.id) { acc.referredBy = refUid; save(); }
     }
     await sendStartCard(from.id, greetingHtml(from));
+    return;
+  }
+  // Adminlar uchun: /admin — admin panel tugmasi; /adminbot TOKEN — admin botni ulash.
+  // Ilova eski (keshdagi) versiyada qolib ketsa ham shu yerdan kirish mumkin.
+  if (ADMIN_IDS.indexOf(from.id) !== -1 && /^\/(admin|adminbot)(@\w+)?(\s|$)/i.test(text)) {
+    const isTokenCmd = /^\/adminbot/i.test(text);
+    const arg = text.replace(/^\/\w+(@\w+)?\s*/, "").trim();
+    if (isTokenCmd && arg) {
+      // Token yozilgan xabarni chatdan o'chiramiz — ekranda ochiq qolmasin.
+      tgApiPost("deleteMessage", { chat_id: from.id, message_id: msg.message_id }).catch(() => {});
+      const err = setAdminBotToken(arg);
+      if (err) { await tgApiPost("sendMessage", { chat_id: from.id, text: "⚠️ " + err }); return; }
+      const st = await ADMINBOT.start();
+      await tgApiPost("sendMessage", { chat_id: from.id, text: st.active
+        ? "✅ Admin bot ulandi: @" + st.username + "\nEndi o'sha botga kirib /start bosing. (Token yozilgan xabaringiz o'chirildi.)"
+        : "⚠️ Admin bot ishga tushmadi: " + (st.error || "noma'lum xato") });
+      return;
+    }
+    const ab = ADMINBOT.status();
+    const base = publicBase();
+    const kb = /^https:\/\//.test(base) ? { inline_keyboard: [[{ text: "🛠 Admin panelni ochish", web_app: { url: base + "/?admin=1" } }]].concat(
+      ab.active && ab.username ? [[{ text: "🛡 Admin botni ochish", url: "https://t.me/" + ab.username }]] : []) } : undefined;
+    await tgApiPost("sendMessage", { chat_id: from.id, reply_markup: kb, text:
+      "🛠 Admin · versiya " + BUILD + "\n\n"
+      + (ab.active ? "🛡 Admin bot ishlayapti: @" + ab.username
+        : "🛡 Admin bot ulanmagan.\nUlash: @BotFather → /newbot → yangi bot oching, keyin shu yerga yuboring:\n/adminbot TOKEN\n(token yozilgan xabar avtomatik o'chiriladi)")
+      + (kb ? "" : "\n\n⚠️ Ilova manzili hali aniqlanmagan — admin panel tugmasi chiqmadi.") });
     return;
   }
   // Boshqa har qanday xabar — qisqa javob va ilovaga tugma (bot hech qachon jim qolmaydi).
@@ -1816,7 +1853,12 @@ ADMINBOT = require("./adminbot.js")({
     lines: GAMES.store().lines.filter(l => l.type !== "manual").map(l => ({ name: l.name, enabled: !!l.enabled }))
   })
 });
-setTimeout(() => { ADMINBOT.start().catch(e => console.log("[adminbot] " + e.message)); }, 1500).unref();
+setTimeout(() => {
+  ADMINBOT.start().catch(e => console.log("[adminbot] " + e.message));
+  if (BOT_TOKEN) for (const aid of ADMIN_IDS) tgApiPost("setMyCommands", { scope: { type: "chat", chat_id: aid }, commands: [
+    { command: "start", description: "Boshlash" }, { command: "admin", description: "🛠 Admin panel" },
+    { command: "adminbot", description: "🛡 Admin botni ulash (TOKEN bilan)" }] }).catch(() => {});
+}, 1500).unref();
 
 const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
@@ -3049,10 +3091,8 @@ const server = http.createServer((req, res) => {
       return readBody(req, res, b => {
         const c = DB.settings.adminBot || (DB.settings.adminBot = {});
         if (b.token !== undefined && !process.env.ADMIN_BOT_TOKEN) {
-          const t = String(b.token || "").trim();
-          if (t && !/^\d{5,}:[\w-]{30,}$/.test(t)) return send(res, 400, { error: "Token ko'rinishi noto'g'ri (masalan 1234567890:AA...)" });
-          if (t && t === BOT_TOKEN) return send(res, 400, { error: "Bu do'kon botining tokeni. Admin uchun BotFather'da ALOHIDA bot oching." });
-          c.token = t;
+          const err = setAdminBotToken(b.token);
+          if (err) return send(res, 400, { error: err });
         }
         if (b.notify && typeof b.notify === "object") {
           c.notify = Object.assign({}, c.notify);
