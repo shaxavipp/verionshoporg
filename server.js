@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-19.6";
+const BUILD = "2026-10-19.7";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1503,7 +1503,7 @@ const FRAGMENT_API_KEY = process.env.FRAGMENT_API_KEY || "";
 const FRAGMENT_HOST = "fragment-api.uz";
 function fragmentCall(path, body) {
   return new Promise((resolve, reject) => {
-    if (!FRAGMENT_API_KEY) return reject(new Error("FRAGMENT_API_KEY sozlanmagan"));
+    if (!FRAGMENT_API_KEY) return reject(Object.assign(new Error("FRAGMENT_API_KEY sozlanmagan"), { notSent: true }));
     const data = JSON.stringify(body || {});
     const req = https.request({
       hostname: FRAGMENT_HOST, path: "/api/v1" + path, method: "POST",
@@ -1529,7 +1529,7 @@ const GIFT_BOT_URL = process.env.GIFT_BOT_URL || "";
 const GIFT_BOT_SECRET = process.env.GIFT_BOT_SECRET || "";
 function giftBotCall(path, body) {
   return new Promise((resolve, reject) => {
-    if (!GIFT_BOT_URL || !GIFT_BOT_SECRET) return reject(new Error("GIFT_BOT_URL/GIFT_BOT_SECRET sozlanmagan"));
+    if (!GIFT_BOT_URL || !GIFT_BOT_SECRET) return reject(Object.assign(new Error("GIFT_BOT_URL/GIFT_BOT_SECRET sozlanmagan"), { notSent: true }));
     const data = JSON.stringify(body || {});
     const u = new URL(GIFT_BOT_URL + path);
     const mod = u.protocol === "https:" ? https : http;
@@ -1722,6 +1722,29 @@ function readBody(req, res, cb) {
     try { cb(JSON.parse(body || "{}")); } catch (e) { send(res, 400, { error: "invalid json" }); }
   });
 }
+/* Tashqi API orqali yetkaziladigan xaridlar (Fragment, Gift) uchun pul OLDINDAN band
+   qilinadi: tekshiruv va yechish bitta sinxron qadamda. Ilgari pul API javobidan keyin
+   yechilardi — bir vaqtda yuborilgan bir nechta so'rov hammasi tekshiruvdan o'tib,
+   Stars/Premium bir necha marta yuborilar, balans esa minusga tushardi. */
+function reserveBalance(acc, price) {
+  if (!(price >= 0) || acc.balance < price) return false;
+  acc.balance -= price; save();
+  return true;
+}
+// So'rov yetkazib beruvchiga umuman yetib bormagan (sozlanmagan, DNS, ulanish rad etildi) — pulni qaytarish xavfsiz.
+const NOT_SENT_CODES = ["ENOTFOUND", "EAI_AGAIN", "ECONNREFUSED", "EHOSTUNREACH", "ENETUNREACH"];
+function requestNotSent(e) { return !!(e && (e.notSent || NOT_SENT_CODES.indexOf(e.code) !== -1)); }
+// API aloqasi uzildi — yetkazilgan-yetkazilmagani noma'lum. Pul band qolgan holda buyurtma
+// "kutilmoqda" bo'ladi va adminga xabar ketadi: admin tekshirib "Bajarildi" yoki "Bekor
+// qilish" (pul qaytadi) bosadi. Mijozdan pul ham, mahsulot ham yo'qolmaydi.
+function unknownDeliveryOrder(u, it, item, price, errMsg, extra) {
+  const o = Object.assign({ id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
+    item, price, status: "pending", ts: Date.now(), delivered: null, doneTs: null, deliveryUnknown: true }, extra || {});
+  DB.orders.push(o); save(); notifyOrder(o);
+  notifyAdmins("❓ #" + o.seq + " " + item + " — yetkazib beruvchi javob bermadi (" + String(errMsg || "").slice(0, 120) + ").\n"
+    + "Yuborilgan bo'lishi mumkin: tekshirib «Bajarildi» yoki «Bekor qilish» (pul qaytadi) bosing.", { order: o });
+  return o;
+}
 function catalogArr() {
   try { return sdb.loadCatalog(SQLITE_DB); } catch (e) { return null; }
 }
@@ -1808,10 +1831,28 @@ setTimeout(() => {
     { command: "adminbot", description: "🛡 Admin botni ulash (TOKEN bilan)" }] }).catch(() => {});
 }, 1500).unref();
 
+/* So'rovlar soniga cheklov: bitta IP'dan 10 soniyada 40 tadan ortiq POST bo'lsa — 429.
+   Oddiy foydalanuvchi bunga yetmaydi; bot/skript bilan xarid, to'lov yoki SMS
+   endpointlarini "bombardimon" qilishni to'xtatadi. Telegram webhook bundan mustasno. */
+const RL = new Map(), RL_WINDOW = 10000, RL_MAX = Number(process.env.RATE_LIMIT_POST || 40);
+function rateLimited(req) {
+  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || (req.socket && req.socket.remoteAddress) || "?";
+  const now = Date.now();
+  let e = RL.get(ip);
+  if (!e || now - e.ts > RL_WINDOW) { e = { ts: now, n: 0 }; RL.set(ip, e); }
+  return ++e.n > RL_MAX;
+}
+setInterval(() => { const now = Date.now(); for (const [k, e] of RL) if (now - e.ts > RL_WINDOW) RL.delete(k); }, 60000).unref();
+// Maxfiy kalitlarni vaqtga bog'liq bo'lmagan usulda solishtirish.
+function safeEq(a, b) {
+  const x = Buffer.from(String(a || "")), y = Buffer.from(String(b || ""));
+  return x.length === y.length && x.length > 0 && crypto.timingSafeEqual(x, y);
+}
 const server = http.createServer((req, res) => {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
+  if (m === "POST" && url !== "/api/tg-webhook" && rateLimited(req)) return send(res, 429, { error: "too_many" });
 
   /* Ochiq holat tekshiruvi: domen ishlayaptimi va qaysi build turibdi — brauzerda
      https://<domen>/api/health ni ochib ko'rish mumkin. Admin manzilni saqlaganda
@@ -2320,14 +2361,14 @@ const server = http.createServer((req, res) => {
       if (amount < minS) return send(res, 400, { error: "min_amount", min: minS });
       const price = Math.round(amount * (Number(it.pricePerStar) || 0));
       const acc = user(u);
-      if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+      if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
       fragmentCall("/stars/buy", { amount, username: uname }).then(r => {
         const j = r.json;
         if (!j || j.ok !== true) {
+          acc.balance += price; save();                       // aniq rad etildi — pul qaytadi
           const msg = (j && j.message) || "Fragment xatosi";
           return send(res, 502, { error: "fragment_failed", message: msg });
         }
-        acc.balance -= price;
         const summary = "⭐ " + amount + " Stars @" + uname + " ga yuborildi";
         const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
           item: "Telegram Stars (" + amount + ")", price, status: "done", ts: Date.now(),
@@ -2335,7 +2376,11 @@ const server = http.createServer((req, res) => {
         DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
-      }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
+      }).catch(e => {
+        if (requestNotSent(e)) { acc.balance += price; save(); return send(res, 502, { error: "fragment_failed", message: String(e.message || e) }); }
+        const o = unknownDeliveryOrder(u, it, "Telegram Stars (" + amount + ") @" + uname, price, e.message);
+        send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
+      });
     });
   }
   if (url === "/api/buy" && m === "POST") {
@@ -2353,7 +2398,7 @@ const server = http.createServer((req, res) => {
       /* ----- Fragment orqali avtomatik Stars/Premium yetkazish (istalgan @username'ga) ----- */
       if (it.fulfill === "fragment_stars" || it.fulfill === "fragment_premium") {
         if (!u.username) return send(res, 409, { error: "no_username" });
-        if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+        if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
         const isStars = it.fulfill === "fragment_stars";
         const path = isStars ? "/stars/buy" : "/premium/buy";
         const body = isStars ? { amount: Number(it.starsAmount) || 0, username: u.username }
@@ -2361,10 +2406,10 @@ const server = http.createServer((req, res) => {
         fragmentCall(path, body).then(r => {
           const j = r.json;
           if (!j || j.ok !== true) {
+            acc.balance += price; save();                     // aniq rad etildi — pul qaytadi
             const msg = (j && j.message) || "Fragment xatosi";
             return send(res, 502, { error: "fragment_failed", message: msg });
           }
-          acc.balance -= price;
           const summary = isStars
             ? "⭐ " + body.amount + " Stars @" + u.username + " ga yuborildi"
             : "💎 Premium " + body.duration + " oy @" + u.username + " ga yuborildi";
@@ -2374,7 +2419,11 @@ const server = http.createServer((req, res) => {
           DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
           creditReferralOnOrder(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
-        }).catch(e => send(res, 502, { error: "fragment_failed", message: String(e.message || e) }));
+        }).catch(e => {
+          if (requestNotSent(e)) { acc.balance += price; save(); return send(res, 502, { error: "fragment_failed", message: String(e.message || e) }); }
+          const o = unknownDeliveryOrder(u, it, title + " @" + u.username, price, e.message);
+          send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
+        });
         return;
       }
 
@@ -2437,15 +2486,15 @@ const server = http.createServer((req, res) => {
       if (!uname) return send(res, 400, { error: "username" });
       const price = Math.round(Number(it.price) || 0);
       const acc = user(u);
-      if (acc.balance < price) return send(res, 402, { error: "balance", need: price - acc.balance });
+      if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
       const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
       giftBotCall("/order", { gift_id: it.telegramGiftId, username: uname, message, anonymous }).then(r => {
         const j = r.json;
         if (!j || j.ok !== true) {
+          acc.balance += price; save();                       // aniq rad etildi — pul qaytadi
           const msg = (j && j.error) || "Gift yuborishda xatolik";
           return send(res, 502, { error: "gift_failed", message: msg });
         }
-        acc.balance -= price;
         const summary = "🎁 " + title + " @" + uname + " ga yuborildi" + (anonymous ? " (anonim)" : "");
         const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
           item: title, price, status: "done", ts: Date.now(),
@@ -2454,7 +2503,11 @@ const server = http.createServer((req, res) => {
         DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
-      }).catch(e => send(res, 502, { error: "gift_failed", message: String(e.message || e) }));
+      }).catch(e => {
+        if (requestNotSent(e)) { acc.balance += price; save(); return send(res, 502, { error: "gift_failed", message: String(e.message || e) }); }
+        const o = unknownDeliveryOrder(u, it, title + " → @" + uname, price, e.message, { giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous });
+        send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
+      });
     });
   }
 
@@ -3263,7 +3316,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (url === "/api/sms-webhook" && m === "POST") {
-    if (!TG_WEBHOOK_SECRET || req.headers["x-sms-secret"] !== TG_WEBHOOK_SECRET)
+    if (!TG_WEBHOOK_SECRET || !safeEq(req.headers["x-sms-secret"], TG_WEBHOOK_SECRET))
       return send(res, 401, { error: "bad secret" });
     return readBody(req, res, b => {
       send(res, 200, { ok: true });

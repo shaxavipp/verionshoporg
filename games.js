@@ -505,7 +505,7 @@ module.exports = function createGames(ctx) {
     const cbm = /^\/api\/lines\/cb\/([a-z0-9_-]{1,40})\/([a-f0-9]{24})$/.exec(url);
     if (cbm && m === "POST") {
       const line = lineById(cbm[1]);
-      if (!line || !line.cbToken || line.cbToken !== cbm[2]) { sendJSON(res, 403, { error: "bad token" }); return true; }
+      if (!line || !line.cbToken || line.cbToken.length !== cbm[2].length || !crypto.timingSafeEqual(Buffer.from(line.cbToken), Buffer.from(cbm[2]))) { sendJSON(res, 403, { error: "bad token" }); return true; }
       ctx.readBody(req, res, b => {
         sendJSON(res, 200, { ok: true });
         const ordObj = (b && typeof b.order === "object" && b.order) || (b && typeof b.data === "object" && b.data) || b || {};
