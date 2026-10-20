@@ -885,7 +885,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-20.7";
+var CLIENT_BUILD="2026-10-20.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1649,7 +1649,7 @@ function render(){
   }
   var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen">';
   if(S.screen==="home")html+=homeHTML();
-  else if(S.screen==="products")html+=productsScreenHTML();
+  else if(S.screen==="products")html+=(S.game&&gameById(S.game.id))?gamePageHTML():productsScreenHTML();
   else if(S.screen==="orders")html+=ordersHTML();
   else if(S.screen==="pay")html+=payHTML();
   else html+=profileHTML();
@@ -1843,6 +1843,11 @@ function productsScreenHTML(){
     html+='<button data-pfilter="'+p[0]+'" class="'+(filter===p[0]?"on":"")+'">'+esc(t(p[1]))+'</button>';
   }
   html+='</div>';
+  // O'yinlar ham oddiy mahsulot sifatida shu ro'yxatda ("Barchasi" va "O'yinlar").
+  if(filter==="all"||filter==="games"){
+    var gl=gamesOf("games").filter(function(g){return !q||String(g.name||"").toLowerCase().indexOf(q)!==-1;});
+    if(gl.length)html+='<div class="grid">'+gl.map(gameCardHTML).join("")+'</div>';
+  }
   html+=productGridHTML(items);
   if(q){ensureNkLoadedForSearch();html+=nkSearchResultsHTML(q);}
   return html;
