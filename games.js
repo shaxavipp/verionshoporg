@@ -196,6 +196,20 @@ module.exports = function createGames(ctx) {
     if (/pass|propusk|weekly|prime|membership|card/i.test(t)) return { name: t.slice(0, 40), sub: "", icon: "pass" };
     return { name: t.slice(0, 40) || String(raw || "").slice(0, 40), sub: "", icon: "diamond" };
   }
+  const PRESET = [
+    [/pubg/i, { "60": 11300, "325": 57000, "660": 113500, "1800": 283000, "3850": 565500, "8100": 1135500 }],
+    [/free\s*fire/i, { "110": 10300, "341": 30800, "572": 49000, "1166": 99000, "2398": 199000, "6160": 500000 }],
+    [/mobile\s*legends|mlbb/i, { "86": 15500, "172": 29800, "257": 44000, "706": 122000, "2195": 364000, "3688": 605000,
+      "5532": 915000, "9288": 1520000, "50+5": 9700, "150+15": 29000, "250+25": 46000, "500+65": 96000, weekly: 19000, twilight: 110000 }],
+    [/arena\s*breakout/i, { "100": 13500, "500": 64600, "1000": 125700, "2500": 311700, "5000": 621500, "10000": 1241400 }]
+  ];
+  function presetPrice(gameName, pkgName) {
+    const row = PRESET.find(x => x[0].test(gameName));
+    if (!row) return 0;
+    const t = String(pkgName || "").toLowerCase();
+    const key = /haftalik|weekly/.test(t) ? "weekly" : /twilight/.test(t) ? "twilight" : (t.match(/\d[\d\s,]*(?:\+\s*\d+)?/) || [""])[0].replace(/[\s,]/g, "");
+    return row[1][key] || 0;
+  }
   function calcPrice(cost, rate, markup) {
     const v = Number(cost) * Number(rate) * (1 + (Number(markup) || 0) / 100);
     return v > 0 ? Math.ceil(v / 100) * 100 : 0;
@@ -616,6 +630,27 @@ module.exports = function createGames(ctx) {
         }
         ctx.save();
         sendJSON(res, 200, { ok: true, updated: n });
+      });
+      return true;
+    }
+
+    // Hamma narxlarni qayta hisoblash: tayyor narx jadvali (mashhur o'yinlar) + qolganlari tannarx × kurs + ustama.
+    if (url === "/api/admin/games/reprice" && m === "POST") {
+      ctx.readBody(req, res, b => {
+        const rate = Number(b.rate) || 0, markup = Number(b.markup) || 0;
+        if (rate <= 0 || rate > 1000000 || markup < 0 || markup > 500) return sendJSON(res, 400, { error: "Kurs yoki ustama noto'g'ri" });
+        for (const l of store().lines) if (l.config && "rate" in l.config) { l.config.rate = String(rate); l.config.markup = String(markup); }
+        let preset = 0, calc = 0, skipped = 0;
+        for (const p of store().packages) {
+          const g = gameById(p.gameId);
+          const fixed = b.preset !== false && g ? presetPrice(g.name, p.name) : 0;
+          if (fixed) { p.price = fixed; preset++; continue; }
+          const r = (p.routes || []).find(x => Number(x.cost) > 0);
+          if (!r) { skipped++; continue; }
+          p.price = calcPrice(r.cost, rate, markup); calc++;
+        }
+        ctx.save();
+        sendJSON(res, 200, { ok: true, preset, calc, skipped });
       });
       return true;
     }
