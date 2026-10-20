@@ -885,7 +885,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-20.4";
+var CLIENT_BUILD="2026-10-20.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2288,7 +2288,7 @@ function gameCardHTML(g){
   return '<button class="pcard'+(g.hidden?" adm-hid":"")+'" data-opengame="'+esc(g.id)+'">'
     +(g.hidden?'<span class="adm-tag">🔒 '+(g.draft?"Qoralama":"Yashirin")+'</span>':'')
     +'<div class="ptile" style="background:linear-gradient(135deg,'+esc(g.color||"#2f8fff")+',#0b1020);color:#fff">'
-    +(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':'<div class="tl" style="font-size:30px!important">'+esc(gameInitials(g.name))+'</div>')
+    +(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':'<div class="tl">'+esc(gameInitials(g.name))+'</div>')
     +'</div><div class="pbody"><div class="nm">'+esc(g.name)+'</div><div class="ct">'+n+' '+esc(t("g_pkgs"))+'</div></div></button>';
 }
 // Kategoriya "O'yinlar": yangi o'yinlar + (bo'lsa) eski oddiy mahsulotlar pastda.
@@ -2296,11 +2296,11 @@ function gameCardHTML(g){
 function gamesOf(sec){return GAMES.games.filter(function(g){return (g.section||"games")===sec;});}
 function aiHubHTML(){
   return '<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(categoryLabel("ai"))+'</b></button>'
-    +'<div class="grid groupgrid">'+gamesOf("ai").map(gameCardHTML).join("")+'</div>';
+    +'<div class="grid">'+gamesOf("ai").map(gameCardHTML).join("")+'</div>';
 }
 function gamesHubHTML(){
   var html='<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(categoryLabel("games"))+'</b></button>'
-    +'<div class="grid groupgrid">'+gamesOf("games").map(gameCardHTML).join("")+'</div>';
+    +'<div class="grid">'+gamesOf("games").map(gameCardHTML).join("")+'</div>';
   var old=activeItems("games");
   if(old.length)html+='<div class="sect">'+esc(t("g_other"))+'</div>'+productGridHTML(old);
   return html;
