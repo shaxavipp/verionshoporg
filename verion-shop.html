@@ -885,7 +885,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-20.5";
+var CLIENT_BUILD="2026-10-20.6";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3969,7 +3969,6 @@ var ADM_TILES=[
   ["Do'kon",[
     ["catalog","clipboard","#0ea5e9","Mahsulotlar","Katalog, narx, zaxira"],
     ["games","gamepad","#ef4444","O'yinlar va liniyalar","MooGold, G2Bulk, Smile"],
-    ["ai","sparkles","#10a37f","AI xizmatlar","ChatGPT, Claude, Gemini…"],
     ["nakrutka","trendUp","#10b981","Nakrutka","Xizmatlar, buyurtmalar"],
     ["cats","clipboard","#6366f1","Kategoriyalar","Bo'limlar ko'rinishi"],
     ["deliveries","key","#14b8a6","Yetkazilganlar","Sotilganlar qidiruvi"],
@@ -4366,7 +4365,7 @@ function openAdminGames(sec){
     var G=GADM,html='<h2>'+(GADM_SEC==="ai"?ic("sparkles",18)+' AI xizmatlar va liniyalar':ic("gamepad",18)+' O\'yinlar va liniyalar')+'</h2>'
       +'<div class="paynote" style="margin:0 0 10px">Do\'konda faqat narxi qo\'yilgan va yoqilgan paketi bor '+(GADM_SEC==="ai"?"xizmat":"o\'yin")+' ko\'rinadi. '
       +'Paketni kim bajarishini <b>liniyalar</b> hal qiladi: biri ishlamasa — keyingisi.'+(GADM_SEC==="ai"?' AI obunalarida mijozdan akkaunt emaili so\'raladi.':'')+'</div>';
-    var secs=GADM_SEC?[GADM_SEC]:["games","ai"];
+    var secs=["games"];
     secs.forEach(function(sc){
     html+='<div class="sect" style="margin:6px 0">'+(sc==="ai"?"AI xizmatlar":"O\'yinlar")+'</div>';
     G.games.filter(function(g){return (g.section||"games")===sc;}).sort(function(a,b){return (a.sort||0)-(b.sort||0);}).forEach(function(g){

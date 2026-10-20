@@ -77,6 +77,16 @@ module.exports = function createGames(ctx) {
       s.aiV = 1;
       ctx.save();
     }
+    // 4-versiya: AI xizmatlar bo'limi olib tashlandi (egasi kerak emas dedi). Tayyor AI
+    // yozuvlari o'chiriladi, ai bo'limiga tushib qolgan boshqa o'yinlar "games"ga o'tadi.
+    if ((s.aiV || 0) < 2) {
+      const ids = aiSeed().games.map(g => g.id);
+      s.games = s.games.filter(g => !(g.section === "ai" && ids.includes(g.id)));
+      s.packages = s.packages.filter(p => s.games.some(g => g.id === p.gameId));
+      for (const g of s.games) if (g.section === "ai") g.section = "games";
+      s.aiV = 2;
+      ctx.save();
+    }
     return s;
   }
   const gameById = id => store().games.find(g => g.id === id);
@@ -551,7 +561,7 @@ module.exports = function createGames(ctx) {
         }
         const list = (arr, n) => (Array.isArray(arr) ? arr : []).slice(0, n)
           .map(r => ({ key: slug(r.key, 16), label: str(r.label, 24) })).filter(r => r.key && r.label);
-        const g = { id, name, section: x.section === "ai" ? "ai" : "games", img: imgUrl(x.img), banner: imgUrl(x.banner),
+        const g = { id, name, section: "games", img: imgUrl(x.img), banner: imgUrl(x.banner),
           color: /^#[0-9a-f]{6}$/i.test(String(x.color || "")) ? x.color : "",
           fields, regions: list(x.regions, 15), tabs: list(x.tabs, 8),
           active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft };
@@ -799,7 +809,7 @@ module.exports = function createGames(ctx) {
       if (!id) return { error: "Yangi o'yin uchun ID kiriting (masalan: genshin)" };
       if (gameById(id)) return { error: "Bu ID band" };
       const isAi = ng.section === "ai";
-      g = { id, name: str(ng.name || pk.name || id, 60), section: isAi ? "ai" : "games", img: "", banner: "", color: "#2f8fff",
+      g = { id, name: str(ng.name || pk.name || id, 60), section: "games", img: "", banner: "", color: "#2f8fff",
         fields: isAi ? [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }]
           : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
         regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: s.games.length + 1,
@@ -860,7 +870,7 @@ module.exports = function createGames(ctx) {
         if (gameById(id)) id = slug(id + "-" + String(x.code).toLowerCase(), 40);
         if (gameById(id)) id = slug(id + "-" + crypto.randomBytes(2).toString("hex"), 40);
         try {
-          const r = await importGame(l, T, x.code, { newGame: { id, name: x.name, section: opt.section, draft: true }, activate: false, images: opt.images });
+          const r = await importGame(l, T, x.code, { newGame: { id, name: x.name, section: "games", draft: true }, activate: false, images: opt.images });
           if (r.error) importJob.errors.push(str(x.name, 40) + ": " + r.error);
           else {
             importJob.games++; importJob.packages += r.added;
