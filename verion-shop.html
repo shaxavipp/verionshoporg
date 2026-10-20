@@ -885,7 +885,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-20.6";
+var CLIENT_BUILD="2026-10-20.7";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4381,6 +4381,7 @@ function openAdminGames(sec){
     html+='<button class="btn gray" data-ganew="'+sc+'">'+ic("plus",15)+(sc==="ai"?' Yangi AI xizmat':' Yangi o\'yin')+'</button>';
     });
     html+='<button class="btn" id="gaReprice" style="margin-top:10px">💲 Narxlarni yangilash (kurs + ustama)</button>';
+    html+='<button class="btn" id="gaAuto" style="margin-top:10px">🤖 Avto-narx va rasmlar</button>';
     html+='<button class="btn" id="gaImportAll" style="margin-top:10px">⬇️ Saytdan HAMMA o\'yinlarni yuklash</button>'
       +'<div class="d" style="margin:6px 0 0">Paketlar, rasmlar va narxlar (kurs × ustama) bilan qoralama bo\'lib tushadi — mijozlar ko\'rmaydi. Do\'konning o\'zida ko\'rib, 🔧 bilan tuzatib, «🚀 Mijozlarga ochish» bosasiz.</div>'
       +'<div class="sect" style="margin:18px 0 6px">Liniyalar (yetkazib beruvchilar)</div>';
@@ -4403,13 +4404,24 @@ function openAdminGames(sec){
     b=sh.querySelectorAll("[data-ganew]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminGameForm(null,this.getAttribute("data-ganew"));});
     sh.querySelector("#gaNewLine").addEventListener("click",function(){openAdminLineForm(null);});
     sh.querySelector("#gaImportAll").addEventListener("click",openAdminImportAll);
+    sh.querySelector("#gaAuto").addEventListener("click",function(){
+      api("/api/admin/games/autoprice").then(function(r){
+        var c=r.cfg||{};
+        var on=confirm("🤖 Avto-narx hozir: "+(c.enabled?"YOQIQ":"O'CHIQ")+"\nHar "+(c.hours||6)+" soatda saytdan tannarx va rasmlar yangilanadi, narx = tannarx × "+c.rate+" + "+c.markup+"%."
+          +(c.lastReport?"\nOxirgi: "+c.lastReport:"")+"\n\nOK — YOQISH (va hozir ishga tushirish), Bekor — o'chirish");
+        var b={enabled:on};
+        if(on){var rt=prompt("Dollar kursi:",String(c.rate||12500));if(rt==null)return;var mk=prompt("Ustama, %:",String(c.markup==null?20:c.markup));if(mk==null)return;
+          var hr=prompt("Necha soatda bir tekshirsin (1–48):",String(c.hours||6));if(hr==null)return;b.rate=Number(rt);b.markup=Number(mk);b.hours=Number(hr);b.runNow=true;}
+        return api("/api/admin/games/autoprice","POST",b).then(function(){toast(on?"✅ Avto-narx yoqildi. Natija admin botga keladi":"Avto-narx o'chirildi");});
+      }).catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xato");});
+    });
     sh.querySelector("#gaReprice").addEventListener("click",function(){
       var rate=prompt("Dollar kursi (so'm):","12500");if(rate==null)return;
       var mk=prompt("Ustama, %:","20");if(mk==null)return;
       if(!confirm("PUBG, Free Fire, MLBB, Arena Breakout — tayyor narxlar; qolgan o'yinlar: tannarx × "+rate+" + "+mk+"%. Davom etaymi?"))return;
       api("/api/admin/games/reprice","POST",{rate:Number(rate),markup:Number(mk)}).then(function(r){
         toast("✅ Tayyor narx: "+r.preset+", hisoblangan: "+r.calc+(r.skipped?", tannarxsiz: "+r.skipped:""));loadGames();
-      }).catch(function(e){toast((e&&e.message)||"Xato");});
+      }).catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xato");});
     });
   });
 }

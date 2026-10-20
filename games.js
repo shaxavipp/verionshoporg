@@ -645,11 +645,26 @@ module.exports = function createGames(ctx) {
     }
 
     // Hamma narxlarni qayta hisoblash: tayyor narx jadvali (mashhur o'yinlar) + qolganlari tannarx × kurs + ustama.
+    if (url === "/api/admin/games/autoprice" && m === "GET") { sendJSON(res, 200, { ok: true, cfg: apCfg() }); return true; }
+    if (url === "/api/admin/games/autoprice" && m === "POST") {
+      ctx.readBody(req, res, b => {
+        const c = apCfg(), rate = Number(b.rate), markup = Number(b.markup), hours = Number(b.hours);
+        if (b.rate != null) { if (!(rate > 0 && rate < 1000000)) return sendJSON(res, 400, { error: "Kurs noto'g'ri" }); c.rate = rate; }
+        if (b.markup != null) { if (!(markup >= 0 && markup <= 500)) return sendJSON(res, 400, { error: "Ustama noto'g'ri" }); c.markup = markup; }
+        if (b.hours != null) c.hours = Math.max(1, Math.min(48, hours || 6));
+        if (b.enabled != null) c.enabled = !!b.enabled;
+        ctx.save();
+        if (b.runNow) runAutoPrice(true).catch(() => {});
+        sendJSON(res, 200, { ok: true, cfg: c });
+      });
+      return true;
+    }
     if (url === "/api/admin/games/reprice" && m === "POST") {
       ctx.readBody(req, res, b => {
         const rate = Number(b.rate) || 0, markup = Number(b.markup) || 0;
         if (rate <= 0 || rate > 1000000 || markup < 0 || markup > 500) return sendJSON(res, 400, { error: "Kurs yoki ustama noto'g'ri" });
         for (const l of store().lines) if (l.config && "rate" in l.config) { l.config.rate = String(rate); l.config.markup = String(markup); }
+        { const c = apCfg(); c.rate = rate; c.markup = markup; }
         let preset = 0, calc = 0, skipped = 0;
         for (const p of store().packages) {
           const g = gameById(p.gameId);
@@ -850,6 +865,46 @@ module.exports = function createGames(ctx) {
     }
     return { gameId: g.id, added, updated, images: imgs, gameImage: !!g.img };
   }
+  /* ---------- avto-narx: har N soatda saytdan tannarx va rasmlar yangilanadi ----------
+     Narx = tannarx × kurs × (1 + ustama%). Tayyor narx jadvalidagi paketlar o'zgarmaydi,
+     faqat zararga tushsa (narx < tannarx × kurs × 1.05) ko'tariladi. O'zgarishlar adminga xabar qilinadi. */
+  function apCfg() {
+    const s = store();
+    if (!s.autoPrice) s.autoPrice = { enabled: false, rate: 12500, markup: 20, hours: 6, last: 0, lastReport: "" };
+    return s.autoPrice;
+  }
+  let apRunning = false;
+  async function runAutoPrice(force) {
+    const c = apCfg();
+    if (apRunning || (!force && (!c.enabled || Date.now() - (c.last || 0) < (c.hours || 6) * 3600e3))) return null;
+    apRunning = true; c.last = Date.now();
+    const s = store(), changes = [], errors = [];
+    let imgs = 0;
+    try {
+      for (const g of s.games.slice()) {
+        const src = g.source, l = src && lineById(src.lineId), T = l && LINE_TYPES[l.type];
+        if (!l || !l.enabled || !T || typeof T.packages !== "function") continue;
+        const r = await importGame(l, T, src.code, { gameId: g.id, images: true, updatePrices: false }).catch(e => ({ error: e.message }));
+        if (r.error) errors.push(g.name + ": " + r.error); else imgs += r.images || 0;
+      }
+      for (const p of s.packages) {
+        const g = gameById(p.gameId), rt = (p.routes || []).find(x => Number(x.cost) > 0);
+        if (!g || !rt) continue;
+        const calc = calcPrice(rt.cost, c.rate, c.markup), floor = calcPrice(rt.cost, c.rate, 5);
+        const fixed = presetPrice(g.name, p.name);
+        let np = fixed ? (fixed < floor ? calc : fixed) : calc;
+        if (np > 0 && np !== p.price) { changes.push(g.name + " · " + p.name + ": " + (p.price || 0) + " → " + np); p.price = np; }
+      }
+      ctx.save();
+      const rep = "🤖 Avto-narx: " + changes.length + " ta narx o'zgardi, " + imgs + " ta rasm qo'shildi" + (errors.length ? ", " + errors.length + " ta xato" : "");
+      c.lastReport = rep;
+      if (changes.length || errors.length) alertAdmins(rep + (changes.length ? "\n" + changes.slice(0, 25).join("\n") + (changes.length > 25 ? "\n…" : "") : "") + (errors.length ? "\n⚠️ " + errors.slice(0, 5).join("\n⚠️ ") : ""));
+      return { changes: changes.length, images: imgs, errors };
+    } finally { apRunning = false; }
+  }
+  const apTimer = setInterval(() => { runAutoPrice(false).catch(() => {}); }, 15 * 60 * 1000);
+  if (apTimer.unref) apTimer.unref();
+
   let importJob = null;
   const jobView = () => importJob && { running: importJob.running, line: importJob.line, total: importJob.total, done: importJob.done,
     games: importJob.games, packages: importJob.packages, skipped: importJob.skipped, current: importJob.current, errors: importJob.errors.slice(-10), error: importJob.error, finishedAt: importJob.finishedAt };
