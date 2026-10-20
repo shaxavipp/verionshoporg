@@ -457,6 +457,9 @@ nav button:nth-child(5) svg{animation-delay:1s}
   background:var(--card);border:1.5px solid var(--line);color:var(--txt);min-height:66px;transition:transform .15s,border-color .2s,box-shadow .2s}
 .gpkg:active{transform:scale(.96)}
 .gpkg.hot{border-color:rgba(255,178,63,.55);background:linear-gradient(160deg,rgba(255,178,63,.10),var(--card) 60%)}
+.gpkg.bc-g{border:1.5px solid rgba(48,209,88,.85);box-shadow:0 0 14px rgba(48,209,88,.18)}
+.gpkg.bc-p{border:1.5px solid rgba(155,89,255,.85);box-shadow:0 0 14px rgba(155,89,255,.18)}
+.gpkg.bc-r{border:1.5px solid rgba(255,69,58,.85);box-shadow:0 0 14px rgba(255,69,58,.18)}
 .gpkg.on{border-color:var(--acc);box-shadow:0 0 0 3px rgba(47,143,255,.22),0 8px 22px rgba(0,0,0,.25)}
 .gpi{width:42px;height:42px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
 .gpi img{width:100%;height:100%;object-fit:contain}
@@ -882,7 +885,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-20.2";
+var CLIENT_BUILD="2026-10-20.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2362,7 +2365,8 @@ function gamePageHTML(){
   st.pk.forEach(function(p){
     var rank=byPrice.indexOf(p),tier=1+Math.floor(rank*5/Math.max(1,byPrice.length));
     var b=String(p.badge||"");
-    html+='<button class="gpkg'+(b?" hot":"")+(S.game.pkg===p.id?" on":"")+(p.hidden?" adm-hid":"")+'" data-gpkg="'+esc(p.id)+'">'
+    var bc=!b?"":/^\d+x$/i.test(b)?" bc-g":/^(ep|elite|epic)/i.test(b)?" bc-p":/haft|week|pass|pas/i.test(b)?" bc-r":" hot";
+    html+='<button class="gpkg'+bc+(S.game.pkg===p.id?" on":"")+(p.hidden?" adm-hid":"")+'" data-gpkg="'+esc(p.id)+'">'
       +(GAMES.admin?'<span class="gpedit" data-gpedit="'+esc(p.id)+'" role="button" aria-label="Tahrirlash">🔧</span>':'')
       +(p.hidden?'<span class="adm-tag sm">'+(p.noPrice?"narx yo\'q":"o\'chiq")+'</span>':'')
       +'<div class="gpi">'+(p.img?'<img src="'+esc(p.img)+'" alt="" loading="lazy">':gIconSVG(p.icon,tier))+'</div>'
