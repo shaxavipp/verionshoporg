@@ -248,9 +248,9 @@ module.exports = function createGames(ctx) {
   let pubCache = { key: "", body: "", etag: "" };
   function publicCatalog() {
     const s = store();
-    const pk = s.packages.filter(p => p.active && p.price > 0 && s.games.some(g => g.id === p.gameId && g.active));
+    const pk = s.packages.filter(p => p.active && p.price > 0 && s.games.some(g => g.id === p.gameId && g.active && !g.draft));
     const gids = new Set(pk.map(p => p.gameId));
-    const games = s.games.filter(g => g.active && gids.has(g.id)).sort((a, b) => (a.sort || 0) - (b.sort || 0))
+    const games = s.games.filter(g => g.active && !g.draft && gids.has(g.id)).sort((a, b) => (a.sort || 0) - (b.sort || 0))
       .map(g => ({ id: g.id, name: g.name, section: g.section === "ai" ? "ai" : "games", img: g.img || "", banner: g.banner || "", color: g.color || "",
         fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
         regions: g.regions || [], tabs: g.tabs || [],
@@ -540,8 +540,9 @@ module.exports = function createGames(ctx) {
         const g = { id, name, section: x.section === "ai" ? "ai" : "games", img: imgUrl(x.img), banner: imgUrl(x.banner),
           color: /^#[0-9a-f]{6}$/i.test(String(x.color || "")) ? x.color : "",
           fields, regions: list(x.regions, 15), tabs: list(x.tabs, 8),
-          active: x.active !== false, sort: Number(x.sort) || 0 };
+          active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft };
         const i = s.games.findIndex(z => z.id === id);
+        if (i >= 0 && s.games[i].source) g.source = s.games[i].source;
         if (i >= 0) s.games[i] = g; else s.games.push(g);
         ctx.save();
         sendJSON(res, 200, { ok: true, game: g });
@@ -707,59 +708,29 @@ module.exports = function createGames(ctx) {
       ctx.readBody(req, res, async b => {
         const l = lineById(str(b.lineId, 40)), T = l && LINE_TYPES[l.type];
         if (!l || !T || typeof T.packages !== "function") return sendJSON(res, 400, { error: "Bu liniyada katalog yo'q" });
-        const code = str(b.code, 60);
-        let pk;
-        try { pk = await T.packages(l, code); } catch (e) { return sendJSON(res, 400, { error: "Sayt: " + str(e.message, 200) }); }
-        let g = gameById(str(b.gameId, 40));
-        if (!g) {
-          const ng = b.newGame || {};
-          const id = slug(String(ng.id || "").toLowerCase(), 40);
-          if (!id) return sendJSON(res, 400, { error: "Yangi o'yin uchun ID kiriting (masalan: genshin)" });
-          if (gameById(id)) return sendJSON(res, 400, { error: "Bu ID band" });
-          const isAi = ng.section === "ai";
-          g = { id, name: str(ng.name || pk.name || id, 60), section: isAi ? "ai" : "games", img: "", banner: "", color: "#2f8fff",
-            fields: isAi ? [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }]
-              : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
-            regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: s.games.length + 1 };
-          s.games.push(g);
-        }
-        // O'yin avatari va banneri — saytdagi rasm (o'yinda hali rasm bo'lmasa).
-        if (pk.img && (!g.img || !g.banner)) {
-          const u = await fetchImage(pk.img);
-          if (u) { if (!g.img) g.img = u; if (!g.banner) g.banner = u; }
-        }
-        const region = slug(b.region, 16) || ((g.regions || [])[0] || {}).key || "";
-        const tab = slug(b.tab, 16) || ((g.tabs || [])[0] || {}).key || "";
-        const rate = Number(b.rate != null ? b.rate : l.config.rate) || 0;
-        const markup = Number(b.markup != null ? b.markup : l.config.markup) || 0;
-        const want = new Set((Array.isArray(b.skus) ? b.skus : []).map(x => String(x)));
-        const items = pk.items.filter(x => !want.size || want.has(String(x.sku)));
-        const meta = cleanMeta(Object.assign({ fields: pk.fields || [] }, pk.meta || {}));
-        const manual = lineById("manual");
-        let added = 0, updated = 0, imgs = 0, sort = s.packages.filter(p => p.gameId === g.id).length;
-        for (const it of items) {
-          const nm = smartName(it.name, pk.name || g.name);
-          const price = calcPrice(it.cost, rate, markup);
-          let p = s.packages.find(z => z.gameId === g.id && (z.routes || []).some(r => r.lineId === l.id && r.sku === String(it.sku)));
-          if (p) {
-            const r = p.routes.find(z => z.lineId === l.id && z.sku === String(it.sku));
-            r.cost = it.cost; r.meta = meta;
-            if (b.updatePrices && price > 0) p.price = price;
-            updated++;
-          } else {
-            p = { id: g.id + "-" + crypto.randomBytes(4).toString("hex"), gameId: g.id, region, tab, name: nm.name, sub: nm.sub,
-              icon: g.section === "ai" ? "ai" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
-              routes: [{ lineId: l.id, sku: String(it.sku), cost: it.cost, meta }].concat(manual ? [{ lineId: "manual", sku: "", cost: 0 }] : []) };
-            s.packages.push(p);
-            added++;
-          }
-          if (b.images !== false && it.img && !p.img) { const u = await fetchImage(it.img); if (u) { p.img = u; imgs++; } }
-        }
+        const r = await importGame(l, T, str(b.code, 60), b);
+        if (r.error) return sendJSON(res, 400, { error: r.error });
         ctx.save();
-        sendJSON(res, 200, { ok: true, gameId: g.id, added, updated, images: imgs, gameImage: !!g.img });
+        sendJSON(res, 200, Object.assign({ ok: true }, r));
       });
       return true;
     }
+    /* Saytdagi HAMMA o'yinlarni bir yo'la yuklash (fonda). O'yinlar "qoralama" bo'lib
+       tushadi: mijozlar ko'rmaydi, admin esa do'konning o'zida ko'rib, 🔧 bilan tuzatadi. */
+    if (url === "/api/admin/games/import-all" && m === "POST") {
+      ctx.readBody(req, res, b => {
+        const l = lineById(str(b.lineId, 40)), T = l && LINE_TYPES[l.type];
+        if (!l || !T || typeof T.games !== "function") return sendJSON(res, 400, { error: "Bu liniyada katalog yo'q" });
+        if (importJob && importJob.running) return sendJSON(res, 409, { error: "Yuklash allaqachon ketyapti", job: jobView() });
+        startImportAll(l, T, { section: b.section === "ai" ? "ai" : "games", limit: Math.max(1, Math.min(300, Number(b.limit) || 60)),
+          query: str(b.query, 60).toLowerCase(), images: b.images !== false });
+        sendJSON(res, 200, { ok: true, job: jobView() });
+      });
+      return true;
+    }
+    if (url === "/api/admin/games/import-status" && m === "GET") { sendJSON(res, 200, { job: jobView() }); return true; }
+    // Admin uchun do'kon ko'rinishi: qoralama, o'chiq va narxsiz narsalar ham (belgilari bilan).
+    if (url === "/api/admin/games/preview" && m === "GET") { sendJSON(res, 200, previewCatalog()); return true; }
 
     sendJSON(res, 404, { error: "unknown games route" });
     return true;
@@ -780,13 +751,114 @@ module.exports = function createGames(ctx) {
     balCache = { ts: Date.now(), list };
     return list;
   }
+  /* ---------- import (bitta o'yin) — /import va /import-all ishlatadi ---------- */
+  async function importGame(l, T, code, b) {
+    let pk;
+    try { pk = await T.packages(l, code); } catch (e) { return { error: "Sayt: " + str(e.message, 200) }; }
+    if (!pk || !Array.isArray(pk.items)) return { error: "Sayt bo'sh javob berdi" };
+    const s = store();
+    let g = gameById(str(b.gameId, 40));
+    if (!g) {
+      const ng = b.newGame || {};
+      const id = slug(String(ng.id || "").toLowerCase(), 40);
+      if (!id) return { error: "Yangi o'yin uchun ID kiriting (masalan: genshin)" };
+      if (gameById(id)) return { error: "Bu ID band" };
+      const isAi = ng.section === "ai";
+      g = { id, name: str(ng.name || pk.name || id, 60), section: isAi ? "ai" : "games", img: "", banner: "", color: "#2f8fff",
+        fields: isAi ? [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }]
+          : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
+        regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: s.games.length + 1,
+        draft: !!ng.draft, source: { lineId: l.id, code: String(code) } };
+      s.games.push(g);
+    }
+    // O'yin avatari va banneri — saytdagi rasm (o'yinda hali rasm bo'lmasa).
+    if (pk.img && (!g.img || !g.banner)) {
+      const u = await fetchImage(pk.img);
+      if (u) { if (!g.img) g.img = u; if (!g.banner) g.banner = u; }
+    }
+    const region = slug(b.region, 16) || ((g.regions || [])[0] || {}).key || "";
+    const tab = slug(b.tab, 16) || ((g.tabs || [])[0] || {}).key || "";
+    const rate = Number(b.rate != null ? b.rate : l.config.rate) || 0;
+    const markup = Number(b.markup != null ? b.markup : l.config.markup) || 0;
+    const want = new Set((Array.isArray(b.skus) ? b.skus : []).map(x => String(x)));
+    const items = pk.items.filter(x => !want.size || want.has(String(x.sku)));
+    const meta = cleanMeta(Object.assign({ fields: pk.fields || [] }, pk.meta || {}));
+    const manual = lineById("manual");
+    let added = 0, updated = 0, imgs = 0, sort = s.packages.filter(p => p.gameId === g.id).length;
+    for (const it of items) {
+      const nm = smartName(it.name, pk.name || g.name);
+      const price = calcPrice(it.cost, rate, markup);
+      let p = s.packages.find(z => z.gameId === g.id && (z.routes || []).some(r => r.lineId === l.id && r.sku === String(it.sku)));
+      if (p) {
+        const r = p.routes.find(z => z.lineId === l.id && z.sku === String(it.sku));
+        r.cost = it.cost; r.meta = meta;
+        if (b.updatePrices && price > 0) p.price = price;
+        updated++;
+      } else {
+        p = { id: g.id + "-" + crypto.randomBytes(4).toString("hex"), gameId: g.id, region, tab, name: nm.name, sub: nm.sub,
+          icon: g.section === "ai" ? "ai" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
+          routes: [{ lineId: l.id, sku: String(it.sku), cost: it.cost, meta }].concat(manual ? [{ lineId: "manual", sku: "", cost: 0 }] : []) };
+        s.packages.push(p);
+        added++;
+      }
+      if (b.images !== false && it.img && !p.img) { const u = await fetchImage(it.img); if (u) { p.img = u; imgs++; } }
+    }
+    return { gameId: g.id, added, updated, images: imgs, gameImage: !!g.img };
+  }
+  let importJob = null;
+  const jobView = () => importJob && { running: importJob.running, line: importJob.line, total: importJob.total, done: importJob.done,
+    games: importJob.games, packages: importJob.packages, skipped: importJob.skipped, current: importJob.current, errors: importJob.errors.slice(-10), error: importJob.error, finishedAt: importJob.finishedAt };
+  function startImportAll(l, T, opt) {
+    importJob = { running: true, line: l.name, total: 0, done: 0, games: 0, packages: 0, skipped: 0, current: "", errors: [], error: "", startedAt: Date.now() };
+    (async () => {
+      let list;
+      try { list = await T.games(l); } catch (e) { importJob.error = "Sayt: " + str(e.message, 200); return; }
+      list = (list || []).filter(x => x && x.code && (!opt.query || String(x.name || "").toLowerCase().indexOf(opt.query) !== -1));
+      const s = store();
+      const have = new Set(s.games.filter(g => g.source && g.source.lineId === l.id).map(g => String(g.source.code)));
+      const todo = list.filter(x => !have.has(String(x.code)));
+      importJob.skipped = list.length - todo.length;
+      importJob.total = Math.min(todo.length, opt.limit);
+      for (const x of todo.slice(0, opt.limit)) {
+        importJob.current = str(x.name || x.code, 60);
+        let id = slug(String(x.name || x.code).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""), 32) || "g";
+        if (gameById(id)) id = slug(id + "-" + String(x.code).toLowerCase(), 40);
+        if (gameById(id)) id = slug(id + "-" + crypto.randomBytes(2).toString("hex"), 40);
+        try {
+          const r = await importGame(l, T, x.code, { newGame: { id, name: x.name, section: opt.section, draft: true }, activate: false, images: opt.images });
+          if (r.error) importJob.errors.push(str(x.name, 40) + ": " + r.error);
+          else {
+            importJob.games++; importJob.packages += r.added;
+            const g = gameById(r.gameId);
+            if (g && !g.img && x.img) { const u = await fetchImage(x.img); if (u) { g.img = u; if (!g.banner) g.banner = u; } }
+          }
+        } catch (e) { importJob.errors.push(str(x.name, 40) + ": " + str(e.message, 120)); }
+        importJob.done++;
+        ctx.save();
+      }
+    })().catch(e => { importJob.error = str(e.message, 200); }).finally(() => { importJob.running = false; importJob.finishedAt = Date.now(); importJob.current = ""; ctx.save(); });
+  }
+  // Admin ko'rinishi: hamma o'yin va paketlar, mijozga ko'rinmaydiganlari belgilangan.
+  function previewCatalog() {
+    const s = store();
+    const vis = p => { const g = gameById(p.gameId); return !!(g && g.active && !g.draft && p.active && p.price > 0); };
+    const games = s.games.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(g => ({ id: g.id, name: g.name, section: g.section === "ai" ? "ai" : "games",
+      img: g.img || "", banner: g.banner || "", color: g.color || "",
+      fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
+      regions: g.regions || [], tabs: g.tabs || [], canCheck: !!checkLineFor(g),
+      draft: !!g.draft, hidden: !g.active || !!g.draft || !s.packages.some(p => p.gameId === g.id && vis(p)) }));
+    const packages = s.packages.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(p => ({ id: p.id, gameId: p.gameId, region: p.region || "", tab: p.tab || "",
+      name: p.name, sub: p.sub || "", icon: p.icon || "diamond", img: p.img || "", badge: p.badge || "", price: p.price, hidden: !vis(p), noPrice: !(p.price > 0) }));
+    return { games, packages, admin: true };
+  }
+
   /* Paket xaridi — mini ilova (/api/games/buy) va AI yordamchi shu bitta funksiyani
      ishlatadi. Tekshiruv va yechish BIR xil sinxron qadamda — oraliqda await yo'q, shuning
      uchun bir vaqtda bosilgan ikki xarid balansdan ikki marta o'tib keta olmaydi. */
   function buyPackage(u, packageId, account, promoCode) {
     const p = pkgById(str(packageId, 80));
     const g = p && gameById(p.gameId);
-    if (!p || !g || !p.active || !g.active || !(p.price > 0)) return { ok: false, code: 404, body: { error: "no item" } };
+    if (!p || !g || !p.active || !g.active || g.draft || !(p.price > 0)) return { ok: false, code: 404, body: { error: "no item" } };
     const c = cleanAccount(g, account);
     if (c.error) return { ok: false, code: 400, body: { error: c.error, field: c.field, label: c.label } };
     let total = Math.round(p.price), promo = null;
@@ -821,7 +893,7 @@ module.exports = function createGames(ctx) {
   function quotePackage(packageId, account) {
     const p = pkgById(str(packageId, 80));
     const g = p && gameById(p.gameId);
-    if (!p || !g || !p.active || !g.active || !(p.price > 0)) return { ok: false, error: "Bunday paket sotuvda yo'q" };
+    if (!p || !g || !p.active || !g.active || g.draft || !(p.price > 0)) return { ok: false, error: "Bunday paket sotuvda yo'q" };
     const c = cleanAccount(g, account);
     if (c.error) return { ok: false, error: (c.error === "required" ? "Kerak: " : "Noto'g'ri format: ") + c.label, field: c.field };
     return { ok: true, game: g, pkg: p, accountText: accountText(g, c.account), account: c.account, price: Math.round(p.price),

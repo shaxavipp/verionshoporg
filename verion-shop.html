@@ -737,6 +737,15 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab{display:non
 .sup-send svg{width:20px;height:20px}
 .sup-welcome{text-align:center;color:var(--mut);font-size:13px;padding:16px 10px}
 .sup-welcome b{display:block;color:var(--txt);font-size:17px;margin:8px 0 4px}
+/* admin: do'kon ichida ko'rish (qoralama, 🔧) */
+.adm-hid{opacity:.62;outline:1.5px dashed rgba(245,158,11,.7);outline-offset:-1.5px}
+.adm-tag{position:absolute;top:6px;left:6px;z-index:6;background:rgba(245,158,11,.95);color:#111;font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:999px}
+.adm-tag.sm{top:auto;bottom:6px;left:6px;font-size:9.5px;padding:2px 6px}
+.gpkg{position:relative}
+.gpkg:has(.gpedit) .gpt{padding-right:24px}
+.gpedit{position:absolute;top:4px;right:4px;z-index:6;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}
+.gback.gedit{left:auto;right:10px;font-size:17px}
+.adm-bar{margin:10px 16px 0;padding:12px;border-radius:14px;background:rgba(245,158,11,.12);border:1px dashed rgba(245,158,11,.6);font-size:13px}
 /* admin: moliya */
 .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
 .fin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 11px;min-width:0}
@@ -873,7 +882,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-19.13";
+var CLIENT_BUILD="2026-10-20.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1437,6 +1446,7 @@ function loadMe(cb){
     _meSig=sig;
     ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null};
     ME_ERROR=false;
+    if(ME.isAdmin&&!GAMES.admin)loadGames();
     if(!_adminDeepDone){_adminDeepDone=true;setTimeout(handleAdminDeepLink,350);}
     // "Botni ishga tushirganmi" hali aniqlanmagan bo'lsa (server Telegram'dan
     // javob kutyapti) — 20 soniyalik odatiy tekshiruvni kutmay, tezda qayta
@@ -2188,6 +2198,17 @@ function openAdminCategories(){
 var GAMES={games:[],packages:[],etag:"",loaded:false};
 function loadGames(cb){
   if(typeof fetch!=="function"){if(cb)cb();return;}
+  // Admin do'konni "ichidan" ko'radi: qoralama, o'chiq va narxsiz narsalar ham (belgilari bilan).
+  if(ME&&ME.isAdmin===true&&tgUser()){
+    api("/api/admin/games/preview").then(function(j){
+      GAMES.loaded=true;GAMES.admin=true;GAMES.etag="";
+      GAMES.games=j.games||[];GAMES.packages=j.packages||[];
+      if(S.game&&!gameById(S.game.id))S.game=null;
+      if(S.lang&&S.screen==="home")render();
+      if(cb)cb();
+    }).catch(function(){GAMES.loaded=true;if(cb)cb();});
+    return;
+  }
   fetch("/api/games",{headers:GAMES.etag?{"If-None-Match":GAMES.etag}:{}}).then(function(r){
     if(r.status===304)return null;
     if(!r.ok)throw new Error("http "+r.status);
@@ -2261,7 +2282,8 @@ function gIconSVG(icon,tier){
 }
 function gameCardHTML(g){
   var n=gamePkgs(g.id).length;
-  return '<button class="pcard" data-opengame="'+esc(g.id)+'">'
+  return '<button class="pcard'+(g.hidden?" adm-hid":"")+'" data-opengame="'+esc(g.id)+'">'
+    +(g.hidden?'<span class="adm-tag">🔒 '+(g.draft?"Qoralama":"Yashirin")+'</span>':'')
     +'<div class="ptile" style="background:linear-gradient(135deg,'+esc(g.color||"#2f8fff")+',#0b1020);color:#fff">'
     +(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':'<div class="tl" style="font-size:30px!important">'+esc(gameInitials(g.name))+'</div>')
     +'</div><div class="pbody"><div class="nm">'+esc(g.name)+'</div><div class="ct">'+n+' '+esc(t("g_pkgs"))+'</div></div></button>';
@@ -2304,8 +2326,14 @@ function gamePageHTML(){
   var html='<div class="ghero'+(heroImg?' hasimg':'')+'" style="--gc:'+esc(g.color||"#2f8fff")+'">'
     +(heroImg?'<img class="'+(heroBlur?"blur":"")+'" src="'+esc(heroImg)+'" alt="">':'')
     +'<button class="gback" id="gBack" aria-label="Orqaga">'+ic("arrowLeft",18)+'</button>'
+    +(GAMES.admin?'<button class="gback gedit" id="gEdit" aria-label="Tahrirlash">🔧</button>':'')
     +'<div class="ghero-t"><div class="gav">'+gameAvatarHTML(g)+'</div><div><h1>'+esc(g.name)+'</h1>'
     +'<div class="gsub">'+gamePkgs(g.id).length+' '+esc(t("g_pkgs"))+'</div></div></div></div>';
+  if(GAMES.admin&&g.hidden){
+    var hp=gamePkgs(g.id),priced=hp.filter(function(p){return !p.noPrice;}).length;
+    html+='<div class="adm-bar">🔒 <b>Mijozlar bu sahifani ko\'rmaydi</b> — '+(g.draft?"qoralama":"yashirin")+'. Narx qo\'yilgan: '+priced+' / '+hp.length+' paket.'
+      +'<div class="arow" style="margin-top:8px"><button class="btn sm" id="gPublish"'+(priced?'':' disabled')+'>🚀 Mijozlarga ochish</button><button class="btn sm gray" id="gPrices">💰 Narxlar</button></div></div>';
+  }
   if((g.fields||[]).length){
     html+='<div class="gbox"><div class="gl">'+esc(t(g.section==="ai"?"g_account":"g_player"))
       +' <button class="ginfo" id="gInfo" aria-label="?">'+ic("info",13)+'</button></div><div class="gids">';
@@ -2334,7 +2362,9 @@ function gamePageHTML(){
   st.pk.forEach(function(p){
     var rank=byPrice.indexOf(p),tier=1+Math.floor(rank*5/Math.max(1,byPrice.length));
     var b=String(p.badge||"");
-    html+='<button class="gpkg'+(b?" hot":"")+(S.game.pkg===p.id?" on":"")+'" data-gpkg="'+esc(p.id)+'">'
+    html+='<button class="gpkg'+(b?" hot":"")+(S.game.pkg===p.id?" on":"")+(p.hidden?" adm-hid":"")+'" data-gpkg="'+esc(p.id)+'">'
+      +(GAMES.admin?'<span class="gpedit" data-gpedit="'+esc(p.id)+'" role="button" aria-label="Tahrirlash">🔧</span>':'')
+      +(p.hidden?'<span class="adm-tag sm">'+(p.noPrice?"narx yo\'q":"o\'chiq")+'</span>':'')
       +'<div class="gpi">'+(p.img?'<img src="'+esc(p.img)+'" alt="" loading="lazy">':gIconSVG(p.icon,tier))+'</div>'
       +'<div class="gpt"><div class="gpn">'+esc(p.name)+(p.sub?' <small>'+esc(p.sub)+'</small>':'')+'</div>'
       +'<div class="gpp">'+esc(money(p.price))+'</div></div>'
@@ -2417,10 +2447,33 @@ function bindGames(){
       box.className="gchk err";box.textContent=S.game.chk.text;
     });
   });
+  var ge=document.getElementById("gEdit");
+  if(ge)ge.addEventListener("click",function(){haptic();GEDIT_SHOP=true;gAdmLoad(function(){openAdminGameForm(g.id);});});
+  var gpr=document.getElementById("gPrices");
+  if(gpr)gpr.addEventListener("click",function(){haptic();GEDIT_SHOP=true;gAdmLoad(function(){openAdminGamePrices(g.id);});});
+  var gpub=document.getElementById("gPublish");
+  if(gpub)gpub.addEventListener("click",function(){
+    if(!confirm(g.name+" mijozlarga ochilsinmi? Narxi qo'yilgan paketlar yoqiladi."))return;
+    var btn=this;btn.disabled=true;
+    gAdmLoad(function(){
+      var full=GADM.games.filter(function(x){return x.id===g.id;})[0];if(!full){btn.disabled=false;return;}
+      var items=GADM.packages.filter(function(p){return p.gameId===g.id;}).map(function(p){return {id:p.id,price:p.price,active:p.price>0};});
+      api("/api/admin/games/game","POST",{game:Object.assign({},full,{draft:false,active:true})})
+        .then(function(){return api("/api/admin/games/prices","POST",{items:items});})
+        .then(function(){haptic("ok");toast("🚀 Mijozlarga ochildi");GAMES.etag="";loadGames();})
+        .catch(function(e){btn.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+    });
+  });
+  var pe=document.querySelectorAll("[data-gpedit]");
+  for(i=0;i<pe.length;i++)pe[i].addEventListener("click",function(e){
+    e.stopPropagation();haptic();var pid=this.getAttribute("data-gpedit");
+    GEDIT_SHOP=true;gAdmLoad(function(){openAdminPackageForm(g.id,pid);});
+  });
   var buy=document.getElementById("gBuy");
   if(buy)buy.addEventListener("click",function(){
     var p=S.game.pkg?gamePkgById(S.game.pkg):null;
     if(!p){toast(t("g_pick"));return;}
+    if(p.hidden){toast("🔒 Bu paket mijozlarga yopiq — avval narx qo'yib yoqing (🔧)",true);return;}
     if(!tgUser()){toast(t("open_in_tg"));return;}
     if(!gameValidate(g,true))return;
     openGameBuy(g,p);
@@ -4298,6 +4351,11 @@ function lineTypeLabel(type){
   return lt?lt.label:type;
 }
 var GADM_SEC="";   // "" — hammasi, "games" — faqat o'yinlar, "ai" — faqat AI xizmatlar
+var GEDIT_SHOP=false;   // tahrirlash do'kon sahifasidan (🔧) ochilgan bo'lsa — saqlangach o'sha yerga qaytamiz
+function gAfterSave(fallback){
+  if(GEDIT_SHOP){GEDIT_SHOP=false;closeSheet();GAMES.etag="";loadGames();return;}
+  if(fallback)fallback();
+}
 function openAdminGames(sec){
   if(typeof sec==="string")GADM_SEC=sec;
   gAdmLoad(function(){
@@ -4312,14 +4370,16 @@ function openAdminGames(sec){
       var on=all.filter(function(p){return p.active&&p.price>0;}).length;
       html+='<div class="card" style="margin:0 0 8px;padding:10px;display:flex;align-items:center;gap:10px">'
         +'<div class="gav" style="width:44px;height:44px;font-size:15px;background:linear-gradient(135deg,'+esc(g.color||"#2f8fff")+',#0b1020)">'+gameAvatarHTML(g)+'</div>'
-        +'<div style="flex:1;min-width:0"><b>'+esc(g.name)+'</b>'+(g.active?'':' <span class="badge cncl">o\'chiq</span>')
+        +'<div style="flex:1;min-width:0"><b>'+esc(g.name)+'</b>'+(g.active?'':' <span class="badge cncl">o\'chiq</span>')+(g.draft?' <span class="badge pend">qoralama</span>':'')
         +'<div class="d">'+on+' / '+all.length+' paket do\'konda</div></div>'
         +'<button class="btn sm" data-gaprice="'+esc(g.id)+'" style="width:auto">Narxlar</button>'
         +'<button class="btn gray sm" data-gaedit="'+esc(g.id)+'" style="width:auto">'+ic("pencil",14)+'</button></div>';
     });
     html+='<button class="btn gray" data-ganew="'+sc+'">'+ic("plus",15)+(sc==="ai"?' Yangi AI xizmat':' Yangi o\'yin')+'</button>';
     });
-    html+='<div class="sect" style="margin:18px 0 6px">Liniyalar (yetkazib beruvchilar)</div>';
+    html+='<button class="btn" id="gaImportAll" style="margin-top:10px">⬇️ Saytdan HAMMA o\'yinlarni yuklash</button>'
+      +'<div class="d" style="margin:6px 0 0">Paketlar, rasmlar va narxlar (kurs × ustama) bilan qoralama bo\'lib tushadi — mijozlar ko\'rmaydi. Do\'konning o\'zida ko\'rib, 🔧 bilan tuzatib, «🚀 Mijozlarga ochish» bosasiz.</div>'
+      +'<div class="sect" style="margin:18px 0 6px">Liniyalar (yetkazib beruvchilar)</div>';
     G.lines.slice().sort(function(a,b){return (a.priority||0)-(b.priority||0);}).forEach(function(l){
       var used=G.packages.filter(function(p){return (p.routes||[]).some(function(r){return r.lineId===l.id;});}).length;
       html+='<div class="card" style="margin:0 0 8px;padding:10px;display:flex;align-items:center;gap:10px">'
@@ -4338,7 +4398,48 @@ function openAdminGames(sec){
     b=sh.querySelectorAll("[data-galine]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminLineForm(this.getAttribute("data-galine"));});
     b=sh.querySelectorAll("[data-ganew]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminGameForm(null,this.getAttribute("data-ganew"));});
     sh.querySelector("#gaNewLine").addEventListener("click",function(){openAdminLineForm(null);});
+    sh.querySelector("#gaImportAll").addEventListener("click",openAdminImportAll);
   });
+}
+/* Saytdan hamma o'yinlarni bir yo'la yuklash (fonda) — holatini kuzatib turadi. */
+function openAdminImportAll(){
+  var lines=(GADM.lines||[]).filter(function(l){var ti=(GADM.lineTypes||[]).filter(function(x){return x.key===l.type;})[0];return ti&&ti.canImport;});
+  var html='<h2>⬇️ Saytdan hammasini yuklash</h2>'
+    +(lines.length?'':'<div class="paynote">Import qila oladigan liniya yo\'q. Avval MooGold / G2Bulk / Smile.one liniyasiga kalit qo\'yib yoqing va «Sinash» bilan tekshiring.</div>')
+    +'<label>Qaysi saytdan</label><select id="iaLine">'+lines.map(function(l){return '<option value="'+esc(l.id)+'">'+esc(l.name)+(l.enabled?"":" (o\'chiq)")+'</option>';}).join("")+'</select>'
+    +'<label>Bo\'lim</label><div class="seg" id="iaSec"><button data-s="games" class="on">🎮 O\'yinlar</button><button data-s="ai">✨ AI xizmatlar</button></div>'
+    +'<label>Faqat nomida shu so\'z borlarni (ixtiyoriy)</label><input id="iaQ" placeholder="masalan: mobile, pubg, genshin">'
+    +'<label>Ko\'pi bilan nechta o\'yin</label><input id="iaLim" type="number" value="60" min="1" max="300">'
+    +'<div class="d" style="margin:2px 0 10px">Avval yuklangan o\'yinlar qayta yuklanmaydi. Narx = sayt narxi × liniya kursi × ustama (liniya sozlamasida).</div>'
+    +'<button class="btn" id="iaGo"'+(lines.length?'':' disabled')+'>Boshlash</button>'
+    +'<div id="iaProg" style="margin-top:12px"></div><div style="height:20px"></div>';
+  var sh=openSheet(html,function(){openAdminGames();});
+  var SEC="games";
+  var sb=sh.querySelectorAll("#iaSec [data-s]");
+  for(var i=0;i<sb.length;i++)sb[i].addEventListener("click",function(){SEC=this.getAttribute("data-s");for(var j=0;j<sb.length;j++)sb[j].classList.toggle("on",sb[j]===this);});
+  var timer=null;
+  function paint(j){
+    var box=sh.querySelector("#iaProg");if(!box||!j)return;
+    var pct=j.total?Math.round(j.done/j.total*100):0;
+    box.innerHTML='<div class="card" style="padding:12px">'
+      +(j.error?'<b style="color:#ef4444">❌ '+esc(j.error)+'</b>':'<b>'+(j.running?"⏳ Yuklanmoqda…":"✅ Tayyor")+'</b> '+esc(j.line||""))
+      +'<div style="height:8px;background:var(--card2);border-radius:5px;margin:10px 0;overflow:hidden"><div style="height:8px;width:'+pct+'%;background:var(--grad)"></div></div>'
+      +'<div class="d">'+j.done+' / '+j.total+' o\'yin · '+j.games+' ta qo\'shildi · '+j.packages+' paket'+(j.skipped?' · '+j.skipped+' tasi avvaldan bor':'')+'</div>'
+      +(j.current?'<div class="d">Hozir: '+esc(j.current)+'</div>':'')
+      +((j.errors||[]).length?'<div class="d" style="color:#ef4444;margin-top:6px">'+j.errors.map(esc).join("<br>")+'</div>':'')
+      +(!j.running&&!j.error?'<button class="btn sm" id="iaShow" style="margin-top:10px">🏪 Do\'konda ko\'rish</button>':'')+'</div>';
+    var show=box.querySelector("#iaShow");
+    if(show)show.addEventListener("click",function(){closeSheet();closeAdminHome();GAMES.etag="";loadGames(function(){S.screen="home";S.game=null;S.category=SEC;render();window.scrollTo(0,0);});});
+    if(!j.running){clearInterval(timer);timer=null;var go=sh.querySelector("#iaGo");if(go)go.disabled=false;}
+  }
+  function poll(){api("/api/admin/games/import-status").then(function(r){paint(r.job);}).catch(function(){});}
+  sh.querySelector("#iaGo").addEventListener("click",function(){
+    var btn=this;btn.disabled=true;
+    api("/api/admin/games/import-all","POST",{lineId:sh.querySelector("#iaLine").value,section:SEC,query:sh.querySelector("#iaQ").value.trim(),limit:Number(sh.querySelector("#iaLim").value)||60})
+      .then(function(r){paint(r.job);clearInterval(timer);timer=setInterval(poll,1500);})
+      .catch(function(e){btn.disabled=false;var r=e&&e.resp;toast((r&&r.error)||t("srv_off"),true);if(r&&r.job){paint(r.job);clearInterval(timer);timer=setInterval(poll,1500);}});
+  });
+  poll();
 }
 /* Narxlar: bitta o'yinning barcha paketlari bitta ro'yxatda — narx va yoqish. */
 function openAdminGamePrices(gid){
@@ -4387,7 +4488,7 @@ function openAdminGamePrices(gid){
     var btn=this;btn.disabled=true;
     api("/api/admin/games/prices","POST",{items:items}).then(function(r){
       btn.disabled=false;haptic("ok");toast(t("a_saved")+" ("+r.updated+")");GAMES.etag="";loadGames();
-      gAdmLoad(function(){openAdminGamePrices(gid);});
+      gAfterSave(function(){gAdmLoad(function(){openAdminGamePrices(gid);});});
     }).catch(function(){btn.disabled=false;toast(t("srv_off"),true);});
   });
 }
@@ -4443,7 +4544,7 @@ function openAdminPackageForm(gid,pid){
     api("/api/admin/games/package","POST",{pkg:pkg}).then(function(r){
       btn.disabled=false;haptic("ok");
       toast(t("a_saved")+(pkg.active&&!r.pkg.active?" — narx 0, shuning uchun o'chiq":""));
-      GAMES.etag="";loadGames();gAdmLoad(function(){openAdminGamePrices(gid);});
+      GAMES.etag="";loadGames();gAfterSave(function(){gAdmLoad(function(){openAdminGamePrices(gid);});});
     }).catch(function(e){btn.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
   });
   var del=sh.querySelector("#pfDel");
@@ -4482,12 +4583,14 @@ function openAdminGameForm(gid,newSec){
     +'<label>Regionlar (har qatorda "kalit: Nomi")</label><textarea id="gf_regions" class="exta" style="height:90px">'+esc(kv(F.regions))+'</textarea>'
     +'<label>Bo\'limlar (masalan "uc: UC")</label><textarea id="gf_tabs" class="exta" style="height:70px">'+esc(kv(F.tabs))+'</textarea>'
     +'<div class="switch" style="margin-top:12px"><span style="font-size:13.5px">Yoqilgan</span><button class="swbtn'+(F.active?" on":"")+'" id="gf_active"><i></i></button></div>'
+    +'<div class="switch"><span style="font-size:13.5px">🔒 Qoralama (faqat adminlar ko\'radi)</span><button class="swbtn'+(F.draft?" on":"")+'" id="gf_draft"><i></i></button></div>'
     +'<div style="height:10px"></div><button class="btn" id="gfSave">'+esc(t("a_save"))+'</button>'
     +(g?'<div style="height:8px"></div><button class="btn red" id="gfDel">O\'yinni o\'chirish</button>':'')+'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdminGames);
   gBindImg(sh,"gf_img",256,function(u){F.img=u;});
   gBindImg(sh,"gf_banner",900,function(u){F.banner=u;});
   sh.querySelector("#gf_active").addEventListener("click",function(){this.classList.toggle("on");});
+  sh.querySelector("#gf_draft").addEventListener("click",function(){this.classList.toggle("on");});
   var secBtns=sh.querySelectorAll("#gf_sec [data-sec]");
   for(var si=0;si<secBtns.length;si++)secBtns[si].addEventListener("click",function(){
     SEC=this.getAttribute("data-sec");
@@ -4512,10 +4615,10 @@ function openAdminGameForm(gid,newSec){
     var game={id:g?g.id:(sh.querySelector("#gf_id").value.trim().toLowerCase()),name:sh.querySelector("#gf_name").value.trim(),section:SEC,
       img:F.img,banner:F.banner,color:sh.querySelector("#gf_color").value,sort:Number(sh.querySelector("#gf_sort").value)||0,
       fields:fields,regions:parseKV(sh.querySelector("#gf_regions").value),tabs:parseKV(sh.querySelector("#gf_tabs").value),
-      active:sh.querySelector("#gf_active").classList.contains("on")};
+      active:sh.querySelector("#gf_active").classList.contains("on"),draft:sh.querySelector("#gf_draft").classList.contains("on")};
     var btn=this;btn.disabled=true;
     api("/api/admin/games/game","POST",{game:game}).then(function(){
-      btn.disabled=false;haptic("ok");toast(t("a_saved"));GAMES.etag="";loadGames();openAdminGames();
+      btn.disabled=false;haptic("ok");toast(t("a_saved"));GAMES.etag="";loadGames();gAfterSave(function(){openAdminGames();});
     }).catch(function(e){btn.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
   });
   var del=sh.querySelector("#gfDel");

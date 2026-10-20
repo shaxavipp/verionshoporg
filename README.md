@@ -270,3 +270,10 @@ Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'
 ---
 
 *Texnik: vanilla JS, tashqi kutubxonasiz (faqat Telegram WebApp SDK), localStorage, 77 ta avtomatik test o'tgan.*
+
+## Saytdan hamma o'yinlarni yuklash (qoralama) va do'kon ichida 🔧 tahrirlash
+
+1. Admin panel → O'yinlar va liniyalar → «⬇️ Saytdan HAMMA o'yinlarni yuklash»: liniya, bo'lim, qidiruv va limitni (≤300) tanlang. O'yinlar **qoralama** bo'lib, faqat adminlarga ko'rinadi. Qayta yuklaganda dublikat yaratilmaydi.
+2. Do'konning asosiy sahifasida admin barcha o'yinlarni ko'radi. Ular «🔒 Qoralama» yoki «Yashirin» belgisi bilan chiqadi.
+3. O'yin sahifasidagi 🔧 o'yinni, paket yonidagi 🔧 esa paketni tahrirlaydi. Saqlagandan keyin do'konga qaytasiz.
+4. «🚀 Mijozlarga ochish» o'yinni va narxi bor paketlarni mijozlarga ko'rsatadi.
