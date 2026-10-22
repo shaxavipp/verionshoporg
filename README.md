@@ -277,3 +277,11 @@ Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'
 2. Do'konning asosiy sahifasida admin barcha o'yinlarni ko'radi. Ular «🔒 Qoralama» yoki «Yashirin» belgisi bilan chiqadi.
 3. O'yin sahifasidagi 🔧 o'yinni, paket yonidagi 🔧 esa paketni tahrirlaydi. Saqlagandan keyin do'konga qaytasiz.
 4. «🚀 Mijozlarga ochish» o'yinni va narxi bor paketlarni mijozlarga ko'rsatadi.
+
+## Bir xil o'yinlar bitta bo'ladi (regionlar va liniyalar)
+
+- "Mobile Legends (PH)", "MLBB Indonesia" va boshqa shunga o'xshash nomlar bitta **Mobile Legends** o'yiniga birlashadi. Ularning regionlari o'yin sahifasining tepasida tab bo'lib turadi.
+- Turli liniyalardagi bir xil paket (masalan, 86 olmos) bitta paket bo'ladi va uning ichida bir nechta liniya bo'ladi. Bitta liniya ishlamasa, buyurtma keyingisiga o'tadi. «Qo'lda» liniyasi doim oxirida turadi.
+- O'yinlar O'zbekistonda mashhurligi bo'yicha tartiblanadi: PUBG Mobile, Free Fire, Mobile Legends, Standoff 2 va hokazo. Tartibni admin qo'lda o'zgartirsa, o'sha o'yinning tartibi o'zgarishsiz qoladi.
+- Birlashtirish deploy'dan keyin bir marta o'zi ishlaydi. Har bir «Saytdan hammasini yuklash» tugaganida ham ishlaydi. Admin panelda alohida «🔗 Bir xil o'yinlarni birlashtirish» tugmasi ham bor.
+- Tayyor narxlar faqat o'yinning asosiy regioniga qo'yiladi. Qolgan regionlarning narxi tannarx × kurs + ustama bo'yicha hisoblanadi.

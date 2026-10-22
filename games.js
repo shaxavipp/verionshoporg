@@ -75,6 +75,8 @@ module.exports = function createGames(ctx) {
       }
       s.linesV = 3; ctx.save();
     }
+    // Bir xil o'yinlarni (regionlari bilan) bitta qilish va mashhurlik tartibi — bir marta, deploy'dan keyin.
+    if ((s.mergeV || 0) < 1) { s.mergeV = 1; setImmediate(() => { try { mergeDuplicates(); } catch (e) { console.log("[games] merge: " + e.message); } }); }
     // Ludovex liniyasi (o'chiq — admin kalit kiritib yoqadi).
     if ((s.linesV || 1) < 4) {
       if (LINE_TYPES.ludovex && !s.lines.some(l => l.type === "ludovex"))
@@ -204,6 +206,105 @@ module.exports = function createGames(ctx) {
       req.on("error", () => fin(""));
     });
   }
+  /* ---------- bir xil o'yinlarni birlashtirish ----------
+     "Mobile Legends (BR)", "Mobile Legends - Philippines", "MLBB Indonesia" → bitta "Mobile Legends",
+     regionlari tepada tab bo'lib turadi. Turli liniyalardagi bir xil paket (masalan 86 olmos) —
+     bitta paket, ichida bir nechta liniya (biri ishlamasa keyingisi). */
+  const REGIONS = [
+    ["global", "🌐 Global", /\b(global|worldwide|international|intl|ww|all ?region|garena)\b/i],
+    ["cis", "🌍 CIS", /\b(cis|sng|снг)\b/i], ["uz", "🇺🇿 UZ", /\b(uz|uzbekistan|o'?zbekiston)\b/i],
+    ["ru", "🇷🇺 RU", /\b(ru|russia|россия|rus)\b/i], ["kz", "🇰🇿 KZ", /\b(kz|kazakhstan)\b/i],
+    ["tr", "🇹🇷 TR", /\b(tr|turkey|t[uü]rkiye)\b/i], ["id", "🇮🇩 ID", /\b(id|indonesia|indo)\b/i],
+    ["ph", "🇵🇭 PH", /\b(ph|philippines?|pinoy)\b/i], ["my", "🇲🇾 MY", /\b(my|malaysia)\b/i],
+    ["sg", "🇸🇬 SG", /\b(sg|singapore)\b/i], ["br", "🇧🇷 BR", /\b(br|brazil|brasil)\b/i],
+    ["us", "🇺🇸 US", /\b(us|usa|united states|america|na)\b/i], ["eu", "🇪🇺 EU", /\b(eu|europe)\b/i],
+    ["th", "🇹🇭 TH", /\b(th|thailand)\b/i], ["vn", "🇻🇳 VN", /\b(vn|vietnam)\b/i],
+    ["in", "🇮🇳 IN", /\b(in|india)\b/i], ["pk", "🇵🇰 PK", /\b(pk|pakistan)\b/i], ["bd", "🇧🇩 BD", /\b(bd|bangladesh)\b/i],
+    ["me", "🌙 MENA", /\b(mena|middle ?east|arab)\b/i], ["asia", "🌏 Asia", /\b(asia|sea)\b/i],
+    ["mm", "🇲🇲 MM", /\b(mm|myanmar)\b/i], ["kh", "🇰🇭 KH", /\b(kh|cambodia)\b/i], ["la", "🌎 LATAM", /\b(latam|latin)\b/i]
+  ];
+  const ALIASES = [[/^(mlbb|mobile ?legends?( ?bang ?bang)?)$/, "Mobile Legends"], [/^(pubg ?m|pubg ?mobile)$/, "PUBG Mobile"],
+    [/^(ff|free ?fire)$/, "Free Fire"], [/^free ?fire ?max$/, "Free Fire MAX"], [/^(codm|call of duty ?mobile|cod ?mobile)$/, "Call of Duty Mobile"],
+    [/^(hok|honor of kings)$/, "Honor of Kings"], [/^genshin( impact)?$/, "Genshin Impact"], [/^(hsr|honkai ?star ?rail)$/, "Honkai: Star Rail"],
+    [/^(so2|standoff ?2)$/, "Standoff 2"], [/^(abi|arena breakout( infinite)?)$/, "Arena Breakout"], [/^(wild ?rift|lol wild rift|league of legends wild rift)$/, "Wild Rift"],
+    [/^(zzz|zenless zone zero)$/, "Zenless Zone Zero"], [/^(wuwa|wuthering waves)$/, "Wuthering Waves"]];
+  function splitRegion(raw) {
+    let t = String(raw || "").replace(/\s+/g, " ").trim(), region = "";
+    const tryReg = frag => { for (const r of REGIONS) if (r[2].test(frag)) return r[0]; return ""; };
+    // (BR) / [PH] / - Indonesia / | Global
+    t = t.replace(/[\(\[]([^\)\]]{1,30})[\)\]]/g, (m, x) => { const k = tryReg(x); if (k && !region) region = k; return /^(auto|direct|top ?up|instant|fast|official)$/i.test(x.trim()) || k ? " " : m; });
+    t = t.replace(/\s[-–|:]\s*([A-Za-z' ]{2,20})$/, (m, x) => { const k = tryReg(x); if (k && !region) { region = k; return ""; } return m; });
+    const w = t.match(/\s(global|indonesia|philippines|malaysia|singapore|brazil|russia|turkey|cis|india|vietnam|thailand|myanmar|usa|europe|asia|mena|latam)$/i) || t.match(/\s([A-Z]{2})$/);
+    if (w && !region) { const k = tryReg(w[1]); if (k) { region = k; t = t.slice(0, -w[0].length); } }
+    t = t.replace(/\b(top ?up|topup|direct|auto|instant|in[- ]?game|recharge)\b/ig, " ").replace(/\s+/g, " ").replace(/[\s\-–|:]+$/, "").trim();
+    const low = t.toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+    for (const a of ALIASES) if (a[0].test(low)) { t = a[1]; break; }
+    return { base: t || String(raw || "").trim(), region: region || "global" };
+  }
+  const gameKey = n => splitRegion(n).base.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const regionLabel = k => (REGIONS.find(r => r[0] === k) || [k, k.toUpperCase()])[1];
+  function addRegion(g, k) {
+    if (!Array.isArray(g.regions)) g.regions = [];
+    if (!g.regions.some(r => r.key === k)) {
+      g.regions.push({ key: k, label: regionLabel(k) });
+      const ord = REGIONS.map(r => r[0]);
+      g.regions.sort((a, b) => (ord.indexOf(a.key) + 1 || 99) - (ord.indexOf(b.key) + 1 || 99));
+    }
+  }
+  const pkgKey = p => String((p.name || "") + "|" + (p.sub || "")).toLowerCase().replace(/[^a-z0-9+|]/g, "");
+  const sourcesOf = g => Array.isArray(g.sources) ? g.sources : (g.source ? [g.source] : []);
+  function addSource(g, lineId, code) {
+    const list = sourcesOf(g).slice();
+    if (!list.some(x => x.lineId === lineId && String(x.code) === String(code))) list.push({ lineId, code: String(code) });
+    g.sources = list; g.source = list[0];
+  }
+  /* O'zbekistonda eng ko'p o'ynaladigan / sotib olinadigan o'yinlar — shu tartibda tepada. */
+  const POPULAR = [/^pubg mobile/i, /^free fire$/i, /^mobile legends/i, /^standoff/i, /^steam/i, /^telegram/i, /^clash royale/i, /^clash of clans/i,
+    /^brawl stars/i, /^call of duty/i, /^roblox/i, /^free fire max/i, /^genshin/i, /^arena breakout/i, /^blood strike/i, /^valorant/i,
+    /^honor of kings/i, /^honkai/i, /^delta force/i, /^fortnite/i, /^minecraft/i, /^wild rift|league of legends/i, /^tanks blitz|world of tanks/i,
+    /^warface/i, /^pubg new state|^new state/i, /^ea (sports )?fc|^fifa/i, /^efootball/i, /^zenless/i, /^wuthering/i, /^marvel rivals/i,
+    /^apex/i, /^hay day/i, /^squad busters/i, /^pok[eé]mon/i, /^dota/i, /^cs ?2|counter[- ]?strike/i, /^bigo/i, /^likee/i, /^tiktok/i,
+    /^google play/i, /^app ?store|^itunes/i, /^playstation|^psn/i, /^xbox/i, /^discord/i, /^spotify/i, /^netflix/i];
+  function popRank(name) { const i = POPULAR.findIndex(r => r.test(String(name || "").trim())); return i === -1 ? 1000 : (i + 1) * 10; }
+  // Mavjud dublikatlarni birlashtiradi (admin tugmasi va har import oxirida).
+  function mergeDuplicates() {
+    const s = store(), groups = new Map();
+    for (const g of s.games) { const k = gameKey(g.name); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(g); }
+    const pendingPk = new Set((DBx().orders || []).filter(o => o.status === "pending" && o.game).map(o => o.game.packageId));
+    let mergedGames = 0, mergedPkgs = 0;
+    for (const list of groups.values()) {
+      // Asosiysi: mijozlarga ochiq, rasmi bor, paketi ko'p bo'lgani.
+      const score = g => (g.draft ? 0 : 1000) + (g.img ? 100 : 0) + s.packages.filter(p => p.gameId === g.id).length;
+      list.sort((a, b) => score(b) - score(a));
+      const main = list[0];
+      main.name = splitRegion(main.name).base;
+      if (list.length === 1) continue;
+      for (const g of list.slice(1)) {
+        const reg = splitRegion(g.name).region;
+        for (const src of sourcesOf(g)) addSource(main, src.lineId, src.code);
+        if (!main.img && g.img) main.img = g.img;
+        if (!main.banner && g.banner) main.banner = g.banner;
+        for (const p of s.packages.filter(x => x.gameId === g.id)) {
+          const region = (g.regions || []).length > 1 ? (p.region || reg) : reg;
+          addRegion(main, region);
+          const tab = ((main.tabs || [])[0] || {}).key || p.tab;
+          const twin = s.packages.find(x => x.gameId === main.id && x.region === region && pkgKey(x) === pkgKey(p));
+          if (twin && !pendingPk.has(p.id)) {
+            for (const r of p.routes || []) if (!twin.routes.some(z => z.lineId === r.lineId && z.sku === r.sku)) twin.routes.push(r);
+            if (!twin.img && p.img) twin.img = p.img;
+            if (!(twin.price > 0) && p.price > 0) twin.price = p.price;
+            s.packages.splice(s.packages.indexOf(p), 1); mergedPkgs++;
+          } else { p.gameId = main.id; p.region = region; if (!(main.tabs || []).some(t => t.key === p.tab)) p.tab = tab; }
+        }
+        s.games.splice(s.games.indexOf(g), 1); mergedGames++;
+      }
+      // "Qo'lda" zaxira har doim oxirida turadi.
+      for (const p of s.packages.filter(x => x.gameId === main.id)) p.routes.sort((a, b) => (a.lineId === "manual") - (b.lineId === "manual"));
+    }
+    for (const g of s.games) if (!g.sortManual) g.sort = popRank(g.name);
+    ctx.save();
+    return { mergedGames, mergedPkgs };
+  }
   /* Saytdagi nomni do'kon ko'rinishiga keltiradi:
      "Mobile Legends (BR) - 86 Diamonds" → { name: "86", sub: "olmos", icon: "diamond" } */
   function smartName(raw, gameName) {
@@ -229,6 +330,8 @@ module.exports = function createGames(ctx) {
       "5532": 915000, "9288": 1520000, "50+5": 9700, "150+15": 29000, "250+25": 46000, "500+65": 96000, weekly: 19000, twilight: 110000 }],
     [/arena\s*breakout/i, { "100": 13500, "500": 64600, "1000": 125700, "2500": 311700, "5000": 621500, "10000": 1241400 }]
   ];
+  // Tayyor narxlar faqat o'yinning asosiy (birinchi) regioniga — boshqa regionlar tannarx × kurs + ustama.
+  const mainRegion = (g, p) => !p.region || p.region === ((g.regions || [])[0] || {}).key;
   function presetPrice(gameName, pkgName) {
     const row = PRESET.find(x => x[0].test(gameName));
     if (!row) return 0;
@@ -595,6 +698,8 @@ module.exports = function createGames(ctx) {
           active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft, status: x.status === "maint" || x.status === "na" ? x.status : "", statusAuto: false };
         const i = s.games.findIndex(z => z.id === id);
         if (i >= 0 && s.games[i].source) g.source = s.games[i].source;
+        if (i >= 0 && s.games[i].sources) g.sources = s.games[i].sources;
+        if (i >= 0 && Number(x.sort) !== Number(s.games[i].sort)) g.sortManual = true; else if (i >= 0 && s.games[i].sortManual) g.sortManual = true;
         if (i >= 0) s.games[i] = g; else s.games.push(g);
         ctx.save();
         sendJSON(res, 200, { ok: true, game: g });
@@ -695,6 +800,7 @@ module.exports = function createGames(ctx) {
       });
       return true;
     }
+    if (url === "/api/admin/games/merge" && m === "POST") { sendJSON(res, 200, Object.assign({ ok: true }, mergeDuplicates())); return true; }
     if (url === "/api/admin/games/autoprice" && m === "GET") { sendJSON(res, 200, { ok: true, cfg: apCfg() }); return true; }
     if (url === "/api/admin/games/autoprice" && m === "POST") {
       ctx.readBody(req, res, b => {
@@ -718,7 +824,7 @@ module.exports = function createGames(ctx) {
         let preset = 0, calc = 0, skipped = 0;
         for (const p of store().packages) {
           const g = gameById(p.gameId);
-          const fixed = b.preset !== false && g ? presetPrice(g.name, p.name) : 0;
+          const fixed = b.preset !== false && g && mainRegion(g, p) ? presetPrice(g.name, p.name) : 0;
           if (fixed) { p.price = fixed; preset++; continue; }
           const r = (p.routes || []).find(x => Number(x.cost) > 0);
           if (!r) { skipped++; continue; }
@@ -874,13 +980,23 @@ module.exports = function createGames(ctx) {
       if (!id) return { error: "Yangi o'yin uchun ID kiriting (masalan: genshin)" };
       if (gameById(id)) return { error: "Bu ID band" };
       const isAi = ng.section === "ai";
-      g = { id, name: str(ng.name || pk.name || id, 60), section: "games", img: "", banner: "", color: "#2f8fff",
+      const sr = splitRegion(ng.name || pk.name || id);
+      if (!b.region) b.region = sr.region;
+      g = s.games.find(z => gameKey(z.name) === gameKey(sr.base)) || null;
+    }
+    if (!g) {
+      const ng = b.newGame || {}, isAi = false, sr = splitRegion(ng.name || pk.name || "");
+      const id = slug(String(ng.id || "").toLowerCase(), 40);
+      g = { id, name: str(sr.base || ng.name || pk.name || id, 60), section: "games", img: "", banner: "", color: "#2f8fff",
         fields: isAi ? [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }]
           : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
-        regions: [{ key: "global", label: "🌐 Global" }], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: s.games.length + 1,
-        draft: !!ng.draft, source: { lineId: l.id, code: String(code) } };
+        regions: [], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: popRank(sr.base || ng.name),
+        draft: !!ng.draft };
       s.games.push(g);
     }
+    addSource(g, l.id, code);
+    if (b.region) addRegion(g, slug(b.region, 16));
+    if (!(g.regions || []).length) addRegion(g, "global");
     // O'yin avatari va banneri — saytdagi rasm (o'yinda hali rasm bo'lmasa).
     if (pk.img && (!g.img || !g.banner)) {
       const u = await fetchImage(pk.img);
@@ -896,10 +1012,23 @@ module.exports = function createGames(ctx) {
     const manual = lineById("manual");
     let added = 0, updated = 0, imgs = 0, sort = s.packages.filter(p => p.gameId === g.id).length;
     for (const it of items) {
+      let linked = false;
       const nm = smartName(it.name, pk.name || g.name);
       const price = calcPrice(it.cost, rate, markup);
       let p = s.packages.find(z => z.gameId === g.id && (z.routes || []).some(r => r.lineId === l.id && r.sku === String(it.sku)));
-      if (p) {
+      if (!p) {
+        // Boshqa liniyadan kelgan xuddi shu paket — unga shu liniyani ham qo'shamiz.
+        const twin = s.packages.find(z => z.gameId === g.id && z.region === region && pkgKey(z) === pkgKey(nm) && !(z.routes || []).some(r => r.lineId === l.id));
+        if (twin) {
+          twin.routes.push({ lineId: l.id, sku: String(it.sku), cost: it.cost, meta });
+          twin.routes.sort((a, b2) => (a.lineId === "manual") - (b2.lineId === "manual"));
+          if (!(twin.price > 0) && price > 0) { twin.price = price; if (b.activate) twin.active = true; }
+          p = twin; added++; linked = true;
+        }
+      }
+      if (p && !p.routes.some(r => r.lineId === l.id && r.sku === String(it.sku))) p = null;
+      if (p && linked) { /* yangi liniya ulandi */ }
+      else if (p) {
         const r = p.routes.find(z => z.lineId === l.id && z.sku === String(it.sku));
         r.cost = it.cost; r.meta = meta;
         if (b.updatePrices && price > 0) p.price = price;
@@ -931,17 +1060,18 @@ module.exports = function createGames(ctx) {
     const s = store(), changes = [], errors = [];
     let imgs = 0;
     try {
-      for (const g of s.games.slice()) {
-        const src = g.source, l = src && lineById(src.lineId), T = l && LINE_TYPES[l.type];
+      for (const g of s.games.slice()) for (const src of sourcesOf(g)) {
+        const l = lineById(src.lineId), T = l && LINE_TYPES[l.type];
         if (!l || !l.enabled || !T || typeof T.packages !== "function") continue;
-        const r = await importGame(l, T, src.code, { gameId: g.id, images: true, updatePrices: false }).catch(e => ({ error: e.message }));
+        const reg = (s.packages.find(p => p.gameId === g.id && (p.routes || []).some(r => r.lineId === l.id)) || {}).region;
+        const r = await importGame(l, T, src.code, { gameId: g.id, region: reg, images: true, updatePrices: false }).catch(e => ({ error: e.message }));
         if (r.error) errors.push(g.name + ": " + r.error); else imgs += r.images || 0;
       }
       for (const p of s.packages) {
         const g = gameById(p.gameId), rt = (p.routes || []).find(x => Number(x.cost) > 0);
         if (!g || !rt) continue;
         const calc = calcPrice(rt.cost, c.rate, c.markup), floor = calcPrice(rt.cost, c.rate, 5);
-        const fixed = presetPrice(g.name, p.name);
+        const fixed = mainRegion(g, p) ? presetPrice(g.name, p.name) : 0;
         let np = fixed ? (fixed < floor ? calc : fixed) : calc;
         if (np > 0 && np !== p.price) { changes.push(g.name + " · " + p.name + ": " + (p.price || 0) + " → " + np); p.price = np; }
       }
@@ -957,7 +1087,7 @@ module.exports = function createGames(ctx) {
 
   let importJob = null;
   const jobView = () => importJob && { running: importJob.running, line: importJob.line, total: importJob.total, done: importJob.done,
-    games: importJob.games, packages: importJob.packages, skipped: importJob.skipped, images: importJob.images, current: importJob.current, errors: importJob.errors.slice(-10), error: importJob.error, finishedAt: importJob.finishedAt };
+    games: importJob.games, packages: importJob.packages, skipped: importJob.skipped, images: importJob.images, merged: importJob.merged || 0, current: importJob.current, errors: importJob.errors.slice(-10), error: importJob.error, finishedAt: importJob.finishedAt };
   function startImportAll(l, T, opt) {
     importJob = { running: true, line: l.name, total: 0, done: 0, games: 0, packages: 0, skipped: 0, images: 0, current: "", errors: [], error: "", startedAt: Date.now() };
     (async () => {
@@ -965,7 +1095,8 @@ module.exports = function createGames(ctx) {
       try { list = await T.games(l); } catch (e) { importJob.error = "Sayt: " + str(e.message, 200); return; }
       list = (list || []).filter(x => x && x.code && (!opt.query || String(x.name || "").toLowerCase().indexOf(opt.query) !== -1));
       const s = store();
-      const have = new Set(s.games.filter(g => g.source && g.source.lineId === l.id).map(g => String(g.source.code)));
+      const have = new Set();
+      for (const g of s.games) for (const src of sourcesOf(g)) if (src.lineId === l.id) have.add(String(src.code));
       const todo = list.filter(x => !have.has(String(x.code)));
       importJob.skipped = list.length - todo.length;
       importJob.total = Math.min(todo.length, opt.limit);
@@ -988,16 +1119,18 @@ module.exports = function createGames(ctx) {
       }
       // Avval yuklangan o'yinlar: rasmi yo'q paketlar va avatarka saytdan to'ldiriladi.
       if (opt.images !== false) for (const x of list.filter(y => have.has(String(y.code)))) {
-        const g = s.games.find(z => z.source && z.source.lineId === l.id && String(z.source.code) === String(x.code));
+        const g = s.games.find(z => sourcesOf(z).some(src => src.lineId === l.id && String(src.code) === String(x.code)));
         if (!g || (g.img && !s.packages.some(p => p.gameId === g.id && !p.img))) continue;
         importJob.current = "🖼 " + str(g.name, 56);
         try {
-          const r = await importGame(l, T, x.code, { gameId: g.id, images: true, updatePrices: false });
+          const reg = (s.packages.find(p => p.gameId === g.id && (p.routes || []).some(r => r.lineId === l.id)) || {}).region;
+          const r = await importGame(l, T, x.code, { gameId: g.id, region: reg, images: true, updatePrices: false });
           if (!r.error) importJob.images += r.images || 0;
           if (!g.img && x.img) { const u = await fetchImage(x.img); if (u) { g.img = u; if (!g.banner) g.banner = u; importJob.images++; } }
         } catch (e) {}
         ctx.save();
       }
+      const m = mergeDuplicates(); importJob.merged = m.mergedGames;
     })().catch(e => { importJob.error = str(e.message, 200); }).finally(() => { importJob.running = false; importJob.finishedAt = Date.now(); importJob.current = ""; ctx.save(); });
   }
   // Admin ko'rinishi: hamma o'yin va paketlar, mijozga ko'rinmaydiganlari belgilangan.
