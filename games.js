@@ -167,7 +167,7 @@ module.exports = function createGames(ctx) {
       if (u.protocol !== "https:" && u.protocol !== "http:") return resolve("");
       const mod = u.protocol === "https:" ? require("https") : require("http");
       let done = false; const fin = v => { if (!done) { done = true; resolve(v); } };
-      const req = mod.get(u, { timeout: 15000, headers: { "User-Agent": "VerionShop/1.0" } }, r => {
+      const req = mod.get(u, { timeout: 15000, headers: { "User-Agent": "Mozilla/5.0 (compatible; VerionShop/1.0)", "Accept": "image/webp,image/png,image/jpeg,*/*" } }, r => {
         if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location && (depth || 0) < 3) {
           r.resume(); return fetchImage(new URL(r.headers.location, u).toString(), (depth || 0) + 1).then(fin);
         }
@@ -645,6 +645,28 @@ module.exports = function createGames(ctx) {
     }
 
     // Hamma narxlarni qayta hisoblash: tayyor narx jadvali (mashhur o'yinlar) + qolganlari tannarx × kurs + ustama.
+    // Havoladan rasm: bitta rasm o'yinning hamma paketlariga (yoki bitta tabga), avatarka yoki bannerga.
+    if (url === "/api/admin/games/bulk-image" && m === "POST") {
+      ctx.readBody(req, res, async b => {
+        const g = gameById(str(b.gameId, 40));
+        if (!g) return sendJSON(res, 404, { error: "O'yin topilmadi" });
+        const u = await fetchImage(str(b.url, 1000));
+        if (!u) return sendJSON(res, 400, { error: "Rasm yuklanmadi: havola to'g'ridan-to'g'ri PNG/JPG/WEBP rasmga bo'lishi kerak" });
+        let n = 0;
+        if (b.target === "avatar") { g.img = u; n = 1; }
+        else if (b.target === "banner") { g.banner = u; n = 1; }
+        else {
+          const tab = str(b.tab, 16), ids = Array.isArray(b.pkgIds) ? b.pkgIds.map(String) : null;
+          for (const p of store().packages) {
+            if (p.gameId !== g.id || (tab && p.tab !== tab) || (ids && !ids.includes(p.id)) || (b.onlyEmpty && p.img)) continue;
+            p.img = u; n++;
+          }
+        }
+        ctx.save();
+        sendJSON(res, 200, { ok: true, img: u, updated: n });
+      });
+      return true;
+    }
     if (url === "/api/admin/games/autoprice" && m === "GET") { sendJSON(res, 200, { ok: true, cfg: apCfg() }); return true; }
     if (url === "/api/admin/games/autoprice" && m === "POST") {
       ctx.readBody(req, res, b => {

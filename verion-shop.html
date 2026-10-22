@@ -885,7 +885,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-20.8";
+var CLIENT_BUILD="2026-10-22.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2340,7 +2340,7 @@ function gamePageHTML(){
   if(GAMES.admin&&g.hidden){
     var hp=gamePkgs(g.id),priced=hp.filter(function(p){return !p.noPrice;}).length;
     html+='<div class="adm-bar">🔒 <b>Mijozlar bu sahifani ko\'rmaydi</b> — '+(g.draft?"qoralama":"yashirin")+'. Narx qo\'yilgan: '+priced+' / '+hp.length+' paket.'
-      +'<div class="arow" style="margin-top:8px"><button class="btn sm" id="gPublish"'+(priced?'':' disabled')+'>🚀 Mijozlarga ochish</button><button class="btn sm gray" id="gPrices">💰 Narxlar</button></div></div>';
+      +'<div class="arow" style="margin-top:8px"><button class="btn sm" id="gPublish"'+(priced?'':' disabled')+'>🚀 Mijozlarga ochish</button><button class="btn sm gray" id="gPrices">💰 Narxlar</button><button class="btn sm gray" id="gImgUrl">🖼 Rasm (havola)</button></div></div>';
   }
   if((g.fields||[]).length){
     html+='<div class="gbox"><div class="gl">'+esc(t(g.section==="ai"?"g_account":"g_player"))
@@ -2460,6 +2460,16 @@ function bindGames(){
   if(ge)ge.addEventListener("click",function(){haptic();GEDIT_SHOP=true;gAdmLoad(function(){openAdminGameForm(g.id);});});
   var gpr=document.getElementById("gPrices");
   if(gpr)gpr.addEventListener("click",function(){haptic();GEDIT_SHOP=true;gAdmLoad(function(){openAdminGamePrices(g.id);});});
+  var giu=document.getElementById("gImgUrl");
+  if(giu)giu.addEventListener("click",function(){
+    var url=prompt("Rasm havolasi (PNG/JPG/WEBP). Saytda rasmni bosib turib «Rasm manzilini nusxalash»:","");if(!url)return;
+    var w=prompt("Qayerga qo'yay?\n1 — shu tabdagi HAMMA paketlarga\n2 — o'yinning hamma paketlariga\n3 — faqat rasmi yo'q paketlarga\n4 — o'yin avatarkasi\n5 — banner","1");if(!w)return;
+    var b={gameId:g.id,url:url.trim()};
+    if(w==="1")b.tab=S.game.tab||"";else if(w==="3")b.onlyEmpty=true;else if(w==="4")b.target="avatar";else if(w==="5")b.target="banner";else if(w!=="2")return;
+    giu.disabled=true;
+    api("/api/admin/games/bulk-image","POST",b).then(function(r){toast("✅ Rasm qo'yildi: "+r.updated);loadGames();})
+      .catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xato");}).then(function(){giu.disabled=false;});
+  });
   var gpub=document.getElementById("gPublish");
   if(gpub)gpub.addEventListener("click",function(){
     if(!confirm(g.name+" mijozlarga ochilsinmi? Narxi qo'yilgan paketlar yoqiladi."))return;
