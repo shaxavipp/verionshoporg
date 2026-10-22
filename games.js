@@ -67,6 +67,14 @@ module.exports = function createGames(ctx) {
       s.linesV = 2;
       ctx.save();
     }
+    // Bo'sh joylar (4- va 5-liniya) — "Universal API" turiga: istalgan sayt API'sini kiritish mumkin.
+    if ((s.linesV || 1) < 3) {
+      for (const l of s.lines) if ((l.id === "slot4" || l.id === "slot5") && l.type === "manual" && LINE_TYPES.custom) {
+        l.type = "custom"; l.enabled = false; l.config = { method: "POST", okPath: "status", okValues: "success,true,1,200,completed,ok", rate: "", markup: "" };
+        l.name = l.name.replace("bo'sh joy", "Universal API"); l.note = "Istalgan sayt: hujjatidagi URL va maydonlarni kiriting";
+      }
+      s.linesV = 3; ctx.save();
+    }
     // 3-versiya: "AI xizmatlar" bo'limi. O'yinlar bilan bir xil mexanizm (paketlar,
     // liniyalar, zaxira), faqat akkaunt sifatida email so'raladi. Narxsiz va o'chiq —
     // admin narx qo'yib yoqmaguncha do'konda ko'rinmaydi.

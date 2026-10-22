@@ -300,8 +300,73 @@ const smileone = {
   }
 };
 
+/* ---------- Universal API: istalgan sayt (hujjatiga qarab sozlanadi) ----------
+   Shablonlarda: {sku} {player} {server} {ref} {key} — buyurtma ma'lumotlari bilan almashtiriladi.
+   Javob: muvaffaqiyat maydoni (masalan "status") qiymati ro'yxatdagilardan biri bo'lsa — bajarildi;
+   xato maydoni bo'lsa yoki 4xx — rad etildi (keyingi liniyaga); boshqa hammasi — "unknown". */
+function pick(j, p) { return String(p || "").split(".").filter(Boolean).reduce((a, k) => a == null ? a : a[k], j); }
+function fillTpl(t, v, enc) { return String(t || "").replace(/\{(sku|player|server|ref|key)\}/g, (_, k) => enc ? encodeURIComponent(S(v[k], 200)) : S(v[k], 200).replace(/["\\]/g, "")); }
+function customHeaders(c, v) {
+  const h = {};
+  for (const ln of String(c.headers || "").split(/\n|;;/)) {
+    const i = ln.indexOf(":"); if (i < 1) continue;
+    const k = ln.slice(0, i).trim(), val = fillTpl(ln.slice(i + 1).trim(), v);
+    if (/^[A-Za-z0-9-]{1,60}$/.test(k)) h[k] = val;
+  }
+  return h;
+}
+async function customCall(c, urlT, v, bodyT, method) {
+  const url = fillTpl(urlT, v, true);
+  if (!/^https:\/\//i.test(url)) return { sent: false, error: "BAD_URL" };
+  const m = String(method || "POST").toUpperCase() === "GET" ? "GET" : "POST";
+  const o = { url, method: m, headers: customHeaders(c, v) };
+  if (m === "POST" && bodyT) {
+    const b = fillTpl(bodyT, v);
+    if (/^\s*[{[]/.test(b)) o.json = b; else { o.form = qs.parse(b); }
+  }
+  return httpReq(o);
+}
+const custom = {
+  label: "Universal API (istalgan sayt)",
+  fields: [
+    { key: "key", label: "API kalit (shablonlarda {key})", secret: true },
+    { key: "orderUrl", label: "Buyurtma URL (https://…/order?product={sku})", required: true },
+    { key: "method", label: "Usul: POST yoki GET", ph: "POST" },
+    { key: "headers", label: "Sarlavhalar (har biri ;; bilan): Authorization: Bearer {key}", ph: "Authorization: Bearer {key}" },
+    { key: "body", label: "So'rov tanasi: {\"product\":\"{sku}\",\"user_id\":\"{player}\",\"zone\":\"{server}\"}", ph: "{\"product\":\"{sku}\",\"user_id\":\"{player}\",\"zone_id\":\"{server}\",\"ref\":\"{ref}\"}" },
+    { key: "okPath", label: "Muvaffaqiyat maydoni (masalan status yoki data.status)", ph: "status" },
+    { key: "okValues", label: "Muvaffaqiyat qiymatlari (vergul bilan)", ph: "success,true,1,200,completed" },
+    { key: "errPath", label: "Xato maydoni (bo'lsa — rad etildi)", ph: "error" },
+    { key: "refPath", label: "Buyurtma raqami maydoni", ph: "order_id" },
+    { key: "balanceUrl", label: "Balans URL («Sinash» uchun, ixtiyoriy)", ph: "" },
+    { key: "balancePath", label: "Balans maydoni", ph: "balance" }
+  ].concat(PRICE_FIELDS),
+  async order(line, o, pkg, route) {
+    const c = line.config || {}, pl = playerOf(o);
+    const v = { sku: route.sku, player: pl.player, server: pl.server, ref: "VS" + S(o.seq || o.id, 40), key: c.key };
+    const r = await customCall(c, c.orderUrl, v, c.body, c.method || "POST");
+    if (!r.sent || r.error || !r.json || r.status >= 400) return transportVerdict(r.json && r.status < 400 ? Object.assign({}, r, { status: 500 }) : r);
+    const okv = String(c.okValues || "success,true,1,200,completed,ok").toLowerCase().split(",").map(x => x.trim()).filter(Boolean);
+    const val = String(pick(r.json, c.okPath || "status")).toLowerCase();
+    const ref = S(pick(r.json, c.refPath || "order_id"), 120);
+    if (okv.includes(val)) return { state: "done", ref, message: "" };
+    const err = c.errPath ? pick(r.json, c.errPath) : null;
+    if (err) return { state: "failed", message: "sayt rad etdi: " + S(typeof err === "string" ? err : JSON.stringify(err), 200) };
+    return { state: "unknown", ref, message: "tushunarsiz javob: " + S(r.text, 200) };
+  },
+  async test(line) {
+    const c = line.config || {};
+    if (!c.balanceUrl) return { ok: !!c.orderUrl, message: c.orderUrl ? "Sozlamalar saqlangan. Balans URL kiritilmagan — haqiqiy tekshiruv uchun uni qo'shing." : "Buyurtma URL kerak" };
+    const r = await customCall(c, c.balanceUrl, { key: c.key }, "", "GET");
+    if (!r.sent || r.status >= 400 || !r.json) return { ok: false, message: "Javob: " + (r.error || ("HTTP " + r.status + " " + S(r.text, 120))) };
+    const b = pick(r.json, c.balancePath || "balance");
+    return { ok: b != null, message: b != null ? "Ulandi. Balans: " + S(b, 40) : "Ulandi, lekin balans maydoni topilmadi: " + S(r.text, 150) };
+  }
+};
+
 module.exports = { register(registerLineType) {
   registerLineType("moogold", moogold);
   registerLineType("g2bulk", g2bulk);
   registerLineType("smileone", smileone);
+  registerLineType("custom", custom);
 }, httpReq, smileSign, _internal: { playerOf, transportVerdict, g2StatusWord, mooStatusWord } };
