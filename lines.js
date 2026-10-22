@@ -338,7 +338,7 @@ const ludovex = {
     if (!game) return { state: "failed", message: "paketga Ludovex game_key biriktirilmagan (katalogdan import qiling)" };
     const body = { game_key: game, variation_id: S(route.sku, 512), player_id: p.player || null, idempotency_key: "vs-" + S(o.id, 120) };
     if (p.server) body.zone_id = p.server;
-    const r = await httpReq({ url: LVX + "order", method: "POST", json: body, headers: lvxH(line), timeout: 30000 });
+    const r = await httpReq({ url: LVX + "order", method: "POST", json: body, headers: Object.assign(lvxH(line), { "Idempotency-Key": body.idempotency_key }), timeout: 30000 });
     const j = r.json;
     if (r.status === 401) return { state: "failed", disableLine: true, message: "Ludovex: kalit noto'g'ri yoki bekor qilingan (401)" };
     if (r.status === 403 && j) {
