@@ -742,6 +742,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab{display:non
 .sup-welcome b{display:block;color:var(--txt);font-size:17px;margin:8px 0 4px}
 /* admin: do'kon ichida ko'rish (qoralama, 🔧) */
 .adm-hid{}
+.gst-tag{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:6;background:#ff453a;color:#fff;font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.03em}
 .adm-tag{position:absolute;top:6px;left:6px;z-index:6;background:rgba(245,158,11,.95);color:#111;font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:999px}
 .adm-tag.sm{top:auto;bottom:6px;left:6px;font-size:9.5px;padding:2px 6px}
 .gpkg{position:relative}
@@ -885,7 +886,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-22.1";
+var CLIENT_BUILD="2026-10-22.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2292,6 +2293,7 @@ function gameCardHTML(g){
   var n=gamePkgs(g.id).length;
   return '<button class="pcard'+(g.hidden?" adm-hid":"")+'" data-opengame="'+esc(g.id)+'">'
     +(g.hidden?'<span class="adm-tag">🔒 '+(g.draft?"Qoralama":"Yashirin")+'</span>':'')
+    +(g.status?'<span class="gst-tag">'+(g.status==="maint"?"TEXNIK ISH":"MAVJUD EMAS")+'</span>':'')
     +'<div class="ptile" style="background:linear-gradient(135deg,'+esc(g.color||"#2f8fff")+',#0b1020);color:#fff">'
     +(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':'<div class="tl">'+esc(gameInitials(g.name))+'</div>')
     +'</div><div class="pbody"><div class="nm">'+esc(g.name)+'</div><div class="ct">'+n+' '+esc(t("g_pkgs"))+'</div></div></button>';
@@ -2331,6 +2333,7 @@ function gamePageHTML(){
   var st=gameState(),g=st.g,acc=S.game.acc||{};
   // Keng banner bo'lmasa (saytdan faqat kvadrat rasm kelgan) — o'sha rasm xira fon bo'ladi.
   var heroImg=g.banner||g.img,heroBlur=!g.banner||g.banner===g.img;
+  var gstNote=g.status?'<div class="paynote" style="margin:10px 16px;border-color:rgba(255,69,58,.5)">🛠 '+(g.status==="maint"?"Texnik nosozlik — hozircha buyurtma qabul qilinmaydi. Tez orada tiklanadi.":"Vaqtincha mavjud emas.")+'</div>':'';
   var html='<div class="ghero'+(heroImg?' hasimg':'')+'" style="--gc:'+esc(g.color||"#2f8fff")+'">'
     +(heroImg?'<img class="'+(heroBlur?"blur":"")+'" src="'+esc(heroImg)+'" alt="">':'')
     +'<button class="gback" id="gBack" aria-label="Orqaga">'+ic("arrowLeft",18)+'</button>'
@@ -2382,7 +2385,8 @@ function gamePageHTML(){
   });
   html+='</div>';
   var sel=S.game.pkg?gamePkgById(S.game.pkg):null;
-  html+='<div class="gbuybar"><button class="btn big" id="gBuy"'+(sel?'':' disabled')+'>'
+  html=html+gstNote;
+  html+='<div class="gbuybar"><button class="btn big" id="gBuy"'+(sel&&!g.status?'':' disabled')+'>'
     +(sel?esc(t("g_buy"))+' — '+esc(money(sel.price)):esc(t("g_pick")))+'</button></div>';
   return html;
 }
@@ -4623,6 +4627,7 @@ function openAdminGameForm(gid,newSec){
     +'<label>Bo\'limlar (masalan "uc: UC")</label><textarea id="gf_tabs" class="exta" style="height:70px">'+esc(kv(F.tabs))+'</textarea>'
     +'<div class="switch" style="margin-top:12px"><span style="font-size:13.5px">Yoqilgan</span><button class="swbtn'+(F.active?" on":"")+'" id="gf_active"><i></i></button></div>'
     +'<div class="switch"><span style="font-size:13.5px">🔒 Qoralama (faqat adminlar ko\'radi)</span><button class="swbtn'+(F.draft?" on":"")+'" id="gf_draft"><i></i></button></div>'
+    +'<label>Holat</label><select id="gf_status"><option value="">✅ Ishlayapti</option><option value="maint"'+(F.status==="maint"?" selected":"")+'>🛠 Texnik nosozlik</option><option value="na"'+(F.status==="na"?" selected":"")+'>⏸ Vaqtincha mavjud emas</option></select>'
     +'<div style="height:10px"></div><button class="btn" id="gfSave">'+esc(t("a_save"))+'</button>'
     +(g?'<div style="height:8px"></div><button class="btn red" id="gfDel">O\'yinni o\'chirish</button>':'')+'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdminGames);
@@ -4654,7 +4659,7 @@ function openAdminGameForm(gid,newSec){
     var game={id:g?g.id:(sh.querySelector("#gf_id").value.trim().toLowerCase()),name:sh.querySelector("#gf_name").value.trim(),section:SEC,
       img:F.img,banner:F.banner,color:sh.querySelector("#gf_color").value,sort:Number(sh.querySelector("#gf_sort").value)||0,
       fields:fields,regions:parseKV(sh.querySelector("#gf_regions").value),tabs:parseKV(sh.querySelector("#gf_tabs").value),
-      active:sh.querySelector("#gf_active").classList.contains("on"),draft:sh.querySelector("#gf_draft").classList.contains("on")};
+      active:sh.querySelector("#gf_active").classList.contains("on"),draft:sh.querySelector("#gf_draft").classList.contains("on"),status:sh.querySelector("#gf_status").value};
     var btn=this;btn.disabled=true;
     api("/api/admin/games/game","POST",{game:game}).then(function(){
       btn.disabled=false;haptic("ok");toast(t("a_saved"));GAMES.etag="";loadGames();gAfterSave(function(){openAdminGames();});

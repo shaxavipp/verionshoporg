@@ -278,7 +278,7 @@ module.exports = function createGames(ctx) {
       .map(g => ({ id: g.id, name: g.name, section: g.section === "ai" ? "ai" : "games", img: g.img || "", banner: g.banner || "", color: g.color || "",
         fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
         regions: g.regions || [], tabs: g.tabs || [],
-        canCheck: !!checkLineFor(g) }));
+        canCheck: !!checkLineFor(g), status: g.status === "maint" || g.status === "na" ? g.status : "" }));
     const packages = pk.sort((a, b) => (a.sort || 0) - (b.sort || 0))
       .map(p => ({ id: p.id, gameId: p.gameId, region: p.region || "", tab: p.tab || "", name: p.name, sub: p.sub || "",
         icon: p.icon || "diamond", img: p.img || "", badge: p.badge || "", price: p.price }));
@@ -309,9 +309,11 @@ module.exports = function createGames(ctx) {
     }
     return null;
   }
+  const pkg0 = o => { const p = pkgById(o.game && o.game.packageId); return p ? p.gameId : ""; };
   function markDone(o, line, res) {
     if (o.status !== "pending") return;
     o.status = "done"; o.doneTs = Date.now();
+    { const gm = gameById(pkg0(o)); if (gm && gm.statusAuto) { gm.status = ""; gm.statusAuto = false; } }
     o.delivered = res.message || ("✅ " + o.item + " — " + (o.game && o.game.accountText ? "ID " + o.game.accountText : "") + " hisobiga tushirildi");
     o.line = { id: line.id, name: line.name, ref: res.ref || "", state: "done" };
     ctx.save();
@@ -374,6 +376,12 @@ module.exports = function createGames(ctx) {
       failedHere.push(line.name + ": " + (res.message || res.state));   // "failed" — keyingi liniyaga
     }
     o.line = { state: "manual", failedAll: list.length > 0 };
+    // Hech bir liniya ishlamadi — o'yin "Texnik nosozlik" bo'ladi (mijozlar boshqa buyurtma bermaydi).
+    const gm = gameById(pkg.gameId);
+    if (list.length && gm && !gm.status) {
+      gm.status = "maint"; gm.statusAuto = true;
+      alertAdmins("🛠 " + gm.name + " — barcha liniyalar ishlamadi, do'konda «Texnik nosozlik» deb qo'yildi. Liniya tuzalgach, birinchi muvaffaqiyatli buyurtmada yoki 🔧 orqali o'zingiz ochasiz.");
+    }
     ctx.save();
     if (list.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — hech bir liniya bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"), o);
   }
@@ -564,7 +572,7 @@ module.exports = function createGames(ctx) {
         const g = { id, name, section: "games", img: imgUrl(x.img), banner: imgUrl(x.banner),
           color: /^#[0-9a-f]{6}$/i.test(String(x.color || "")) ? x.color : "",
           fields, regions: list(x.regions, 15), tabs: list(x.tabs, 8),
-          active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft };
+          active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft, status: x.status === "maint" || x.status === "na" ? x.status : "", statusAuto: false };
         const i = s.games.findIndex(z => z.id === id);
         if (i >= 0 && s.games[i].source) g.source = s.games[i].source;
         if (i >= 0) s.games[i] = g; else s.games.push(g);
@@ -968,7 +976,7 @@ module.exports = function createGames(ctx) {
       img: g.img || "", banner: g.banner || "", color: g.color || "",
       fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
       regions: g.regions || [], tabs: g.tabs || [], canCheck: !!checkLineFor(g),
-      draft: !!g.draft, hidden: !g.active || !!g.draft || !s.packages.some(p => p.gameId === g.id && vis(p)) }));
+      draft: !!g.draft, status: g.status || "", hidden: !g.active || !!g.draft || !s.packages.some(p => p.gameId === g.id && vis(p)) }));
     const packages = s.packages.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(p => ({ id: p.id, gameId: p.gameId, region: p.region || "", tab: p.tab || "",
       name: p.name, sub: p.sub || "", icon: p.icon || "diamond", img: p.img || "", badge: p.badge || "", price: p.price, hidden: !vis(p), noPrice: !(p.price > 0) }));
     return { games, packages, admin: true };
@@ -981,6 +989,7 @@ module.exports = function createGames(ctx) {
     const p = pkgById(str(packageId, 80));
     const g = p && gameById(p.gameId);
     if (!p || !g || !p.active || !g.active || g.draft || !(p.price > 0)) return { ok: false, code: 404, body: { error: "no item" } };
+    if (g.status) return { ok: false, code: 409, body: { error: g.status === "maint" ? "Texnik nosozlik — keyinroq urinib ko'ring" : "Vaqtincha mavjud emas" } };
     const c = cleanAccount(g, account);
     if (c.error) return { ok: false, code: 400, body: { error: c.error, field: c.field, label: c.label } };
     let total = Math.round(p.price), promo = null;
@@ -1016,6 +1025,7 @@ module.exports = function createGames(ctx) {
     const p = pkgById(str(packageId, 80));
     const g = p && gameById(p.gameId);
     if (!p || !g || !p.active || !g.active || g.draft || !(p.price > 0)) return { ok: false, error: "Bunday paket sotuvda yo'q" };
+    if (g.status) return { ok: false, error: g.status === "maint" ? "Texnik nosozlik" : "Vaqtincha mavjud emas" };
     const c = cleanAccount(g, account);
     if (c.error) return { ok: false, error: (c.error === "required" ? "Kerak: " : "Noto'g'ri format: ") + c.label, field: c.field };
     return { ok: true, game: g, pkg: p, accountText: accountText(g, c.account), account: c.account, price: Math.round(p.price),
