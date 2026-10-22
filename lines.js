@@ -300,6 +300,90 @@ const smileone = {
   }
 };
 
+/* ======================= Ludovex (api.ludovex.org/api/v2, OpenAPI 3.1) =======================
+   Javob: { ok, data | error:{code,message} }. Narxlar USDT. Buyurtmada idempotency_key — bir xil kalit
+   bilan qayta yuborilsa sayt yangi pul yechmaydi, o'sha buyurtmani qaytaradi. 201 + PROCESSING —
+   hali bajarilmagan, GET /order/{id} bilan kuzatiladi. 402/422/429 — buyurtma yaratilmagan. */
+const LVX = "https://api.ludovex.org/api/v2/";
+const lvxH = line => ({ "X-API-Key": S((line.config || {}).apiKey, 300) });
+const lvxErr = j => j && j.error ? S((j.error.code || "") + (j.error.message ? ": " + j.error.message : ""), 220) : "";
+const lvxImg = x => S(x && (x.image || x.image_url || x.img || x.icon || x.logo || x.cover || x.thumbnail || x.picture), 500);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function lvxWord(d) {
+  const st = String((d && (d.status || d.state)) || "").toUpperCase();
+  if (d && d.refunded === true) return "failed";
+  if (/^(COMPLETED|SUCCESS|DELIVERED|DONE|PAID_DELIVERED)$/.test(st)) return "done";
+  if (st === "REFUNDED") return "failed";
+  if (st === "FAILED") return "failed_maybe";   // pul qaytgani aniq emas
+  return "pending";
+}
+function lvxVerdict(d, ref) {
+  const w = lvxWord(d), msg = S(d && (d.message || d.status_message || d.error), 200);
+  if (w === "done") {
+    const code = S(d.code || d.voucher || d.pin || (Array.isArray(d.codes) ? d.codes.join(", ") : ""), 300);
+    return { state: "done", ref, message: code ? "✅ Kod: " + code : msg };
+  }
+  if (w === "failed") return { state: "failed", ref, message: "Ludovex: bekor qilindi, pul qaytarildi " + msg };
+  if (w === "failed_maybe") return { state: "unknown", ref, message: "Ludovex FAILED (pul qaytgani tasdiqlanmagan) " + msg };
+  return { state: "accepted", ref, message: msg };
+}
+const ludovex = {
+  label: "Ludovex",
+  fields: [
+    { key: "apiKey", label: "API key (pp_live_… — Kabinet → API-ключи; read + order + balance)", secret: true, required: true }
+  ].concat(PRICE_FIELDS),
+  async order(line, o, pkg, route) {
+    const p = playerOf(o), m = route.meta || {};
+    const game = S(m.game, 191);
+    if (!game) return { state: "failed", message: "paketga Ludovex game_key biriktirilmagan (katalogdan import qiling)" };
+    const body = { game_key: game, variation_id: S(route.sku, 512), player_id: p.player || null, idempotency_key: "vs-" + S(o.id, 120) };
+    if (p.server) body.zone_id = p.server;
+    const r = await httpReq({ url: LVX + "order", method: "POST", json: body, headers: lvxH(line), timeout: 30000 });
+    const j = r.json;
+    if (r.status === 401) return { state: "failed", disableLine: true, message: "Ludovex: kalit noto'g'ri yoki bekor qilingan (401)" };
+    if (r.status === 403 && j) {
+      const c = j.error && j.error.code;
+      return { state: "failed", disableLine: c === "FORBIDDEN_SCOPE" || c === "IP_NOT_ALLOWED" || c === "FORBIDDEN",
+        message: "Ludovex: " + lvxErr(j) + (c === "IP_NOT_ALLOWED" ? " — kalit sozlamasida IP ro'yxatini bo'shating" : c === "FORBIDDEN_SCOPE" ? " — kalitga order ruxsatini bering" : "") };
+    }
+    if (j && (r.status === 402 || r.status === 422 || r.status === 429)) return { state: "failed", message: "Ludovex: " + lvxErr(j) };
+    if (j && j.ok && j.data && r.status >= 200 && r.status < 300) {
+      const ref = S(j.data.id || j.data.order_id, 40);
+      return lvxVerdict(j.data, ref);
+    }
+    return transportVerdict(r);
+  },
+  async status(line, ref) {
+    if (!/^\d+$/.test(String(ref || ""))) return null;
+    const r = await httpReq({ url: LVX + "order/" + ref, headers: lvxH(line) });
+    if (!(r.json && r.json.ok && r.json.data)) return null;
+    const v = lvxVerdict(r.json.data, ref);
+    return v.state === "accepted" ? null : v;
+  },
+  async test(line) {
+    const r = await httpReq({ url: LVX + "balance", headers: lvxH(line) });
+    if (r.json && r.json.ok && r.json.data) return { ok: true, message: "Ulandi. Balans: " + S(r.json.data.balance, 30) + " " + S(r.json.data.currency || "USDT", 10) };
+    if (r.json && r.json.error) return { ok: false, message: lvxErr(r.json) + (r.json.error.code === "FORBIDDEN_SCOPE" ? " — kalitga balance ruxsatini bering" : "") };
+    return { ok: false, message: transportVerdict(r).message };
+  },
+  async games(line) {
+    const r = await httpReq({ url: LVX + "catalog", headers: lvxH(line) });
+    if (!(r.json && r.json.ok && Array.isArray(r.json.data))) throw new Error(lvxErr(r.json) || transportVerdict(r).message);
+    return r.json.data.map(x => ({ code: S(x.game_key || x.key || x.id, 191), name: S(x.name || x.title, 80), img: lvxImg(x) }))
+      .filter(x => x.code && !/steam-topup|telegram-stars/.test(x.code));
+  },
+  async packages(line, code) {
+    await sleep(1100);   // 60 so'rov/daqiqa chegarasi — hammasini yuklashda oshib ketmasin
+    const r = await httpReq({ url: LVX + "catalog/" + encodeURIComponent(code), headers: lvxH(line) });
+    if (!(r.json && r.json.ok && Array.isArray(r.json.data))) throw new Error(lvxErr(r.json) || transportVerdict(r).message);
+    return {
+      name: "", img: "", fields: [], meta: { game: S(code, 191) },
+      items: r.json.data.map(x => ({ sku: S(x.variation_id || x.id, 512), name: S(x.name || x.title, 100),
+        cost: num(x.price_usdt != null ? x.price_usdt : x.price), img: lvxImg(x) })).filter(x => x.sku && x.cost > 0)
+    };
+  }
+};
+
 /* ---------- Universal API: istalgan sayt (hujjatiga qarab sozlanadi) ----------
    Shablonlarda: {sku} {player} {server} {ref} {key} — buyurtma ma'lumotlari bilan almashtiriladi.
    Javob: muvaffaqiyat maydoni (masalan "status") qiymati ro'yxatdagilardan biri bo'lsa — bajarildi;
@@ -368,5 +452,6 @@ module.exports = { register(registerLineType) {
   registerLineType("moogold", moogold);
   registerLineType("g2bulk", g2bulk);
   registerLineType("smileone", smileone);
+  registerLineType("ludovex", ludovex);
   registerLineType("custom", custom);
 }, httpReq, smileSign, _internal: { playerOf, transportVerdict, g2StatusWord, mooStatusWord } };

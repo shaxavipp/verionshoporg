@@ -75,6 +75,12 @@ module.exports = function createGames(ctx) {
       }
       s.linesV = 3; ctx.save();
     }
+    // Ludovex liniyasi (o'chiq — admin kalit kiritib yoqadi).
+    if ((s.linesV || 1) < 4) {
+      if (LINE_TYPES.ludovex && !s.lines.some(l => l.type === "ludovex"))
+        s.lines.push({ id: "ludovex", name: "Ludovex", type: "ludovex", enabled: false, priority: 35, config: { apiKey: "", rate: "12500", markup: "20" }, note: "api.ludovex.org — narxlar USDT" });
+      s.linesV = 4; ctx.save();
+    }
     // 3-versiya: "AI xizmatlar" bo'limi. O'yinlar bilan bir xil mexanizm (paketlar,
     // liniyalar, zaxira), faqat akkaunt sifatida email so'raladi. Narxsiz va o'chiq —
     // admin narx qo'yib yoqmaguncha do'konda ko'rinmaydi.
@@ -403,6 +409,10 @@ module.exports = function createGames(ctx) {
       if (!res) continue;
       if (res.state === "done") markDone(o, line, res);
       else if (res.state === "failed") { o.line.state = "failed"; o.line.message = str(res.message, 300); ctx.save(); fulfillNext(o, line.id); }
+      else if (res.state === "unknown") {
+        o.line.state = "unknown"; o.line.message = str(res.message, 300); ctx.save();
+        alertAdmins("❓ #" + o.seq + " " + o.item + " — " + line.name + ": " + str(res.message, 200) + "\nSaytdan tekshirib, \"Bajarildi\" yoki \"Bekor qilish\" bosing.", o);
+      }
     }
   }
   // Bir liniya keyin "bajarilmadi" desa — qolgan liniyalardan davom etamiz.
