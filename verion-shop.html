@@ -886,7 +886,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-22.4";
+var CLIENT_BUILD="2026-10-22.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4467,7 +4467,7 @@ function openAdminImportAll(){
     box.innerHTML='<div class="card" style="padding:12px">'
       +(j.error?'<b style="color:#ef4444">❌ '+esc(j.error)+'</b>':'<b>'+(j.running?"⏳ Yuklanmoqda…":"✅ Tayyor")+'</b> '+esc(j.line||""))
       +'<div style="height:8px;background:var(--card2);border-radius:5px;margin:10px 0;overflow:hidden"><div style="height:8px;width:'+pct+'%;background:var(--grad)"></div></div>'
-      +'<div class="d">'+j.done+' / '+j.total+' o\'yin · '+j.games+' ta qo\'shildi · '+j.packages+' paket'+(j.skipped?' · '+j.skipped+' tasi avvaldan bor':'')+'</div>'
+      +'<div class="d">'+j.done+' / '+j.total+' o\'yin · '+j.games+' ta qo\'shildi · '+j.packages+' paket'+(j.skipped?' · '+j.skipped+' tasi avvaldan bor':'')+(j.images?' · 🖼 '+j.images+' rasm':'')+'</div>'
       +(j.current?'<div class="d">Hozir: '+esc(j.current)+'</div>':'')
       +((j.errors||[]).length?'<div class="d" style="color:#ef4444;margin-top:6px">'+j.errors.map(esc).join("<br>")+'</div>':'')
       +(!j.running&&!j.error?'<button class="btn sm" id="iaShow" style="margin-top:10px">🏪 Do\'konda ko\'rish</button>':'')+'</div>';

@@ -186,7 +186,9 @@ module.exports = function createGames(ctx) {
           r.resume(); return fetchImage(new URL(r.headers.location, u).toString(), (depth || 0) + 1).then(fin);
         }
         const ct = String(r.headers["content-type"] || "").toLowerCase();
-        const ext = /png/.test(ct) ? "png" : /jpe?g/.test(ct) ? "jpg" : /webp/.test(ct) ? "webp" : "";
+        const ue = (u.pathname.match(/\.(png|jpe?g|webp)$/i) || [])[1] || "";
+        const ext = /png/.test(ct) ? "png" : /jpe?g/.test(ct) ? "jpg" : /webp/.test(ct) ? "webp"
+          : (/octet-stream|binary/.test(ct) || !ct) && ue ? ue.toLowerCase().replace("jpeg", "jpg") : "";
         if (r.statusCode !== 200 || !ext) { r.resume(); return fin(""); }
         const chunks = []; let size = 0;
         r.on("data", c => { size += c.length; if (size > MAX_IMG) { req.destroy(); fin(""); } else chunks.push(c); });
@@ -955,9 +957,9 @@ module.exports = function createGames(ctx) {
 
   let importJob = null;
   const jobView = () => importJob && { running: importJob.running, line: importJob.line, total: importJob.total, done: importJob.done,
-    games: importJob.games, packages: importJob.packages, skipped: importJob.skipped, current: importJob.current, errors: importJob.errors.slice(-10), error: importJob.error, finishedAt: importJob.finishedAt };
+    games: importJob.games, packages: importJob.packages, skipped: importJob.skipped, images: importJob.images, current: importJob.current, errors: importJob.errors.slice(-10), error: importJob.error, finishedAt: importJob.finishedAt };
   function startImportAll(l, T, opt) {
-    importJob = { running: true, line: l.name, total: 0, done: 0, games: 0, packages: 0, skipped: 0, current: "", errors: [], error: "", startedAt: Date.now() };
+    importJob = { running: true, line: l.name, total: 0, done: 0, games: 0, packages: 0, skipped: 0, images: 0, current: "", errors: [], error: "", startedAt: Date.now() };
     (async () => {
       let list;
       try { list = await T.games(l); } catch (e) { importJob.error = "Sayt: " + str(e.message, 200); return; }
@@ -982,6 +984,18 @@ module.exports = function createGames(ctx) {
           }
         } catch (e) { importJob.errors.push(str(x.name, 40) + ": " + str(e.message, 120)); }
         importJob.done++;
+        ctx.save();
+      }
+      // Avval yuklangan o'yinlar: rasmi yo'q paketlar va avatarka saytdan to'ldiriladi.
+      if (opt.images !== false) for (const x of list.filter(y => have.has(String(y.code)))) {
+        const g = s.games.find(z => z.source && z.source.lineId === l.id && String(z.source.code) === String(x.code));
+        if (!g || (g.img && !s.packages.some(p => p.gameId === g.id && !p.img))) continue;
+        importJob.current = "🖼 " + str(g.name, 56);
+        try {
+          const r = await importGame(l, T, x.code, { gameId: g.id, images: true, updatePrices: false });
+          if (!r.error) importJob.images += r.images || 0;
+          if (!g.img && x.img) { const u = await fetchImage(x.img); if (u) { g.img = u; if (!g.banner) g.banner = u; importJob.images++; } }
+        } catch (e) {}
         ctx.save();
       }
     })().catch(e => { importJob.error = str(e.message, 200); }).finally(() => { importJob.running = false; importJob.finishedAt = Date.now(); importJob.current = ""; ctx.save(); });

@@ -307,7 +307,21 @@ const smileone = {
 const LVX = "https://api.ludovex.org/api/v2/";
 const lvxH = line => ({ "X-API-Key": S((line.config || {}).apiKey, 300) });
 const lvxErr = j => j && j.error ? S((j.error.code || "") + (j.error.message ? ": " + j.error.message : ""), 220) : "";
-const lvxImg = x => S(x && (x.image || x.image_url || x.img || x.icon || x.logo || x.cover || x.thumbnail || x.picture), 500);
+// Rasm maydonining nomi hujjatda yo'q — har qanday "image/img/icon/logo/photo/picture/thumb/cover" kalitli
+// URL qiymatini (ichma-ich obyektlarda ham) qidiramiz; nisbiy yo'l bo'lsa ludovex.org'ga ulanadi.
+function lvxImg(x, depth) {
+  if (!x || typeof x !== "object" || (depth || 0) > 2) return "";
+  const fix = v => { v = String(v).trim(); if (/^https?:\/\//i.test(v)) return v; if (/^\/\//.test(v)) return "https:" + v; if (/^\/?[\w\-./]+\.(png|jpe?g|webp)(\?.*)?$/i.test(v)) return "https://ludovex.org/" + v.replace(/^\//, ""); return ""; };
+  const keys = Object.keys(x).sort((a, b) => (/^(image|img|icon|logo)/i.test(b) ? 1 : 0) - (/^(image|img|icon|logo)/i.test(a) ? 1 : 0));
+  for (const k of keys) {
+    if (!/image|img|icon|logo|photo|picture|thumb|cover|avatar|banner/i.test(k)) continue;
+    const v = x[k];
+    if (typeof v === "string" && fix(v)) return S(fix(v), 500);
+    if (v && typeof v === "object") { const u = typeof v.url === "string" ? fix(v.url) : lvxImg(v, (depth || 0) + 1); if (u) return S(u, 500); }
+  }
+  for (const k of keys) if (x[k] && typeof x[k] === "object" && !Array.isArray(x[k])) { const u = lvxImg(x[k], (depth || 0) + 1); if (u) return u; }
+  return "";
+}
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function lvxWord(d) {
   const st = String((d && (d.status || d.state)) || "").toUpperCase();
