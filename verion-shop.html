@@ -538,6 +538,22 @@ nav button:nth-child(5) svg{animation-delay:1s}
   border:1px solid var(--line);border-radius:11px;padding:8px 11px;margin-top:8px;font-size:12.5px}
 
 /* balance card */
+.gtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 10px;padding:6px 16px 4px}
+.gtile{background:none;border:none;padding:0;color:var(--txt);text-align:center;position:relative;min-width:0;transition:transform .15s}
+.gtile:active{transform:scale(.93)}
+.gtile .gti{aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,var(--gc,#2f8fff),#0b1020);display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:20px;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.28);position:relative}
+.gtile .gti img{width:100%;height:100%;object-fit:cover;display:block}
+.gtile .gtn{font-size:11.5px;font-weight:700;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtile .gst{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#ff453a;color:#fff;font-size:8.5px;font-weight:800;padding:3px 6px;border-radius:999px;white-space:nowrap}
+.gtile.dim .gti{opacity:.55}
+.gtile .gadm{position:absolute;top:4px;left:4px;z-index:2;font-size:9px;background:rgba(245,158,11,.95);color:#111;border-radius:6px;padding:1px 4px;font-weight:800}
+.shead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 2px}
+.shead b{font-size:16px}
+.shead button{background:none;border:none;color:var(--acc2);font-weight:700;font-size:13px;padding:0}
+.hello{padding:12px 16px 0;font-size:13px;color:var(--mut)}
+.hello b{display:block;color:var(--txt);font-size:18px;margin-top:1px}
+.ghsearch{margin:6px 16px 4px}
 .balcard{margin:10px 16px;background:var(--grad);border-radius:20px;padding:16px;position:relative;overflow:hidden;
   color:#fff;box-shadow:0 12px 28px rgba(124,92,255,.36);animation:fadeUp .22s ease}
 .balcard::after{content:"";position:absolute;top:-40%;right:-20%;width:180px;height:180px;border-radius:50%;
@@ -888,7 +904,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-27.2";
+var CLIENT_BUILD="2026-10-27.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -952,7 +968,7 @@ en:{
   gate_wait:"Waiting for START…",
   gate_again:"I already pressed it — check again",
   nav_home:"Home",nav_products:"Products",nav_orders:"Orders",nav_pay:"Payment",nav_profile:"Profile",
-  tab_nakrutka:"Boosting",tab_ai:"AI services",g_account:"Account details",ai_hint:"The subscription is activated on this email",ai_unit:"services",search_ph:"Search game or service",tab_all:"All",tab_extra1:"Category 5",tab_extra2:"Category 6",
+  tab_nakrutka:"Boosting",tab_ai:"AI services",g_account:"Account details",ai_hint:"The subscription is activated on this email",ai_unit:"services",search_ph:"Search game or service",hello:"Hi",pop_games:"Popular games",tab_all:"All",tab_extra1:"Category 5",tab_extra2:"Category 6",
   tab_obuna:"Subscriptions",tab_promokod:"Promo codes",tab_telegram:"Telegram",tab_products:"Products",tab_games:"Games",
   buy:"Buy now",in_stock:"in stock",out_stock:"Out of stock",empty_section:"Nothing here yet.",
   promo_placeholder:"Promo code",promo_apply:"Apply",promo_discount:"Promo discount",promo_ok:"Promo code applied",promo_bad:"Invalid promo code",
@@ -1050,7 +1066,7 @@ uz:{
   gate_wait:"START kutilmoqda…",
   gate_again:"Bosdim — qayta tekshirish",
   nav_home:"Asosiy",nav_products:"Mahsulotlar",nav_orders:"Buyurtmalar",nav_pay:"To'lov",nav_profile:"Profil",
-  tab_nakrutka:"Nakrutka",tab_ai:"AI xizmatlar",g_account:"Akkaunt ma'lumotlari",ai_hint:"Obuna shu emailga ulanadi",ai_unit:"xizmat",search_ph:"O'yin yoki xizmat qidirish",tab_all:"Barchasi",tab_extra1:"Kategoriya 5",tab_extra2:"Kategoriya 6",
+  tab_nakrutka:"Nakrutka",tab_ai:"AI xizmatlar",g_account:"Akkaunt ma'lumotlari",ai_hint:"Obuna shu emailga ulanadi",ai_unit:"xizmat",search_ph:"O'yin yoki xizmat qidirish",hello:"Salom",pop_games:"Ommabop o'yinlar",tab_all:"Barchasi",tab_extra1:"Kategoriya 5",tab_extra2:"Kategoriya 6",
   tab_obuna:"Obuna",tab_promokod:"Promokod",tab_telegram:"Telegram",tab_products:"Mahsulotlar",tab_games:"O'yinlar",
   buy:"Sotib olish",in_stock:"dona bor",out_stock:"Tugagan",empty_section:"Hozircha bo'sh.",
   promo_placeholder:"Promo-kod",promo_apply:"Qo'llash",promo_discount:"Promo-kod chegirmasi",promo_ok:"Promo-kod qo'llandi",promo_bad:"Promo-kod noto'g'ri yoki muddati o'tgan",
@@ -1148,7 +1164,7 @@ ru:{
   gate_wait:"Ожидаем START…",
   gate_again:"Уже нажал — проверить снова",
   nav_home:"Главная",nav_products:"Товары",nav_orders:"Заказы",nav_pay:"Оплата",nav_profile:"Профиль",
-  tab_nakrutka:"Накрутка",tab_ai:"AI сервисы",g_account:"Данные аккаунта",ai_hint:"Подписка подключается к этому email",ai_unit:"сервисов",search_ph:"Поиск игры или услуги",tab_all:"Все",tab_extra1:"Категория 5",tab_extra2:"Категория 6",
+  tab_nakrutka:"Накрутка",tab_ai:"AI сервисы",g_account:"Данные аккаунта",ai_hint:"Подписка подключается к этому email",ai_unit:"сервисов",search_ph:"Поиск игры или услуги",hello:"Привет",pop_games:"Популярные игры",tab_all:"Все",tab_extra1:"Категория 5",tab_extra2:"Категория 6",
   tab_obuna:"Подписки",tab_promokod:"Промокоды",tab_telegram:"Telegram",tab_products:"Товары",tab_games:"Игры",
   buy:"Купить",in_stock:"в наличии",out_stock:"Нет в наличии",empty_section:"Пока пусто.",
   promo_placeholder:"Промокод",promo_apply:"Применить",promo_discount:"Скидка по промокоду",promo_ok:"Промокод применён",promo_bad:"Промокод неверен или истёк",
@@ -2291,6 +2307,13 @@ function gIconSVG(icon,tier){
   }
   return s+'</svg>';
 }
+function gameTileHTML(g){
+  return '<button class="gtile'+(g.hidden||g.status?' dim':'')+'" data-opengame="'+esc(g.id)+'">'
+    +'<div class="gti" style="--gc:'+esc(g.color||"#2f8fff")+'">'+(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':esc(gameInitials(g.name)))
+    +(g.status?'<span class="gst">'+(g.status==="maint"?"TEXNIK ISH":"MAVJUD EMAS")+'</span>':'')+'</div>'
+    +(g.hidden?'<span class="gadm">🔒</span>':'')
+    +'<div class="gtn">'+esc(g.name)+'</div></button>';
+}
 function gameCardHTML(g){
   var n=gamePkgs(g.id).length;
   return '<button class="pcard'+(g.hidden?" adm-hid":"")+'" data-opengame="'+esc(g.id)+'">'
@@ -2308,8 +2331,12 @@ function aiHubHTML(){
     +'<div class="grid">'+gamesOf("ai").map(gameCardHTML).join("")+'</div>';
 }
 function gamesHubHTML(){
+  var q=String(S.ghubQ||"").trim().toLowerCase();
+  var list=gamesOf("games").filter(function(g){return !q||String(g.name).toLowerCase().indexOf(q)!==-1;});
   var html='<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(categoryLabel("games"))+'</b></button>'
-    +'<div class="grid">'+gamesOf("games").map(gameCardHTML).join("")+'</div>';
+    +'<div class="searchbar ghsearch"><span class="sic">'+ic("search",16)+'</span><input id="ghubQ" placeholder="'+esc(t("search_ph"))+'" value="'+esc(S.ghubQ||"")+'"></div>'
+    +'<div class="gtiles" id="ghubTiles">'+list.map(gameTileHTML).join("")+'</div>'
+    +(list.length?'':'<div class="d" style="padding:16px;color:var(--mut)">Topilmadi</div>');
   var old=activeItems("games");
   if(old.length)html+='<div class="sect">'+esc(t("g_other"))+'</div>'+productGridHTML(old);
   return html;
@@ -2588,6 +2615,11 @@ function homeHTML(){
       +'<div class="bv">'+balHTML()+'</div>'
       +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
+  }
+  var pop=gamesOf("games").slice(0,8);
+  if(pop.length){
+    html+='<div class="shead"><b>'+esc(t("pop_games")||"Ommabop o'yinlar")+'</b><button data-gohub="games">'+esc(t("view_all_btn"))+' ›</button></div>'
+      +'<div class="gtiles">'+pop.map(gameTileHTML).join("")+'</div>';
   }
   html+=categoryCardsHTML();
   html+='<div id="wrapReviews">'+reviewsBlockHTML()+'</div>';
@@ -7189,6 +7221,13 @@ function openAdminForm(editId){
 function bind(){
   var i,els;
   bindGames();
+  els=document.querySelectorAll("[data-gohub]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.category=this.getAttribute("data-gohub");S.ghubQ="";haptic();render();window.scrollTo(0,0);});
+  var ghq=document.getElementById("ghubQ");
+  if(ghq)ghq.addEventListener("input",function(){
+    S.ghubQ=this.value;var q=this.value.trim().toLowerCase(),box=document.getElementById("ghubTiles");
+    if(box){box.innerHTML=gamesOf("games").filter(function(g){return !q||String(g.name).toLowerCase().indexOf(q)!==-1;}).map(gameTileHTML).join("");bindGames();}
+  });
   var psEl=document.getElementById("prodSearch");
   if(psEl){
     psEl.addEventListener("input",function(){
