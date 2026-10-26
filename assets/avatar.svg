@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <defs><radialGradient id="bg" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#14254a"/><stop offset=".6" stop-color="#0a1226"/><stop offset="1" stop-color="#05080f"/></radialGradient></defs>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#0d1730"/><stop offset="1" stop-color="#020306"/></radialGradient>
+    <linearGradient id="vL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46b4ff"/><stop offset="1" stop-color="#0f4fe0"/></linearGradient>
+    <linearGradient id="vR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#cfd6df"/><stop offset="1" stop-color="#8f99a8"/></linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ea2ff"/><stop offset="1" stop-color="#1450ff"/></linearGradient>
+    <filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <g transform="translate(150 409) scale(0.93)">
+  <circle cx="512" cy="512" r="492" fill="none" stroke="url(#ring)" stroke-width="8"/>
+  <!-- V: chap qanot ko'k lenta, o'ng qanot kumush (eski logodagidek), o'rtasida chaqmoq kesimi -->
+  <path d="M232 190 H372 Q392 190 400 208 L520 520 Q534 556 512 590 L500 610 Q470 650 440 600 Z" fill="url(#vL)"/>
+  <path d="M652 190 H792 L600 610 Q586 640 560 632 L536 560 Z" fill="url(#vR)"/>
+  <path d="M556 150 L470 360 H530 L486 540 L612 300 H548 L600 150 Z" fill="#3ea2ff" stroke="#020306" stroke-width="16" stroke-linejoin="round" paint-order="stroke" filter="url(#gl)"/>
+  <g transform="translate(150 690) scale(0.93)">
   
   <defs>
     <linearGradient id="vs" x1="0" y1="0" x2="0" y2="1">
