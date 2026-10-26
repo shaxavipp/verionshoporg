@@ -293,3 +293,23 @@ Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'
 - **`/api/leaderboard`:** natija 60 soniya keshlanadi.
 - **Ilova:** ochiq turganda 30 soniyada bir yangilanadi, reyting va sharhlar 2 daqiqada bir yangilanadi. Orqa fonda turganda so'rov yubormaydi.
 - **O'lchov** (10 ming foydalanuvchi, 50 ming buyurtma, 200 ta parallel mijoz): sekundiga 82 so'rovdan 7900 so'rovgacha. 95% so'rovlarning kechikishi 19 soniyadan 72 ms gacha tushdi.
+
+## Steam hamyon va virtual raqam (extra.js)
+
+**Steam hamyon** (O'yinlar → «Steam hamyon» kartasi):
+- Mijoz Steam loginini va dollar summasini kiritadi. Tez tugmalar bor: $5, $10, $20, $50, $100. «Qayerdan olaman?» tugmasi kompyuter va telefon uchun yo'riqnomani ochadi.
+- Narx = summa × admin kursi (1$ = 13 500 so'm).
+- **Ludovex liniyasi yoqilgan bo'lsa**, hamyon avtomatik to'ldiriladi:
+  - avval narx so'raladi va tannarx sotuv narxidan oshsa, buyurtma bekor qilinadi (zarar himoyasi);
+  - buyurtma `expected_price_usdt` va idempotency kaliti bilan yuboriladi;
+  - holati har 20 soniyada tekshiriladi.
+- **Ludovex yoqilmagan bo'lsa**, buyurtma adminga qo'lda bajarish uchun keladi.
+
+**Virtual raqam** (Telegram bo'limi → «Virtual raqam»), 5sim.net orqali ishlaydi:
+- Mijozga davlatlar ro'yxati, qidiruv va «Ommabop» / «Narx» bo'yicha saralash ko'rinadi. Narx = eng arzon operator narxi × kurs × (1 + ustama).
+- Raqam berilgach, SMS kod kutiladi (sukut bo'yicha 20 daqiqa) va kod oynada chiqadi.
+- Kod kelmasa yoki mijoz bekor qilsa, raqam 5sim'da bekor qilinadi va pul qaytadi.
+
+**Sozlash:** Admin → «Steam va virtual raqam». U yerda kurs, chegaralar, rejim, 5sim API kaliti va ustama sozlanadi, «Sinash» tugmasi ham bor.
+
+**Xatolar:** sayt puli tugasa, mijozga «keyinroq urinib ko'ring» chiqadi, adminga esa darhol xabar boradi.

@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-27.9";
+const BUILD = "2026-10-28.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1921,6 +1921,12 @@ const GAMES = require("./games.js")({
   publicBase: () => publicBase()   // G2Bulk callback_url uchun
 });
 
+// Steam hamyon va virtual raqamlar (extra.js).
+const EXTRA = require("./extra.js")({
+  getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
+  notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder,
+  gameLines: () => GAMES.store().lines
+});
 // Nakrutka liniyalari (smm.js): JAP + boshqa SMM panellar.
 const SMM = require("./smm.js")({
   getDB: () => DB, save, envKey: () => JAP_API_KEY, usdRate: () => nkUsdRate(), markup: () => nkMarkupPct()
@@ -2023,6 +2029,7 @@ const server = http.createServer((req, res) => {
 
   // O'yinlar: /api/games*, /api/admin/games*, /gimg/* — modul o'zi javob beradi.
   if (GAMES.handle(req, res, url, m)) return;
+  if (EXTRA.handle(req, res, url, m, q)) return;
 
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {
