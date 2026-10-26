@@ -389,7 +389,13 @@ module.exports = function createGames(ctx) {
   // Do'konda faqat narxi qo'yilgan va yoqilgan paketlar; paketsiz o'yin ko'rinmaydi.
   // Tannarx, SKU va liniya ma'lumotlari mijozga hech qachon yuborilmaydi.
   let pubCache = { key: "", body: "", etag: "" };
+  let pubAt = 0;
+  // Har saqlashda (narx, paket, o'yin o'zgarganda) katalog keshi darhol yangilanadi.
+  { const orig = ctx.save; ctx.save = function () { pubAt = 0; return orig.apply(this, arguments); }; }
   function publicCatalog() {
+    // Ko'p ochiq ilova bir vaqtda so'raydi — katalog eng ko'pi 2 soniyada bir qayta yig'iladi.
+    if (pubCache.body && Date.now() - pubAt < 2000) return pubCache;
+    pubAt = Date.now();
     const s = store();
     const pk = s.packages.filter(p => p.active && p.price > 0 && s.games.some(g => g.id === p.gameId && g.active && !g.draft));
     const gids = new Set(pk.map(p => p.gameId));
@@ -574,8 +580,10 @@ module.exports = function createGames(ctx) {
     if (url === "/api/games" && m === "GET") {
       const c = publicCatalog();
       if (req.headers["if-none-match"] === c.etag) { res.writeHead(304, { ETag: c.etag, "Cache-Control": "no-cache" }); res.end(); return true; }
-      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache", ETag: c.etag });
-      res.end(c.body);
+      const gz = /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
+      if (gz && !c.gz) c.gz = require("zlib").gzipSync(c.body);
+      res.writeHead(200, Object.assign({ "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache", ETag: c.etag, Vary: "Accept-Encoding" }, gz ? { "Content-Encoding": "gzip" } : {}));
+      res.end(gz ? c.gz : c.body);
       return true;
     }
 

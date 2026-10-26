@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-27.1";
+const BUILD = "2026-10-27.2";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1723,6 +1723,19 @@ function auth(req) {
 }
 function isAdm(u) { return !!u && ADMIN_IDS.indexOf(u.id) !== -1; }
 
+let HTML_C = null, GZ_MEMO = { etag: "", buf: null };
+function getHtml(cb) {
+  fs.stat(HTML_FILE, (e, st) => {
+    if (e) return cb(e);
+    if (HTML_C && HTML_C.mtime === st.mtimeMs) return cb(null, HTML_C);
+    fs.readFile(HTML_FILE, (err, raw) => {
+      if (err) return cb(err);
+      HTML_C = { mtime: st.mtimeMs, raw, gz: zlib.gzipSync(raw, { level: 9 }),
+        br: zlib.brotliCompressSync(raw, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 10 } }) };
+      cb(null, HTML_C);
+    });
+  });
+}
 function send(res, code, obj, type) {
   res.writeHead(code, { "Content-Type": type || "application/json; charset=utf-8", "Cache-Control": "no-store" });
   res.end(typeof obj === "string" ? obj : JSON.stringify(obj));
@@ -1739,12 +1752,15 @@ function sendCached(req, res, obj) {
     res.writeHead(304, { "ETag": etag, "Cache-Control": "no-cache" });
     return res.end();
   }
-  res.writeHead(200, {
+  const gz = body.length > 2048 && /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
+  let out = body;
+  if (gz) { if (GZ_MEMO.etag !== etag) GZ_MEMO = { etag, buf: zlib.gzipSync(body) }; out = GZ_MEMO.buf; }
+  res.writeHead(200, Object.assign({
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-cache", // har doim serverdan so'raladi, lekin o'zgarmagan bo'lsa 304 keladi
-    "ETag": etag
-  });
-  res.end(body);
+    "ETag": etag, "Vary": "Accept-Encoding"
+  }, gz ? { "Content-Encoding": "gzip" } : {}));
+  res.end(out);
 }
 function readBody(req, res, cb) {
   let body = "", size = 0, dead = false;
@@ -3497,6 +3513,21 @@ const server = http.createServer((req, res) => {
   }
 
   /* everything else → app */
+  // HTML xotirada saqlanadi va bir marta siqiladi (br/gzip): 540 KB → ~100 KB. Fayl o'zgarsa
+  // (deploy) — mtime bo'yicha qayta o'qiladi. Sekin internetda ilova ochilishi shunga bog'liq.
+  return getHtml((err, H) => {
+    if (err) return send(res, 500, "verion-shop.html not found", "text/plain");
+    const ae = String(req.headers["accept-encoding"] || "");
+    const enc = /\bbr\b/.test(ae) ? "br" : /\bgzip\b/.test(ae) ? "gzip" : "";
+    res.writeHead(200, Object.assign({
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0",
+      "Vary": "Accept-Encoding"
+    }, enc ? { "Content-Encoding": enc } : {}));
+    res.end(enc === "br" ? H.br : enc === "gzip" ? H.gz : H.raw);
+  });
   fs.readFile(HTML_FILE, (err, data) => {
     if (err) return send(res, 500, "verion-shop.html not found", "text/plain");
     // "no-cache" ba'zi WebView'larda (xususan Telegram ilovasi ichidagi) hali ham eski
