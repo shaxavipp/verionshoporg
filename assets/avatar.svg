@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#14254a"/><stop offset=".55" stop-color="#0a1226"/><stop offset="1" stop-color="#05080f"/>
+    </radialGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#e3e8ef"/><stop offset=".55" stop-color="#b9c2cf"/><stop offset="1" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4fb0ff"/><stop offset="1" stop-color="#1463ff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <circle cx="512" cy="470" r="330" fill="none" stroke="#1f6bff" stroke-opacity=".18" stroke-width="3"/>
+  <!-- V -->
+  <path d="M232 250 H372 L512 600 L652 250 H792 L580 760 H444 Z" fill="url(#silver)"/>
+  <!-- chaqmoq (#4 dagi I o'rnidagi kabi) -->
+  <path d="M572 170 L440 470 H520 L462 700 L640 400 H556 L622 170 Z" fill="url(#blue)" filter="url(#glow)" stroke="#05080f" stroke-width="14" stroke-linejoin="round" paint-order="stroke"/>
+  <!-- SHOP -->
+  <rect x="242" y="853" width="100" height="7" rx="3.5" fill="#1f7bff"/>
+  <rect x="682" y="853" width="100" height="7" rx="3.5" fill="#1f7bff"/>
+  <text x="512" y="878" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="72" letter-spacing="22" fill="#2f8fff">SHOP</text>
+</svg>
