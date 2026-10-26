@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-26.1";
+const BUILD = "2026-10-27.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -150,10 +150,24 @@ if (DB.automation.winbackEnabled === undefined) DB.automation.winbackEnabled = f
 if (DB.automation.stockAlertEnabled === undefined) DB.automation.stockAlertEnabled = true;
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
-let saveT = null;
-function save() { clearTimeout(saveT); saveT = setTimeout(() => {
-  try { sdb.saveState(SQLITE_DB, DB); } catch (e) { console.log("[db] saveState xato: " + e.message); }
-}, 100); }
+// Saqlash: ko'p chaqiruvlar bitta yozuvga birlashtiriladi (eng ko'pi 250 ms kechikadi). Avvalgi
+// "har chaqiruvda taymerni qayta boshlash" doimiy yuklamada saqlashni umuman kechiktirib yuborardi.
+// saveState faqat o'zgargan qatorlarni yozadi; eski yopilgan buyurtmalar har daqiqada to'liq
+// tekshiriladi, server o'chayotganda esa oxirgi holat albatta yoziladi.
+let saveT = null, lastFull = Date.now();
+function flushSave(full) {
+  clearTimeout(saveT); saveT = null;
+  try {
+    const t0 = Date.now();
+    sdb.saveState(SQLITE_DB, DB, { full: !!full });
+    if (full) lastFull = Date.now();
+    const ms = Date.now() - t0;
+    if (ms > 300) console.log("[db] sekin saqlash: " + ms + " ms" + (full ? " (to'liq)" : ""));
+  } catch (e) { console.log("[db] saveState xato: " + e.message); }
+}
+function save() { if (!saveT) saveT = setTimeout(() => flushSave(Date.now() - lastFull > 60000), 250); }
+setInterval(() => { if (!saveT) flushSave(true); }, 5 * 60 * 1000).unref();
+for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, () => { flushSave(true); process.exit(0); });
 function user(u) {
   const k = String(u.id);
   if (!DB.users[k]) DB.users[k] = { balance: 0, ts: Date.now() };
@@ -1784,10 +1798,26 @@ function uiEmojiObj() {
 function nkCatMetaObj() {
   try { return sdb.kvGet(SQLITE_DB, "nkcatmeta", {}); } catch (e) { return {}; }
 }
+/* Foydalanuvchi bo'yicha indeks: /api/me har ochilishda 50 ming buyurtmani aylanib chiqmasligi
+   uchun. Massivga faqat oxiridan qo'shiladi; massiv almashtirilsa (filter bilan o'chirish)
+   yoki qisqarsa — indeks qaytadan quriladi. Kalit — x.uid ning o'zi (avvalgi x.uid === uid bilan bir xil). */
+const UIDX = {};
+function byUid(name, uid) {
+  const arr = DB[name] || [];
+  let ix = UIDX[name];
+  if (!ix || ix.arr !== arr || arr.length < ix.len) ix = UIDX[name] = { arr, len: 0, map: new Map() };
+  for (; ix.len < arr.length; ix.len++) {
+    const x = arr[ix.len];
+    let l = ix.map.get(x.uid); if (!l) ix.map.set(x.uid, l = []);
+    l.push(x);
+  }
+  return ix.map.get(uid) || [];
+}
+let expireAt = 0;
+const LB_CACHE = {};
 function myView(uid) {
-  expireOld();
-  const mine = x => x.uid === uid;
-  const reviewedIds = new Set(DB.reviews.filter(mine).map(r => r.orderId));
+  if (Date.now() - expireAt > 10000) { expireAt = Date.now(); expireOld(); }
+  const reviewedIds = new Set(byUid("reviews", uid).map(r => r.orderId));
   const acc = DB.users[String(uid)] || { balance: 0 };
   return {
     /* Admin ekanini SERVER hal qiladi. Ilgari HTML ichidagi ADMIN_IDS ro'yxati
@@ -1806,8 +1836,8 @@ function myView(uid) {
     balance: acc.balance,
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
-    payments: DB.payments.filter(mine).slice(-50).reverse(),
-    orders: DB.orders.filter(mine).slice(-50).reverse()
+    payments: byUid("payments", uid).slice(-50).reverse(),
+    orders: byUid("orders", uid).slice(-50).reverse()
       .map(o => Object.assign({}, o, { reviewed: reviewedIds.has(o.id) }))
   };
 }
@@ -2050,6 +2080,7 @@ const server = http.createServer((req, res) => {
     const u = auth(req);
     if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     const isNew = !DB.users[String(u.id)];
+    const before = isNew ? "" : JSON.stringify(DB.users[String(u.id)]);
     const acc = user(u);
     if (isNew && u._startParam && /^ref_\d+$/.test(u._startParam)) {
       const refUid = Number(u._startParam.slice(4));
@@ -2059,7 +2090,7 @@ const server = http.createServer((req, res) => {
     // tekshiramiz. Javob shu so'rovni kutib turmaydi: started null qaytadi va
     // ilova bir-ikki soniyadan keyin qayta so'raganda aniq qiymatni oladi.
     if (acc.started === undefined) probeStarted(u.id);
-    save();
+    if (JSON.stringify(acc) !== before) save();
     const view = myView(u.id);
     view.via = u._via || "main";
     if (view.isAdmin) { const ab = ADMINBOT ? ADMINBOT.status() : {}; view.adminBot = { active: !!ab.active, username: ab.username || "" }; }
@@ -2328,6 +2359,9 @@ const server = http.createServer((req, res) => {
   // Adminlar (ADMIN_IDS) reytingda hech qachon ko'rinmaydi.
   if (url === "/api/leaderboard" && m === "GET") {
     const period = q.get("period") || "all"; // today | week | month | all
+    // Hamma buyurtmalarni aylanib chiqadi — natija 60 soniya keshlanadi (minglab ochiq ilova bir xil ro'yxatni so'raydi).
+    const lbHit = LB_CACHE[period];
+    if (lbHit && Date.now() - lbHit.at < 60000) return send(res, 200, lbHit.body);
     const cutoff = periodStart(period);
     const totals = {}, counts = {};
     for (const o of DB.orders) {
@@ -2347,7 +2381,8 @@ const server = http.createServer((req, res) => {
       .sort((a, b) => b.total - a.total)
       .slice(0, 20)
       .map((r, i) => Object.assign({ rank: i + 1 }, r));
-    return send(res, 200, { period, leaderboard: rows });
+    LB_CACHE[period] = { at: Date.now(), body: { period, leaderboard: rows } };
+    return send(res, 200, LB_CACHE[period].body);
   }
 
   if (url === "/api/topup" && m === "POST") {

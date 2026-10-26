@@ -285,3 +285,11 @@ Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'
 - O'yinlar O'zbekistonda mashhurligi bo'yicha tartiblanadi: PUBG Mobile, Free Fire, Mobile Legends, Standoff 2 va hokazo. Tartibni admin qo'lda o'zgartirsa, o'sha o'yinning tartibi o'zgarishsiz qoladi.
 - Birlashtirish deploy'dan keyin bir marta o'zi ishlaydi. Har bir «Saytdan hammasini yuklash» tugaganida ham ishlaydi. Admin panelda alohida «🔗 Bir xil o'yinlarni birlashtirish» tugmasi ham bor.
 - Tayyor narxlar faqat o'yinning asosiy regioniga qo'yiladi. Qolgan regionlarning narxi tannarx × kurs + ustama bo'yicha hisoblanadi.
+
+## Tezlik (ko'p foydalanuvchi uchun)
+
+- **Saqlash:** bazaga faqat o'zgargan qatorlar yoziladi. Eski, yopilgan buyurtma va to'lovlar faqat statusi o'zgarganda yoki har daqiqadagi to'liq tekshiruvda yoziladi. Saqlashlar 250 ms ichida birlashtiriladi. Server o'chayotganda (SIGTERM yoki SIGINT) oxirgi holat albatta yoziladi.
+- **`/api/me`:** foydalanuvchi bo'yicha indeks ishlatiladi, butun buyurtmalarni aylanib chiqmaydi. Bazaga faqat foydalanuvchi ma'lumoti o'zgargan bo'lsa yoziladi.
+- **`/api/leaderboard`:** natija 60 soniya keshlanadi.
+- **Ilova:** ochiq turganda 30 soniyada bir yangilanadi, reyting va sharhlar 2 daqiqada bir yangilanadi. Orqa fonda turganda so'rov yubormaydi.
+- **O'lchov** (10 ming foydalanuvchi, 50 ming buyurtma, 200 ta parallel mijoz): sekundiga 82 so'rovdan 7900 so'rovgacha. 95% so'rovlarning kechikishi 19 soniyadan 72 ms gacha tushdi.

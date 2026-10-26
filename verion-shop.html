@@ -888,7 +888,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-26.1";
+var CLIENT_BUILD="2026-10-27.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5093,13 +5093,13 @@ function closeSupportChat(){
 }
 // Yopiq paytda operator yoki AI yangi xabar yozgan bo'lsa — tugmada qizil nuqta.
 function supCheckUnread(){
-  if(!tgUser()||SUP.open)return;
+  if(!tgUser()||SUP.open||document.hidden)return;
   api("/api/support/history?after="+(Number(Store.get(supSeenKey(),0))||0)).then(function(r){
     var n=(r.messages||[]).filter(function(m){return m.from==="admin"||m.from==="ai";}).length;
     var dot=document.getElementById("supDot");if(dot)dot.hidden=!n;
   }).catch(function(){});
 }
-setInterval(supCheckUnread,30000);
+setInterval(supCheckUnread,60000);
 /* ---------- AI yordamchi (Claude) sozlamasi ---------- */
 function openAdminAi(backFn){
   var html='<h2>✨ AI yordamchi</h2>'
@@ -7467,12 +7467,17 @@ function boot(){
   loadLoyalty();
   setInterval(tickTimer,1000);
   setInterval(rotateReviewWidget,4500);
+  // Fon yangilanishi: ilova ko'rinib turganda 30 s da bir; reyting va sharhlar 2 daqiqada bir.
+  // Ilova yopiq/orqada bo'lsa so'rov yuborilmaydi — minglab foydalanuvchida server yuklamasi shunga bog'liq.
+  var bgTick=0;
   setInterval(function(){
-    if(SESSION_EXPIRED)return;
+    if(SESSION_EXPIRED||document.hidden)return;
+    bgTick++;
     if(tgUser()&&(S.screen==="orders"||S.screen==="home"))loadMe();
     if(S.screen==="home"){loadStockCounts();if(!S.game)loadGames();}
-    if(S.screen==="home"){loadReviews();loadLeaderboard();}
-  },20000);
+    if(S.screen==="home"&&bgTick%4===0){loadReviews();loadLeaderboard();}
+  },30000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden&&!SESSION_EXPIRED&&tgUser())loadMe();});
   setTimeout(function(){
     var sp=document.getElementById("splash");
     if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},500);}

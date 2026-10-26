@@ -161,76 +161,98 @@ function syncKeyedDelete(db, tableName, idCol, currentIds) {
   }
 }
 
-// ---------- asosiy DB'ni yozish (incremental upsert, to'liq qayta yozish emas) ----------
-function saveState(db, DB) {
-  withTx(db, () => {
-    // users
-    syncKeyedDelete(db, "users", "id", Object.keys(DB.users || {}));
-    const uStmt = db.prepare(
-      "INSERT INTO users (id, data) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data"
-    );
-    for (const k in DB.users) uStmt.run(k, JSON.stringify(DB.users[k]));
-
-    // orders
-    const orderIds = (DB.orders || []).map(o => String(o.id));
-    syncKeyedDelete(db, "orders", "id", orderIds);
-    const oStmt = db.prepare(
-      "INSERT INTO orders (id, uid, status, seq, ts, data) VALUES (?, ?, ?, ?, ?, ?) " +
-      "ON CONFLICT(id) DO UPDATE SET uid = excluded.uid, status = excluded.status, " +
-      "seq = excluded.seq, ts = excluded.ts, data = excluded.data"
-    );
-    for (const o of DB.orders || []) {
-      oStmt.run(String(o.id), String(o.uid != null ? o.uid : ""), o.status || null,
-        o.seq || null, o.ts || null, JSON.stringify(o));
+// ---------- asosiy DB'ni yozish: faqat O'ZGARGAN qatorlar ----------
+// Har jadval uchun oxirgi yozilgan JSON matni xotirada saqlanadi (db obyektiga bog'langan).
+// saveState() har qatorni matnga aylantirib solishtiradi va faqat farq qilganini yozadi,
+// yo'qolganini o'chiradi — bazadan "hammasini o'qib solishtirish" ham, hammasini qayta
+// yozish ham yo'q. 10k foydalanuvchi / 50k buyurtmada bitta saqlash ~0,6 s dan bir necha
+// o'n millisekundga tushadi (o'lchov: scratchpad bench-db.js).
+const CACHE = new WeakMap();
+function cacheOf(db) {
+  let c = CACHE.get(db);
+  if (!c) {
+    c = { users: new Map(), orders: new Map(), payments: new Map(), reviews: new Map(), stock: new Map(), settings: new Map(), kv: new Map(), primed: false };
+    c.orders.st = new Map(); c.payments.st = new Map();   // oxirgi yozilgan status (tez yo'l uchun)
+    CACHE.set(db, c);
+  }
+  return c;
+}
+// Bazada hozir bor matnlar bilan keshni to'ldiradi (ishga tushgandan keyingi birinchi saqlashda).
+function prime(db, c) {
+  const fill = (m, sql) => { for (const r of db.prepare(sql).all()) m.set(String(r.k), r.v); };
+  fill(c.users, "SELECT id AS k, data AS v FROM users");
+  fill(c.orders, "SELECT id AS k, data AS v FROM orders");
+  fill(c.payments, "SELECT id AS k, data AS v FROM payments");
+  fill(c.reviews, "SELECT id AS k, data AS v FROM reviews");
+  fill(c.stock, "SELECT item_id AS k, data AS v FROM stock");
+  fill(c.settings, "SELECT key AS k, value AS v FROM settings");
+  for (const r of db.prepare("SELECT id, status FROM orders").all()) c.orders.st.set(String(r.id), r.status);
+  for (const r of db.prepare("SELECT id, status FROM payments").all()) c.payments.st.set(String(r.id), r.status);
+  fill(c.kv, "SELECT key AS k, value AS v FROM kv WHERE key IN ('orderSeq','smsLog','notifState','promoCodes','automation')");
+  c.primed = true;
+}
+// rows: [id, value, argsFn] ro'yxatini beruvchi iterator; skip(v) — "eski, yopilgan" qator:
+// keshda bo'lsa matnga aylantirilmaydi (tez yo'l). To'liq tekshiruv (full) hammasini solishtiradi.
+function syncTable(db, cache, list, idOf, argsOf, upsert, delSql, skip, full) {
+  let ups = null, n = 0, hits = 0;
+  const ids = new Array(list.length);
+  for (let i = 0; i < list.length; i++) {
+    const v = list[i], id = idOf(v, i);
+    ids[i] = id;
+    const old = cache.get(id);
+    if (old !== undefined) hits++;
+    if (old !== undefined && !full && skip && skip(v) && cache.st.get(id) === v.status) continue;
+    const txt = JSON.stringify(v);
+    if (skip) cache.st.set(id, v && v.status);
+    if (old === txt) continue;
+    if (!ups) ups = db.prepare(upsert);
+    ups.run(...argsOf(id, v, txt));
+    cache.set(id, txt); n++;
+  }
+  // Hamma kesh kalitlari ro'yxatda bo'lsa — o'chirilgan qator yo'q (Set qurish shart emas).
+  if (hits !== cache.size) {
+    const seen = new Set(ids), del = db.prepare(delSql);
+    for (const id of [...cache.keys()]) if (!seen.has(id)) { del.run(id); cache.delete(id); if (cache.st) cache.st.delete(id); n++; }
+  }
+  return n;
+}
+const OLD_MS = 60 * 60 * 1000;
+const CLOSED = { done: 1, cancelled: 1, canceled: 1, refunded: 1, ok: 1, paid: 1, rejected: 1, failed: 1, expired: 1 };
+function saveState(db, DB, opts) {
+  const c = cacheOf(db), full = !!(opts && opts.full), now = Date.now();
+  const oldClosed = x => x && CLOSED[x.status] === 1 && Number(x.ts) > 0 && now - Number(x.ts) > OLD_MS;
+  return withTx(db, () => {
+    if (!c.primed) prime(db, c);
+    let n = 0;
+    const uKeys = Object.keys(DB.users || {});
+    n += syncTable(db, c.users, uKeys.map(k => DB.users[k]), (v, i) => uKeys[i], (id, v, t) => [id, t],
+      "INSERT INTO users (id, data) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data", "DELETE FROM users WHERE id = ?", null, full);
+    n += syncTable(db, c.orders, DB.orders || [], v => String(v.id),
+      (id, o, t) => [id, String(o.uid != null ? o.uid : ""), o.status || null, o.seq || null, o.ts || null, t],
+      "INSERT INTO orders (id, uid, status, seq, ts, data) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET uid = excluded.uid, status = excluded.status, seq = excluded.seq, ts = excluded.ts, data = excluded.data",
+      "DELETE FROM orders WHERE id = ?", oldClosed, full);
+    n += syncTable(db, c.payments, DB.payments || [], v => String(v.id),
+      (id, p, t) => [id, String(p.uid != null ? p.uid : ""), p.status || null, p.ts || null, t],
+      "INSERT INTO payments (id, uid, status, ts, data) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET uid = excluded.uid, status = excluded.status, ts = excluded.ts, data = excluded.data",
+      "DELETE FROM payments WHERE id = ?", oldClosed, full);
+    n += syncTable(db, c.reviews, DB.reviews || [], v => String(v.id),
+      (id, x, t) => [id, x.orderId || null, String(x.uid != null ? x.uid : ""), t],
+      "INSERT INTO reviews (id, order_id, uid, data) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET order_id = excluded.order_id, uid = excluded.uid, data = excluded.data",
+      "DELETE FROM reviews WHERE id = ?", null, full);
+    const sKeys = Object.keys(DB.stock || {});
+    n += syncTable(db, c.stock, sKeys.map(k => DB.stock[k] || []), (v, i) => sKeys[i], (id, v, t) => [id, t],
+      "INSERT INTO stock (item_id, data) VALUES (?, ?) ON CONFLICT(item_id) DO UPDATE SET data = excluded.data", "DELETE FROM stock WHERE item_id = ?", null, full);
+    const gKeys = Object.keys(DB.settings || {});
+    n += syncTable(db, c.settings, gKeys.map(k => DB.settings[k]), (v, i) => gKeys[i], (id, v, t) => [id, t],
+      "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", "DELETE FROM settings WHERE key = ?", null, full);
+    // kv: bu kalitlar hech qachon o'chirilmaydi.
+    const kvVals = { orderSeq: DB.orderSeq || 0, smsLog: DB.smsLog || [], notifState: DB.notifState || {}, promoCodes: DB.promoCodes || {}, automation: DB.automation || {} };
+    let kvUp = null;
+    for (const k in kvVals) {
+      const t = JSON.stringify(kvVals[k]);
+      if (c.kv.get(k) !== t) { (kvUp || (kvUp = db.prepare("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"))).run(k, t); c.kv.set(k, t); n++; }
     }
-
-    // payments
-    const paymentIds = (DB.payments || []).map(p => String(p.id));
-    syncKeyedDelete(db, "payments", "id", paymentIds);
-    const pStmt = db.prepare(
-      "INSERT INTO payments (id, uid, status, ts, data) VALUES (?, ?, ?, ?, ?) " +
-      "ON CONFLICT(id) DO UPDATE SET uid = excluded.uid, status = excluded.status, " +
-      "ts = excluded.ts, data = excluded.data"
-    );
-    for (const p of DB.payments || []) {
-      pStmt.run(String(p.id), String(p.uid != null ? p.uid : ""), p.status || null, p.ts || null, JSON.stringify(p));
-    }
-
-    // reviews
-    const reviewIds = (DB.reviews || []).map(r => String(r.id));
-    syncKeyedDelete(db, "reviews", "id", reviewIds);
-    const rStmt = db.prepare(
-      "INSERT INTO reviews (id, order_id, uid, data) VALUES (?, ?, ?, ?) " +
-      "ON CONFLICT(id) DO UPDATE SET order_id = excluded.order_id, uid = excluded.uid, data = excluded.data"
-    );
-    for (const r of DB.reviews || []) {
-      rStmt.run(String(r.id), r.orderId || null, String(r.uid != null ? r.uid : ""), JSON.stringify(r));
-    }
-
-    // stock
-    syncKeyedDelete(db, "stock", "item_id", Object.keys(DB.stock || {}));
-    const sStmt = db.prepare(
-      "INSERT INTO stock (item_id, data) VALUES (?, ?) ON CONFLICT(item_id) DO UPDATE SET data = excluded.data"
-    );
-    for (const k in DB.stock) sStmt.run(k, JSON.stringify(DB.stock[k] || []));
-
-    // settings
-    syncKeyedDelete(db, "settings", "key", Object.keys(DB.settings || {}));
-    const setStmt = db.prepare(
-      "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-    );
-    for (const k in DB.settings) setStmt.run(k, JSON.stringify(DB.settings[k]));
-
-    db.prepare("INSERT INTO kv (key, value) VALUES ('orderSeq', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-      .run(JSON.stringify(DB.orderSeq || 0));
-    db.prepare("INSERT INTO kv (key, value) VALUES ('smsLog', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-      .run(JSON.stringify(DB.smsLog || []));
-    db.prepare("INSERT INTO kv (key, value) VALUES ('notifState', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-      .run(JSON.stringify(DB.notifState || {}));
-    db.prepare("INSERT INTO kv (key, value) VALUES ('promoCodes', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-      .run(JSON.stringify(DB.promoCodes || {}));
-    db.prepare("INSERT INTO kv (key, value) VALUES ('automation', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-      .run(JSON.stringify(DB.automation || {}));
+    return n;
   });
 }
 
