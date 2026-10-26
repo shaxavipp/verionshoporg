@@ -538,6 +538,32 @@ nav button:nth-child(5) svg{animation-delay:1s}
   border:1px solid var(--line);border-radius:11px;padding:8px 11px;margin-top:8px;font-size:12.5px}
 
 /* balance card */
+.xcard{margin:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.xcard .xt{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;margin-bottom:8px}
+.xpromo{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--card2);margin-top:6px}
+.xpromo .xc{font-family:ui-monospace,monospace;font-weight:800;color:var(--acc2);font-size:13px;letter-spacing:.04em}
+.xpromo .xd{font-size:11px;color:var(--mut);margin-top:1px;line-height:1.3}
+.xpromo button{margin-left:auto;flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:5px 9px;font-size:11px;font-weight:700}
+.xfaq details{border-top:1px solid var(--line);padding:8px 0}
+.xfaq details:first-of-type{border-top:none}
+.xfaq summary{list-style:none;cursor:pointer;font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.xfaq summary::-webkit-details-marker{display:none}
+.xfaq summary::after{content:"+";color:var(--mut);font-weight:800;transition:transform .2s}
+.xfaq details[open] summary::after{transform:rotate(45deg)}
+.xfaq .xa{font-size:12px;color:var(--mut2);margin-top:6px;line-height:1.45;white-space:pre-wrap}
+.xsoc{display:flex;flex-wrap:wrap;gap:8px}
+.xsoc a{flex:1 1 calc(50% - 8px);text-align:center;text-decoration:none;color:var(--txt);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:9px 6px;font-size:12px;font-weight:700}
+.bnr{margin:10px 16px 2px;position:relative;border-radius:18px;overflow:hidden;aspect-ratio:16/7;background:var(--card2)}
+.bnr .bt{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.bnr .bt::-webkit-scrollbar{display:none}
+.bnr .bs{flex:0 0 100%;height:100%;scroll-snap-align:center;display:block}
+.bnr .bs img{width:100%;height:100%;object-fit:cover;display:block}
+.bnr .bd{position:absolute;bottom:7px;left:0;right:0;display:flex;justify-content:center;gap:5px;pointer-events:none}
+.bnr .bd i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.45);transition:width .25s,background .25s}
+.bnr .bd i.on{width:16px;background:#fff}
+.pmlogo{font-weight:900;font-size:11px;letter-spacing:.01em;line-height:1}
+.method .ic:has(.pmlogo){background:#fff!important;box-shadow:none}
+.method .ic img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
 .gtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 10px;padding:6px 16px 4px}
 .gtile{background:none;border:none;padding:0;color:var(--txt);text-align:center;position:relative;min-width:0;transition:transform .15s}
 .gtile:active{transform:scale(.93)}
@@ -904,7 +930,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-27.3";
+var CLIENT_BUILD="2026-10-27.4";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2616,11 +2642,7 @@ function homeHTML(){
       +'<div class="brow"><button data-gotopay="1">'+ic("plus",14)+' '+esc(t("bal_topup"))+'</button>'
       +'<button data-support="1">'+ic("headset",14)+' '+esc(t("bal_support"))+'</button></div></div>';
   }
-  var pop=gamesOf("games").slice(0,8);
-  if(pop.length){
-    html+='<div class="shead"><b>'+esc(t("pop_games")||"Ommabop o'yinlar")+'</b><button data-gohub="games">'+esc(t("view_all_btn"))+' ›</button></div>'
-      +'<div class="gtiles">'+pop.map(gameTileHTML).join("")+'</div>';
-  }
+  html+=bannersHTML();
   html+=categoryCardsHTML();
   html+='<div id="wrapReviews">'+reviewsBlockHTML()+'</div>';
   html+='<div id="wrapLeaderboard">'+leaderboardBlockHTML()+'</div>';
@@ -3245,7 +3267,7 @@ function payHTML(){
       var cName=c.id==="intl"?t("intl_name"):c.name;
       var sub=c.id==="bank"?t("terminal"):(c.id==="intl"?t("visa_mc"):t("card_transfer"));
       html+='<button class="method'+(c.enabled?"":" dis")+'" data-method="'+c.id+'" '+(c.enabled?"":"disabled")+'>'
-        +'<span class="ic">'+slotEmojiHTML("pay:"+c.id,ic(c.icon,23))+'</span><span><span class="mn">'+esc(cName)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
+        +'<span class="ic">'+(payLogoHTML(c)||slotEmojiHTML("pay:"+c.id,ic(c.icon,23)))+'</span><span><span class="mn">'+esc(cName)+'</span><br><span class="md">'+esc(c.enabled?sub:t("soon"))+'</span></span></button>';
     }
     html+='</div>'
       +'<div class="refline" style="background:none;border:none;padding:8px 0 0;margin-top:2px">'
@@ -4003,6 +4025,7 @@ function profileHTML(){
     +svcRow('',"bolt","#8e6fef",t("reduce_motion"),t("reduce_motion_sub"),'<button class="swbtn'+(S.reduceMotion?" on":"")+'" id="reduceMotionBtn"><i></i></button>',"profile:motion")
     +svcRow('',"bell","#e67e22",t("notif_title"),t("notif_sub"),'<button class="swbtn'+(ME.notifEnabled?" on":"")+'" id="notifEnabledBtn"><i></i></button>',"profile:notif")
     +'</div>';
+  html+=profileExtrasHTML();
   html+='<div style="height:24px"></div>';
   return html;
 }
@@ -4028,6 +4051,7 @@ var ADM_TILES=[
     ["reviews","star","#eab308","Sharhlar","Tasdiqlash, tahrirlash"]]],
   ["Marketing",[
     ["promo","gift","#ec4899","Promo-kodlar","Chegirmalar"],
+    ["extras","camera","#06b6d4","Profil va bezak","Banner, FAQ, tarmoqlar, to'lov rasmlari"],
     ["loyalty","trophy","#f59e0b","Sodiqlik","Bosqichlar, bonus"],
     ["referral","gift","#8b5cf6","Referal","Taklif bonusi"],
     ["broadcast","send","#06b6d4","Ommaviy xabar","Hammaga yuborish"]]],
@@ -4042,7 +4066,7 @@ var ADM_TILES=[
 function admTileAction(k){
   var m={money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},aibot:function(){openAdminAi(openAdmin);},
     catalog:openAdminCatalog,games:function(){openAdminGames("");},ai:function(){openAdminGames("ai");},nakrutka:openAdminNakrutka,cats:openAdminCategories,deliveries:openAdminDeliveries,reviews:openAdminReviews,
-    promo:openAdminPromo,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
+    promo:openAdminPromo,extras:openAdminExtras,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
     bot:openAdminBot,channels:openAdminChannels,automation:openAdminAutomation,dash:openAdminDashboard,emoji:openAdminUiEmoji,
     backup:function(){
       if(!confirm("Zaxira nusxa olib, bot orqali yuborilsinmi?"))return;
@@ -4170,6 +4194,51 @@ function openAdminReferral(){
   });
 }
 /* ===== admin: promo-kodlar ===== */
+function openAdminExtras(){
+  api("/api/admin/extras").then(function(c){
+    var B=c.banners.slice(),P=Object.assign({},c.payImgs||{});
+    var sw=function(id,label,on){return '<div class="switch"><span style="font-size:13.5px">'+label+'</span><button class="swbtn'+(on?" on":"")+'" id="'+id+'"><i></i></button></div>';};
+    var faqTxt=c.faq.map(function(f){return f.q+" | "+f.a;}).join("\n"),socTxt=c.social.map(function(x){return x.name+" | "+x.url;}).join("\n");
+    function bannersBox(){
+      return B.map(function(b,i){return '<div class="arow" style="align-items:center;gap:8px;margin-bottom:6px"><img src="'+esc(b.img)+'" style="width:96px;height:42px;object-fit:cover;border-radius:8px">'
+        +'<input data-blink="'+i+'" value="'+esc(b.link||"")+'" placeholder="Havola (ixtiyoriy)" style="flex:1;min-width:0"><button class="btn sm red" data-bdel="'+i+'" style="width:auto">✕</button></div>';}).join("")
+        +gImgPick("exBnrNew","Yangi banner qo'shish (keng rasm, 16:7)","");
+    }
+    var html='<h2>'+ic("camera",18)+' Profil va bezak</h2>'
+      +'<div class="sect" style="margin:4px 0 6px">Qaysi bloklar ko\'rinsin</div>'
+      +sw("exPromos","🎁 Profilda ommaviy promokodlar",c.blocks.promos)+sw("exFaq","❓ Profilda savol-javoblar (FAQ)",c.blocks.faq)
+      +sw("exSoc","🌐 Profilda ijtimoiy tarmoqlar",c.blocks.social)+sw("exBnr","🖼 Bosh sahifada banner",c.blocks.banners)
+      +'<div class="d" style="margin:4px 0 10px">Promokodni profilda ko\'rsatish: Promo-kodlar bo\'limida «🔒 Maxfiy» tugmasini bosing. Maxfiy kodlar hech qayerda ko\'rinmaydi.</div>'
+      +'<div class="sect" style="margin:12px 0 6px">Reklama bannerlari</div><div id="exBnrBox">'+bannersBox()+'</div>'
+      +'<div class="sect" style="margin:14px 0 6px">FAQ — har qatorda: Savol | Javob</div>'
+      +'<textarea id="exFaqT" class="exta" style="height:130px">'+esc(faqTxt)+'</textarea>'
+      +'<div class="sect" style="margin:14px 0 6px">Ijtimoiy tarmoqlar — har qatorda: Nomi | https://havola</div>'
+      +'<textarea id="exSocT" class="exta" style="height:80px" placeholder="Telegram kanal | https://t.me/verionshop">'+esc(socTxt)+'</textarea>'
+      +'<div class="sect" style="margin:14px 0 6px">To\'lov usullari rasmlari (bo\'sh — standart belgi)</div>'
+      +CARDS.map(function(cd){return gImgPick("exPay_"+cd.id,cd.name,P[cd.id]||"");}).join("")
+      +'<div style="height:12px"></div><button class="btn" id="exSave">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
+    var sh=openSheet(html,openAdmin);
+    ["exPromos","exFaq","exSoc","exBnr"].forEach(function(id){sh.querySelector("#"+id).addEventListener("click",function(){this.classList.toggle("on");});});
+    function bindB(){
+      var box=sh.querySelector("#exBnrBox");
+      box.querySelectorAll("[data-bdel]").forEach(function(b){b.addEventListener("click",function(){B.splice(+this.getAttribute("data-bdel"),1);box.innerHTML=bannersBox();bindB();});});
+      box.querySelectorAll("[data-blink]").forEach(function(inp){inp.addEventListener("input",function(){B[+this.getAttribute("data-blink")].link=this.value.trim();});});
+      gBindImg(sh,"exBnrNew",1600,function(url){if(url){B.push({img:url,link:""});box.innerHTML=bannersBox();bindB();}});
+    }
+    bindB();
+    CARDS.forEach(function(cd){gBindImg(sh,"exPay_"+cd.id,256,function(url){if(url)P[cd.id]=url;else delete P[cd.id];});});
+    var lines=function(v){return v.split("\n").map(function(l){var i=l.indexOf("|");return i<0?null:[l.slice(0,i).trim(),l.slice(i+1).trim()];}).filter(function(x){return x&&x[0]&&x[1];});};
+    sh.querySelector("#exSave").addEventListener("click",function(){
+      var btn=this;btn.disabled=true;
+      var on=function(id){return sh.querySelector("#"+id).classList.contains("on");};
+      api("/api/admin/extras","POST",{blocks:{promos:on("exPromos"),faq:on("exFaq"),social:on("exSoc"),banners:on("exBnr")},
+        faq:lines(sh.querySelector("#exFaqT").value).map(function(x){return {q:x[0],a:x[1]};}),
+        social:lines(sh.querySelector("#exSocT").value).map(function(x){return {name:x[0],url:x[1]};}),
+        banners:B,payImgs:P}).then(function(){btn.disabled=false;haptic("ok");toast(t("a_saved"));loadExtras();})
+        .catch(function(e){btn.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+    });
+  }).catch(function(){toast(t("srv_off"),true);});
+}
 function openAdminPromo(){
   var html='<h2>'+esc(t("a_promo_title"))+'</h2>'
     +'<div class="sect" style="margin:0 0 6px">Yangi promo-kod</div>'
@@ -4211,9 +4280,17 @@ function openAdminPromo(){
           +'<div class="d" style="margin:4px 0">'+esc(val)+' chegirma · '+esc(fmtExpiry(p))+(p.note?(" · "+esc(p.note)):"")+'</div>'
           +'<div style="display:flex;gap:8px;margin-top:6px">'
           +'<button class="btn sm gray" data-toggle="'+esc(p.code)+'">'+(p.active?"O\'chirish":"Yoqish")+'</button>'
+          +'<button class="btn sm gray" data-pub="'+esc(p.code)+'" data-pubon="'+(p.public?1:0)+'">'+(p.public?"👁 Profilda: ha":"🔒 Maxfiy")+'</button>'
           +'<button class="btn sm red" data-del="'+esc(p.code)+'">O\'chirib tashlash</button>'
           +'</div></div>';
       }).join("");
+      var pb=sh.querySelectorAll("[data-pub]");
+      for(var q=0;q<pb.length;q++)pb[q].addEventListener("click",function(){
+        var code=this.getAttribute("data-pub"),on=this.getAttribute("data-pubon")!=="1",desc;
+        if(on){desc=prompt("Profilda ko'rinadigan qisqa tavsif (masalan: MLBB uchun 5% chegirma):","");if(desc===null)return;}
+        api("/api/admin/promo/public","POST",{code:code,public:on,desc:desc}).then(function(){toast(on?"👁 Profilda ko'rinadi":"🔒 Maxfiy qilindi");loadList();loadExtras();})
+          .catch(function(){toast(t("srv_off"),true);});
+      });
       var tb=sh.querySelectorAll("[data-toggle]");
       for(var k=0;k<tb.length;k++)tb[k].addEventListener("click",function(){
         api("/api/admin/promo/toggle","POST",{code:this.getAttribute("data-toggle")}).then(function(){haptic("ok");loadList();});
@@ -6731,6 +6808,61 @@ function updateHomeWidgets(){
   }
 }
 var _reviewsSig="",_leaderboardSig="";
+var EXTRAS=null;
+function loadExtras(){
+  api("/api/extras").then(function(r){EXTRAS=r;if(S.screen==="profile"||S.screen==="home"||S.screen==="pay")render();}).catch(function(){});
+}
+function copyText(txt){
+  try{navigator.clipboard.writeText(txt).then(function(){toast("✅ Nusxa olindi");},function(){toast(txt);});}catch(e){toast(txt);}
+}
+function profileExtrasHTML(){
+  if(!EXTRAS)return "";
+  var h="";
+  if(EXTRAS.promos&&EXTRAS.promos.length){
+    h+='<div class="xcard"><div class="xt">'+ic("gift",16)+' Promokodlar</div>';
+    EXTRAS.promos.forEach(function(p){
+      var val=p.type==="percent"?(p.value+"% chegirma"):(money(p.value)+" chegirma");
+      h+='<div class="xpromo"><div style="min-width:0"><div class="xc">'+esc(p.code)+'</div><div class="xd">'+esc(p.desc||val)
+        +(p.minOrder?' · min '+esc(money(p.minOrder)):'')+'</div></div><button data-xcopy="'+esc(p.code)+'">Nusxa</button></div>';
+    });
+    h+='<div class="d" style="font-size:10.5px;color:var(--mut);margin-top:8px">Kodni xarid oynasidagi «Promo-kod» maydoniga kiriting.</div></div>';
+  }
+  if(EXTRAS.faq&&EXTRAS.faq.length){
+    h+='<div class="xcard xfaq"><div class="xt">'+ic("info",16)+' Ko\'p so\'raladigan savollar</div>';
+    EXTRAS.faq.forEach(function(f){h+='<details><summary>'+esc(f.q)+'</summary><div class="xa">'+esc(f.a)+'</div></details>';});
+    h+='</div>';
+  }
+  if(EXTRAS.social&&EXTRAS.social.length){
+    h+='<div class="xcard"><div class="xt">'+ic("globe",16)+' Ijtimoiy tarmoqlar</div><div class="xsoc">';
+    EXTRAS.social.forEach(function(x){h+='<a href="'+esc(x.url)+'" data-xlink="'+esc(x.url)+'">'+esc(x.name)+'</a>';});
+    h+='</div></div>';
+  }
+  return h;
+}
+function bannersHTML(){
+  var b=EXTRAS&&EXTRAS.banners;if(!b||!b.length)return "";
+  return '<div class="bnr"><div class="bt" id="bnrTrack">'+b.map(function(x,i){
+    return '<a class="bs" '+(x.link?'data-xlink="'+esc(x.link)+'"':'')+'><img src="'+esc(x.img)+'" alt="" loading="'+(i?"lazy":"eager")+'"></a>';
+  }).join("")+'</div>'+(b.length>1?'<div class="bd">'+b.map(function(_,i){return '<i'+(i?'':' class="on"')+'></i>';}).join("")+'</div>':'')+'</div>';
+}
+var BNR_T=null;
+function bindBanners(){
+  clearInterval(BNR_T);
+  var tr=document.getElementById("bnrTrack");if(!tr)return;
+  var n=tr.children.length,dots=tr.parentNode.querySelectorAll(".bd i");
+  var cur=function(){return Math.round(tr.scrollLeft/Math.max(1,tr.clientWidth));};
+  tr.addEventListener("scroll",function(){var k=cur();for(var i=0;i<dots.length;i++)dots[i].classList.toggle("on",i===k);},{passive:true});
+  if(n>1)BNR_T=setInterval(function(){if(!document.body.contains(tr)){clearInterval(BNR_T);return;}if(document.hidden)return;
+    tr.scrollTo({left:((cur()+1)%n)*tr.clientWidth,behavior:"smooth"});},4500);
+}
+function payLogoHTML(c){
+  var img=EXTRAS&&EXTRAS.payImgs&&EXTRAS.payImgs[c.id];
+  if(img)return '<img src="'+esc(img)+'" alt="">';
+  if(c.id==="humo")return '<span class="pmlogo" style="color:#0f9d8f;font-size:10.5px">HUMO</span>';
+  if(c.id==="uzcard")return '<span class="pmlogo" style="color:#1d4ed8;font-size:8px">UZCARD</span>';
+  if(c.id==="intl")return '<span class="pmlogo" style="color:#1a1f71;font-style:italic;font-size:12px">VISA</span>';
+  return null;
+}
 function loadReviews(){
   if(typeof fetch!=="function"){REVIEWS=[];REVIEW_STATS={count:0,avg:0};return;}
   api("/api/reviews").then(function(r){
@@ -7221,6 +7353,14 @@ function openAdminForm(editId){
 function bind(){
   var i,els;
   bindGames();
+  els=document.querySelectorAll("[data-xcopy]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.preventDefault();haptic();copyText(this.getAttribute("data-xcopy"));});
+  els=document.querySelectorAll("[data-xlink]");
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){
+    e.preventDefault();var u=this.getAttribute("data-xlink");if(!u)return;
+    try{if(/^https:\/\/t\.me\//.test(u)&&TG&&TG.openTelegramLink)TG.openTelegramLink(u);else if(TG&&TG.openLink)TG.openLink(u);else window.open(u,"_blank");}catch(err){window.open(u,"_blank");}
+  });
+  bindBanners();
   els=document.querySelectorAll("[data-gohub]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){S.category=this.getAttribute("data-gohub");S.ghubQ="";haptic();render();window.scrollTo(0,0);});
   var ghq=document.getElementById("ghubQ");
@@ -7504,6 +7644,7 @@ function boot(){
   loadLeaderboard();
   loadReferral();
   loadLoyalty();
+  loadExtras();
   setInterval(tickTimer,1000);
   setInterval(rotateReviewWidget,4500);
   // Fon yangilanishi: ilova ko'rinib turganda 30 s da bir; reyting va sharhlar 2 daqiqada bir.

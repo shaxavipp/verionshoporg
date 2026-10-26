@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-27.3";
+const BUILD = "2026-10-27.4";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1537,6 +1537,24 @@ function findCachedPremiumEmoji(emojiId) {
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
 const FRAGMENT_API_KEY = process.env.FRAGMENT_API_KEY || "";
 const FRAGMENT_HOST = "fragment-api.uz";
+// Yetkazib beruvchi (Fragment, Gift bot) rad etganda: mijozga ichki sabab (hamyonda TON
+// qolmadi va h.k.) ko'rsatilmaydi — "hozircha ishlamayapti, keyinroq urinib ko'ring".
+// Haqiqiy sabab adminlarga darhol yuboriladi (bir xil xizmat uchun 10 daqiqada bir marta).
+// Faqat mijozning o'z xatosi (noto'g'ri @username) unga aytiladi.
+const SUP_ALERT = {};
+function supplierFail(res, kind, raw, code) {
+  const m = String(raw || "");
+  const isFunds = /balance|wallet|fund|insufficient|not enough|ton\b|hamyon|mablag|баланс|средств/i.test(m);
+  if (!isFunds && /user ?name|recipient|no such user|user not found|invalid user|пользовател|foydalanuvchi topilmadi/i.test(m))
+    return send(res, 502, { error: code, message: "Bu @username topilmadi yoki unga yuborib bo'lmaydi. Tekshirib qayta urinib ko'ring." });
+  const now = Date.now();
+  if (!SUP_ALERT[kind] || now - SUP_ALERT[kind] > 10 * 60 * 1000) {
+    SUP_ALERT[kind] = now;
+    notifyAdmins("🚨 " + kind + " ishlamayapti — mijozlar sotib ololmayapti!\nSabab: " + m.slice(0, 300) +
+      (isFunds ? "\n\n💰 Hamyon/balansni to'ldiring." : "\n\nSozlamalarni tekshiring."));
+  }
+  return send(res, 503, { error: code, message: "Hozircha bu xizmat vaqtincha ishlamayapti. Iltimos, birozdan keyin qayta urinib ko'ring." });
+}
 function fragmentCall(path, body) {
   return new Promise((resolve, reject) => {
     if (!FRAGMENT_API_KEY) return reject(Object.assign(new Error("FRAGMENT_API_KEY sozlanmagan"), { notSent: true }));
@@ -1720,6 +1738,26 @@ function auth(req) {
   const r = checkInitData(req.headers["x-init-data"] || "");
   req._authReason = r.reason;
   return r.user;
+}
+function extrasCfg() {
+  const c = DB.settings.extras || (DB.settings.extras = {});
+  c.blocks = Object.assign({ promos: true, faq: true, social: true, banners: true }, c.blocks || {});
+  if (!Array.isArray(c.faq)) c.faq = [
+    { q: "To'lov qancha vaqtda tushadi?", a: "Odatda 1–15 daqiqa ichida. Chekni yuborganingizdan keyin admin tasdiqlaydi." },
+    { q: "Promokodni qanday ishlataman?", a: "Mahsulotni tanlab, xarid oynasidagi «Promo-kod» maydoniga kodni yozing va «Qo'llash»ni bosing." },
+    { q: "Buyurtma kelmasa nima qilaman?", a: "«Texnik yordam» bo'limi orqali yozing — buyurtma raqamini ko'rsating." }];
+  if (!Array.isArray(c.social)) c.social = [];
+  if (!Array.isArray(c.banners)) c.banners = [];
+  if (!c.payImgs || typeof c.payImgs !== "object") c.payImgs = {};
+  return c;
+}
+function publicExtras() {
+  const c = extrasCfg(), now = Date.now();
+  const promos = !c.blocks.promos ? [] : Object.values(DB.promoCodes || {})
+    .filter(p => p.public && p.active && (!p.expiresAt || p.expiresAt > now) && (!p.maxUses || (p.usedCount || 0) < p.maxUses))
+    .map(p => ({ code: p.code, desc: p.desc || p.note || "", type: p.type, value: p.value, minOrder: p.minOrder || 0 }));
+  return { promos, faq: c.blocks.faq ? c.faq : [], social: c.blocks.social ? c.social : [],
+    banners: c.blocks.banners ? c.banners : [], payImgs: c.payImgs };
 }
 function isAdm(u) { return !!u && ADMIN_IDS.indexOf(u.id) !== -1; }
 
@@ -2087,6 +2125,27 @@ const server = http.createServer((req, res) => {
   }
 
   /* ----- user endpoints (need valid Telegram signature) ----- */
+  /* Profil va bosh sahifa qo'shimchalari: ommaviy promo-kodlar, FAQ, ijtimoiy tarmoqlar,
+     reklama bannerlari, to'lov usullari bezagi. Hammasi admin paneldan boshqariladi. */
+  if (url === "/api/extras" && m === "GET") return sendCached(req, res, publicExtras());
+  if (url === "/api/admin/extras" && m === "GET") {
+    if (!isAdm(auth(req))) return send(res, 403, { error: "not admin" });
+    return send(res, 200, extrasCfg());
+  }
+  if (url === "/api/admin/extras" && m === "POST") {
+    if (!isAdm(auth(req))) return send(res, 403, { error: "not admin" });
+    return readBody(req, res, b => {
+      const c = extrasCfg(), str = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
+      const okUrl = v => /^(https?:\/\/|\/gimg\/|tg:\/\/)/i.test(String(v || "")) ? str(v, 500) : "";
+      if (b.blocks) for (const k of ["promos", "faq", "social", "banners"]) if (k in b.blocks) c.blocks[k] = !!b.blocks[k];
+      if (Array.isArray(b.faq)) c.faq = b.faq.slice(0, 30).map(x => ({ q: str(x && x.q, 200), a: str(x && x.a, 1000) })).filter(x => x.q && x.a);
+      if (Array.isArray(b.social)) c.social = b.social.slice(0, 10).map(x => ({ name: str(x && x.name, 40), url: okUrl(x && x.url) })).filter(x => x.name && x.url);
+      if (Array.isArray(b.banners)) c.banners = b.banners.slice(0, 10).map(x => ({ img: okUrl(x && x.img), link: okUrl(x && x.link) })).filter(x => x.img);
+      if (b.payImgs && typeof b.payImgs === "object") { c.payImgs = {}; for (const k of Object.keys(b.payImgs).slice(0, 20)) { const u = okUrl(b.payImgs[k]); if (u) c.payImgs[str(k, 40)] = u; } }
+      save();
+      send(res, 200, Object.assign({ ok: true }, c));
+    });
+  }
   if (url === "/api/stock-counts" && m === "GET") {
     const out = {};
     for (const k in DB.stock) out[k] = (DB.stock[k] || []).length;
@@ -2505,7 +2564,7 @@ const server = http.createServer((req, res) => {
         if (!j || j.ok !== true) {
           acc.balance += price; save();                       // aniq rad etildi — pul qaytadi
           const msg = (j && j.message) || "Fragment xatosi";
-          return send(res, 502, { error: "fragment_failed", message: msg });
+          return supplierFail(res, "Fragment (Stars/Premium)", msg, "fragment_failed");
         }
         const summary = "⭐ " + amount + " Stars @" + uname + " ga yuborildi";
         const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
@@ -2515,7 +2574,7 @@ const server = http.createServer((req, res) => {
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => {
-        if (requestNotSent(e)) { acc.balance += price; save(); return send(res, 502, { error: "fragment_failed", message: String(e.message || e) }); }
+        if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Fragment (Stars/Premium)", String(e.message || e), "fragment_failed"); }
         const o = unknownDeliveryOrder(u, it, "Telegram Stars (" + amount + ") @" + uname, price, e.message);
         send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
       });
@@ -2546,7 +2605,7 @@ const server = http.createServer((req, res) => {
           if (!j || j.ok !== true) {
             acc.balance += price; save();                     // aniq rad etildi — pul qaytadi
             const msg = (j && j.message) || "Fragment xatosi";
-            return send(res, 502, { error: "fragment_failed", message: msg });
+            return supplierFail(res, "Fragment (Stars/Premium)", msg, "fragment_failed");
           }
           const summary = isStars
             ? "⭐ " + body.amount + " Stars @" + u.username + " ga yuborildi"
@@ -2558,7 +2617,7 @@ const server = http.createServer((req, res) => {
           creditReferralOnOrder(o);
           send(res, 200, { ok: true, order: o, balance: acc.balance });
         }).catch(e => {
-          if (requestNotSent(e)) { acc.balance += price; save(); return send(res, 502, { error: "fragment_failed", message: String(e.message || e) }); }
+          if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Fragment (Stars/Premium)", String(e.message || e), "fragment_failed"); }
           const o = unknownDeliveryOrder(u, it, title + " @" + u.username, price, e.message);
           send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
         });
@@ -2631,7 +2690,7 @@ const server = http.createServer((req, res) => {
         if (!j || j.ok !== true) {
           acc.balance += price; save();                       // aniq rad etildi — pul qaytadi
           const msg = (j && j.error) || "Gift yuborishda xatolik";
-          return send(res, 502, { error: "gift_failed", message: msg });
+          return supplierFail(res, "Telegram Gift bot", msg, "gift_failed");
         }
         const summary = "🎁 " + title + " @" + uname + " ga yuborildi" + (anonymous ? " (anonim)" : "");
         const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
@@ -2642,7 +2701,7 @@ const server = http.createServer((req, res) => {
         creditReferralOnOrder(o);
         send(res, 200, { ok: true, order: o, balance: acc.balance });
       }).catch(e => {
-        if (requestNotSent(e)) { acc.balance += price; save(); return send(res, 502, { error: "gift_failed", message: String(e.message || e) }); }
+        if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Telegram Gift bot", String(e.message || e), "gift_failed"); }
         const o = unknownDeliveryOrder(u, it, title + " → @" + uname, price, e.message, { giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous });
         send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
       });
@@ -2943,6 +3002,17 @@ const server = http.createServer((req, res) => {
         p.active = !p.active;
         save();
         send(res, 200, { ok: true, active: p.active });
+      });
+    }
+    // Promo-kodni profilda (hammaga) ko'rsatish yoki yashirish + qisqa tavsif.
+    if (url === "/api/admin/promo/public" && m === "POST") {
+      return readBody(req, res, b => {
+        const p = DB.promoCodes[normPromo(b.code)];
+        if (!p) return send(res, 404, { error: "not found" });
+        p.public = !!b.public;
+        if (b.desc !== undefined) p.desc = String(b.desc || "").slice(0, 160);
+        save();
+        send(res, 200, { ok: true, public: p.public, desc: p.desc || "" });
       });
     }
     if (url === "/api/admin/promo/delete" && m === "POST") {
