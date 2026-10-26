@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 230" width="860" height="230">
+  <!-- Verion Shop — 4-logo: VER + chaqmoq + ON, ostida SHOP. Harflar shrift emas, shakl (har qayerda bir xil ko'rinadi). -->
+  <defs>
+    <linearGradient id="vs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#dfe4ea"/><stop offset=".52" stop-color="#b8c0cb"/><stop offset="1" stop-color="#e9edf2"/>
+    </linearGradient>
+    <linearGradient id="vb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ea2ff"/><stop offset="1" stop-color="#1463ff"/></linearGradient>
+  </defs>
+  <g fill="url(#vs)" fill-rule="evenodd" transform="translate(10 10)">
+    <!-- V -->
+    <path d="M0 0H40L74 92L108 0H148L96 140H52Z"/>
+    <!-- E -->
+    <path d="M162 0H262V30H198V55H254V85H198V110H262V140H162Z"/>
+    <!-- R -->
+    <path d="M276 0H340C372 0 390 18 390 45C390 66 378 81 360 87L394 140H352L323 92H312V140H276ZM312 30V62H337C348 62 354 56 354 46C354 36 348 30 337 30Z"/>
+    <!-- O -->
+    <path d="M538 0C579 0 610 30 610 70C610 110 579 140 538 140C497 140 466 110 466 70C466 30 497 0 538 0ZM538 34C518 34 503 50 503 70C503 90 518 106 538 106C558 106 573 90 573 70C573 50 558 34 538 34Z"/>
+    <!-- N -->
+    <path d="M626 0H662L722 86V0H758V140H722L662 54V140H626Z"/>
+  </g>
+  <!-- chaqmoq (I o'rnida) -->
+  <path d="M452 8L414 86H438L422 150L470 62H446L470 8Z" fill="url(#vb)"/>
+  <!-- SHOP -->
+  <rect x="150" y="194" width="150" height="5" rx="2.5" fill="#1f7bff"/>
+  <rect x="580" y="194" width="150" height="5" rx="2.5" fill="#1f7bff"/>
+  <text x="440" y="212" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="44" letter-spacing="18" fill="#2f8fff">SHOP</text>
+</svg>
