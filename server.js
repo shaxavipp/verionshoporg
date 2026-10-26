@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-27.8";
+const BUILD = "2026-10-27.9";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1559,8 +1559,15 @@ function supplierFail(res, kind, raw, code) {
   const now = Date.now();
   if (!SUP_ALERT[kind] || now - SUP_ALERT[kind] > 10 * 60 * 1000) {
     SUP_ALERT[kind] = now;
-    notifyAdmins("🚨 " + kind + " ishlamayapti — mijozlar sotib ololmayapti!\nSabab: " + m.slice(0, 300) +
-      (isFunds ? "\n\n💰 Hamyon/balansni to'ldiring." : "\n\nSozlamalarni tekshiring."));
+    // Mablag' tugaganda kripto atamalari (TON, gaz) ko'rsatilmaydi — faqat "coin" va kerakli miqdor.
+    let why = m.slice(0, 300);
+    if (isFunds) {
+      const nums = (m.match(/\d+(?:[.,]\d+)?/g) || []).map(x => Number(x.replace(",", "."))).filter(x => x > 0 && x < 1e7);
+      const need = nums.length ? Math.ceil(nums.reduce((a, x) => a + x, 0) * 100) / 100 : 0;
+      why = "Hamyonda coin yetarli emas" + (need ? " — kerak: " + need + " coin" : "") + ".";
+    }
+    notifyAdmins("🚨 " + kind + " ishlamayapti — mijozlar sotib ololmayapti!\nSabab: " + why +
+      (isFunds ? "\n\n💰 Hamyonga coin to'ldiring." : "\n\nSozlamalarni tekshiring."));
   }
   return send(res, 503, { error: code, message: "Hozircha bu xizmat vaqtincha ishlamayapti. Iltimos, birozdan keyin qayta urinib ko'ring." });
 }
