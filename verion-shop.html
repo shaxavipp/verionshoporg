@@ -507,6 +507,23 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .chips button.on{border:1px solid transparent;color:#fff;background:var(--grad);font-weight:800;
   transform:scale(1.03);box-shadow:0 4px 14px rgba(47,143,255,.4)}
 .methods{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+/* To'ldirish: 1-qadam (usul tanlash) — keng kartochkalar, logolar ramkasiz */
+.pbal{margin:6px 16px 4px;padding:18px 20px;border-radius:22px;border:1px solid rgba(47,143,255,.35);
+  background:linear-gradient(135deg,rgba(47,143,255,.16),rgba(47,143,255,.03) 70%);text-align:left}
+.pbal .pbl{font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--mut)}
+.pbal .pbv{font-size:34px;font-weight:800;margin-top:4px;color:var(--txt);font-variant-numeric:tabular-nums}
+.pmsect{margin:16px 16px 8px;font-size:14px;font-weight:700;color:var(--mut2)}
+.pmwrap{margin:0 16px}
+.pmwrap .methods{gap:10px}
+.pmwrap .method{height:84px;padding:10px 10px 10px 8px;border-radius:18px;background:var(--card);gap:8px}
+.pmwrap .method .ic{width:50px;height:44px;border-radius:10px;background:none!important;box-shadow:none!important;font-size:24px;color:var(--acc2)}
+.pmwrap .method .ic img{object-fit:contain}
+.pmwrap .method .ic:has(.pmlogo){background:none!important}
+.pmwrap .method .pmlogo{font-size:13.5px!important}
+.pmwrap .method .ic .isvg{width:28px;height:28px}
+.pmwrap .method .mn{font-size:14px}
+.pmwrap .method .md{font-size:11px;margin-top:3px;white-space:normal;line-height:1.25}
+.pmwrap .refline{padding:12px 2px 0!important}
 .method{position:relative;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--card2);height:78px;box-sizing:border-box;overflow:hidden;
   border:1.5px solid var(--line);text-align:left;transition:border-color .18s ease,background .18s ease,transform .18s var(--spring),box-shadow .18s ease;}
 .method>span:last-child{flex:1;min-width:0;display:block;overflow:hidden}
@@ -562,7 +579,6 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .bnr .bd i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.45);transition:width .25s,background .25s}
 .bnr .bd i.on{width:16px;background:#fff}
 .pmlogo{font-weight:900;font-size:11px;letter-spacing:.01em;line-height:1}
-.method .ic:has(.pmlogo){background:#fff!important;box-shadow:none}
 .method .ic img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
 .gtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 10px;padding:6px 16px 4px}
 .gtile{background:none;border:none;padding:0;color:var(--txt);text-align:center;position:relative;min-width:0;transition:transform .15s}
@@ -930,7 +946,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-27.4";
+var CLIENT_BUILD="2026-10-27.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3257,11 +3273,9 @@ function payHTML(){
   // Video qo'llanma + texnik yordam paneli FAQAT shu birinchi qadamda ko'rsatiladi.
   if(!S.topup.method){
     html+='<div class="sect">'+esc(t("pay_title"))+'</div>';
-    html+='<div class="paybox amountcard"><label style="margin-top:0;position:relative;z-index:1">'+esc(t("balance_caps"))+'</label>'
-      +'<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px;position:relative;z-index:1">'
-      +'<span class="payhuge">'+balHTML()+'</span></div></div>';
-    html+='<div class="sect" style="margin:0 16px 6px;font-size:11px">'+esc(t("pay_method_label"))+'</div>';
-    html+='<div class="paybox"><div class="methods">';
+    html+='<div class="pbal"><div class="pbl">'+esc(t("balance_caps"))+'</div><div class="pbv">'+balHTML()+'</div></div>';
+    html+='<div class="pmsect">'+esc(t("pay_method_label"))+'</div>';
+    html+='<div class="pmwrap"><div class="methods">';
     for(var i=0;i<CARDS.length;i++){
       var c=CARDS[i];
       var cName=c.id==="intl"?t("intl_name"):c.name;
@@ -6858,9 +6872,9 @@ function bindBanners(){
 function payLogoHTML(c){
   var img=EXTRAS&&EXTRAS.payImgs&&EXTRAS.payImgs[c.id];
   if(img)return '<img src="'+esc(img)+'" alt="">';
-  if(c.id==="humo")return '<span class="pmlogo" style="color:#0f9d8f;font-size:10.5px">HUMO</span>';
-  if(c.id==="uzcard")return '<span class="pmlogo" style="color:#1d4ed8;font-size:8px">UZCARD</span>';
-  if(c.id==="intl")return '<span class="pmlogo" style="color:#1a1f71;font-style:italic;font-size:12px">VISA</span>';
+  if(c.id==="humo")return '<span class="pmlogo" style="color:#19c0b5;font-size:11px">HUMO</span>';
+  if(c.id==="uzcard")return '<span class="pmlogo" style="color:#4f8bff;font-size:9px">UZCARD</span>';
+  if(c.id==="intl")return '<span class="pmlogo" style="color:#4f8bff;font-style:italic;font-size:12px">VISA</span>';
   return null;
 }
 function loadReviews(){
