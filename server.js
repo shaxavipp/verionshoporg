@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-27.7";
+const BUILD = "2026-10-27.8";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -258,7 +258,15 @@ function creditReferralOnOrder(order) {
 function normPromo(code) { return String(code || "").trim().toUpperCase().replace(/\s+/g, ""); }
 // Kodni tekshiradi (sarflamasdan) — checkout'da "Qo'llash" bosilganda yoki xarid tasdiqlanishidan
 // oldin chaqiriladi. subtotal — chegirmagacha bo'lgan umumiy summa.
-function validatePromo(code, uid, subtotal) {
+// target: { item } (katalog mahsuloti) yoki { game, pkg } (o'yin paketi). Promo-kodda
+// "targets" ro'yxati bo'lsa ("item:ID", "game:ID", "pkg:ID") — faqat o'sha mahsulotlarga ishlaydi.
+function promoFits(p, target) {
+  const t = Array.isArray(p.targets) ? p.targets : [];
+  if (!t.length) return true;
+  if (!target) return false;
+  return t.some(x => (target.item && x === "item:" + target.item) || (target.game && x === "game:" + target.game) || (target.pkg && x === "pkg:" + target.pkg));
+}
+function validatePromo(code, uid, subtotal, target) {
   const c = normPromo(code);
   if (!c) return { ok: false, reason: "empty" };
   const p = DB.promoCodes[c];
@@ -268,6 +276,7 @@ function validatePromo(code, uid, subtotal) {
   if (p.maxUses && (p.usedCount || 0) >= p.maxUses) return { ok: false, reason: "limit" };
   const usedByThis = (p.usedBy && p.usedBy[String(uid)]) || 0;
   if (p.perUserLimit && usedByThis >= p.perUserLimit) return { ok: false, reason: "already_used" };
+  if (!promoFits(p, target)) return { ok: false, reason: "not_for_item" };
   if (p.minOrder && subtotal < p.minOrder) return { ok: false, reason: "min_order", minOrder: p.minOrder };
   const discount = p.type === "fixed"
     ? Math.min(Math.round(Number(p.value) || 0), subtotal)
@@ -1755,7 +1764,7 @@ function publicExtras() {
   const c = extrasCfg(), now = Date.now();
   const promos = !c.blocks.promos ? [] : Object.values(DB.promoCodes || {})
     .filter(p => p.public && p.active && (!p.expiresAt || p.expiresAt > now) && (!p.maxUses || (p.usedCount || 0) < p.maxUses))
-    .map(p => ({ code: p.code, desc: p.desc || p.note || "", type: p.type, value: p.value, minOrder: p.minOrder || 0 }));
+    .map(p => ({ code: p.code, desc: p.desc || p.note || "", type: p.type, value: p.value, minOrder: p.minOrder || 0, only: (p.targetNames || []).slice(0, 5) }));
   return { promos, faq: c.blocks.faq ? c.faq : [], social: c.blocks.social ? c.social : [],
     banners: c.blocks.banners ? c.banners : [], payImgs: c.payImgs };
 }
@@ -2227,7 +2236,7 @@ const server = http.createServer((req, res) => {
       const price = Math.round(Number(it.price) || 0);
       const quantity = Math.max(1, Math.min(10, Math.round(Number(b.quantity) || 1)));
       const subtotal = price * quantity;
-      const r = validatePromo(b.code, u.id, subtotal);
+      const r = validatePromo(b.code, u.id, subtotal, { item: it.id });
       if (!r.ok) return send(res, 409, { error: "promo_invalid", reason: r.reason, minOrder: r.minOrder });
       return send(res, 200, { ok: true, code: r.promo.code, discount: r.discount, total: subtotal - r.discount });
     });
@@ -2638,7 +2647,7 @@ const server = http.createServer((req, res) => {
       let totalPrice = price * quantity;
       let promoApplied = null;
       if (b.promoCode) {
-        const pv = validatePromo(b.promoCode, u.id, totalPrice);
+        const pv = validatePromo(b.promoCode, u.id, totalPrice, { item: it.id });
         if (!pv.ok) return send(res, 409, { error: "promo_invalid", reason: pv.reason, minOrder: pv.minOrder });
         totalPrice = Math.max(0, totalPrice - pv.discount);
         promoApplied = { code: pv.promo.code, discount: pv.discount };
@@ -2989,6 +2998,8 @@ const server = http.createServer((req, res) => {
           expiresAt: b.expiresAt ? Number(b.expiresAt) : null,
           active: true, usedCount: 0, usedBy: {},
           note: String(b.note || "").slice(0, 200),
+          targets: (Array.isArray(b.targets) ? b.targets : []).map(String).filter(x => /^(item|game|pkg):[\w.\-]{1,80}$/.test(x)).slice(0, 50),
+          targetNames: (Array.isArray(b.targetNames) ? b.targetNames : []).map(x => String(x).slice(0, 60)).slice(0, 50),
           createdAt: Date.now()
         };
         save();

@@ -947,7 +947,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-27.7";
+var CLIENT_BUILD="2026-10-27.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2632,7 +2632,7 @@ function openGameBuy(g,p){
         b.disabled=false;
         if(r&&r.ok){promo={code:code,discount:Number(r.discount)||0};draw();toast(t("promo_ok"));}
         else toast(t("promo_bad"),true);
-      }).catch(function(){b.disabled=false;toast(t("promo_bad"),true);});
+      }).catch(function(e){b.disabled=false;toast(promoErrText(e),true);});
     });
   }
   draw();
@@ -3193,7 +3193,7 @@ function openBuyConfirm(it,qty){
       haptic("ok");renderTotals();
     }).catch(function(e){
       btn.disabled=false;
-      sh.querySelector("#promoMsg").innerHTML='<div class="paynote" style="color:var(--err)">'+ic("warning",13)+' '+esc(t("promo_bad"))+'</div>';
+      sh.querySelector("#promoMsg").innerHTML='<div class="paynote" style="color:var(--err)">'+ic("warning",13)+' '+esc(promoErrText(e))+'</div>';
       haptic();
     });
   });
@@ -4209,6 +4209,13 @@ function openAdminReferral(){
   });
 }
 /* ===== admin: promo-kodlar ===== */
+function promoErrText(e){
+  var r=e&&e.resp||{};
+  if(r.reason==="not_for_item")return "Bu promo-kod boshqa mahsulot uchun";
+  if(r.reason==="min_order")return "Promo-kod "+money(r.minOrder||0)+" dan katta xarid uchun";
+  if(r.reason==="already_used")return "Bu promo-kodni allaqachon ishlatgansiz";
+  return t("promo_bad");
+}
 function openAdminExtras(){
   api("/api/admin/extras").then(function(c){
     var B=c.banners.slice(),P=Object.assign({},c.payImgs||{});
@@ -4264,12 +4271,40 @@ function openAdminPromo(){
     +'<label>Bitta foydalanuvchiga limiti</label><input id="pmPerUser" type="number" min="0" value="1">'
     +'<label>Min. buyurtma summasi (0 = shartsiz)</label><input id="pmMin" type="number" min="0" value="0">'
     +'<label>Izoh (ixtiyoriy)</label><input id="pmNote" placeholder="Masalan: yangi mijozlar uchun">'
+    +'<label>Qaysi mahsulot uchun (bo\'sh — hamma mahsulotga)</label>'
+    +'<div id="pmTgt" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>'
+    +'<input id="pmTgtQ" placeholder="🔍 Mahsulot yoki o\'yin nomini yozing…" autocomplete="off">'
+    +'<div id="pmTgtRes" style="max-height:220px;overflow:auto;margin-top:4px"></div>'
     +'<div style="height:10px"></div><button class="btn" id="pmCreateBtn">Yaratish</button>'
     +'<div class="sect" style="margin:18px 0 8px">Mavjud promo-kodlar</div>'
     +'<div id="pmList">…</div>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
-  var typeVal="percent";
+  var typeVal="percent",TG_SEL=[];
+  // Qidiruv manbai: oddiy mahsulotlar (katalog) + o'yinlar va ularning paketlari.
+  function tgtPool(){
+    var out=[];
+    (catalog()||[]).forEach(function(x){if(x&&x.id)out.push({k:"item:"+x.id,n:loc(x.title)||String(x.id),s:"Mahsulot"});});
+    (GAMES&&GAMES.games||[]).forEach(function(g){
+      out.push({k:"game:"+g.id,n:g.name,s:"O'yin — hamma paketlari"});
+      gamePkgs(g.id).forEach(function(pk){out.push({k:"pkg:"+pk.id,n:g.name+" · "+pk.name+(pk.sub?" "+pk.sub:""),s:"Paket"});});
+    });
+    return out;
+  }
+  function drawTgt(){
+    sh.querySelector("#pmTgt").innerHTML=TG_SEL.map(function(x,i){return '<span class="chip on" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--grad);color:#fff;font-size:12px;font-weight:700">'+esc(x.n)+' <b data-tgdel="'+i+'" style="cursor:pointer">✕</b></span>';}).join("");
+    sh.querySelectorAll("[data-tgdel]").forEach(function(b){b.addEventListener("click",function(){TG_SEL.splice(+this.getAttribute("data-tgdel"),1);drawTgt();});});
+  }
+  sh.querySelector("#pmTgtQ").addEventListener("input",function(){
+    var q=this.value.trim().toLowerCase(),box=sh.querySelector("#pmTgtRes");
+    if(q.length<2){box.innerHTML="";return;}
+    var res=tgtPool().filter(function(x){return x.n.toLowerCase().indexOf(q)!==-1&&!TG_SEL.some(function(y){return y.k===x.k;});}).slice(0,30);
+    box.innerHTML=res.length?res.map(function(x){return '<button class="row" data-tgadd="'+esc(x.k)+'" data-tgn="'+esc(x.n)+'" style="width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:5px;color:var(--txt)"><b style="font-size:13px">'+esc(x.n)+'</b><div class="d" style="font-size:11px;color:var(--mut)">'+esc(x.s)+'</div></button>';}).join(""):'<div class="d" style="padding:6px">Topilmadi</div>';
+    box.querySelectorAll("[data-tgadd]").forEach(function(b){b.addEventListener("click",function(){
+      TG_SEL.push({k:this.getAttribute("data-tgadd"),n:this.getAttribute("data-tgn")});drawTgt();
+      sh.querySelector("#pmTgtQ").value="";box.innerHTML="";
+    });});
+  });
   var tbtns=sh.querySelectorAll("#pmType button");
   for(var i=0;i<tbtns.length;i++)tbtns[i].addEventListener("click",function(){
     for(var j=0;j<tbtns.length;j++)tbtns[j].classList.toggle("on",tbtns[j]===this);
@@ -4293,6 +4328,7 @@ function openAdminPromo(){
           +'<b style="font-family:monospace">'+esc(p.code)+'</b><span style="color:'+(p.active?"var(--acc)":"var(--mut)")+'">'+(p.active?"faol":"o\'chirilgan")+'</span>'
           +'</div>'
           +'<div class="d" style="margin:4px 0">'+esc(val)+' chegirma · '+esc(fmtExpiry(p))+(p.note?(" · "+esc(p.note)):"")+'</div>'
+          +((p.targetNames&&p.targetNames.length)?'<div class="d" style="margin:2px 0 4px;color:var(--acc2)">🎯 Faqat: '+esc(p.targetNames.join(", "))+'</div>':'')
           +'<div style="display:flex;gap:8px;margin-top:6px">'
           +'<button class="btn sm gray" data-toggle="'+esc(p.code)+'">'+(p.active?"O\'chirish":"Yoqish")+'</button>'
           +'<button class="btn sm gray" data-pub="'+esc(p.code)+'" data-pubon="'+(p.public?1:0)+'">'+(p.public?"👁 Profilda: ha":"🔒 Maxfiy")+'</button>'
@@ -4328,9 +4364,10 @@ function openAdminPromo(){
       maxUses:Number(sh.querySelector("#pmMax").value)||0,
       perUserLimit:Number(sh.querySelector("#pmPerUser").value)||1,
       minOrder:Number(sh.querySelector("#pmMin").value)||0,
-      note:sh.querySelector("#pmNote").value||""
+      note:sh.querySelector("#pmNote").value||"",
+      targets:TG_SEL.map(function(x){return x.k;}),targetNames:TG_SEL.map(function(x){return x.n;})
     }).then(function(){
-      btn.disabled=false;haptic("ok");toast("Promo-kod yaratildi");
+      btn.disabled=false;haptic("ok");toast("Promo-kod yaratildi");TG_SEL=[];drawTgt();
       sh.querySelector("#pmCode").value="";sh.querySelector("#pmValue").value="";sh.querySelector("#pmNote").value="";
       loadList();
     }).catch(function(){btn.disabled=false;toast("Xatolik",true);});
@@ -6838,7 +6875,7 @@ function profileExtrasHTML(){
     EXTRAS.promos.forEach(function(p){
       var val=p.type==="percent"?(p.value+"% chegirma"):(money(p.value)+" chegirma");
       h+='<div class="xpromo"><div style="min-width:0"><div class="xc">'+esc(p.code)+'</div><div class="xd">'+esc(p.desc||val)
-        +(p.minOrder?' · min '+esc(money(p.minOrder)):'')+'</div></div><button data-xcopy="'+esc(p.code)+'">Nusxa</button></div>';
+        +(p.minOrder?' · min '+esc(money(p.minOrder)):'')+(p.only&&p.only.length?' · 🎯 '+esc(p.only.join(", ")):'')+'</div></div><button data-xcopy="'+esc(p.code)+'">Nusxa</button></div>';
     });
     h+='<div class="d" style="font-size:10.5px;color:var(--mut);margin-top:8px">Kodni xarid oynasidagi «Promo-kod» maydoniga kiriting.</div></div>';
   }

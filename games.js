@@ -614,7 +614,7 @@ module.exports = function createGames(ctx) {
       ctx.readBody(req, res, b => {
         const p = pkgById(str(b.packageId, 80));
         if (!p || !p.active || !(p.price > 0)) return sendJSON(res, 404, { error: "no item" });
-        const r = ctx.validatePromo(b.code, u.id, Math.round(p.price));
+        const r = ctx.validatePromo(b.code, u.id, Math.round(p.price), { game: p.gameId, pkg: p.id });
         if (!r.ok) return sendJSON(res, 409, { error: "promo_invalid", reason: r.reason, minOrder: r.minOrder });
         sendJSON(res, 200, { ok: true, code: r.promo.code, discount: r.discount, total: Math.round(p.price) - r.discount });
       });
@@ -1167,7 +1167,7 @@ module.exports = function createGames(ctx) {
     if (c.error) return { ok: false, code: 400, body: { error: c.error, field: c.field, label: c.label } };
     let total = Math.round(p.price), promo = null;
     if (promoCode) {
-      const pv = ctx.validatePromo(promoCode, u.id, total);
+      const pv = ctx.validatePromo(promoCode, u.id, total, { game: p.gameId, pkg: p.id });
       if (!pv.ok) return { ok: false, code: 409, body: { error: "promo_invalid", reason: pv.reason } };
       total = Math.max(0, total - pv.discount);
       promo = { code: pv.promo.code, discount: pv.discount, ref: pv.promo };
