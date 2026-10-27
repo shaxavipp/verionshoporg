@@ -1046,7 +1046,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-28.6";
+var CLIENT_BUILD="2026-10-28.7";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1788,7 +1788,10 @@ function bindNavOnce(){
   var els=document.querySelectorAll("[data-nav]");
   for(var i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
 }
+var BOOTING=true,BOOT_PENDING=false;
 function render(){
+  // Ochilish ekrani turganda oraliq qayta chizishlar qilinmaydi — hammasi yuklangach bitta marta chiziladi.
+  if(BOOTING){BOOT_PENDING=true;return;}
   var app=document.getElementById("app");
   document.documentElement.setAttribute("data-theme",S.theme==="light"?"light":"dark");
   document.documentElement.setAttribute("data-reduce-motion",S.reduceMotion?"1":"0");
@@ -2379,6 +2382,9 @@ function loadGames(cb){
   // Admin do'konni "ichidan" ko'radi: qoralama, o'chiq va narxsiz narsalar ham (belgilari bilan).
   if(ME&&ME.isAdmin===true&&tgUser()){
     api("/api/admin/games/preview").then(function(j){
+      var sig=JSON.stringify(j);
+      if(GAMES.admin&&sig===GAMES._sig){GAMES.loaded=true;if(cb)cb();return;}  // o'zgarmagan — qayta chizilmaydi
+      GAMES._sig=sig;
       GAMES.loaded=true;GAMES.admin=true;GAMES.etag="";
       GAMES.games=j.games||[];GAMES.packages=j.packages||[];
       if(S.game&&!gameById(S.game.id))S.game=null;
@@ -6979,15 +6985,19 @@ function publishCatalog(){
   })
   .catch(function(){toast(t("a_publish_err"),true);});
 }
-function loadServerCatalog(){
+function loadServerCatalog(cb){
   try{
-    if(typeof fetch!=="function")return;
+    if(typeof fetch!=="function"){if(cb)cb();return;}
     fetch("/api/catalog")
     .then(function(r){if(!r.ok)throw 0;return r.json();})
     .then(function(arr){
-      if(Array.isArray(arr)&&arr.length){S.serverCat=arr;persist();if(S.lang)render();}
+      if(Array.isArray(arr)&&arr.length){
+        var sig=JSON.stringify(arr);
+        if(sig!==loadServerCatalog._sig){loadServerCatalog._sig=sig;S.serverCat=arr;persist();if(S.lang)render();}
+      }
+      if(cb)cb();
     })
-    .catch(function(){});
+    .catch(function(){if(cb)cb();});
   }catch(e){}
 }
 /* ===== bosh sahifa: Mijozlar fikri (sharhlar) va Top donaterlar (reyting) ===== */
@@ -7186,8 +7196,12 @@ function bindVnRows(){
   });});
 }
 var EXTRAS=null;
-function loadExtras(){
-  api("/api/extras").then(function(r){EXTRAS=r;if(S.screen==="profile"||S.screen==="home"||S.screen==="pay")render();}).catch(function(){});
+function loadExtras(cb){
+  api("/api/extras").then(function(r){
+    var sig=JSON.stringify(r);
+    if(sig!==loadExtras._sig){loadExtras._sig=sig;EXTRAS=r;if(S.screen==="profile"||S.screen==="home"||S.screen==="pay")render();}
+    if(cb)cb();
+  }).catch(function(){if(cb)cb();});
 }
 function copyText(txt){
   try{navigator.clipboard.writeText(txt).then(function(){toast("✅ Nusxa olindi");},function(){toast(txt);});}catch(e){toast(txt);}
@@ -7971,18 +7985,19 @@ function loadStockCounts(){
 }
 var CatMeta={};
 var _catMetaSig="";
-function loadCatMeta(){
+function loadCatMeta(cb){
   try{
-    if(typeof fetch!=="function")return;
+    if(typeof fetch!=="function"){if(cb)cb();return;}
     fetch("/api/category-meta").then(function(r){return r.ok?r.json():null;})
     .then(function(j){
+      if(cb)setTimeout(cb,0);
       if(!j)return;
       var sig=JSON.stringify(j);
       if(sig===_catMetaSig)return; // rasm/nom o'zgarmagan — butun sahifani (barcha rasmlarni) qayta chizib CPU/animatsiyani "qotirmaymiz"
       _catMetaSig=sig;
       CatMeta=j;
       if(S.lang)render();
-    }).catch(function(){});
+    }).catch(function(){if(cb)cb();});
   }catch(e){}
 }
 /* To'lov usullari (karta/bank ikonkalari) va profil bo'limi tugmalariga admin tomonidan
@@ -8014,20 +8029,48 @@ function slotEmojiHTML(slotKey,fallbackHTML){
     img:d.kind==="image"?d.url:""
   },fallbackHTML);
 }
-function boot(){
+/* Ochilish: muhim ma'lumotlar (katalog, o'yinlar, profil, kategoriya rasmlari, banner) va birinchi
+   ekranda ko'rinadigan rasmlar yuklanguncha ochilish ekrani turadi. Keyin sahifa BIR marta chiziladi —
+   ochilgandan keyin "qayta yangilanib, oqarib qolish" bo'lmaydi. Sekin internetda eng ko'pi 7 s kutiladi. */
+function preloadImgs(urls,maxMs){
+  return new Promise(function(res){
+    urls=urls.filter(Boolean).slice(0,30);
+    if(!urls.length)return res();
+    var left=urls.length,done=false,fin=function(){if(!done){done=true;res();}};
+    setTimeout(fin,maxMs);
+    urls.forEach(function(u){var im=new Image();im.decoding="async";im.onload=im.onerror=function(){if(--left<=0)fin();};im.src=u;});
+  });
+}
+function firstScreenImgs(){
+  var out=[];
+  try{
+    Object.keys(CatMeta||{}).forEach(function(k){var m=CatMeta[k];if(m&&m.img&&!/^data:/.test(m.img))out.push(m.img);});
+    (EXTRAS&&EXTRAS.banners||[]).slice(0,2).forEach(function(b){out.push(b.img);});
+    (GAMES.games||[]).slice(0,12).forEach(function(g){if(g.img)out.push(g.img);});
+    (catalog()||[]).slice(0,12).forEach(function(x){if(x&&typeof x.img==="string"&&!/^data:/.test(x.img))out.push(x.img);});
+  }catch(e){}
+  return out;
+}
+function bootFinish(){
+  if(!BOOTING)return;
+  BOOTING=false;BOOT_PENDING=false;
   render();
-  loadServerCatalog();
-  loadCatMeta();
+  var sp=document.getElementById("splash");
+  if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},450);}
+}
+function boot(){
+  var P=function(fn){return new Promise(function(r){try{fn(r);}catch(e){r();}});};
+  var hard=setTimeout(bootFinish,7000);
+  Promise.all([P(loadServerCatalog),P(loadCatMeta),P(loadExtras),P(function(r){loadMe(function(){loadGames(r);});})])
+    .then(function(){return preloadImgs(firstScreenImgs(),3500);})
+    .then(function(){clearTimeout(hard);bootFinish();});
   loadUiEmoji();
-  loadMe();
-  loadGames();
   resolveStartParamPay();
   loadStockCounts();
   loadReviews();
   loadLeaderboard();
   loadReferral();
   loadLoyalty();
-  loadExtras();
   setInterval(tickTimer,1000);
   setInterval(rotateReviewWidget,4500);
   // Fon yangilanishi: ilova ko'rinib turganda 30 s da bir; reyting va sharhlar 2 daqiqada bir.
@@ -8041,10 +8084,6 @@ function boot(){
     if(S.screen==="home"&&bgTick%4===0){loadReviews();loadLeaderboard();}
   },30000);
   document.addEventListener("visibilitychange",function(){if(!document.hidden&&!SESSION_EXPIRED&&tgUser())loadMe();});
-  setTimeout(function(){
-    var sp=document.getElementById("splash");
-    if(sp){sp.classList.add("off");setTimeout(function(){sp.remove();},500);}
-  },700);
 }
 var _booted=false;
 function bootOnce(){

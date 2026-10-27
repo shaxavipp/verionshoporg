@@ -1006,9 +1006,12 @@ module.exports = function createGames(ctx) {
     if (b.region) addRegion(g, slug(b.region, 16));
     if (!(g.regions || []).length) addRegion(g, "global");
     // O'yin avatari va banneri — saytdagi rasm (o'yinda hali rasm bo'lmasa).
-    if (pk.img && (!g.img || !g.banner)) {
+    if (pk.img && (!g.img || !g.banner || (b.refreshImages && g.imgSrc === "site"))) {
       const u = await fetchImage(pk.img);
-      if (u) { if (!g.img) g.img = u; if (!g.banner) g.banner = u; }
+      if (u) {
+        if (!g.img || (b.refreshImages && g.imgSrc === "site")) { g.img = u; g.imgSrc = "site"; }
+        if (!g.banner || (b.refreshImages && g.bannerSrc === "site")) { g.banner = u; g.bannerSrc = "site"; }
+      }
     }
     const region = slug(b.region, 16) || ((g.regions || [])[0] || {}).key || "";
     const tab = slug(b.tab, 16) || ((g.tabs || [])[0] || {}).key || "";
@@ -1048,7 +1051,13 @@ module.exports = function createGames(ctx) {
         s.packages.push(p);
         added++;
       }
-      if (b.images !== false && it.img && !p.img) { const u = await fetchImage(it.img); if (u) { p.img = u; imgs++; } }
+      // Rasm saytdan bir marta yuklanib /gimg/ da saqlanadi. Har kuni tunda (refreshImages) faqat saytdan
+      // kelgan rasmlar yangilanadi — admin o'zi qo'ygan rasmga tegilmaydi.
+      if (b.images !== false && it.img && (!p.img || (b.refreshImages && p.imgSrc === "site"))) {
+        const u = await fetchImage(it.img);
+        if (u && u !== p.img) { p.img = u; p.imgSrc = "site"; imgs++; }
+        else if (u && !p.imgSrc) p.imgSrc = "site";
+      }
     }
     return { gameId: g.id, added, updated, images: imgs, gameImage: !!g.img };
   }
@@ -1091,6 +1100,26 @@ module.exports = function createGames(ctx) {
     } finally { apRunning = false; }
   }
   const apTimer = setInterval(() => { runAutoPrice(false).catch(() => {}); }, 15 * 60 * 1000);
+  /* Har kuni Toshkent vaqti bilan 03:30 da — saytdan kelgan rasmlarni yangilash (kunduzi mijozlar
+     birinchi kirganda rasmlar tayyor turadi, yuklanish vaqtida "oqarib" qolmaydi). */
+  async function refreshSiteImages() {
+    const s = store(); let n = 0;
+    for (const g of s.games.slice()) for (const src of sourcesOf(g)) {
+      const l = lineById(src.lineId), T = l && LINE_TYPES[l.type];
+      if (!l || !l.enabled || !T || typeof T.packages !== "function") continue;
+      const reg = (s.packages.find(p => p.gameId === g.id && (p.routes || []).some(r => r.lineId === l.id)) || {}).region;
+      try { const r = await importGame(l, T, src.code, { gameId: g.id, region: reg, images: true, refreshImages: true, updatePrices: false }); n += (r && r.images) || 0; } catch (e) {}
+    }
+    s.imgRefreshAt = Date.now(); ctx.save();
+    return n;
+  }
+  const imgTimer = setInterval(() => {
+    const t = new Date(Date.now() + 5 * 3600e3);               // Toshkent = UTC+5
+    const s = store();
+    if (t.getUTCHours() === 3 && t.getUTCMinutes() >= 30 && Date.now() - (s.imgRefreshAt || 0) > 20 * 3600e3)
+      refreshSiteImages().then(n => console.log("[games] tungi rasm yangilanishi: " + n)).catch(() => {});
+  }, 5 * 60 * 1000);
+  if (imgTimer.unref) imgTimer.unref();
   if (apTimer.unref) apTimer.unref();
 
   let importJob = null;
