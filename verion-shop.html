@@ -176,6 +176,9 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .ptile .tl{font-size:13px;font-weight:800;position:relative;z-index:1;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.35)}
 .ptile .ts{font-size:9px;opacity:.9;position:relative;z-index:1;text-align:center}
 .pbody{padding:6px 8px 7px;display:flex;flex-direction:column;gap:3px;flex:1;position:relative;z-index:2}
+/* Hamma kartochka bir xil balandlikda: nom 1 qator + narx/izoh qatori uchun joy doim ajratiladi */
+.grid:not(.groupgrid)>.pcard .pbody{min-height:72px;box-sizing:border-box}
+.grid:not(.groupgrid)>.pcard{height:100%}
 .pbody .nm{font-size:11.5px;font-weight:700;letter-spacing:-.01em;min-height:1.3em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
 .pbody .ct{font-size:9px;color:var(--mut)}
 .prow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:4px;flex-wrap:wrap}
@@ -1028,7 +1031,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-28.1";
+var CLIENT_BUILD="2026-10-28.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1989,9 +1992,12 @@ function productsScreenHTML(){
   // O'yinlar ham oddiy mahsulot sifatida shu ro'yxatda ("Barchasi" va "O'yinlar").
   if(filter==="all"||filter==="games"){
     var gl=gamesOf("games").filter(function(g){return !q||String(g.name||"").toLowerCase().indexOf(q)!==-1;});
-    if(gl.length)html+='<div class="grid">'+gl.map(gameCardHTML).join("")+'</div>';
+    var gameCards=gl.map(gameCardHTML);
   }
-  html+=productGridHTML(items);
+  var ex=typeof gameCards!=="undefined"?gameCards.slice():[];
+  if((filter==="all"||filter==="games")&&(!q||"steam hamyon".indexOf(q)!==-1))ex.push("steam");
+  if((filter==="all"||filter==="telegram")&&(!q||"virtual raqam nomer".indexOf(q)!==-1))ex.push("vnum");
+  html+=productGridHTML(items,ex);
   if(q){ensureNkLoadedForSearch();html+=nkSearchResultsHTML(q);}
   return html;
 }
@@ -2105,9 +2111,15 @@ function stockOf(it){
   var n=Number(it.stock);return it.stock===""||it.stock==null||isNaN(n)?null:n;
 }
 function stockBadgeText(n){return n===null?"":(n<=0?t("out_stock"):n+" "+t("in_stock"));}
-function productGridHTML(items){
-  var html='<div class="grid">';
-  if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
+function xProductCard(k){
+  if(k==="steam")return '<button class="pcard" data-xopen="steam"><div class="ptile" style="background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547)">'+STEAM_SVG+'</div>'
+    +'<div class="pbody"><div class="nm">Steam hamyon</div><div class="ct">Istalgan summa</div></div></button>';
+  return '<button class="pcard" data-xopen="vnum"><div class="ptile" style="background:linear-gradient(135deg,#3b2a05,#0b1020)"><span class="emj">📱</span></div>'
+    +'<div class="pbody"><div class="nm">Virtual raqam</div><div class="ct">Telegram uchun SMS</div></div></button>';
+}
+function productGridHTML(items,extra){
+  var html='<div class="grid">'+(extra||[]).map(function(x){return x.charAt(0)==="<"?x:xProductCard(x);}).join("");
+  if(!items.length&&!(extra&&extra.length))html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   for(var j=0;j<items.length;j++){
     var it=items[j];
     var realStk=stockOf(it);
@@ -2227,8 +2239,7 @@ function categoryDetailHTML(kind,labelKey){
   var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
   var items=activeItems(kind).filter(function(x){return x.fulfill!=="telegram_gift";});
   return '<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(label)+'</b></button>'
-    +(kind==="telegram"?'<button class="xentry" data-xopen="vnum" style="background:linear-gradient(135deg,rgba(251,191,36,.12),var(--card) 55%)"><span class="ei" style="background:rgba(251,191,36,.15)">📱</span><span><b>Virtual raqam</b><small>Telegram uchun SMS raqam · 100+ davlat</small></span><span class="go">'+ic("arrowRight",16)+'</span></button>':'')
-    +productGridHTML(items);
+    +productGridHTML(items,kind==="telegram"?["vnum"]:[]);
 }
 /* ===== Telegram Sovg'alar — to'liq ekranli sahifa (Limited / Oddiy tablar) ===== */
 function giftHubItems(){
@@ -2432,6 +2443,10 @@ function gIconSVG(icon,tier){
   }
   return s+'</svg>';
 }
+function steamTileIf(q){
+  if(q&&"steam hamyon".indexOf(q)===-1)return "";
+  return '<button class="gtile" data-xopen="steam"><div class="gti" style="background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547)">'+STEAM_SVG+'</div><div class="gtn">Steam</div></button>';
+}
 function gameTileHTML(g){
   return '<button class="gtile'+(g.hidden||g.status?' dim':'')+'" data-opengame="'+esc(g.id)+'">'
     +'<div class="gti" style="--gc:'+esc(g.color||"#2f8fff")+'">'+(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':esc(gameInitials(g.name)))
@@ -2459,9 +2474,8 @@ function gamesHubHTML(){
   var q=String(S.ghubQ||"").trim().toLowerCase();
   var list=gamesOf("games").filter(function(g){return !q||String(g.name).toLowerCase().indexOf(q)!==-1;});
   var html='<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(categoryLabel("games"))+'</b></button>'
-    +'<button class="xentry" data-xopen="steam"><span class="ei" style="background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547)">'+STEAM_SVG.replace(/44/g,"28")+'</span><span><b>Steam hamyon</b><small>Istalgan summa · login orqali</small></span><span class="go">'+ic("arrowRight",16)+'</span></button>'
     +'<div class="searchbar ghsearch"><span class="sic">'+ic("search",16)+'</span><input id="ghubQ" placeholder="'+esc(t("search_ph"))+'" value="'+esc(S.ghubQ||"")+'"></div>'
-    +'<div class="gtiles" id="ghubTiles">'+list.map(gameTileHTML).join("")+'</div>'
+    +'<div class="gtiles" id="ghubTiles">'+steamTileIf(q)+list.map(gameTileHTML).join("")+'</div>'
     +(list.length?'':'<div class="d" style="padding:16px;color:var(--mut)">Topilmadi</div>');
   var old=activeItems("games");
   if(old.length)html+='<div class="sect">'+esc(t("g_other"))+'</div>'+productGridHTML(old);
@@ -7710,7 +7724,7 @@ function bind(){
   });
   bindBanners();
   document.querySelectorAll("[data-xopen]").forEach(function(b){b.addEventListener("click",function(){
-    var k=this.getAttribute("data-xopen");haptic();if(k==="steam"){S.steamPage=true;STEAM=null;}else{S.vnumPage=true;VN=null;}render();window.scrollTo(0,0);});});
+    var k=this.getAttribute("data-xopen");haptic();S.screen="home";if(k==="steam"){S.steamPage=true;STEAM=null;}else{S.vnumPage=true;VN=null;}render();window.scrollTo(0,0);});});
   var xb=document.getElementById("xBack");
   if(xb)xb.addEventListener("click",function(){S.steamPage=false;S.vnumPage=false;haptic();render();});
   if(S.steamPage)bindSteam();
@@ -7720,7 +7734,7 @@ function bind(){
   var ghq=document.getElementById("ghubQ");
   if(ghq)ghq.addEventListener("input",function(){
     S.ghubQ=this.value;var q=this.value.trim().toLowerCase(),box=document.getElementById("ghubTiles");
-    if(box){box.innerHTML=gamesOf("games").filter(function(g){return !q||String(g.name).toLowerCase().indexOf(q)!==-1;}).map(gameTileHTML).join("");bindGames();}
+    if(box){box.innerHTML=steamTileIf(q)+gamesOf("games").filter(function(g){return !q||String(g.name).toLowerCase().indexOf(q)!==-1;}).map(gameTileHTML).join("");bindGames();}
   });
   var psEl=document.getElementById("prodSearch");
   if(psEl){
