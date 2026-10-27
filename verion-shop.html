@@ -177,11 +177,19 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .ptile .ts{font-size:9px;opacity:.9;position:relative;z-index:1;text-align:center}
 .pbody{padding:6px 8px 7px;display:flex;flex-direction:column;gap:3px;flex:1;position:relative;z-index:2}
 /* Hamma kartochka bir xil balandlikda: nom 1 qator + narx/izoh qatori uchun joy doim ajratiladi */
-/* Hamma kartochka bir xil: kvadrat rasm + ixcham pastki qism (nom + bitta qator). "Dona bor" belgisi rasm ustida. */
-.grid:not(.groupgrid)>.pcard .pbody{flex:0 0 46px;height:46px;min-height:46px;box-sizing:border-box;justify-content:flex-start;overflow:visible}
-.grid:not(.groupgrid)>.pcard .prow{margin-top:0;flex-wrap:nowrap}
-.grid:not(.groupgrid)>.pcard .prc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.grid:not(.groupgrid)>.pcard .stkb{position:absolute;left:6px;top:-24px;z-index:4;backdrop-filter:blur(6px);background:rgba(10,14,20,.6)}
+/* NovaPin uslubi: kvadrat rasm (yumaloq burchak) + ostida nom — kartochka qutisi yo'q, hammasi bir xil */
+.grid:not(.groupgrid){gap:14px 10px;padding:10px 14px}
+.grid:not(.groupgrid)>.pcard{background:none;border:none;box-shadow:none;border-radius:0;overflow:visible}
+.grid:not(.groupgrid)>.pcard::after{display:none}
+.grid:not(.groupgrid)>.pcard .ptile{border-radius:20px;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06)}
+.grid:not(.groupgrid)>.pcard:active{transform:scale(.94)}
+.grid:not(.groupgrid)>.pcard .pbody{flex:0 0 40px;height:40px;min-height:40px;box-sizing:border-box;padding:6px 2px 0;gap:1px;align-items:center;text-align:center;overflow:visible}
+.grid:not(.groupgrid)>.pcard .pbody .nm{font-size:13px;font-weight:700;max-width:100%}
+.grid:not(.groupgrid)>.pcard .pbody .ct{font-size:10.5px}
+.grid:not(.groupgrid)>.pcard .prow{margin-top:0;flex-wrap:nowrap;justify-content:center}
+.grid:not(.groupgrid)>.pcard .prc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+.grid:not(.groupgrid)>.pcard .favbtn{top:6px;right:6px}
+.grid:not(.groupgrid)>.pcard .stkb{position:absolute;left:50%;transform:translateX(-50%);top:-26px;z-index:4;backdrop-filter:blur(6px);background:rgba(10,14,20,.6)}
 .grid:not(.groupgrid)>.pcard .stkb.out{background:rgba(60,10,10,.7)}
 .pbody .nm{font-size:11.5px;font-weight:700;letter-spacing:-.01em;min-height:1.3em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
 .pbody .ct{font-size:9px;color:var(--mut)}
@@ -1035,7 +1043,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-28.3";
+var CLIENT_BUILD="2026-10-28.4";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
