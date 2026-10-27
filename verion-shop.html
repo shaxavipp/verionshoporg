@@ -1046,7 +1046,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-28.8";
+var CLIENT_BUILD="2026-10-28.9";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2282,7 +2282,7 @@ function categoryDetailHTML(kind,labelKey){
   var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
   var items=activeItems(kind).filter(function(x){return x.fulfill!=="telegram_gift";});
   return '<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(label)+'</b></button>'
-    +productGridHTML(items,kind==="telegram"?["vnum"]:[]);
+    +productGridHTML(items,kind==="telegram"?["vnum"]:kind==="games"?gamesOf("games").map(gameCardHTML).concat(["steam"]):[]);
 }
 /* ===== Telegram Sovg'alar — to'liq ekranli sahifa (Limited / Oddiy tablar) ===== */
 function giftHubItems(){
@@ -2786,7 +2786,6 @@ function homeHTML(){
   if(S.steamPage)return steamHTML();
   if(S.vnumPage)return vnumHTML();
   if(S.game&&gameById(S.game.id))return gamePageHTML();
-  if(S.category==="games")return gamesHubHTML();
   if(S.category==="ai"&&gamesOf("ai").length)return aiHubHTML();
   if(S.giftHub)return giftHubHTML();
   if(S.group)return groupProductsHTML();
