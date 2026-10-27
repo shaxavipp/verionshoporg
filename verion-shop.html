@@ -147,7 +147,7 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .tab:active{transform:scale(.94)}
 
 /* product grid */
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px;align-items:start}
 .groupgrid{grid-template-columns:1fr 1fr;gap:12px}
 .groupgrid .ptile{height:auto;aspect-ratio:1/1}
 .groupgrid.grid .pbody{padding:12px 12px 14px}
@@ -177,8 +177,12 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .ptile .ts{font-size:9px;opacity:.9;position:relative;z-index:1;text-align:center}
 .pbody{padding:6px 8px 7px;display:flex;flex-direction:column;gap:3px;flex:1;position:relative;z-index:2}
 /* Hamma kartochka bir xil balandlikda: nom 1 qator + narx/izoh qatori uchun joy doim ajratiladi */
-.grid:not(.groupgrid)>.pcard .pbody{min-height:72px;box-sizing:border-box}
-.grid:not(.groupgrid)>.pcard{height:100%}
+/* Hamma kartochka bir xil: kvadrat rasm + ixcham pastki qism (nom + bitta qator). "Dona bor" belgisi rasm ustida. */
+.grid:not(.groupgrid)>.pcard .pbody{flex:0 0 46px;height:46px;min-height:46px;box-sizing:border-box;justify-content:flex-start;overflow:visible}
+.grid:not(.groupgrid)>.pcard .prow{margin-top:0;flex-wrap:nowrap}
+.grid:not(.groupgrid)>.pcard .prc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid:not(.groupgrid)>.pcard .stkb{position:absolute;left:6px;top:-24px;z-index:4;backdrop-filter:blur(6px);background:rgba(10,14,20,.6)}
+.grid:not(.groupgrid)>.pcard .stkb.out{background:rgba(60,10,10,.7)}
 .pbody .nm{font-size:11.5px;font-weight:700;letter-spacing:-.01em;min-height:1.3em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
 .pbody .ct{font-size:9px;color:var(--mut)}
 .prow{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:4px;flex-wrap:wrap}
@@ -1031,7 +1035,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-28.2";
+var CLIENT_BUILD="2026-10-28.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
