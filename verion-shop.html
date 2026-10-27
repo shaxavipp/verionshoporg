@@ -1046,7 +1046,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-28.7";
+var CLIENT_BUILD="2026-10-28.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1788,6 +1788,30 @@ function bindNavOnce(){
   var els=document.querySelectorAll("[data-nav]");
   for(var i=0;i<els.length;i++)els[i].addEventListener("click",function(){go(this.getAttribute("data-nav"));});
 }
+/* Rasmlar bo'limlar orasida o'tganda "o'chib-yonmasin":
+   1) data:image (base64) rasmlar bir marta Blob URL'ga aylantiriladi — har chizishda uzun matn qayta o'qilmaydi;
+   2) ko'rsatilgan har bir rasm xotirada dekod qilingan holda ushlab turiladi — qayta chizilganda darhol chiqadi. */
+var IMG_BLOB={},IMG_KEEP={};
+function fastImgs(html){
+  if(html.indexOf('src="data:image/')===-1)return html;
+  return html.replace(/src="(data:image\/[a-z+]+;base64,[A-Za-z0-9+\/=]+)"/g,function(m,d){
+    if(d.length<2000)return m;
+    var k=d.length+":"+d.slice(-64);
+    if(!IMG_BLOB[k]){
+      try{var bin=atob(d.slice(d.indexOf(",")+1)),u8=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+        IMG_BLOB[k]=URL.createObjectURL(new Blob([u8],{type:d.slice(5,d.indexOf(";"))}));}catch(e){return m;}
+    }
+    return 'src="'+IMG_BLOB[k]+'"';
+  });
+}
+function keepImgs(){
+  var ims=screenWrap.querySelectorAll("img[src]");
+  for(var i=0;i<ims.length;i++){
+    var u=ims[i].getAttribute("src");if(!u||IMG_KEEP[u])continue;
+    var im=new Image();im.src=u;IMG_KEEP[u]=im;
+    if(im.decode)im.decode().catch(function(){});
+  }
+}
 var BOOTING=true,BOOT_PENDING=false;
 function render(){
   // Ochilish ekrani turganda oraliq qayta chizishlar qilinmaydi — hammasi yuklangach bitta marta chiziladi.
@@ -1818,7 +1842,8 @@ function render(){
   else if(S.screen==="pay")html+=payHTML();
   else html+=profileHTML();
   html+='<div style="height:80px"></div></div>';
-  screenWrap.innerHTML=html;
+  screenWrap.innerHTML=fastImgs(html);
+  keepImgs();
   updateNavActive();
   bind();
   requestAnimationFrame(positionNavPill);
@@ -2118,7 +2143,7 @@ function tileHTML(it,big){
       +(glow?'<span class="giftSpark s1"></span><span class="giftSpark s2"></span><span class="giftSpark s3"></span>':"")
       +'</div>';
   }
-  var img=st.img?'<img src="'+esc(st.img)+'" alt="" loading="lazy" onerror="this.remove()">':"";
+  var img=st.img?'<img src="'+esc(st.img)+'" alt="" onerror="this.remove()">':"";
   var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
 }
@@ -2180,7 +2205,7 @@ function groupGridHTML(kind){
   var html='<div class="grid groupgrid">';
   for(var i=0;i<groups.length;i++){
     var g=groups[i];
-    var img=g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':('<div class="tl">'+esc((g.label||"?").slice(0,2).toUpperCase())+'</div>');
+    var img=g.img?'<img src="'+esc(g.img)+'" alt="">':('<div class="tl">'+esc((g.label||"?").slice(0,2).toUpperCase())+'</div>');
     html+='<button class="pcard" data-opengroup="'+esc(kind)+'::'+esc(g.key)+'">'
       +'<div class="ptile" style="background:#22304a;color:#fff">'+img+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(g.label)+'</div>'
@@ -2214,7 +2239,7 @@ function categoryCardsHTML(){
     any=true;
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
-    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",32);
+    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",32);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'">'
       +'<div class="ptile" style="background:#22304a;color:#fff">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
@@ -2228,7 +2253,7 @@ function categoryCardsHTML(){
   var aiList=gamesOf("ai"),aiMeta=CatMeta.ai||{};
   if(aiList.length&&aiMeta.enabled!==false){
     any=true;
-    var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic("sparkles",32);
+    var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("sparkles",32);
     html+='<button class="pcard" data-opencat="ai">'
       +'<div class="ptile" style="background:linear-gradient(135deg,#10a37f,#5b5bd6);color:#fff">'+aiTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(categoryLabel("ai"))+'</div>'
@@ -2238,7 +2263,7 @@ function categoryCardsHTML(){
   if(nkMeta.enabled!==false){
     any=true;
     ensureNkLoadedForHome(); // hali yuklanmagan bo'lsa fonda yuklaydi, tayyor bo'lgach son yangilanadi
-    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",32);
+    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):esc(t("nakrutka_sub"));
     html+='<button class="pcard" data-opencat="nakrutka">'
@@ -2430,7 +2455,7 @@ function gameTabs(g,region){
 }
 function gameInitials(name){return String(name||"?").split(/\s+/).map(function(w){return w.charAt(0);}).join("").slice(0,2).toUpperCase();}
 function gameAvatarHTML(g){
-  return g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':esc(gameInitials(g.name));
+  return g.img?'<img src="'+esc(g.img)+'" alt="">':esc(gameInitials(g.name));
 }
 /* Paket belgisi: olmos / UC tanga / propusk. tier 1..5 — paket kattaligi bo'yicha
    ko'payadi (narx tartibidagi o'rni), raqobatchilardagi kabi "kattaroq to'plam". */
@@ -2470,7 +2495,7 @@ function steamTileIf(q){
 }
 function gameTileHTML(g){
   return '<button class="gtile'+(g.hidden||g.status?' dim':'')+'" data-opengame="'+esc(g.id)+'">'
-    +'<div class="gti" style="--gc:'+esc(g.color||"#2f8fff")+'">'+(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':esc(gameInitials(g.name)))
+    +'<div class="gti" style="--gc:'+esc(g.color||"#2f8fff")+'">'+(g.img?'<img src="'+esc(g.img)+'" alt="">':esc(gameInitials(g.name)))
     +(g.status?'<span class="gst">'+(g.status==="maint"?"TEXNIK ISH":"MAVJUD EMAS")+'</span>':'')+'</div>'
     +(g.hidden?'<span class="gadm">🔒</span>':'')
     +'<div class="gtn">'+esc(g.name)+'</div></button>';
@@ -2481,7 +2506,7 @@ function gameCardHTML(g){
     +(g.hidden?'<span class="adm-tag">🔒 '+(g.draft?"Qoralama":"Yashirin")+'</span>':'')
     +(g.status?'<span class="gst-tag">'+(g.status==="maint"?"TEXNIK ISH":"MAVJUD EMAS")+'</span>':'')
     +'<div class="ptile" style="background:linear-gradient(135deg,'+esc(g.color||"#2f8fff")+',#0b1020);color:#fff">'
-    +(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy">':'<div class="tl">'+esc(gameInitials(g.name))+'</div>')
+    +(g.img?'<img src="'+esc(g.img)+'" alt="">':'<div class="tl">'+esc(gameInitials(g.name))+'</div>')
     +'</div><div class="pbody"><div class="nm">'+esc(g.name)+'</div><div class="ct">'+n+' '+esc(t("g_pkgs"))+'</div></div></button>';
 }
 // Kategoriya "O'yinlar": yangi o'yinlar + (bo'lsa) eski oddiy mahsulotlar pastda.
@@ -2567,7 +2592,7 @@ function gamePageHTML(){
     html+='<button class="gpkg'+bc+(S.game.pkg===p.id?" on":"")+(p.hidden?" adm-hid":"")+'" data-gpkg="'+esc(p.id)+'">'
       +(GAMES.admin?'<span class="gpedit" data-gpedit="'+esc(p.id)+'" role="button" aria-label="Tahrirlash">🔧</span>':'')
       +(p.hidden?'<span class="adm-tag sm">'+(p.noPrice?"narx yo\'q":"o\'chiq")+'</span>':'')
-      +'<div class="gpi">'+(p.img?'<img src="'+esc(p.img)+'" alt="" loading="lazy">':gIconSVG(p.icon,tier))+'</div>'
+      +'<div class="gpi">'+(p.img?'<img src="'+esc(p.img)+'" alt="">':gIconSVG(p.icon,tier))+'</div>'
       +'<div class="gpt"><div class="gpn">'+esc(p.name)+(p.sub?' <small>'+esc(p.sub)+'</small>':'')+'</div>'
       +'<div class="gpp">'+esc(money(p.price))+'</div></div>'
       +(b?'<span class="gpb'+(/^\d+x$/i.test(b)?" x2":(/^hit$/i.test(b)?"":" alt"))+'">'+esc(b)+'</span>':'')
@@ -3599,7 +3624,7 @@ function historyThumbHTML(itemId,fallbackSvg){
   if(it&&it.tile&&it.tile.video)return '<div class="hc-thumb"><video src="'+esc(it.tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
   if(it&&it.tile&&it.tile.lottie)return '<div class="hc-thumb">'+lottieTileHTML(it.tile.lottie)+'</div>';
   if(it&&it.tile&&it.tile.emoji)return '<div class="hc-thumb">'+esc(it.tile.emoji)+'</div>';
-  if(it&&it.tile&&it.tile.img)return '<div class="hc-thumb"><img src="'+esc(it.tile.img)+'" alt="" loading="lazy" onerror="this.parentNode.textContent=\'\'"></div>';
+  if(it&&it.tile&&it.tile.img)return '<div class="hc-thumb"><img src="'+esc(it.tile.img)+'" alt="" onerror="this.parentNode.textContent=\'\'"></div>';
   return '<div class="hc-thumb" style="color:var(--mut)">'+fallbackSvg+'</div>';
 }
 function ordersHTML(){
@@ -3964,7 +3989,7 @@ function nakrutkaScreenHTML(){
       var lb=labels[m];
       var metaKey=app2+"::"+g2.catsRaw[lb];
       var groupImg=catMeta[metaKey]&&catMeta[metaKey].img;
-      var tile=groupImg?'<img src="'+esc(groupImg)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(nkCatIcon(lb),28);
+      var tile=groupImg?'<img src="'+esc(groupImg)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(nkCatIcon(lb),28);
       h2+='<button class="pcard" data-nk-cat="'+esc(lb)+'">'
         +'<div class="ptile" style="background:'+meta2.color+'22;color:'+meta2.color+'">'+tile+'</div>'
         +'<div class="pbody"><div class="nm">'+esc(smmTranslate(lb))+'</div><div class="ct">'+g2.cats[lb].length+' '+esc(t("nk_svc_count"))+'</div></div></button>';
@@ -3978,7 +4003,7 @@ function nakrutkaScreenHTML(){
   for(var j=0;j<apps.length;j++){
     var aK=apps[j],metaA=NK_APP_META[aK];
     var appImg=catMeta[nkAppKey(aK)]&&catMeta[nkAppKey(aK)].img;
-    var aTile=appImg?'<img src="'+esc(appImg)+'" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">':ic(metaA.icon,34);
+    var aTile=appImg?'<img src="'+esc(appImg)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(metaA.icon,34);
     h1+='<button class="pcard" data-nk-app="'+aK+'">'
       +'<div class="ptile" style="background:'+metaA.color+';color:#fff;overflow:hidden">'+aTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(metaA.name)+'</div><div class="ct">'+byApp[aK].length+' '+esc(t("nk_svc_count"))+'</div></div></button>';
@@ -5077,7 +5102,7 @@ function openAdminImport(lineId){
       var list=(r.games||[]).filter(function(g){return !q||(g.name+" "+g.code).toLowerCase().indexOf(q)!==-1;}).slice(0,80);
       sh.querySelector("#imList").innerHTML=list.map(function(g){
         return '<button class="card" data-imcode="'+esc(g.code)+'" style="width:100%;margin:0 0 6px;padding:9px 10px;display:flex;align-items:center;gap:10px;text-align:left">'
-          +'<div class="gav" style="width:38px;height:38px;font-size:13px;background:var(--card2)">'+(g.img?'<img src="'+esc(g.img)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':esc(gameInitials(g.name)))+'</div>'
+          +'<div class="gav" style="width:38px;height:38px;font-size:13px;background:var(--card2)">'+(g.img?'<img src="'+esc(g.img)+'" alt="" referrerpolicy="no-referrer">':esc(gameInitials(g.name)))+'</div>'
           +'<div style="flex:1;min-width:0"><b>'+esc(g.name)+'</b><div class="d">'+esc(g.code)+'</div></div></button>';
       }).join("")||'<div class="paynote">Topilmadi</div>';
       var bs=sh.querySelectorAll("[data-imcode]");
@@ -7233,7 +7258,7 @@ function profileExtrasHTML(){
 function bannersHTML(){
   var b=EXTRAS&&EXTRAS.banners;if(!b||!b.length)return "";
   return '<div class="bnr"><div class="bt" id="bnrTrack">'+b.map(function(x,i){
-    return '<a class="bs" '+(x.link?'data-xlink="'+esc(x.link)+'"':'')+'><img src="'+esc(x.img)+'" alt="" loading="'+(i?"lazy":"eager")+'"></a>';
+    return '<a class="bs" '+(x.link?'data-xlink="'+esc(x.link)+'"':'')+'><img src="'+esc(x.img)+'" alt=""></a>';
   }).join("")+'</div>'+(b.length>1?'<div class="bd">'+b.map(function(_,i){return '<i'+(i?'':' class="on"')+'></i>';}).join("")+'</div>':'')+'</div>';
 }
 var BNR_T=null;
@@ -8038,7 +8063,7 @@ function preloadImgs(urls,maxMs){
     if(!urls.length)return res();
     var left=urls.length,done=false,fin=function(){if(!done){done=true;res();}};
     setTimeout(fin,maxMs);
-    urls.forEach(function(u){var im=new Image();im.decoding="async";im.onload=im.onerror=function(){if(--left<=0)fin();};im.src=u;});
+    urls.forEach(function(u){var im=new Image();IMG_KEEP[u]=im;im.onload=im.onerror=function(){if(--left<=0)fin();};im.src=u;});
   });
 }
 function firstScreenImgs(){
