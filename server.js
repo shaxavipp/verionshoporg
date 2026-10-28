@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-29.1";
+const BUILD = "2026-10-29.2";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -150,23 +150,24 @@ if (DB.automation.winbackEnabled === undefined) DB.automation.winbackEnabled = f
 if (DB.automation.stockAlertEnabled === undefined) DB.automation.stockAlertEnabled = true;
 // Moderatsiya joriy etilishidan oldingi sharhlar — allaqachon ochiq bo'lgani uchun "approved" deb belgilanadi.
 if (Array.isArray(DB.reviews)) for (const r of DB.reviews) if (!r.status) r.status = "approved";
-// Saqlash: ko'p chaqiruvlar bitta yozuvga birlashtiriladi (eng ko'pi 250 ms kechikadi). Avvalgi
+// Saqlash: ko'p chaqiruvlar bitta yozuvga birlashtiriladi (eng ko'pi 400 ms kechikadi). Avvalgi
 // "har chaqiruvda taymerni qayta boshlash" doimiy yuklamada saqlashni umuman kechiktirib yuborardi.
-// saveState faqat o'zgargan qatorlarni yozadi; eski yopilgan buyurtmalar har daqiqada to'liq
-// tekshiriladi, server o'chayotganda esa oxirgi holat albatta yoziladi.
-let saveT = null, lastFull = Date.now();
+// saveState faqat o'zgargan qatorlarni yozadi. Eski yopilgan buyurtmalar endi har daqiqada
+// hammasi birdan emas (bu serverni 1–2 soniya to'xtatib, ping'ni sakratardi), har saqlashda
+// kichik bo'lakdan tekshiriladi; server o'chayotganda esa hammasi to'liq yoziladi.
+let saveT = null;
 function flushSave(full) {
   clearTimeout(saveT); saveT = null;
   try {
     const t0 = Date.now();
-    sdb.saveState(SQLITE_DB, DB, { full: !!full });
-    if (full) lastFull = Date.now();
+    const n = sdb.saveState(SQLITE_DB, DB, { full: !!full });
     const ms = Date.now() - t0;
-    if (ms > 300) console.log("[db] sekin saqlash: " + ms + " ms" + (full ? " (to'liq)" : ""));
+    if (ms > 150) console.log("[db] sekin saqlash: " + ms + " ms, " + n + " qator" + (full ? " (to'liq)" : ""));
   } catch (e) { console.log("[db] saveState xato: " + e.message); }
 }
-function save() { if (!saveT) saveT = setTimeout(() => flushSave(Date.now() - lastFull > 60000), 250); }
-setInterval(() => { if (!saveT) flushSave(true); }, 5 * 60 * 1000).unref();
+function save() { if (!saveT) saveT = setTimeout(flushSave, 400); }
+// Jimjit paytda ham aylanma tekshiruv davom etsin (o'zgarish bo'lmasa deyarli bepul).
+setInterval(() => { if (!saveT) flushSave(false); }, 15 * 1000).unref();
 for (const sig of ["SIGTERM", "SIGINT"]) process.on(sig, () => { flushSave(true); process.exit(0); });
 function user(u) {
   const k = String(u.id);

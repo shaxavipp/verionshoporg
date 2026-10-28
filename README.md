@@ -288,7 +288,8 @@ Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'
 
 ## Tezlik (ko'p foydalanuvchi uchun)
 
-- **Saqlash:** bazaga faqat o'zgargan qatorlar yoziladi. Eski, yopilgan buyurtma va to'lovlar faqat statusi o'zgarganda yoki har daqiqadagi to'liq tekshiruvda yoziladi. Saqlashlar 250 ms ichida birlashtiriladi. Server o'chayotganda (SIGTERM yoki SIGINT) oxirgi holat albatta yoziladi.
+- **Saqlash:** bazaga faqat o'zgargan qatorlar yoziladi. Eski, yopilgan buyurtma va to'lovlar «sovuq» deb eslab qolinadi va har saqlashda qayta tekshirilmaydi: statusi o'zgarsa darhol yoziladi, status o'zgarmay ichi tahrirlansa aylanma tekshiruv (har saqlashda 1500 qatordan, jimjit paytda har 15 soniyada) uni topib yozadi. Avvalgi «har daqiqada hammasini tekshirish» serverni 1–2 soniya to'xtatib, ping'ni sakratardi. Saqlashlar 400 ms ichida birlashtiriladi, SQLite WAL + `synchronous=NORMAL` rejimida ishlaydi. Server o'chayotganda (SIGTERM yoki SIGINT) hammasi to'liq yoziladi. 150 ms dan uzoq saqlash logda `[db] sekin saqlash` deb ko'rinadi.
+- **Node versiyasi:** `package.json`da `22.x` qotirilgan, Railway yangi chiqqan Node'ni o'zicha olib ketmasligi uchun.
 - **`/api/me`:** foydalanuvchi bo'yicha indeks ishlatiladi, butun buyurtmalarni aylanib chiqmaydi. Bazaga faqat foydalanuvchi ma'lumoti o'zgargan bo'lsa yoziladi.
 - **`/api/leaderboard`:** natija 60 soniya keshlanadi.
 - **Ilova:** ochiq turganda 30 soniyada bir yangilanadi, reyting va sharhlar 2 daqiqada bir yangilanadi. Orqa fonda turganda so'rov yubormaydi.

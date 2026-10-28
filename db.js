@@ -14,6 +14,9 @@ function openDb(dataDir) {
   const file = path.join(dataDir, "shop.db");
   const db = new DatabaseSync(file);
   db.exec("PRAGMA journal_mode = WAL");
+  // WAL bilan NORMAL xavfsiz (baza buzilmaydi) va har COMMIT'da diskni kutmaydi —
+  // Railway tarmoq diskida FULL har saqlashni o'nlab ms ga cho'zib, serverni to'xtatardi.
+  db.exec("PRAGMA synchronous = NORMAL");
   db.exec("PRAGMA foreign_keys = OFF");
   db.exec(`
     CREATE TABLE IF NOT EXISTS products (
@@ -172,7 +175,8 @@ function cacheOf(db) {
   let c = CACHE.get(db);
   if (!c) {
     c = { users: new Map(), orders: new Map(), payments: new Map(), reviews: new Map(), stock: new Map(), settings: new Map(), kv: new Map(), primed: false };
-    c.orders.st = new Map(); c.payments.st = new Map();   // oxirgi yozilgan status (tez yo'l uchun)
+    // Buyurtma/to'lovlarda "sovuq" (eski, yopilgan) qatorlar obyekt bo'yicha eslab qolinadi.
+    for (const m of [c.orders, c.payments]) { m.cold = new WeakMap(); m.sweep = 0; m.gen = 0; m.warm = false; }
     CACHE.set(db, c);
   }
   return c;
@@ -186,33 +190,52 @@ function prime(db, c) {
   fill(c.reviews, "SELECT id AS k, data AS v FROM reviews");
   fill(c.stock, "SELECT item_id AS k, data AS v FROM stock");
   fill(c.settings, "SELECT key AS k, value AS v FROM settings");
-  for (const r of db.prepare("SELECT id, status FROM orders").all()) c.orders.st.set(String(r.id), r.status);
-  for (const r of db.prepare("SELECT id, status FROM payments").all()) c.payments.st.set(String(r.id), r.status);
   fill(c.kv, "SELECT key AS k, value AS v FROM kv WHERE key IN ('orderSeq','smsLog','notifState','promoCodes','automation')");
   c.primed = true;
 }
-// rows: [id, value, argsFn] ro'yxatini beruvchi iterator; skip(v) — "eski, yopilgan" qator:
-// keshda bo'lsa matnga aylantirilmaydi (tez yo'l). To'liq tekshiruv (full) hammasini solishtiradi.
+// skip(v) — "eski, yopilgan" qator. Bunday qator bir marta yozilgach "sovuq" deb belgilanadi
+// (cache.cold: obyekt → {id, status}) va keyingi saqlashlarda na matnga aylantiriladi, na
+// keshdan qidiriladi — 50k buyurtmada har saqlash shu sababli o'nlab ms tejaydi. Statusi
+// o'zgarsa darhol yoziladi; status o'zgarmay ichi tahrirlansa, aylanma tekshiruv (har saqlashda
+// SWEEP ta qator) uni bir necha saqlash ichida topadi. full — hammasini solishtirish (o'chishda).
+const SWEEP = 1500;
 function syncTable(db, cache, list, idOf, argsOf, upsert, delSql, skip, full) {
   let ups = null, n = 0, hits = 0;
-  const ids = new Array(list.length);
-  for (let i = 0; i < list.length; i++) {
-    const v = list[i], id = idOf(v, i);
+  const len = list.length, ids = new Array(len), cold = !full && cache.cold;
+  let s0 = len, s1 = len;                       // shu saqlashda qayta tekshiriladigan oyna [s0, s1)
+  if (cold) { s0 = cache.sweep < len ? cache.sweep : 0; s1 = s0 + SWEEP; cache.sweep = s1 < len ? s1 : 0; }
+  for (let i = 0; i < len; i++) {
+    const v = list[i];
+    if (cold && (i < s0 || i >= s1)) {
+      const e = cold.get(v);
+      // e.g !== gen: shu jadvaldan qator o'chirilgan — qator hali keshdami, bir marta tekshiramiz.
+      if (e !== undefined && e.st === v.status && (e.g === cache.gen || (cache.has(e.id) && (e.g = cache.gen) >= 0))) {
+        ids[i] = e.id; hits++; continue;
+      }
+    }
+    const id = idOf(v, i), old = cache.get(id);
     ids[i] = id;
-    const old = cache.get(id);
-    if (old !== undefined) hits++;
-    if (old !== undefined && !full && skip && skip(v) && cache.st.get(id) === v.status) continue;
+    if (old !== undefined) {
+      hits++;
+      // Ishga tushgandan keyingi birinchi saqlash: qator bazadan endigina o'qilgan, solishtirmasdan
+      // sovuq deb belgilanadi (aylanma tekshiruv baribir ko'rib chiqadi) — boshida qotib qolmaslik uchun.
+      if (cold && !cache.warm && skip(v)) { cold.set(v, { id, st: v.status, g: cache.gen }); continue; }
+    }
     const txt = JSON.stringify(v);
-    if (skip) cache.st.set(id, v && v.status);
-    if (old === txt) continue;
-    if (!ups) ups = db.prepare(upsert);
-    ups.run(...argsOf(id, v, txt));
-    cache.set(id, txt); n++;
+    if (old !== txt) {
+      if (!ups) ups = db.prepare(upsert);
+      ups.run(...argsOf(id, v, txt));
+      cache.set(id, txt); n++;
+    }
+    if (cache.cold) { if (skip(v)) cache.cold.set(v, { id, st: v.status, g: cache.gen }); else cache.cold.delete(v); }
   }
+  if (cache.cold) cache.warm = true;
   // Hamma kesh kalitlari ro'yxatda bo'lsa — o'chirilgan qator yo'q (Set qurish shart emas).
   if (hits !== cache.size) {
     const seen = new Set(ids), del = db.prepare(delSql);
-    for (const id of [...cache.keys()]) if (!seen.has(id)) { del.run(id); cache.delete(id); if (cache.st) cache.st.delete(id); n++; }
+    let d = 0;
+    for (const id of [...cache.keys()]) if (!seen.has(id)) { del.run(id); cache.delete(id); n++; d++; }
+    if (d && cache.cold) cache.gen++;
   }
   return n;
 }
