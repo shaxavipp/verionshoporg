@@ -295,6 +295,23 @@ Keyingi bosqich (Stage 2): interfeys qayta qurish (header, bo'limlar tartibi, O'
 - **Ilova:** ochiq turganda 30 soniyada bir yangilanadi, reyting va sharhlar 2 daqiqada bir yangilanadi. Orqa fonda turganda so'rov yubormaydi.
 - **O'lchov** (10 ming foydalanuvchi, 50 ming buyurtma, 200 ta parallel mijoz): sekundiga 82 so'rovdan 7900 so'rovgacha. 95% so'rovlarning kechikishi 19 soniyadan 72 ms gacha tushdi.
 
+## Xavfsizlik va barqarorlik (audit, 2026-10-29)
+
+Butun kod qayta o'qib chiqildi va hujumchi sifatida sinab ko'rildi (test skriptlari: hujum to'plami, SMS to'qnashuvi, ikki marta yetkazish, brauzerda XSS). Topilgan va tuzatilganlari:
+
+- **Serverni bitta so'rov bilan qulatish.** `async` handler'dagi xato (masalan tanasi `null` bo'lgan so'rov) butun jarayonni to'xtatardi. Endi har so'rov himoyalangan (`runSafe`): xato faqat o'sha so'rovga 500 beradi; obyekt bo'lmagan tana 400 bilan rad etiladi; server ishga tushgach ushlanmagan xatolar logga yoziladi.
+- **Ichki ma'lumot mijozga sizardi.** `/api/me` va xarid javoblarida yetkazib beruvchi (liniya), tannarx, sayt javoblari, admin izohi va admin chat xabar raqamlari bor edi. Endi mijozga faqat ruxsat etilgan maydonlar ketadi (`pubOrder` / `pubPayment`); admin API'lari to'liq ma'lumotni oladi.
+- **Bitta buyurtma saytga bir necha marta ketishi.** Admin «qayta yuborish», fon tekshiruvi va callback ustma-ust tushsa, buyurtma bir nechta liniyaga qayta-qayta yuborilardi (sinovda: 1 buyurtma → 6 ta to'lov). Endi har buyurtma uchun qulf bor, fon tekshiruvi ustma-ust ishlamaydi va har javobdan keyin holat qayta tekshiriladi.
+- **SMS orqali begona pulni olish.** Bekor qilingan/vaqti tugagan to'lovning aniq summasi endi 1 soat band turadi — kech to'lagan mijozning SMS'i shu summani olgan boshqa odamning to'loviga tushmaydi.
+- **Referal suiiste'moli.** Taklif faqat haqiqatan yangi mijozga yoziladi (xaridi va to'ldirishi yo'q), taklif qiluvchi mavjud bo'lishi shart.
+- **Buyurtma ID to'qnashuvi.** ID'lar endi kriptografik tasodifiy, 8 belgili va takrorlanmasligi tekshiriladi (avval 6 belgi edi — ko'p buyurtmada ikkitasi bir xil chiqib, bazada biri ikkinchisini o'chirardi).
+- **Nakrutka «Partial».** Panel qisman bajarsa, bajarilmagan ulush mijozga qaytariladi; pul qaytgan buyurtma keyin «Completed» bo'lsa — ikki marta pul yo'q, adminga xabar boradi.
+- **Telegram so'rovlari kutish chegarasisiz edi** — Telegram javob bermasa bot jim qolardi. Endi hammasida chegara bor. Railway proksisi bilan 502 bo'lmasligi uchun keep-alive 65 s.
+- **So'rov tanasi:** oddiy foydalanuvchi uchun 512 KB, admin uchun 10 MB; kirill/emoji katta tanalarda buzilmaydi.
+- Katalog, kategoriya rasmlari va ui-emoji bir marta tayyorlanadi (har ochilishda qayta o'qilmaydi); AI suhbatlari 30 kundan keyin tozalanadi; ommaviy xabarlar soniyasiga 20 tadan yuboriladi; rasm yuklashda ichki tarmoq manzillari to'silgan; CSV eksportida formula ishga tushmaydi.
+
+Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzosiz, soxta imzo — hammasi 401/403), begona buyurtma/to'lovga kirish, manfiy/katta summalar, parallel xaridlar va promo-kod, path traversal, webhook kalitlari, mijoz ilovasida XSS (barcha foydalanuvchi matnlari ekranlanadi).
+
 ## Steam hamyon va virtual raqam (extra.js)
 
 **Steam hamyon** (O'yinlar → «Steam hamyon» kartasi):

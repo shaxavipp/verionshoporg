@@ -383,6 +383,20 @@ module.exports = function createAi(ctx) {
     return all[String(uid)] || (all[String(uid)] = []);
   }
   let msgSeq = Date.now();
+  /* Tozalash: hamma suhbatlar bitta sozlama yozuvida turadi va har saqlashda JSON'ga aylantiriladi —
+     cheksiz o'sib serverni sekinlashtirmasin. 30 kundan beri yozilmagan suhbat, muddati o'tgan
+     tasdiqlash tugmalari va operator belgilari o'chiriladi. */
+  function prune() {
+    const D = DB(), now = Date.now(), all = (D.settings && D.settings.support) || {};
+    let changed = false;
+    for (const k of Object.keys(all)) { const t = all[k]; if (!Array.isArray(t) || !t.length || now - (t[t.length - 1].ts || 0) > 30 * 86400000) { delete all[k]; changed = true; } }
+    const hu = (D.settings && D.settings.aiHuman) || {};
+    for (const k of Object.keys(hu)) if (!(hu[k] > now)) { delete hu[k]; changed = true; }
+    for (const [k, v] of pending) if (now - v.ts > 15 * 60000) pending.delete(k);
+    for (const [k, v] of adminOps) if (now - v.ts > 15 * 60000) adminOps.delete(k);
+    if (changed) ctx.save();
+  }
+  { const t = setInterval(() => { try { prune(); } catch (e) {} }, 60 * 60 * 1000); if (t.unref) t.unref(); }
   function log(uid, from, text, extra) {
     const t = thread(uid);
     const m = Object.assign({ id: ++msgSeq, from, text: S(text, 4000), ts: Date.now() }, extra || {});
@@ -425,7 +439,9 @@ module.exports = function createAi(ctx) {
         const r = await runAgent(SUPPORT_SYSTEM(), SUPPORT_TOOLS, supportImpl(from), hist, text, "low");
         const out = r.text || "Tushunmadim, iltimos boshqacharoq yozing.";
         hist.push({ role: "user", text }, { role: "assistant", text: S(out, 3000) });
-        chats.set(uid, hist.slice(-HISTORY_MAX));
+        // Xotirada eng ko'pi ~3000 ta faol suhbat (eng eskilari tashlanadi).
+        chats.delete(uid); chats.set(uid, hist.slice(-HISTORY_MAX));
+        if (chats.size > 3000) for (const k of chats.keys()) { chats.delete(k); if (chats.size <= 2000) break; }
         log(uid, "ai", out, r.actions.length ? { actions: appActions(r.actions) } : undefined);
         return { kind: "ai", text: out, actions: r.actions };
       } catch (e) {
@@ -436,7 +452,9 @@ module.exports = function createAi(ctx) {
         return { kind: "error", text: m.text, actions: [] };
       }
     });
-    busy.set(uid, job.catch(() => {}));
+    const tail = job.catch(() => {});
+    busy.set(uid, tail);
+    tail.then(() => { if (busy.get(uid) === tail) busy.delete(uid); });
     return job;
   }
   // Do'kon botiga kelgan oddiy xabar. true — qayta ishlandi.

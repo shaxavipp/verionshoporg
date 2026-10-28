@@ -26,8 +26,8 @@ module.exports = function (ctx) {
       let done = false; const fin = r => { if (!done) { done = true; resolve(r); } };
       const req = https.request({ hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, method: opts.method || "GET",
         headers: h, timeout: opts.timeout || 25000 }, res => {
-        let b = ""; res.on("data", c => { if (b.length < 2e6) b += c; });
-        res.on("end", () => { let j = null; try { j = JSON.parse(b); } catch (e) {} fin({ sent: true, status: res.statusCode, json: j, text: b.slice(0, 300) }); });
+        const ch = []; let n = 0; res.on("data", c => { if (n < 2e6) { const x = Buffer.isBuffer(c) ? c : Buffer.from(String(c)); ch.push(x); n += x.length; } });
+        res.on("end", () => { const b = Buffer.concat(ch).toString("utf8"); let j = null; try { j = JSON.parse(b); } catch (e) {} fin({ sent: true, status: res.statusCode, json: j, text: b.slice(0, 300) }); });
       });
       req.on("timeout", () => req.destroy(Object.assign(new Error("timeout"), { code: "TIMEOUT" })));
       req.on("error", e => fin({ sent: ["ENOTFOUND", "EAI_AGAIN", "ECONNREFUSED", "EHOSTUNREACH", "ENETUNREACH"].indexOf(e.code) === -1, error: e.code || e.message }));
@@ -210,7 +210,7 @@ module.exports = function (ctx) {
     if (j && j.id && j.phone) {
       o.vnum.ext = String(j.id); o.vnum.phone = String(j.phone); o.vnum.until = Date.now() + c.ttlMin * 60 * 1000;
       o.costUzs = Math.round((Number(j.price) || it.cost) * c.rate); ctx.save();
-      return { code: 200, body: { ok: true, order: o, balance: acc.balance } };
+      return { code: 200, body: { ok: true, order: ctx.pubOrder(o), balance: acc.balance } };
     }
     const t = (r.text || "").toLowerCase();
     const known = /no free phones|not enough|bad country|bad operator|no product|server offline/.test(t);
@@ -223,7 +223,7 @@ module.exports = function (ctx) {
       return { code: 503, body: { error: "fail", message: /no free phones/.test(t) ? "Bu davlatda bo'sh raqam qolmadi, boshqasini tanlang" : "Hozircha ishlamayapti, keyinroq urinib ko'ring", balance: acc.balance } };
     }
     ctx.notifyAdmins("❓ #" + o.seq + " Virtual raqam: 5sim javobi noaniq (" + str(r.text || r.error, 120) + "). Tekshirib, kerak bo'lsa «Bekor qilish» bosing.", { order: o });
-    return { code: 200, body: { ok: true, order: o, balance: acc.balance, pending: true } };
+    return { code: 200, body: { ok: true, order: ctx.pubOrder(o), balance: acc.balance, pending: true } };
   }
   async function vnCheck(o) {
     if (!o.vnum || !o.vnum.ext || o.status !== "pending") return o;
@@ -271,7 +271,10 @@ module.exports = function (ctx) {
   function countryName(k) { return (C[k] && C[k][0]) || (k.charAt(0).toUpperCase() + k.slice(1)); }
   function countryIso(k) { return (C[k] && C[k][1]) || ""; }
 
-  const timer = setInterval(() => { steamPoll().catch(() => {}); vnPoll().catch(() => {}); }, Number(process.env.EXTRA_POLL_MS) || 20000);
+  // Oldingi tekshiruv tugamaguncha yangisi boshlanmaydi (sayt sekin bo'lsa so'rovlar ustma-ust yig'ilmasin).
+  const running = { steam: false, vn: false };
+  const guard = (k, fn) => { if (running[k]) return; running[k] = true; fn().catch(() => {}).then(() => { running[k] = false; }); };
+  const timer = setInterval(() => { guard("steam", steamPoll); guard("vn", vnPoll); }, Number(process.env.EXTRA_POLL_MS) || 20000);
   if (timer.unref) timer.unref();
 
   /* ======================= HTTP ======================= */
@@ -291,7 +294,7 @@ module.exports = function (ctx) {
         acc.balance -= price; ctx.save();
         const o = newOrder(u, "💳 Steam hamyon $" + usd.toFixed(2) + " (" + login + ")", price, { steam: { login, usd } });
         steamFulfill(o).catch(e => ctx.notifyAdmins("❓ #" + o.seq + " Steam xato: " + e.message, { order: o })).then(() => {
-          send(res, 200, { ok: true, order: o, balance: acc.balance });
+          send(res, 200, { ok: true, order: ctx.pubOrder(o), balance: acc.balance });
         });
       });
       return true;
@@ -314,8 +317,8 @@ module.exports = function (ctx) {
       const go = id => {
         const o = DBx().orders.find(x => x.id === id && x.uid === u.id && x.vnum);
         if (!o) return send(res, 404, { error: "not found" });
-        const p = url.endsWith("cancel") ? vnCancel(o).then(r => send(res, r.ok ? 200 : 409, Object.assign(r, { order: o, balance: (DBx().users[String(u.id)] || {}).balance })))
-          : vnCheck(o).then(() => send(res, 200, { order: o }));
+        const p = url.endsWith("cancel") ? vnCancel(o).then(r => send(res, r.ok ? 200 : 409, Object.assign(r, { order: ctx.pubOrder(o), balance: (DBx().users[String(u.id)] || {}).balance })))
+          : vnCheck(o).then(() => send(res, 200, { order: ctx.pubOrder(o) }));
         p.catch(e => send(res, 500, { error: e.message }));
       };
       if (m === "GET") go(str(q.get("id"), 40)); else ctx.readBody(req, res, b => go(str(b.id, 40)));

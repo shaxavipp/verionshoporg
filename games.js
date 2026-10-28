@@ -177,10 +177,20 @@ module.exports = function createGames(ctx) {
   /* ---------- saytdan rasm yuklash ----------
      Rasmlar sayt serveridan bir marta yuklab olinadi va /gimg/ ostida saqlanadi:
      mijoz ilovasi begona saytga murojaat qilmaydi (tez, va sayt rasmni o'chirsa ham qoladi). */
+  // Rasm havolasi tashqi saytdan keladi — server o'zining ichki tarmog'iga (localhost, Railway ichki
+  // xizmatlari, bulut metadata manzili) so'rov yubormasin.
+  function internalHost(h) {
+    h = String(h || "").toLowerCase().replace(/^\[|\]$/g, "");
+    if (!h || h === "localhost" || /\.(local|internal|localhost)$/.test(h)) return true;
+    const v4 = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(h);
+    if (v4) { const a = +v4[1], b = +v4[2]; return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127); }
+    return h.indexOf(":") !== -1 && (h === "::1" || /^(fc|fd|fe8|fe9|fea|feb)/.test(h) || h.indexOf("::ffff:") === 0);
+  }
   function fetchImage(url, depth) {
     return new Promise(resolve => {
       let u; try { u = new URL(url); } catch (e) { return resolve(""); }
       if (u.protocol !== "https:" && u.protocol !== "http:") return resolve("");
+      if (internalHost(u.hostname)) return resolve("");
       const mod = u.protocol === "https:" ? require("https") : require("http");
       let done = false; const fin = v => { if (!done) { done = true; resolve(v); } };
       const req = mod.get(u, { timeout: 15000, headers: { "User-Agent": "Mozilla/5.0 (compatible; VerionShop/1.0)", "Accept": "image/webp,image/png,image/jpeg,*/*" } }, r => {
@@ -193,7 +203,7 @@ module.exports = function createGames(ctx) {
           : (/octet-stream|binary/.test(ct) || !ct) && ue ? ue.toLowerCase().replace("jpeg", "jpg") : "";
         if (r.statusCode !== 200 || !ext) { r.resume(); return fin(""); }
         const chunks = []; let size = 0;
-        r.on("data", c => { size += c.length; if (size > MAX_IMG) { req.destroy(); fin(""); } else chunks.push(c); });
+        r.on("data", c => { size += c.length; if (size > MAX_IMG) { req.destroy(); fin(""); } else chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)); });
         r.on("end", () => {
           const buf = Buffer.concat(chunks);
           if (!buf.length) return fin("");
@@ -462,8 +472,17 @@ module.exports = function createGames(ctx) {
     if (!line.cbToken) { line.cbToken = crypto.randomBytes(12).toString("hex"); ctx.save(); }
     return { callbackUrl: base + "/api/lines/cb/" + line.id + "/" + line.cbToken };
   }
-  // exclude — oldin sinab ko'rilgan (va "bajarilmadi" degan) liniyalar.
+  // Bitta buyurtma bir vaqtda faqat BIR marta saytga yuboriladi: admin "qayta yuborish",
+  // fon tekshiruvi va sayt callback'i bir-biriga to'g'ri kelib qolsa ham — aks holda
+  // ikki liniyadan ikki marta to'ldirilib, pul ikki marta to'lanardi.
+  const INFLIGHT = new Set();
   async function fulfill(o, exclude) {
+    if (!o || INFLIGHT.has(o.id)) return;
+    INFLIGHT.add(o.id);
+    try { return await fulfillOnce(o, exclude); } finally { INFLIGHT.delete(o.id); }
+  }
+  // exclude — oldin sinab ko'rilgan (va "bajarilmadi" degan) liniyalar.
+  async function fulfillOnce(o, exclude) {
     const pkg = pkgById(o.game && o.game.packageId);
     if (!pkg || o.status !== "pending") return;
     const list = routesFor(pkg).filter(x => !(exclude && exclude.has(x.line.id)));
@@ -482,7 +501,11 @@ module.exports = function createGames(ctx) {
         line.enabled = false;
         alertAdmins("⛔ " + line.name + " liniyasi o'chirildi: " + str(res.message, 200) + "\nAdmin panel → O'yinlar va liniyalar.");
       }
-      if (o.status !== "pending") { ctx.save(); return; }        // shu orada admin bekor qilgan
+      if (o.status !== "pending") {                               // shu orada admin bekor qilgan
+        if (res.state === "done" || res.state === "accepted")
+          alertAdmins("⚠️ #" + o.seq + " " + o.item + " bekor qilingan (pul qaytarilgan) edi, lekin " + line.name + " uni " + (res.state === "done" ? "bajardi" : "qabul qildi") + ". Saytda tekshiring.");
+        ctx.save(); return;
+      }
       if (res.state === "done" || res.state === "accepted") o.costUzs = costUzs(r, line);
       if (res.state === "done") return markDone(o, line, res);
       if (res.state === "accepted") { o.line = { id: line.id, name: line.name, ref: str(res.ref, 120), state: "accepted" }; ctx.save(); return; }
@@ -511,13 +534,24 @@ module.exports = function createGames(ctx) {
     if (list.length) alertAdmins("⚠️ #" + o.seq + " " + o.item + " — hech bir liniya bajarmadi, qo'lda bajaring.\n" + failedHere.join("\n"), o);
   }
   // "accepted" holatidagi buyurtmalarni sayt API'sidan so'rab turadi (status() bor turlar uchun).
+  // Oldingi aylanish tugamaguncha yangisi boshlanmaydi (sayt sekin javob bersa ham), va har
+  // javobdan keyin holat qayta tekshiriladi — shu orada admin bekor qilgan yoki callback
+  // kelgan bo'lishi mumkin. Aks holda bitta "bajarilmadi" ikki marta keyingi liniyaga ketardi.
+  let polling = false;
   async function pollAccepted() {
-    for (const o of DBx().orders) {
-      if (o.status !== "pending" || !o.line || o.line.state !== "accepted") continue;
-      const line = lineById(o.line.id), T = line && LINE_TYPES[line.type];
+    if (polling) return;
+    polling = true;
+    try { await pollOnce(); } finally { polling = false; }
+  }
+  async function pollOnce() {
+    const list = DBx().orders.filter(o => o.status === "pending" && o.line && o.line.state === "accepted");
+    for (const o of list) {
+      if (o.status !== "pending" || !o.line || o.line.state !== "accepted" || INFLIGHT.has(o.id)) continue;
+      const lineId = o.line.id, line = lineById(lineId), T = line && LINE_TYPES[line.type];
       if (!T || typeof T.status !== "function") continue;
       let res; try { res = await T.status(line, o.line.ref, o); } catch (e) { continue; }
       if (!res) continue;
+      if (o.status !== "pending" || !o.line || o.line.state !== "accepted" || o.line.id !== lineId || INFLIGHT.has(o.id)) continue;
       if (res.state === "done") markDone(o, line, res);
       else if (res.state === "failed") { o.line.state = "failed"; o.line.message = str(res.message, 300); ctx.save(); fulfillNext(o, line.id); }
       else if (res.state === "unknown") {
@@ -544,6 +578,7 @@ module.exports = function createGames(ctx) {
   }
   // Har bir mijozga daqiqasiga cheklangan "Tekshirish" — sayt API'sini zo'riqtirmaslik uchun.
   const checkHits = new Map();
+  { const t = setInterval(() => { const now = Date.now(); for (const [k, w] of checkHits) if (!w.length || now - w[w.length - 1] > 60000) checkHits.delete(k); }, 10 * 60 * 1000); if (t.unref) t.unref(); }
   function allowCheck(uid) {
     const now = Date.now(), w = checkHits.get(uid) || [];
     const recent = w.filter(t => now - t < 60000);
@@ -627,7 +662,7 @@ module.exports = function createGames(ctx) {
       ctx.readBody(req, res, b => {
         const r = buyPackage(u, b.packageId, b.account, b.promoCode);
         if (!r.ok) return sendJSON(res, r.code, r.body);
-        sendJSON(res, 200, { ok: true, order: r.order, balance: r.balance });
+        sendJSON(res, 200, { ok: true, order: ctx.pubOrder(r.order), balance: r.balance });
       });
       return true;
     }
@@ -863,6 +898,8 @@ module.exports = function createGames(ctx) {
           if (f.required && !config[f.key]) return sendJSON(res, 400, { error: (f.label || f.key) + " kerak" });
         }
         const l = { id, name, type: x.type, enabled: x.enabled !== false, priority: Math.round(Number(x.priority) || 0), config, note: str(x.note, 200) };
+        // Callback manzilidagi maxfiy kalit saqlanadi — aks holda saytda kutilayotgan buyurtmalar callback'i rad etilardi.
+        if (prev && prev.cbToken && prev.type === x.type) l.cbToken = prev.cbToken;
         const i = s.lines.findIndex(z => z.id === id);
         if (i >= 0) s.lines[i] = l; else s.lines.push(l);
         ctx.save();
@@ -892,6 +929,7 @@ module.exports = function createGames(ctx) {
         // Noaniq holat: admin saytdan tekshirib, buyurtma YO'QLIGINI tasdiqlasagina.
         if (st === "unknown" && b.confirmNotCreated !== true)
           return sendJSON(res, 409, { error: "Avval saytdan tekshiring: buyurtma yaratilmaganini tasdiqlasangiz qayta yuboriladi", needConfirm: true });
+        if (INFLIGHT.has(o.id)) return sendJSON(res, 409, { error: "Buyurtma hozir saytga yuborilmoqda — natijasini kuting" });
         fulfill(o).then(() => sendJSON(res, 200, { ok: true, status: o.status, line: o.line, attempts: o.attempts }))
           .catch(e => sendJSON(res, 500, { error: e.message }));
       });
@@ -1233,5 +1271,7 @@ module.exports = function createGames(ctx) {
     return { ok: true, game: g, pkg: p, accountText: accountText(g, c.account), account: c.account, price: Math.round(p.price),
       title: g.name + " — " + p.name + (p.sub ? " " + p.sub : "") };
   }
-  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog };
+  // Tashqaridan (masalan AI orqali narx) o'zgartirilganda ochiq katalog darhol yangilansin.
+  function touch() { pubAt = 0; }
+  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog, touch };
 };

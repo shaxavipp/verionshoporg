@@ -14,13 +14,15 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-29.2";
+const BUILD = "2026-10-29.3";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
 // Alohida admin bot (adminbot.js). var — ishga tushishdan oldin chaqirilsa ham xato bermasin.
 var ADMINBOT = null;
 const MAX_BODY = 10 * 1024 * 1024;
+// Telegram so'rovlari javobsiz osilib qolmasin (polling sikli to'xtab, bot jim qolardi).
+const TG_TIMEOUT = 20000, TG_UPLOAD_TIMEOUT = 120000;
 const HTML_FILE = path.join(__dirname, "verion-shop.html");
 /* ---------- Xabar yuboriladigan kanallar (buyurtma / to'lov / yetkazilgan) ----------
    Uch xil xabar — uch xil kanal. Ilgari faqat Railway "Variables"dan o'qilardi va
@@ -177,10 +179,19 @@ function user(u) {
   if (u.photo_url) DB.users[k].photo = u.photo_url;
   return DB.users[k];
 }
+/* Buyurtma/to'lov ID'si: kriptografik tasodifiy, 8 belgi va takrorlanmasligi tekshiriladi.
+   Avval 6 belgi + Math.random edi — ~50 ming buyurtmada ikki buyurtmaga bir xil ID tushishi
+   ehtimoli yuqori edi, bazada esa biri ikkinchisining ustiga yozilib, qayta ishga tushganda yo'qolardi. */
+const ID_SEEN = new Set();
 function genId(p) {
-  const a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let s = "";
-  for (let i = 0; i < 6; i++) s += a[Math.floor(Math.random() * a.length)];
-  return p + "-" + s;
+  if (!ID_SEEN.size) for (const arr of [DB.orders, DB.payments, DB.reviews]) for (const x of arr || []) if (x && x.id) ID_SEEN.add(x.id);
+  const a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  for (;;) {
+    const b = crypto.randomBytes(8); let s = "";
+    for (let i = 0; i < 8; i++) s += a[b[i] % a.length];
+    const id = p + "-" + s;
+    if (!ID_SEEN.has(id)) { ID_SEEN.add(id); return id; }
+  }
 }
 // "today" | "week" | "month" | "all" -> shu davr boshlanishining vaqt belgisi (ms).
 // "week" — joriy hafta dushanbadan, "month" — joriy oyning 1-sanasidan.
@@ -223,13 +234,26 @@ let BOT_USERNAME = "";
 (function fetchBotUsername() {
   if (!BOT_TOKEN) return;
   try {
-    https.get("https://api.telegram.org/bot" + BOT_TOKEN + "/getMe", r => {
+    const req = https.get("https://api.telegram.org/bot" + BOT_TOKEN + "/getMe", { timeout: 20000 }, r => {
       let body = ""; r.on("data", c => body += c);
       r.on("end", () => { try { const j = JSON.parse(body); if (j.ok) BOT_USERNAME = j.result.username; } catch (e) {} });
-    }).on("error", () => {});
+    });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", () => {});
   } catch (e) {}
 })();
 
+// Taklif faqat haqiqatan YANGI mijozga yoziladi: taklif qiluvchi mavjud bo'lsin, mijozning o'zi
+// hali xarid ham, to'ldirish ham qilmagan bo'lsin. Aks holda eski mijoz ikkinchi akkauntini
+// "taklif qiluvchi" qilib qo'yib, o'z xaridlaridan doimiy foiz olib turardi.
+function canSetReferrer(uid, refUid) {
+  if (!refUid || refUid === Number(uid) || !DB.users[String(refUid)]) return false;
+  const acc = DB.users[String(uid)];
+  if (!acc || acc.referredBy) return false;
+  if (byUid("orders", Number(uid)).length) return false;
+  if (byUid("payments", Number(uid)).some(p => p.status === "done" || p.status === "checking")) return false;
+  return true;
+}
 // Taklif qilingan foydalanuvchi HAR safar xaridni yakunlaganda (status "done" bo'lganda),
 // uni taklif qilgan foydalanuvchiga shu xariddan foiz (masalan 1%) bonus beriladi — bir martalik emas, doimiy.
 function creditReferralOnOrder(order) {
@@ -243,13 +267,14 @@ function creditReferralOnOrder(order) {
     if (!refAcc) return;
     const pct = Number(settings.percent) || 0;
     if (pct <= 0) return;
-    const already = acc.referralCreditedOrders || (acc.referralCreditedOrders = []);
-    if (already.indexOf(order.id) !== -1) return; // shu buyurtma uchun bonus allaqachon berilgan
-    const bonus = Math.floor((Number(order.price) || 0) * pct / 100);
+    // Bir buyurtma uchun bir marta. Belgi buyurtmaning o'zida (avval mijoz yozuvidagi cheksiz
+    // o'suvchi ro'yxatda edi — eski ro'yxat ham tekshiriladi).
+    if (order.refCredited || (Array.isArray(acc.referralCreditedOrders) && acc.referralCreditedOrders.indexOf(order.id) !== -1)) return;
+    const bonus = Math.floor(((Number(order.price) || 0) - (Number(order.partialRefund) || 0)) * pct / 100);
     if (bonus <= 0) return;
     refAcc.balance = (refAcc.balance || 0) + bonus;
     refAcc.referralEarnedTotal = (refAcc.referralEarnedTotal || 0) + bonus;
-    already.push(order.id);
+    order.refCredited = true;
     save();
     tgSend(acc.referredBy, "🎉 Taklif qilgan do'stingiz xarid qildi! Balansingizga " +
       bonus.toLocaleString("ru-RU") + " so'm bonus qo'shildi.");
@@ -319,18 +344,17 @@ function creditLoyaltyOnOrder(order) {
     if (!ls.enabled) return;
     const acc = DB.users[String(order.uid)];
     if (!acc) return;
-    const already = acc.loyaltyCreditedOrders || (acc.loyaltyCreditedOrders = []);
-    if (already.indexOf(order.id) !== -1) return;
+    if (order.loyaltyCredited || (Array.isArray(acc.loyaltyCreditedOrders) && acc.loyaltyCreditedOrders.indexOf(order.id) !== -1)) return;
+    order.loyaltyCredited = true;
     const spent = userTotalSpent(order.uid); // shu buyurtma bilan birga hisoblangan umumiy summa
     const { tier } = loyaltyTierFor(spent);
     const pct = Number(tier.percent) || 0;
-    if (pct <= 0) { already.push(order.id); return; }
-    const bonus = Math.floor((Number(order.price) || 0) * pct / 100);
-    if (bonus <= 0) { already.push(order.id); return; }
+    if (pct <= 0) return;
+    const bonus = Math.floor(((Number(order.price) || 0) - (Number(order.partialRefund) || 0)) * pct / 100);
+    if (bonus <= 0) return;
     acc.balance = (acc.balance || 0) + bonus;
     acc.loyaltyEarnedTotal = (acc.loyaltyEarnedTotal || 0) + bonus;
     acc.loyaltyTier = tier.name;
-    already.push(order.id);
     save();
     tgSend(order.uid, "🏅 " + tier.name + " status bonusi: balansingizga " +
       bonus.toLocaleString("ru-RU") + " so'm keshbek qo'shildi.");
@@ -360,6 +384,18 @@ function checkStockAlert(itemId, title) {
 // qilmagan (lekin avval kamida bitta "done" buyurtmasi bo'lgan) mijozlarga avtomatik xabar
 // (va agar sozlangan bo'lsa — bonus) yuboradi. Har bir mijozga winbackCooldownDays dan
 // tez-tez yuborilmaydi. setInterval orqali davriy chaqiriladi (pastda).
+/* Bir vaqtda ko'p mijozga ketadigan xabarlar (winback, sevimlilar) navbati: Telegram soniyasiga
+   ~30 xabardan oshganini 429 bilan rad etadi va ular yo'qolardi. Soniyasiga 20 tadan yuboriladi;
+   buyurtma/to'lov xabarlari bu navbatdan o'tmaydi (kechikmaydi). */
+const BULK_Q = []; let bulkT = null;
+function bulkSend(fn) {
+  BULK_Q.push(fn);
+  if (bulkT) return;
+  bulkT = setInterval(() => {
+    for (let i = 0; i < 20 && BULK_Q.length; i++) { try { BULK_Q.shift()(); } catch (e) {} }
+    if (!BULK_Q.length) { clearInterval(bulkT); bulkT = null; }
+  }, 1000);
+}
 function runWinbackCheck() {
   try {
     const A = DB.automation || {};
@@ -388,7 +424,7 @@ function runWinbackCheck() {
       const bonusLine = A.winbackBonus > 0
         ? ("\n\n🎁 Sizga " + Number(A.winbackBonus).toLocaleString("ru-RU") + " so'm bonus balansingizga qo'shildi — foydalaning!")
         : "";
-      tgSend(uid, msg + bonusLine);
+      bulkSend(() => tgSend(uid, msg + bonusLine));
     }
     DB.automation.lastRunTs = now;
     if (sentCount > 0) save(); else save();
@@ -571,8 +607,9 @@ function tgSend(chatId, text) {
     const data = JSON.stringify({ chat_id: chatId, text: text });
     const req = https.request({
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendMessage", method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }, timeout: TG_TIMEOUT
     }, r => { r.on("data", () => {}); });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", () => {});
     req.write(data); req.end();
   } catch (e) {}
@@ -622,11 +659,13 @@ function tgApiPost(method, payload) {
     const data = JSON.stringify(payload);
     const req = https.request({
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/" + method, method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) },
+      timeout: method === "getUpdates" ? 40000 : TG_TIMEOUT
     }, r => {
-      let body = ""; r.on("data", c => body += c);
-      r.on("end", () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+      const ch = []; r.on("data", c => ch.push(Buffer.isBuffer(c) ? c : Buffer.from(String(c))));
+      r.on("end", () => { try { resolve(JSON.parse(Buffer.concat(ch).toString("utf8"))); } catch (e) { reject(e); } });
     });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", reject);
     req.write(data); req.end();
   });
@@ -649,7 +688,7 @@ function tgSendMediaMultipart(chatId, field, buffer, filename, mimeType, caption
     const method = field === "video" ? "sendVideo" : "sendPhoto";
     const req = https.request({
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/" + method, method: "POST",
-      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }
+      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }, timeout: TG_UPLOAD_TIMEOUT
     }, r => {
       let out = ""; r.on("data", c => out += c);
       r.on("end", () => {
@@ -657,6 +696,7 @@ function tgSendMediaMultipart(chatId, field, buffer, filename, mimeType, caption
         catch (e) { reject(e); }
       });
     });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", reject);
     req.write(body); req.end();
   });
@@ -729,18 +769,7 @@ async function runBroadcast(job, text, mediaType, mediaBuffer, mediaMime, ids) {
 // Umumiy readBody'dan farqli — rasm/video uchun MAX_BODY (10MB) yetarli bo'lmasligi mumkin,
 // shu sababli shu bitta yo'nalish uchun kattaroq (20MB) limit bilan alohida o'qiladi.
 const MAX_BROADCAST_BODY = 20 * 1024 * 1024;
-function readBroadcastBody(req, res, cb) {
-  let body = "", size = 0, dead = false;
-  req.on("data", c => {
-    size += c.length;
-    if (size > MAX_BROADCAST_BODY) { dead = true; send(res, 413, { error: "too large" }); req.destroy(); }
-    else body += c;
-  });
-  req.on("end", () => {
-    if (dead) return;
-    try { cb(JSON.parse(body || "{}")); } catch (e) { send(res, 400, { error: "invalid json" }); }
-  });
-}
+function readBroadcastBody(req, res, cb) { return readBody(req, res, cb, MAX_BROADCAST_BODY); }
 // Mini-ilovani to'g'ridan-to'g'ri ochadigan havola (t.me/<bot>/<app>?startapp=...) — BOT_USERNAME
 // hali Telegram'dan olinmagan bo'lsa (server hozirgina ishga tushgan bo'lsa) bo'sh qaytaradi.
 function miniAppLink(startParam) {
@@ -759,8 +788,9 @@ function tgSendButton(chatId, text, btnText, url) {
     const data = JSON.stringify(payload);
     const req = https.request({
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendMessage", method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }, timeout: TG_TIMEOUT
     }, r => { r.on("data", () => {}); });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", () => {});
     req.write(data); req.end();
   } catch (e) {}
@@ -1011,7 +1041,7 @@ function tgSendMediaMultipartKb(chatId, buffer, captionHtml, keyboard) {
     const body = Buffer.concat([...parts, buffer, Buffer.from(`\r\n--${boundary}--\r\n`, "utf8")]);
     const req = https.request({
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendPhoto", method: "POST",
-      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }
+      headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }, timeout: TG_UPLOAD_TIMEOUT
     }, r => {
       let out = ""; r.on("data", c => out += c);
       r.on("end", () => {
@@ -1019,6 +1049,7 @@ function tgSendMediaMultipartKb(chatId, buffer, captionHtml, keyboard) {
         catch (e) { reject(e); }
       });
     });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
     req.on("error", reject);
     req.write(body); req.end();
   });
@@ -1050,10 +1081,7 @@ async function handleBotUpdate(upd) {
     const payload = text.slice(6).trim();
     // Referal havolasi (t.me/bot?start=ref_123) — faqat YANGI foydalanuvchi uchun.
     const mref = /^ref_(\d+)$/.exec(payload);
-    if (mref && !acc.referredBy) {
-      const refUid = Number(mref[1]);
-      if (refUid && refUid !== from.id) { acc.referredBy = refUid; save(); }
-    }
+    if (mref && canSetReferrer(from.id, Number(mref[1]))) { acc.referredBy = Number(mref[1]); save(); }
     await sendStartCard(from.id, greetingHtml(from));
     return;
   }
@@ -1465,7 +1493,7 @@ function notifyFavoriteEvent(itemId, kind, it, extra) {
     : "🔻 Sevimlilaringizdagi \"" + title + "\" mahsuloti narxi tushdi: " +
       (Number(extra) || 0).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
   const uids = usersFavoriting(itemId);
-  for (const k of uids) tgSendButton(Number(k), text, "Ilovani ochish", link || undefined);
+  for (const k of uids) bulkSend(() => tgSendButton(Number(k), text, "Ilovani ochish", link || undefined));
 }
 // Mahsulotning joriy (haqiqiy) zaxira soni: agar DB.stock orqali aniq inventar
 // yuritilayotgan bo'lsa o'shani, aks holda katalogdagi "stock" maydonini oladi.
@@ -1512,21 +1540,25 @@ function tgApiGet(method, params) {
   return new Promise((resolve, reject) => {
     if (!BOT_TOKEN) return reject(new Error("BOT_TOKEN not set"));
     const qs = new URLSearchParams(params || {}).toString();
-    https.get("https://api.telegram.org/bot" + BOT_TOKEN + "/" + method + (qs ? "?" + qs : ""), r => {
-      let body = "";
-      r.on("data", c => body += c);
-      r.on("end", () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
-    }).on("error", reject);
+    const req = https.get("https://api.telegram.org/bot" + BOT_TOKEN + "/" + method + (qs ? "?" + qs : ""), { timeout: TG_TIMEOUT }, r => {
+      const ch = [];
+      r.on("data", c => ch.push(Buffer.isBuffer(c) ? c : Buffer.from(String(c))));
+      r.on("end", () => { try { resolve(JSON.parse(Buffer.concat(ch).toString("utf8"))); } catch (e) { reject(e); } });
+    });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
   });
 }
 function tgFileDownload(filePath) {
   return new Promise((resolve, reject) => {
-    https.get("https://api.telegram.org/file/bot" + BOT_TOKEN + "/" + filePath, r => {
+    const req = https.get("https://api.telegram.org/file/bot" + BOT_TOKEN + "/" + filePath, { timeout: TG_UPLOAD_TIMEOUT }, r => {
       if (r.statusCode !== 200) { r.resume(); return reject(new Error("fetch_failed_" + r.statusCode)); }
-      const chunks = [];
-      r.on("data", c => chunks.push(c));
+      const chunks = []; let size = 0;
+      r.on("data", c => { size += c.length; if (size > 20 * 1024 * 1024) { req.destroy(new Error("too_large")); } else chunks.push(c); });
       r.on("end", () => resolve(Buffer.concat(chunks)));
-    }).on("error", reject);
+    });
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
   });
 }
 // Bir xil custom_emoji_id uchun fayl allaqachon diskda bormi — bo'lsa, Telegramga
@@ -1662,10 +1694,30 @@ function applyJapStatusToOrder(o, j) {
   o.japRemains = j.remains != null ? Number(j.remains) : null;
   o.japCharge = j.charge != null ? j.charge : null;
   const st = String(j.status || "").toLowerCase();
+  // Pul allaqachon qaytarilgan (bekor qilingan) buyurtma keyin "Completed" bo'lsa — holatni
+  // o'zgartirmaymiz: aks holda mijozda ham pul, ham "bajarildi" qolardi. Admin ko'radi.
+  if (o.status === "cancelled" && o.refunded && (st === "completed" || st === "partial")) {
+    if (!o.lateComplete) { o.lateComplete = true; notifyAdmins("⚠️ Nakrutka #" + o.seq + " bekor qilinib pul qaytarilgan edi, lekin panel endi «" + j.status + "» dedi. Panelda tekshiring."); return true; }
+    return false;
+  }
   if (st === "completed" && o.status !== "done") {
     o.status = "done"; o.doneTs = Date.now();
     creditReferralOnOrder(o);
     tgSend(o.uid, "✅ Nakrutka buyurtmangiz bajarildi: " + o.item);
+    return true;
+  }
+  // "Partial" — panel bir qismini bajardi, qolgani (remains) uchun pul panelda bizga qaytdi.
+  // Mijozga ham o'sha ulush qaytariladi (bir marta), buyurtma "bajarildi" bo'ladi.
+  if (st === "partial" && o.status !== "done" && o.status !== "cancelled") {
+    const qty = Number(o.quantity) || 0, rem = Math.max(0, Math.min(qty, Number(j.remains) || 0));
+    const back = qty > 0 && !o.partialRefund ? Math.floor((Number(o.price) || 0) * rem / qty) : 0;
+    o.status = "done"; o.doneTs = Date.now();
+    if (back > 0) {
+      const acc = DB.users[String(o.uid)] || (DB.users[String(o.uid)] = { balance: 0 });
+      acc.balance += back; o.partialRefund = back;
+    }
+    creditReferralOnOrder(o);
+    tgSend(o.uid, "✅ Nakrutka buyurtmangiz qisman bajarildi: " + o.item + (back > 0 ? "\nBajarilmagan qismi uchun " + back.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm balansingizga qaytarildi." : ""));
     return true;
   }
   if ((st === "canceled" || st === "cancelled" || st === "refunded") && o.status !== "cancelled") {
@@ -1792,8 +1844,22 @@ function getHtml(cb) {
   });
 }
 function send(res, code, obj, type) {
-  res.writeHead(code, { "Content-Type": type || "application/json; charset=utf-8", "Cache-Control": "no-store" });
+  // Javob allaqachon ketgan bo'lsa (masalan handler xato bilan ikkinchi marta yubormoqchi) — jim.
+  if (res.headersSent || res.writableEnded) return;
+  res.writeHead(code, { "Content-Type": type || "application/json; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
   res.end(typeof obj === "string" ? obj : JSON.stringify(obj));
+}
+// Handler xatosi (sinxron yoki async) serverni yiqitmaydi: log yoziladi, mijozga 500.
+// Ilgari async handler'dagi bitta xato (masalan tana "null" bo'lsa) butun jarayonni to'xtatardi.
+function handlerError(res, e) {
+  console.log("[http] handler xatosi: " + ((e && e.stack) || e));
+  if (res) send(res, 500, { error: "server_error" });
+}
+function runSafe(res, fn) {
+  try {
+    const r = fn();
+    if (r && typeof r.then === "function") r.catch(e => handlerError(res, e));
+  } catch (e) { handlerError(res, e); }
 }
 // Rasm (base64) saqlangan katta javoblar uchun: ma'lumot o'zgarmagan bo'lsa
 // to'liq payload'ni qayta yubormay, faqat "304 Not Modified" qaytaradi (deyarli 0 bayt).
@@ -1817,16 +1883,35 @@ function sendCached(req, res, obj) {
   }, gz ? { "Content-Encoding": "gzip" } : {}));
   res.end(out);
 }
-function readBody(req, res, cb) {
-  let body = "", size = 0, dead = false;
+/* So'rov tanasi. Bo'laklar Buffer sifatida yig'iladi — matnga bo'lak-bo'lak aylantirilsa,
+   64 KB chegarasiga tushgan kirill/emoji harflari buzilardi. Oddiy foydalanuvchiga 512 KB
+   yetarli; 10 MB faqat admin (katalog, rasm) uchun — aks holda istalgan mijoz bir nechta
+   10 MB'lik so'rov bilan xotirani to'ldira olardi. Obyekt/massiv bo'lmagan tana (null, son,
+   matn) rad etiladi: hech bir endpoint uni kutmaydi va b.x o'qishda yiqilardi. */
+const MAX_BODY_USER = 512 * 1024;
+function readBody(req, res, cb, limit) {
+  const u = String(req.url || "");
+  const max = limit || (u.indexOf("/api/admin/") === 0 || u.indexOf("/api/catalog") === 0 ? MAX_BODY : MAX_BODY_USER);
+  const chunks = [];
+  let size = 0, dead = false;
   req.on("data", c => {
+    if (dead) return;
     size += c.length;
-    if (size > MAX_BODY) { dead = true; send(res, 413, { error: "too large" }); req.destroy(); }
-    else body += c;
+    if (size > max) {
+      dead = true;
+      res.once("finish", () => req.destroy());
+      res.setHeader("Connection", "close");
+      return send(res, 413, { error: "too large" });
+    }
+    chunks.push(c);
   });
   req.on("end", () => {
     if (dead) return;
-    try { cb(JSON.parse(body || "{}")); } catch (e) { send(res, 400, { error: "invalid json" }); }
+    let b;
+    try { b = JSON.parse(chunks.length ? Buffer.concat(chunks).toString("utf8") : "{}"); }
+    catch (e) { return send(res, 400, { error: "invalid json" }); }
+    if (!b || typeof b !== "object") return send(res, 400, { error: "invalid json" });
+    runSafe(res, () => cb(b));
   });
 }
 /* Tashqi API orqali yetkaziladigan xaridlar (Fragment, Gift) uchun pul OLDINDAN band
@@ -1852,8 +1937,34 @@ function unknownDeliveryOrder(u, it, item, price, errMsg, extra) {
     + "Yuborilgan bo'lishi mumkin: tekshirib «Bajarildi» yoki «Bekor qilish» (pul qaytadi) bosing.", { order: o });
   return o;
 }
+/* Katalog, kategoriya rasmlari va ui-emoji — har ilova ochilishida so'raladi, lekin kam
+   o'zgaradi (ichida base64 rasmlar ham bor). Ilgari har so'rovda bazadan qayta o'qilib,
+   JSON'ga aylantirilib, sha1 va gzip qilinardi — minglab ochilishda serverni band qilardi.
+   Endi bir marta tayyorlanadi; admin o'zgartirganda kesh tashlanadi. */
+let CAT_ARR;   // undefined — hali o'qilmagan
+const PUB_MEMO = {};
+function dropPublic(key) { delete PUB_MEMO[key]; if (key === "catalog") CAT_ARR = undefined; }
+function memoPublic(key, load) {
+  let m = PUB_MEMO[key];
+  if (!m) {
+    const obj = load();
+    if (obj == null) return null;
+    const body = JSON.stringify(obj);
+    m = PUB_MEMO[key] = { body, etag: '"' + crypto.createHash("sha1").update(body).digest("hex") + '"', gz: null };
+  }
+  return m;
+}
+function sendMemo(req, res, m) {
+  if (req.headers["if-none-match"] === m.etag) { res.writeHead(304, { "ETag": m.etag, "Cache-Control": "no-cache" }); return res.end(); }
+  const gz = m.body.length > 2048 && /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
+  if (gz && !m.gz) m.gz = zlib.gzipSync(m.body);
+  res.writeHead(200, Object.assign({ "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache", "ETag": m.etag, "Vary": "Accept-Encoding" },
+    gz ? { "Content-Encoding": "gzip" } : {}));
+  res.end(gz ? m.gz : m.body);
+}
 function catalogArr() {
-  try { return sdb.loadCatalog(SQLITE_DB); } catch (e) { return null; }
+  if (CAT_ARR === undefined) { try { CAT_ARR = sdb.loadCatalog(SQLITE_DB); } catch (e) { return null; } }
+  return CAT_ARR;
 }
 // Kategoriya kartochkalari (Obuna/Promokod/Telegram/O'yinlar) uchun admin belgilagan
 // nom va rasm — { obuna: {label:{uz,ru,en}, img:"data:..."}, telegram: {...}, ... }
@@ -1884,6 +1995,29 @@ function byUid(name, uid) {
   }
   return ix.map.get(uid) || [];
 }
+/* Mijozga ko'rinadigan buyurtma va to'lov — faqat ruxsat etilgan maydonlar. Ichki ma'lumot
+   (qaysi yetkazib beruvchi/liniya, tannarx, sayt javoblari va urinishlar, admin chatlaridagi
+   xabar raqamlari, admin izohi, 5sim ichki ID'si) mijozga hech qachon ketmaydi.
+   Admin API'lari to'liq obyektni oladi — bu faqat mijoz javoblari uchun. */
+const ORDER_PUB = ["id", "seq", "uid", "item", "itemId", "price", "status", "ts", "doneTs", "quantity", "delivered", "deliveredAsFile",
+  "promoCode", "promoDiscount", "link", "japStatus", "japRemains", "giftRecipient", "giftMessage", "giftAnonymous", "reviewed", "cancelReason", "refunded", "partialRefund"];
+function pubOrder(o) {
+  if (!o || typeof o !== "object") return o;
+  const out = {};
+  for (const k of ORDER_PUB) if (o[k] !== undefined) out[k] = o[k];
+  if (o.game) out.game = { gameId: o.game.gameId, gameName: o.game.gameName, packageId: o.game.packageId, region: o.game.region,
+    account: o.game.account, accountText: o.game.accountText, fields: o.game.fields };
+  if (o.vnum) out.vnum = { country: o.vnum.country, phone: o.vnum.phone, code: o.vnum.code, until: o.vnum.until };
+  if (o.steam) out.steam = { login: o.steam.login, usd: o.steam.usd };
+  return out;
+}
+const PAY_PUB = ["id", "uid", "type", "amount", "pay", "method", "status", "ts", "doneTs", "paidTs"];
+function pubPayment(p) {
+  if (!p || typeof p !== "object") return p;
+  const out = {};
+  for (const k of PAY_PUB) if (p[k] !== undefined) out[k] = p[k];
+  return out;
+}
 let expireAt = 0;
 const LB_CACHE = {};
 function myView(uid) {
@@ -1907,9 +2041,9 @@ function myView(uid) {
     balance: acc.balance,
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
-    payments: byUid("payments", uid).slice(-50).reverse(),
+    payments: byUid("payments", uid).slice(-50).reverse().map(pubPayment),
     orders: byUid("orders", uid).slice(-50).reverse()
-      .map(o => Object.assign({}, o, { reviewed: reviewedIds.has(o.id) }))
+      .map(o => Object.assign(pubOrder(o), { reviewed: reviewedIds.has(o.id) }))
   };
 }
 
@@ -1918,14 +2052,14 @@ function myView(uid) {
 const GAMES = require("./games.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
   notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, validatePromo, consumePromo,
-  creditReferralOnOrder, creditLoyaltyOnOrder, ADMIN_IDS, DATA_DIR,
+  creditReferralOnOrder, creditLoyaltyOnOrder, ADMIN_IDS, DATA_DIR, pubOrder,
   publicBase: () => publicBase()   // G2Bulk callback_url uchun
 });
 
 // Steam hamyon va virtual raqamlar (extra.js).
 const EXTRA = require("./extra.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
-  notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder,
+  notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder, pubOrder,
   gameLines: () => GAMES.store().lines
 });
 // Nakrutka liniyalari (smm.js): JAP + boshqa SMM panellar.
@@ -1980,7 +2114,7 @@ var AI = require("./ai.js")({
   lineBalances: f => allLineBalances(f),
   setPackagePrice: (id, price) => {
     const p = GAMES.pkgById(id); if (!p) return { ok: false, error: "Paket topilmadi" };
-    p.price = Math.round(price); save();
+    p.price = Math.round(price); GAMES.touch(); save();
     const g = GAMES.gameById(p.gameId);
     return { ok: true, name: (g ? g.name + " — " : "") + p.name };
   },
@@ -2015,7 +2149,7 @@ function safeEq(a, b) {
   const x = Buffer.from(String(a || "")), y = Buffer.from(String(b || ""));
   return x.length === y.length && x.length > 0 && crypto.timingSafeEqual(x, y);
 }
-const server = http.createServer((req, res) => {
+function handleRequest(req, res) {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
@@ -2034,8 +2168,8 @@ const server = http.createServer((req, res) => {
 
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {
-    const c = catalogArr();
-    return c ? sendCached(req, res, c) : send(res, 404, { error: "no catalog yet" });
+    const c = memoPublic("catalog", catalogArr);
+    return c ? sendMemo(req, res, c) : send(res, 404, { error: "no catalog yet" });
   }
   if (url === "/api/catalog" && m === "POST") {
     if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
@@ -2046,6 +2180,7 @@ const server = http.createServer((req, res) => {
       const prevArr = catalogArr() || [];
       try {
         sdb.saveCatalog(SQLITE_DB, arr);
+        dropPublic("catalog");
         checkFavoriteChanges(prevArr, arr); // TZ band 6: narx tushishi / qayta sotuvga chiqishi haqida xabar
         send(res, 200, { ok: true, items: arr.length });
       } catch (e) { send(res, 500, { error: "write failed" }); }
@@ -2053,14 +2188,14 @@ const server = http.createServer((req, res) => {
   }
 
   if (url === "/api/category-meta" && m === "GET") {
-    return sendCached(req, res, catMetaObj());
+    return sendMemo(req, res, memoPublic("catmeta", catMetaObj));
   }
   if (url === "/api/admin/category-meta" && m === "POST") {
     const u = auth(req);
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
     return readBody(req, res, obj => {
       if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
-      try { sdb.kvSet(SQLITE_DB, "catmeta", obj); send(res, 200, { ok: true }); }
+      try { sdb.kvSet(SQLITE_DB, "catmeta", obj); dropPublic("catmeta"); send(res, 200, { ok: true }); }
       catch (e) { send(res, 500, { error: "write failed" }); }
     });
   }
@@ -2068,7 +2203,7 @@ const server = http.createServer((req, res) => {
   // To'lov usullari (karta/bank ikonkalari) va profil bo'limi tugmalariga admin
   // biriktirgan premium emoji'lar ro'yxati — hammaga (mijozlarga ham) ochiq o'qish uchun.
   if (url === "/api/ui-emoji" && m === "GET") {
-    return sendCached(req, res, uiEmojiObj());
+    return sendMemo(req, res, memoPublic("uiemoji", uiEmojiObj));
   }
   // Butun obyekt bir yo'la almashtiriladi (frontend joriy holatni GET orqali olib,
   // kerakli slot(lar)ni o'zgartirib, to'liq obyektni qayta yuboradi — category-meta bilan bir xil naqsh).
@@ -2077,7 +2212,7 @@ const server = http.createServer((req, res) => {
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
     return readBody(req, res, obj => {
       if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
-      try { sdb.kvSet(SQLITE_DB, "uiemoji", obj); send(res, 200, { ok: true }); }
+      try { sdb.kvSet(SQLITE_DB, "uiemoji", obj); dropPublic("uiemoji"); send(res, 200, { ok: true }); }
       catch (e) { send(res, 500, { error: "write failed" }); }
     });
   }
@@ -2181,10 +2316,8 @@ const server = http.createServer((req, res) => {
     const isNew = !DB.users[String(u.id)];
     const before = isNew ? "" : JSON.stringify(DB.users[String(u.id)]);
     const acc = user(u);
-    if (isNew && u._startParam && /^ref_\d+$/.test(u._startParam)) {
-      const refUid = Number(u._startParam.slice(4));
-      if (refUid && refUid !== u.id) acc.referredBy = refUid;
-    }
+    if (isNew && u._startParam && /^ref_\d+$/.test(u._startParam) && canSetReferrer(u.id, Number(u._startParam.slice(4))))
+      acc.referredBy = Number(u._startParam.slice(4));
     // Botni ishga tushirgan-tushirmagani hali noma'lum bo'lsa — fonda jimgina
     // tekshiramiz. Javob shu so'rovni kutib turmaydi: started null qaytadi va
     // ilova bir-ikki soniyadan keyin qayta so'raganda aniq qiymatni oladi.
@@ -2204,16 +2337,19 @@ const server = http.createServer((req, res) => {
     if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     if (!u.photo_url) return send(res, 404, { error: "no_photo" });
     try {
-      https.get(u.photo_url, r => {
+      if (!/^https:\/\/[a-z0-9.-]*\b(t\.me|telegram\.org|telesco\.pe)\//i.test(String(u.photo_url))) return send(res, 404, { error: "no_photo" });
+      const areq = https.get(u.photo_url, { timeout: 15000 }, r => {
         if (r.statusCode !== 200) { r.resume(); return send(res, 502, { error: "fetch_failed" }); }
-        const chunks = [];
-        r.on("data", c => chunks.push(c));
+        const chunks = []; let size = 0;
+        r.on("data", c => { size += c.length; if (size > 2 * 1024 * 1024) { areq.destroy(); send(res, 502, { error: "too_large" }); } else chunks.push(c); });
         r.on("end", () => {
           const buf = Buffer.concat(chunks);
-          const ctype = r.headers["content-type"] || "image/jpeg";
+          const ctype = /^image\/(jpeg|png|webp|gif)$/.test(String(r.headers["content-type"] || "")) ? r.headers["content-type"] : "image/jpeg";
           send(res, 200, { ok: true, dataUrl: "data:" + ctype + ";base64," + buf.toString("base64") });
         });
-      }).on("error", e => send(res, 502, { error: e.message }));
+      });
+      areq.on("timeout", () => areq.destroy(new Error("timeout")));
+      areq.on("error", e => send(res, 502, { error: "fetch_failed" }));
     } catch (e) { send(res, 500, { error: e.message }); }
     return;
   }
@@ -2330,18 +2466,18 @@ const server = http.createServer((req, res) => {
             if (r.backup) o.smmBackup = true;
             save(); notifyOrder(o); logDeliveryToChannel(o);
             if (r.backup) notifyAdmins("↪️ Nakrutka #" + o.seq + " zaxira liniyaga ketdi: " + r.lineName + "\nAsosiy rad etdi: " + (r.tried || []).join("; "));
-            return send(res, 200, { ok: true, order: o, balance: acc.balance });
+            return send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
           }
           // Noaniq — panel buyurtmani yaratgan bo'lishi mumkin: qayta yubormaymiz, admin hal qiladi.
           o.smmUnknown = true; o.smmMessage = r.message; save();
           notifyOrder(o);
           notifyAdmins("❓ Nakrutka #" + o.seq + " " + o.item + " — " + r.lineName + " javobi tushunarsiz: " + r.message
             + "\nPanelda buyurtma yaratilgan bo'lishi mumkin. Panelda tekshiring; yaratilmagan bo'lsa Admin panel → Nakrutka → «Bekor qilish» (pul qaytadi). Ikkinchi marta yuborilmadi.");
-          send(res, 200, { ok: true, order: o, balance: acc.balance });
+          send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
         }).catch(e => {
           o.smmUnknown = true; o.smmMessage = String(e.message || e); save();
           notifyAdmins("❓ Nakrutka #" + o.seq + " — kutilmagan xato: " + o.smmMessage + ". Panelda tekshiring.");
-          send(res, 200, { ok: true, order: o, balance: acc.balance });
+          send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
         });
       }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     });
@@ -2359,7 +2495,7 @@ const server = http.createServer((req, res) => {
       applyJapStatusToOrder(o, j);
       save();
       const acc = user(u);
-      send(res, 200, { ok: true, order: o, balance: acc.balance });
+      send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
     }).catch(e => send(res, 502, { error: "jap_failed", message: String(e.message || e) }));
     return;
   }
@@ -2387,7 +2523,7 @@ const server = http.createServer((req, res) => {
     if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
     return readBody(req, res, b => {
       const r = AI.confirm(u, b && b.token);
-      send(res, r.ok ? 200 : (r.code || 400), r.ok ? { ok: true, order: r.order, balance: r.balance, message: r.message } : { error: r.code === 402 ? "balance" : "failed", message: r.message, need: r.need });
+      send(res, r.ok ? 200 : (r.code || 400), r.ok ? { ok: true, order: pubOrder(r.order), balance: r.balance, message: r.message } : { error: r.code === 402 ? "balance" : "failed", message: r.message, need: r.need });
     });
   }
 
@@ -2498,8 +2634,13 @@ const server = http.createServer((req, res) => {
           p.status = "cancelled"; p.cancelledBy = "replaced"; notifyTopupChannel(p);
         }
       // unique payable amount: add smallest free delta (0..499 so'm)
+      // Bekor qilingan / vaqti tugagan to'lovning aniq summasi yana 1 soat band turadi: mijoz kech
+      // to'lasa, uning SMS'i shu summani yangi olgan boshqa odamning to'loviga mos tushib, pul
+      // begona hisobga avtomatik tushib ketmasin (bunday SMS mos topilmaydi — admin ko'radi).
+      const nowTs = Date.now();
       const active = new Set(DB.payments
-        .filter(p => p.status === "waiting" || p.status === "checking").map(p => p.pay));
+        .filter(p => p.status === "waiting" || p.status === "checking" || (p.status === "cancelled" && nowTs - (p.ts || 0) < 60 * 60 * 1000))
+        .map(p => p.pay));
       let delta = 0; while (active.has(amount + delta) && delta < 500) delta++;
       const rec = { id: genId("TP"), uid: u.id, uname: u.username || null, type: "topup",
         amount, pay: amount + delta, method, status: "waiting", ts: Date.now() };
@@ -2520,7 +2661,7 @@ const server = http.createServer((req, res) => {
           );
         }
       }, PAYMENT_REMINDER_DELAY);
-      send(res, 200, { ok: true, payment: rec, expiresAt: rec.ts + TOPUP_TTL });
+      send(res, 200, { ok: true, payment: pubPayment(rec), expiresAt: rec.ts + TOPUP_TTL });
     });
   }
 
@@ -2596,11 +2737,11 @@ const server = http.createServer((req, res) => {
           delivered: summary, doneTs: Date.now(), fragment: j.result || null };
         DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
         creditReferralOnOrder(o);
-        send(res, 200, { ok: true, order: o, balance: acc.balance });
+        send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
       }).catch(e => {
         if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Fragment (Stars/Premium)", String(e.message || e), "fragment_failed"); }
         const o = unknownDeliveryOrder(u, it, "Telegram Stars (" + amount + ") @" + uname, price, e.message);
-        send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
+        send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance, pending: true });
       });
     });
   }
@@ -2639,11 +2780,11 @@ const server = http.createServer((req, res) => {
             delivered: summary, doneTs: Date.now(), fragment: j.result || null };
           DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
           creditReferralOnOrder(o);
-          send(res, 200, { ok: true, order: o, balance: acc.balance });
+          send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
         }).catch(e => {
           if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Fragment (Stars/Premium)", String(e.message || e), "fragment_failed"); }
           const o = unknownDeliveryOrder(u, it, title + " @" + u.username, price, e.message);
-          send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
+          send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance, pending: true });
         });
         return;
       }
@@ -2690,7 +2831,7 @@ const server = http.createServer((req, res) => {
       notifyOrder(o); logDeliveryToChannel(o);
       if (Array.isArray(list)) checkStockAlert(it.id, title);
       if (delivered) { creditReferralOnOrder(o); creditLoyaltyOnOrder(o); deliverStockToCustomer(o, title); }
-      send(res, 200, { ok: true, order: o, balance: acc.balance });
+      send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
     });
   }
   if (url === "/api/buy-gift" && m === "POST") {
@@ -2723,11 +2864,11 @@ const server = http.createServer((req, res) => {
           giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous };
         DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
         creditReferralOnOrder(o);
-        send(res, 200, { ok: true, order: o, balance: acc.balance });
+        send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
       }).catch(e => {
         if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Telegram Gift bot", String(e.message || e), "gift_failed"); }
         const o = unknownDeliveryOrder(u, it, title + " → @" + uname, price, e.message, { giftRecipient: uname, giftMessage: message, giftAnonymous: anonymous });
-        send(res, 200, { ok: true, order: o, balance: acc.balance, pending: true });
+        send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance, pending: true });
       });
     });
   }
@@ -3259,8 +3400,10 @@ const server = http.createServer((req, res) => {
     if (url === "/api/admin/export-csv" && m === "GET") {
       const type = q.get("type") || "orders";
       function csvEsc(v) {
-        const s = v === null || v === undefined ? "" : String(v);
-        return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        let s = v === null || v === undefined ? "" : String(v);
+        // Excel'da formula sifatida ishga tushmasin (mijoz ismi "=HYPERLINK(...)" bo'lsa ham).
+        if (typeof v === "string" && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+        return /[",\n;']/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
       }
       let rows = [];
       if (type === "orders") {
@@ -3536,7 +3679,7 @@ const server = http.createServer((req, res) => {
   if (url === "/api/tg-webhook" && m === "POST") {
     if (!BOT_TOKEN) return send(res, 503, { error: "BOT_TOKEN not set" });
     // Maxfiy kalit setWebhook paytida berilgan; Telegram uni har so'rovda qaytaradi.
-    if (req.headers["x-telegram-bot-api-secret-token"] !== botHookSecret())
+    if (!safeEq(req.headers["x-telegram-bot-api-secret-token"], botHookSecret()))
       return send(res, 401, { error: "bad secret" });
     return readBody(req, res, b => {
       send(res, 200, { ok: true });   // Telegram javobni kutib turmasin
@@ -3547,7 +3690,7 @@ const server = http.createServer((req, res) => {
 
   /* ----- Userbot webhook: Telethon skripti to'g'ridan-to'g'ri shu yerga SMS matnini yuboradi ----- */
   if (url === "/api/debug/status" && m === "GET") {
-    if (!TG_WEBHOOK_SECRET || q.get("secret") !== TG_WEBHOOK_SECRET)
+    if (!TG_WEBHOOK_SECRET || !safeEq(q.get("secret"), TG_WEBHOOK_SECRET))
       return send(res, 401, { error: "bad secret" });
     expireOld();
     return send(res, 200, {
@@ -3620,25 +3763,23 @@ const server = http.createServer((req, res) => {
       "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
       "Pragma": "no-cache",
       "Expires": "0",
-      "Vary": "Accept-Encoding"
+      "Vary": "Accept-Encoding",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "same-origin"
     }, enc ? { "Content-Encoding": enc } : {}));
     res.end(enc === "br" ? H.br : enc === "gzip" ? H.gz : H.raw);
   });
-  fs.readFile(HTML_FILE, (err, data) => {
-    if (err) return send(res, 500, "verion-shop.html not found", "text/plain");
-    // "no-cache" ba'zi WebView'larda (xususan Telegram ilovasi ichidagi) hali ham eski
-    // nusxani ko'rsatib qo'yishi mumkin edi — shu sabab qat'iyroq no-store + eski
-    // brauzerlar uchun Pragma/Expires ham qo'shildi, xar safar server'dan yangi HTML
-    // majburiy yuklansin.
-    res.writeHead(200, {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-      "Pragma": "no-cache",
-      "Expires": "0"
-    });
-    res.end(data);
-  });
-});
+}
+// Har so'rov himoyalangan: handler'dagi kutilmagan xato faqat shu so'rovga 500 beradi.
+const server = http.createServer((req, res) => runSafe(res, () => handleRequest(req, res)));
+// Port band bo'lsa va h.k. — jarayon to'xtasin (Railway qayta ishga tushiradi), jim osilib qolmasin.
+server.on("error", e => { console.log("[http] server xatosi: " + e.message); process.exit(1); });
+// Railway proksisi ulanishni Node'dan uzoqroq ushlab turadi: Node bo'sh ulanishni 5 soniyada
+// yopsa, proksi o'sha (yopilgan) ulanishga so'rov yuborib "502 Bad Gateway" qaytarishi mumkin
+// (Telegram webhook'i shunday xatoni ko'rib, bot polling'ga o'tib qoladi). Shuning uchun
+// keep-alive proksinikidan uzunroq; sarlavha kutish undan biroz ko'p bo'lishi shart.
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
 /* ---------- avtomatik zaxira nusxa (backup) ---------- */
 // Tashqi kutubxonasiz (faqat fs/zlib) minimal tar+gzip arxivlovchi — data/ papkasidagi
@@ -3711,13 +3852,14 @@ function tgSendDocument(chatId, buffer, filename, caption) {
       hostname: "api.telegram.org", path: "/bot" + BOT_TOKEN + "/sendDocument", method: "POST",
       headers: { "Content-Type": "multipart/form-data; boundary=" + boundary, "Content-Length": body.length }
     };
-    const r = https.request(reqOpts, resp => {
+    const r = https.request(Object.assign(reqOpts, { timeout: TG_UPLOAD_TIMEOUT }), resp => {
       let out = ""; resp.on("data", c => out += c);
       resp.on("end", () => {
         try { const j = JSON.parse(out); j.ok ? resolve(j) : reject(new Error(j.description || "telegram_error")); }
         catch (e) { reject(e); }
       });
     });
+    r.on("timeout", () => r.destroy(new Error("timeout")));
     r.on("error", reject);
     r.write(body); r.end();
   });
@@ -3769,6 +3911,10 @@ if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
+  // Oxirgi himoya chizig'i (faqat server muvaffaqiyatli ishga tushgandan keyin — ishga tushishdagi
+  // xato yashirinib qolmasin): kutilmagan xato butun do'konni o'chirib qo'ymaydi, logga yoziladi.
+  process.on("unhandledRejection", e => console.log("[xato] ushlanmagan promise: " + ((e && e.stack) || e)));
+  process.on("uncaughtException", e => console.log("[xato] ushlanmagan istisno: " + ((e && e.stack) || e)));
   // Bot webhook'ini o'zi ulaydi — Railway'da qo'lda hech narsa sozlash shart emas.
   // getMe javobini (BOT_USERNAME) kutib, bir necha soniyadan keyin bajariladi.
   if (BOT_TOKEN) {

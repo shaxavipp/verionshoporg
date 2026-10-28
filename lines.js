@@ -47,9 +47,9 @@ function httpReq(o) {
     try {
       req = https.request({ hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search,
         method: o.method || "GET", headers: h, timeout: o.timeout || 20000 }, res => {
-        let b = "";
-        res.on("data", c => { if (b.length < 3e6) b += c; });
-        res.on("end", () => { let j = null; try { j = JSON.parse(b); } catch (e) {} fin({ sent: true, status: res.statusCode, json: j, text: b.slice(0, 300) }); });
+        const ch = []; let n = 0;
+        res.on("data", c => { if (n < 3e6) { const x = Buffer.isBuffer(c) ? c : Buffer.from(String(c)); ch.push(x); n += x.length; } });
+        res.on("end", () => { const b = Buffer.concat(ch).toString("utf8"); let j = null; try { j = JSON.parse(b); } catch (e) {} fin({ sent: true, status: res.statusCode, json: j, text: b.slice(0, 300) }); });
         res.on("error", e => fin({ sent: true, error: e.code || e.message }));
       });
     } catch (e) { return fin({ sent: false, error: e.code || e.message }); }
