@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-30.1";
+const BUILD = "2026-10-30.2";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2147,6 +2147,70 @@ const SMM = require("./smm.js")({
 function allLineBalances(force) {
   return Promise.all([GAMES.lineBalances(force).catch(() => []), SMM.balances().catch(() => [])]).then(([a, b]) => a.concat(b));
 }
+/* ---------- Sayt liniyalari kuzatuvi va ertalabki hisobot ----------
+   Har 20 daqiqada yoqilgan liniyalar (o'yin saytlari, SMM panellar) tekshiriladi: biri ishlamay
+   qolsa (kalit, sayt o'chgan, balans) — adminlarga darhol xabar, tuzalsa — yana xabar; balans
+   tugasa — alohida ogohlantirish. Har kuni 09:00 (Toshkent) — kechagi natijalar va balanslar.
+   Admin xabarlarida kripto atamalari ishlatilmaydi — "coin". */
+const coinWords = t => String(t || "").replace(/\b(USDT|USDC|TON|TRX|BTC|ETH|smile coin)\b/gi, "coin");
+const balNum = t => { const m = /Balans:\s*(-?[\d\s.,]+)/i.exec(String(t || "")); if (!m) return null; const n = Number(m[1].replace(/\s/g, "").replace(",", ".")); return isFinite(n) ? n : null; };
+let lineWatchBusy = false;
+async function watchLines() {
+  if (lineWatchBusy) return;
+  lineWatchBusy = true;
+  try {
+    const list = await allLineBalances(true);
+    const st = DB.settings.lineWatch || (DB.settings.lineWatch = {});
+    let changed = false;
+    for (const x of list) {
+      const prev = st[x.id], bal = x.ok ? balNum(x.message) : null, name = String(x.name || x.id).replace(/^📈\s*/, "");
+      if (!x.ok && (!prev || prev.ok)) notifyAdmins("🚨 " + name + " ishlamayapti: " + coinWords(x.message).slice(0, 200) + "\nBuyurtmalar zaxira liniyaga yoki qo'lda bajarishga tushadi. Admin panel → liniyalar.");
+      if (x.ok && prev && !prev.ok) notifyAdmins("✅ " + name + " yana ishlayapti." + (bal != null ? " Balans: " + bal : ""));
+      if (bal != null && bal <= 0 && !(prev && prev.bal != null && prev.bal <= 0)) notifyAdmins("🪫 " + name + " balansi tugadi (0 coin) — mijozlar bu sayt orqali sotib ololmaydi. Hamyonni to'ldiring.");
+      const now = { ok: !!x.ok, bal };
+      if (!prev || prev.ok !== now.ok || prev.bal !== now.bal) { st[x.id] = now; changed = true; }
+    }
+    if (changed) save();
+  } catch (e) { console.log("[kuzatuv] " + e.message); }
+  finally { lineWatchBusy = false; }
+}
+async function dailyReportText() {
+  const OFF = 5 * 3600e3, DAY = 86400e3;
+  const to = Math.floor((Date.now() + OFF) / DAY) * DAY - OFF, from = to - DAY;   // kecha (Toshkent)
+  const inY = x => (Number(x.ts) || 0) >= from && (Number(x.ts) || 0) < to;
+  const sum = (a, f) => a.reduce((t, x) => t + (Number(f(x)) || 0), 0);
+  const fm = n => Math.round(n).toLocaleString("ru-RU").replace(/,/g, " ").replace(/ /g, " ") + " so'm";
+  const tops = DB.payments.filter(p => inY(p) && p.status === "done" && p.type !== "manual");
+  const done = DB.orders.filter(o => inY(o) && o.status === "done");
+  const withCost = done.filter(o => Number(o.costUzs) > 0);
+  const newUsers = Object.values(DB.users).filter(inY).length;
+  const pendP = DB.payments.filter(p => p.status === "waiting" || p.status === "checking").length;
+  const pendO = DB.orders.filter(o => o.status === "pending" || o.status === "processing").length;
+  const bals = await Promise.race([allLineBalances(true), new Promise(r => setTimeout(() => r(null), 20000))]).catch(() => null);
+  let rd = null; try { rd = await computeReadiness(); } catch (e) {}
+  return [
+    "☀️ Ertalabki hisobot — kecha (" + new Date(from + OFF).toISOString().slice(0, 10) + ")",
+    "💰 Kirim: " + fm(sum(tops, p => p.amount)) + " (" + tops.length + " ta to'lov)",
+    "🛒 Sotuv: " + fm(sum(done, o => o.price)) + " (" + done.length + " ta buyurtma)",
+    withCost.length ? "📈 Foyda (tannarxi ma'lum " + withCost.length + " ta): " + fm(sum(withCost, o => o.price - o.costUzs)) : null,
+    "👥 Yangi mijozlar: " + newUsers,
+    (pendP || pendO) ? "⏳ Hozir kutilmoqda: " + pendP + " ta to'lov, " + pendO + " ta buyurtma" : "✅ Kutilayotgan to'lov/buyurtma yo'q",
+    bals && bals.length ? "🔌 Saytlar:\n" + bals.map(b => (b.ok ? "• " : "• ❌ ") + String(b.name || b.id).replace(/^📈\s*/, "") + " — " + coinWords(b.message).slice(0, 80)).join("\n") : null,
+    rd ? "🚀 Tayyorlik: " + rd.percent + "%" + (rd.blockers ? " (" + rd.blockers + " ta majburiy band qoldi)" : "") : null
+  ].filter(Boolean).join("\n");
+}
+function sendDailyReport() { return dailyReportText().then(t => { notifyAdmins(t); return t; }); }
+function msUntilTashkent(h, m) {
+  const OFF = 5 * 3600e3, now = Date.now(), l = new Date(now + OFF);
+  let t = Date.UTC(l.getUTCFullYear(), l.getUTCMonth(), l.getUTCDate(), h, m, 0) - OFF;
+  if (t <= now) t += 86400e3;
+  return t - now;
+}
+if (BOT_TOKEN) {
+  const w = setInterval(() => { watchLines(); }, Number(process.env.LINE_WATCH_MS) || 20 * 60 * 1000);
+  if (w.unref) w.unref();
+  setTimeout(function daily() { sendDailyReport().catch(e => console.log("[hisobot] " + e.message)); setTimeout(daily, 86400e3).unref(); }, msUntilTashkent(9, 0)).unref();
+}
 // Alohida admin bot (adminbot.js) — token bo'lsa ishga tushadi, bo'lmasa jim turadi.
 ADMINBOT = require("./adminbot.js")({
   getDB: () => DB, save, ADMIN_IDS, token: adminBotToken,
@@ -3551,6 +3615,10 @@ function handleRequest(req, res) {
     /* ----- Ishga tushirishga tayyorlik: nima sozlangan, nima yetishmaydi ----- */
     if (url === "/api/admin/readiness" && m === "GET") {
       return computeReadiness().then(r => send(res, 200, r)).catch(e => send(res, 500, { error: String(e.message || e) }));
+    }
+    // Ertalabki hisobotni hozir yuborish (adminlarga) — tekshirish uchun.
+    if (url === "/api/admin/daily-report" && m === "POST") {
+      return sendDailyReport().then(t => send(res, 200, { ok: true, text: t })).catch(e => send(res, 500, { error: String(e.message || e) }));
     }
     if (url === "/api/admin/finance" && m === "GET") {
       const period = q.get("period") || "today";
