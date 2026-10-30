@@ -331,3 +331,41 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 **Sozlash:** Admin → «Steam va virtual raqam». U yerda kurs, chegaralar, rejim, 5sim API kaliti va ustama sozlanadi, «Sinash» tugmasi ham bor.
 
 **Xatolar:** sayt puli tugasa, mijozga «keyinroq urinib ko'ring» chiqadi, adminga esa darhol xabar boradi.
+
+## CS2 skinlar do'koni (cs2.js, lis-skins.com)
+
+Alohida to'liq ekranli do'kon — to'q, sokin "gaming" ko'rinishida (ilova mavzusidan qat'i nazar). Kirish: O'yinlar → «CS2 skinlar» kartasi. Kartochka faqat do'kon yoqilganda ko'rinadi.
+
+**Mijoz uchun:**
+- Toifalar: Hammasi, 🔥 Yangi (jonli bozor), Pichoqlar, Qo'lqoplar, Avtomatlar, Snayperlar, To'pponchalar, PP, Og'ir. Qidiruv va «Ommabop / Arzon / Qimmat» tartibi bor.
+- Har skin bitta kartochkada: barcha eskirganlik darajalari, StatTrak™ va Souvenir variantlari. Kartochkada noyoblik rangi va «…so'mdan» narx ko'rinadi.
+- Skin oynasida sotuvdagi takliflar chiqadi: FN/MW/FT/WW/BS, float shkalasi va narx bilan.
+- Steam trade havola bir marta saqlanadi. «Ochish →» tugmasi Steam'dagi havola sahifasini ochadi.
+- Xariddan keyin skin Steam'ga trade taklifi bo'lib keladi. Holati «Buyurtmalar» bo'limida skin rasmi bilan ko'rinadi.
+
+**Pul xavfsizligi:**
+- Xarid mijoz ko'rgan narx bilan qilinadi: `max_price`. Narx shu orada oshsa, lis-skins sotmaydi va pul qaytadi.
+- `custom_id` = buyurtma ID. Bir buyurtma ikki marta sotib olinmaydi.
+- Bir taklifni bir vaqtda ikki kishi bossa, faqat bittasi o'tadi.
+- Sotilib ketgan bo'lsa, kalit xato bo'lsa, lis-skins hamyonida pul yo'q bo'lsa yoki 4xx javob kelsa, pul darhol qaytadi. Adminga xabar boradi.
+- Javob noaniq bo'lsa (aloqa uzilgan yoki 5xx), pul band turadi va holat har daqiqada `custom_id` bo'yicha tekshiriladi:
+  - topilsa, buyurtma davom etadi;
+  - 15 daqiqada topilmasa, pul qaytadi.
+- Trade qabul qilinsa, buyurtma bajarildi (referal va sodiqlik bonusi bilan). Qaytarilsa yoki bekor bo'lsa, pul mijozga qaytadi.
+- 2 soatda qabul qilinmasa, mijozga bir marta eslatma boradi.
+- Jonli bozor so'rovlari faqat Telegram foydalanuvchisiga ochiq. Limit: daqiqasiga bitta mijozdan 20 ta, jami 150 ta. Natijalar keshlanadi.
+
+**Sozlash (Admin → «CS2 skinlar»):**
+- yoqish va lis-skins API kaliti (kalit hech qachon qaytib ko'rsatilmaydi);
+- kurs (1$ = so'm) va ustama %;
+- narx oralig'i ($) va «faqat darhol yuboriladigan skinlar» (trade-lock yo'q).
+
+**Admin tugmalari:**
+- «Ulanishni sinash» lis-skins balansi va bitta namuna taklifni ko'rsatadi. Javobni o'qib bo'lmasa, xom javob ham chiqadi.
+- «Katalogni yangilash» bor.
+
+**Ma'lumot manbalari:**
+- Skin nomlari, rasmlari va toifalari ochiq CS2 bazasidan olinadi (ByMykel/CSGO-API, ~21 ming variant). Baza haftada bir yangilanadi va diskda saqlanadi.
+- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (`LIS_PRICES_URL`, 10 daqiqada yangilanadi). U bo'lmasa, narxlar API qidiruvi orqali olinadi.
+
+lis-skins balansi «🚀 Tayyorlik» va 20 daqiqalik liniya kuzatuviga ulangan.

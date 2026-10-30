@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-30.3";
+const BUILD = "2026-10-31.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -544,6 +544,8 @@ async function computeReadiness() {
   add("should", "steam", "Steam to'ldirish", !!st.enabled && (st.mode === "manual" || lvx),
     !st.enabled ? "O'chiq" : st.mode === "manual" ? "Qo'lda (admin bajaradi)" : lvx ? "Avtomatik (Ludovex)" : "Ludovex liniyasi yoqilmagan", "steamvn");
   add("should", "vnum", "Virtual raqamlar (5sim)", !!(vn.enabled && vn.apiKey), vn.enabled ? (vn.apiKey ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "steamvn");
+  const c2 = CS2.cfg();
+  add("should", "cs2", "CS2 skinlar (lis-skins)", CS2.ready(), c2.enabled ? (c2.apiKey ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "cs2");
   // — Ishonch va qo'llab-quvvatlash —
   const bf = (() => { try { return fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith(".tar.gz")).map(f => fs.statSync(path.join(BACKUP_DIR, f)).mtimeMs).sort((a, b) => b - a)[0] || 0; } catch (e) { return 0; } })();
   add("should", "backup", "Kunlik zaxira nusxa olinmoqda", bf ? Date.now() - bf < 26 * 3600e3 : false,
@@ -562,7 +564,7 @@ async function computeReadiness() {
     const n = doneOrders.filter(pred).length;
     add(level, "t_" + key, label, n > 0, n ? n + " ta muvaffaqiyatli xarid" : "Hali sotilmagan — o'zingiz eng arzonini sotib olib sinang", fix);
   };
-  const special = o => o.game || o.steam || o.vnum || o.fragment || o.giftRecipient || String(o.itemId || "").indexOf("nk_") === 0;
+  const special = o => o.game || o.steam || o.vnum || o.cs2 || o.fragment || o.giftRecipient || String(o.itemId || "").indexOf("nk_") === 0;
   tested("test", "games", "O'yin paketi sotib olindi va yetkazildi", gc.packages.length > 0, o => !!o.game, "games");
   tested("test", "shop", "Do'kon mahsuloti sotib olindi", cat.some(x => x.active !== false && Number(x.price) > 0 && !x.fulfill), o => !special(o), "catalog");
   tested("test", "stars", "Telegram Stars/Premium yuborildi", stars, o => !!o.fragment, "");
@@ -570,6 +572,7 @@ async function computeReadiness() {
   tested("test", "smm", "Nakrutka buyurtmasi bajarildi", smmReady.length > 0, o => String(o.itemId || "").indexOf("nk_") === 0, "nakrutka");
   tested("test", "steam", "Steam hamyon to'ldirildi", !!st.enabled && (st.mode === "manual" || lvx), o => !!o.steam, "steamvn");
   tested("test", "vnum", "Virtual raqam berildi va kod keldi", !!(vn.enabled && vn.apiKey), o => !!o.vnum, "steamvn");
+  tested("test", "cs2", "CS2 skin sotib olindi va Steam'ga tushdi", CS2.ready(), o => !!o.cs2, "cs2");
   // — Hisob —
   const W = { must: 3, test: 2, should: 1 };
   let tot = 0, got = 0;
@@ -2103,6 +2106,7 @@ function pubOrder(o) {
     account: o.game.account, accountText: o.game.accountText, fields: o.game.fields };
   if (o.vnum) out.vnum = { country: o.vnum.country, phone: o.vnum.phone, code: o.vnum.code, until: o.vnum.until };
   if (o.steam) out.steam = { login: o.steam.login, usd: o.steam.usd };
+  if (o.cs2) out.cs2 = { name: o.cs2.name, float: o.cs2.float, img: o.cs2.img, state: o.cs2.state };
   return out;
 }
 const PAY_PUB = ["id", "uid", "type", "amount", "pay", "method", "status", "ts", "doneTs", "paidTs"];
@@ -2133,6 +2137,7 @@ function myView(uid) {
       startLink: botStartLink("app")
     },
     balance: acc.balance,
+    cs2: CS2.ready(),
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
     payments: byUid("payments", uid).slice(-50).reverse().map(pubPayment),
@@ -2156,13 +2161,19 @@ const EXTRA = require("./extra.js")({
   notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder, pubOrder,
   gameLines: () => GAMES.store().lines
 });
+// CS2 skinlar do'koni (cs2.js): lis-skins.com orqali.
+const CS2 = require("./cs2.js")({
+  getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
+  notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder, pubOrder, DATA_DIR
+});
 // Nakrutka liniyalari (smm.js): JAP + boshqa SMM panellar.
 const SMM = require("./smm.js")({
   getDB: () => DB, save, envKey: () => JAP_API_KEY, usdRate: () => nkUsdRate(), markup: () => nkMarkupPct()
 });
 // Moliya hisobotidagi "saytlardagi balans": o'yin liniyalari + SMM panellar.
 function allLineBalances(force) {
-  return Promise.all([GAMES.lineBalances(force).catch(() => []), SMM.balances().catch(() => [])]).then(([a, b]) => a.concat(b));
+  return Promise.all([GAMES.lineBalances(force).catch(() => []), SMM.balances().catch(() => []),
+    CS2.ready() ? CS2.balance().then(x => [x]).catch(() => []) : []]).then(([a, b, c]) => a.concat(b, c));
 }
 /* ---------- Sayt liniyalari kuzatuvi va ertalabki hisobot ----------
    Har 20 daqiqada yoqilgan liniyalar (o'yin saytlari, SMM panellar) tekshiriladi: biri ishlamay
@@ -2323,6 +2334,7 @@ function handleRequest(req, res) {
   // O'yinlar: /api/games*, /api/admin/games*, /gimg/* — modul o'zi javob beradi.
   if (GAMES.handle(req, res, url, m)) return;
   if (EXTRA.handle(req, res, url, m, q)) return;
+  if (CS2.handle(req, res, url, m, q)) return;
 
   /* catalog (public read / admin write) */
   if (url === "/api/catalog" && m === "GET") {
