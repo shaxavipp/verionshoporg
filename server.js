@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-29.3";
+const BUILD = "2026-10-30.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -64,6 +64,8 @@ const SMS_LOG_MAX = 200;
 let DATA_DIR = process.env.DATA_DIR || "/data";
 try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.accessSync(DATA_DIR, fs.constants.W_OK); }
 catch (e) { DATA_DIR = path.join(__dirname, "data"); fs.mkdirSync(DATA_DIR, { recursive: true }); }
+// Railway volume (/data) ulanmagan bo'lsa ma'lumot konteyner ichiga yoziladi va har deploy'da o'chadi.
+const DATA_EPHEMERAL = DATA_DIR === path.join(__dirname, "data");
 // Premium (Telegram) emoji fayllari (video/rasm/lottie-json) endi base64 sifatida katalogga
 // emas, shu papkaga diskka saqlanadi — katalog faqat qisqa URL saqlaydi, ilova tezroq yuklanadi.
 const PREMIUM_EMOJI_DIR = path.join(DATA_DIR, "premium-emoji");
@@ -484,6 +486,81 @@ function notifyAdmins(text, opts) {
   for (const aid of ADMIN_IDS) tgSend(aid, text);
 }
 
+/* ---------- Ishga tushirishga tayyorlik (admin panel «🚀 Tayyorlik») ----------
+   Har band: { key, level: "must"|"should", label, ok: true|false|null, detail, fix } — fix: admin
+   panelning qaysi oynasida tuzatiladi. Majburiy bandlar foizga 3 barobar ko'proq ta'sir qiladi. */
+function withTimeout(p, ms, fallback) {
+  return Promise.race([p.catch(() => fallback), new Promise(r => setTimeout(() => r(fallback), ms))]);
+}
+async function computeReadiness() {
+  const L = [];
+  const add = (level, key, label, ok, detail, fix) => L.push({ key, level, label, ok, detail: detail || "", fix: fix || "" });
+  // — Asosiy ishlash —
+  add("must", "disk", "Ma'lumotlar doimiy diskda saqlanadi", !DATA_EPHEMERAL,
+    DATA_EPHEMERAL ? "Railway'da /data volume ulanmagan — har deploy'da hamma ma'lumot o'chadi!" : "Disk: " + DATA_DIR);
+  add("must", "token", "Do'kon boti tokeni", !!BOT_TOKEN, BOT_TOKEN ? "@" + (BOT_USERNAME || "…") : "Railway → Variables → BOT_TOKEN");
+  const base = publicBase();
+  add("must", "url", "Ilova manzili aniqlangan", !!base, base || "Admin panel → Bot va /start → Ilova manzili", "bot");
+  let hook = null;
+  if (BOT_TOKEN && !POLLING) hook = await withTimeout(tgApiPost("getWebhookInfo", {}).then(j => (j && j.ok ? j.result : null)), 6000, null);
+  const hookOk = POLLING ? true : hook ? (!!base && hook.url === base + "/api/tg-webhook" && !(hook.last_error_date && Date.now() / 1000 - hook.last_error_date < 1800)) : null;
+  add("must", "bot", "Bot /start'ga javob beradi", hookOk,
+    POLLING ? "Polling rejimida ishlayapti" + (POLL_REASON ? " (" + POLL_REASON + ")" : "") : hook ? (hookOk ? "Webhook ulangan" : (hook.last_error_message ? "Webhook xatosi: " + hook.last_error_message : "Webhook boshqa manzilda yoki ulanmagan")) : "Telegram javob bermadi", "bot");
+  const ab = ADMINBOT ? ADMINBOT.status() : {};
+  add("must", "adminbot", "Admin bot ulangan (to'lov/buyurtma xabarlari)", !!ab.active, ab.active ? "@" + ab.username : (ab.error || "Admin panel → Admin bot → token"), "adminbot");
+  add("must", "ch_order", "Buyurtmalar kanali", !!orderChatId(), orderChatId() || "Admin panel → Kanallar", "channels");
+  add("must", "ch_topup", "To'lovlar kanali", !!topupChatId(), topupChatId() || "Admin panel → Kanallar", "channels");
+  // — Pul qabul qilish —
+  add("must", "sms", "To'lovni avtomatik tasdiqlash (SMS) ulangan", !!TG_WEBHOOK_SECRET, TG_WEBHOOK_SECRET ? "Kalit o'rnatilgan" : "Railway → Variables → TG_WEBHOOK_SECRET va userbot");
+  const lastSms = DB.smsLog.length ? DB.smsLog[DB.smsLog.length - 1].ts : 0;
+  add("should", "sms_recent", "Oxirgi 2 kunda SMS kelgan", lastSms ? Date.now() - lastSms < 48 * 3600e3 : false,
+    lastSms ? "Oxirgisi: " + new Date(lastSms).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" }) : "Hali birorta SMS kelmagan — userbot ishlayaptimi?");
+  const okPays = DB.payments.filter(p => p.status === "done" && p.type !== "manual").length;
+  add("should", "pay_real", "Kamida bitta haqiqiy to'lov tasdiqlangan", okPays > 0, okPays ? okPays + " ta to'lov" : "O'zingiz 1 000 so'm to'ldirib sinab ko'ring");
+  // — Sotuvdagi mahsulotlar —
+  const cat = catalogArr() || [];
+  const priced = cat.filter(x => x.active !== false && Number(x.price) > 0).length;
+  add("must", "catalog", "Mahsulotlar katalogi e'lon qilingan", priced > 0, priced ? priced + " ta mahsulot sotuvda" : "Admin panel → Mahsulotlar → E'lon qilish", "catalog");
+  let gc = { games: [], packages: [] };
+  try { gc = JSON.parse(GAMES.publicCatalog().body); } catch (e) {}
+  add("must", "games", "O'yinlar sotuvda (narxi qo'yilgan)", gc.packages.length > 0, gc.games.length + " ta o'yin, " + gc.packages.length + " ta paket", "games");
+  const glines = GAMES.store().lines.filter(l => l.enabled && l.type !== "manual");
+  add("should", "lines", "O'yinlar avtomatik yetkaziladi (sayt liniyasi yoqilgan)", glines.length > 0,
+    glines.length ? glines.map(l => l.name).join(", ") : "Hamma o'yin buyurtmasi qo'lda bajariladi — Ludovex/MooGold kalitini kiriting", "games");
+  const bals = await withTimeout(allLineBalances(false), 8000, null);
+  if (bals && bals.length) {
+    const bad = bals.filter(b => !b.ok);
+    add("should", "line_bal", "Sayt liniyalari javob beradi (kalit va balans)", !bad.length,
+      bad.length ? bad.map(b => b.name + ": " + b.message).join("; ").slice(0, 300) : bals.map(b => b.name + " — " + b.message).join("; ").slice(0, 300), "games");
+  }
+  const stars = cat.some(x => /^fragment_/.test(String(x.fulfill || "")));
+  add(stars ? "must" : "should", "fragment", "Stars/Premium avtomatik (Fragment API)", !!FRAGMENT_API_KEY, FRAGMENT_API_KEY ? "Kalit o'rnatilgan" : "Railway → Variables → FRAGMENT_API_KEY");
+  const gifts = cat.some(x => x.fulfill === "telegram_gift");
+  if (gifts) add("must", "giftbot", "Telegram Gift yuborish boti", !!(GIFT_BOT_URL && GIFT_BOT_SECRET), GIFT_BOT_URL ? "Ulangan" : "Railway → Variables → GIFT_BOT_URL, GIFT_BOT_SECRET");
+  const smmReady = SMM.store().lines.filter(SMM.ready);
+  add("should", "smm", "Nakrutka paneli ulangan", smmReady.length > 0, smmReady.length ? smmReady.map(l => l.name).join(", ") : "Admin panel → Nakrutka → panel kaliti", "nakrutka");
+  const st = EXTRA.steamCfg(), vn = EXTRA.vnCfg();
+  const lvx = GAMES.store().lines.some(l => l.type === "ludovex" && l.enabled && l.config && l.config.apiKey);
+  add("should", "steam", "Steam to'ldirish", !!st.enabled && (st.mode === "manual" || lvx),
+    !st.enabled ? "O'chiq" : st.mode === "manual" ? "Qo'lda (admin bajaradi)" : lvx ? "Avtomatik (Ludovex)" : "Ludovex liniyasi yoqilmagan", "steamvn");
+  add("should", "vnum", "Virtual raqamlar (5sim)", !!(vn.enabled && vn.apiKey), vn.enabled ? (vn.apiKey ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "steamvn");
+  // — Ishonch va qo'llab-quvvatlash —
+  const bf = (() => { try { return fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith(".tar.gz")).map(f => fs.statSync(path.join(BACKUP_DIR, f)).mtimeMs).sort((a, b) => b - a)[0] || 0; } catch (e) { return 0; } })();
+  add("should", "backup", "Kunlik zaxira nusxa olinmoqda", bf ? Date.now() - bf < 26 * 3600e3 : false,
+    bf ? "Oxirgisi: " + new Date(bf).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent" }) : "Hali olinmagan — Admin panel → Zaxira nusxa", "backup");
+  const ex = extrasCfg();
+  add("should", "faq", "FAQ va ijtimoiy tarmoqlar to'ldirilgan", ex.faq.length > 0 && ex.social.length > 0,
+    ex.faq.length + " ta savol, " + ex.social.length + " ta havola", "extras");
+  const revs = DB.reviews.filter(r => r.status === "approved").length;
+  add("should", "reviews", "Kamida 5 ta tasdiqlangan sharh (ishonch uchun)", revs >= 5, revs + " ta sharh", "reviews");
+  add("should", "support", "Mijozga yordam: AI yoki operator", !!((AI && AI.ready && AI.ready()) || SUPPORT_USERNAME), AI && AI.ready && AI.ready() ? "AI yoqilgan" : "Operator: @" + SUPPORT_USERNAME, "aibot");
+  // — Hisob —
+  const W = { must: 3, should: 1 };
+  let tot = 0, got = 0;
+  for (const x of L) { tot += W[x.level]; if (x.ok === true) got += W[x.level]; }
+  const blockers = L.filter(x => x.level === "must" && x.ok !== true).length;
+  return { percent: tot ? Math.round(got * 100 / tot) : 0, blockers, build: BUILD, items: L };
+}
 /* ---------- Moliya hisoboti (admin bot "📊 Moliya" va mini-ilova "Moliya") ----------
    Kirim — mijozlar to'ldirgan pul (qo'lda o'zgartirishlar alohida). Sotuv — bajarilgan
    buyurtmalar. Tannarx — faqat yetkazib beruvchi saytdan bajarilgan o'yin buyurtmalari
@@ -3471,6 +3548,10 @@ function handleRequest(req, res) {
       });
     }
     /* ----- Moliya hisoboti ----- */
+    /* ----- Ishga tushirishga tayyorlik: nima sozlangan, nima yetishmaydi ----- */
+    if (url === "/api/admin/readiness" && m === "GET") {
+      return computeReadiness().then(r => send(res, 200, r)).catch(e => send(res, 500, { error: String(e.message || e) }));
+    }
     if (url === "/api/admin/finance" && m === "GET") {
       const period = q.get("period") || "today";
       const f = computeFinance(["today", "week", "month", "all"].indexOf(period) !== -1 ? period : "today");
