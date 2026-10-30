@@ -156,38 +156,58 @@ module.exports = function (ctx) {
      lis-skins butun bozorning eng arzon narxlarini bitta JSON qilib beradi (nom → narx, soni).
      Bo'lsa — katalogda har skinning "...dan" narxi va "sotuvda bor" belgisi shundan olinadi
      (10 daqiqada yangilanadi). Bo'lmasa yoki o'qib bo'lmasa — narxlar API qidiruvidan olinadi. */
-  const PRICES_URL = () => process.env.LIS_PRICES_URL || "https://lis-skins.com/market_export_json/csgo.json";
-  let PRICES = null, PRICES_TS = 0, pricesBusy = false;
-  function loadPrices() {
+  // Admin o'zi havola kiritsa — o'sha; aks holda ma'lum manzillar ketma-ket sinaladi (birinchi ishlagani eslab qolinadi).
+  const PRICE_URLS = () => [cfg().pricesUrl, process.env.LIS_PRICES_URL, "https://lis-skins.com/market_export_json/csgo.json",
+    "https://lis-skins.com/market_export_json/api_csgo_lite.json", "https://lis-skins.com/market_export_json/api_csgo_full.json"]
+    .filter((u, i, a) => u && a.indexOf(u) === i);
+  let PRICES = null, PRICES_TS = 0, pricesBusy = false, PRICES_SRC = "", PRICES_DIAG = [];
+  function fetchPrices(url) {
+    return new Promise(resolve => {
+      const fin = (o) => resolve(Object.assign({ url }, o));
+      const get = (u, depth) => lib(u).get(u, { timeout: 90000, headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0 (VerionShop)" } }, r => {
+        if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location && depth < 3) { r.resume(); return get(new URL(r.headers.location, u).toString(), depth + 1); }
+        if (r.statusCode !== 200) { r.resume(); return fin({ error: "HTTP " + r.statusCode }); }
+        const ch = []; let n = 0, big = false;
+        r.on("data", c => { const x = Buffer.isBuffer(c) ? c : Buffer.from(String(c)); n += x.length; if (n < 80e6) ch.push(x); else if (!big) { big = true; r.destroy(); fin({ error: "juda katta (80 MB+)" }); } });
+        r.on("end", () => { if (big) return;
+          let j; try { j = JSON.parse(Buffer.concat(ch).toString("utf8")); } catch (e) { return fin({ error: "JSON emas (" + Math.round(n / 1024) + " KB)" }); }
+          fin({ json: j, bytes: n });
+        });
+      }).on("timeout", function () { this.destroy(new Error("timeout")); }).on("error", e => fin({ error: e.message }));
+      try { get(url, 0); } catch (e) { fin({ error: e.message }); }
+    });
+  }
+  async function loadPrices() {
     if (pricesBusy || !ready()) return;
     pricesBusy = true;
-    const done = () => { pricesBusy = false; };
-    const get = (url, depth) => lib(url).get(url, { timeout: 60000, headers: { Accept: "application/json" } }, r => {
-      if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location && depth < 3) { r.resume(); return get(new URL(r.headers.location, url).toString(), depth + 1); }
-      if (r.statusCode !== 200) { r.resume(); return done(); }
-      const ch = []; let n = 0;
-      r.on("data", c => { const x = Buffer.isBuffer(c) ? c : Buffer.from(String(c)); n += x.length; if (n < 60e6) ch.push(x); });
-      r.on("end", () => {
+    const diag = [];
+    try {
+      const urls = PRICE_URLS();
+      if (PRICES_SRC && urls.indexOf(PRICES_SRC) > 0) { urls.splice(urls.indexOf(PRICES_SRC), 1); urls.unshift(PRICES_SRC); }
+      for (const url of urls) {
+        const r = await fetchPrices(url);
+        if (r.error) { diag.push({ url, error: r.error }); continue; }
+        const j = r.json;
         try {
-          const j = JSON.parse(Buffer.concat(ch).toString("utf8"));
           const arr = listOf(j).length ? listOf(j) : (j && typeof j === "object" && !Array.isArray(j) ? Object.keys(j).map(k => Object.assign({ name: k }, typeof j[k] === "object" ? j[k] : { price: j[k] })) : []);
           const m = new Map();
           for (const x of arr) {
             const name = pick(x, ["name", "market_hash_name"]), usd = Number(pick(x, ["price", "min_price", "price_usd"]));
             if (!name || !(usd > 0)) continue;
+            // To'liq ro'yxatda har taklif alohida qator: trade-lock'dagilari (sozlamaga ko'ra) hisobga olinmaydi
+            const ul = x.unlock_at; if (ul && cfg().onlyUnlocked && Date.parse(ul) > Date.now()) continue;
             const cnt = Number(pick(x, ["count", "quantity", "amount"])) || 1;
             const h = m.get(name);
             if (!h || usd < h.usd) m.set(name, { usd, cnt: (h ? h.cnt : 0) + cnt }); else h.cnt += cnt;
           }
-          if (m.size > 500) { PRICES = m; PRICES_TS = Date.now(); }
-        } catch (e) {}
-        done();
-      });
-    }).on("timeout", function () { this.destroy(new Error("timeout")); }).on("error", done);
-    get(PRICES_URL(), 0);
+          diag.push({ url, rows: m.size, kb: Math.round(r.bytes / 1024) });
+          if (m.size > 500) { PRICES = m; PRICES_TS = Date.now(); PRICES_SRC = url; break; }
+        } catch (e) { diag.push({ url, error: e.message }); }
+      }
+    } finally { PRICES_DIAG = diag; pricesBusy = false; }
   }
-  setTimeout(loadPrices, 8000).unref();
-  { const t = setInterval(loadPrices, 10 * 60e3); if (t.unref) t.unref(); }
+  setTimeout(() => loadPrices().catch(() => {}), 8000).unref();
+  { const t = setInterval(() => loadPrices().catch(() => {}), 10 * 60e3); if (t.unref) t.unref(); }
   const pricesFresh = () => !!PRICES && Date.now() - PRICES_TS < 60 * 60e3;
   // f — mijoz filtrlari: wear (FN..BS), st (faqat StatTrak™), umin/umax (so'mda narx oralig'i)
   function fromOf(G, f) {
@@ -207,7 +227,7 @@ module.exports = function (ctx) {
   // Mijozga ko'rsatilgan har taklif eslab qolinadi: xarid shu narx bilan (max_price) qilinadi.
   const OFFERS = new Map();   // id -> { usd, name, float, ts }
   function rememberOffer(o) {
-    OFFERS.set(o.id, { usd: o.usd, name: o.name, float: o.float, ts: Date.now() });
+    OFFERS.set(o.id, { usd: o.usd, name: o.name, float: o.float, insp: o.insp, ts: Date.now() });
     if (OFFERS.size > 20000) { const cut = Date.now() - 20 * 60e3; for (const [k, v] of OFFERS) if (v.ts < cut) OFFERS.delete(k); }
   }
   function normOffer(x) {
@@ -218,13 +238,21 @@ module.exports = function (ctx) {
     const fl = pick(x, ["item_float", "float", "float_value", "floatvalue"]);
     const unlock = pick(x, ["unlock_at", "unlocked_at", "hold_until", "trade_lock_until"]);
     if (id == null || !name || !(usd > 0)) return null;
+    // O'yinda ko'rish havolasi (faqat CS2 inspect), stikerlar, nom yorlig'i, pattern
+    const link = String(pick(x, ["item_link", "inspect_link", "inspect"]) || "");
+    const stk = (Array.isArray(x.stickers) ? x.stickers : []).slice(0, 6)
+      .map(t => str(t && typeof t === "object" ? pick(t, ["name", "title", "market_hash_name"]) : t, 80).replace(/^Sticker \| /, "")).filter(Boolean);
+    const seed = Number(pick(x, ["item_paint_seed", "paint_seed", "pattern"]));
     return { id: String(id), name: String(name), usd, float: fl != null && isFinite(Number(fl)) ? Number(fl) : null,
-      locked: !!unlock && Date.parse(unlock) > Date.now() };
+      locked: !!unlock && Date.parse(unlock) > Date.now(),
+      insp: /^steam:\/\/(run|rungame)\/730\/[\w%+\/.-]*$/i.test(link) && link.length < 400 ? link : "",
+      stk, nt: str(pick(x, ["name_tag", "nametag"]) || "", 60), seed: Number.isInteger(seed) && seed >= 0 && seed < 100000 ? seed : null };
   }
   function pubOffer(o) {
     const e = BY_NAME.get(o.name) || {};
     return { id: o.id, name: o.name, b: baseOf(o.name), w: e.w || "", s: e.s || "", price: uzs(o.usd), float: o.float, wear: e.wr || "",
-      img: e.i || "", rc: e.r || "#b0c3d9", rn: e.rn || "", cat: e.c || "other", st: /StatTrak/.test(o.name), sv: /^Souvenir /.test(o.name), locked: o.locked };
+      img: e.i || "", rc: e.r || "#b0c3d9", rn: e.rn || "", cat: e.c || "other", st: /StatTrak/.test(o.name), sv: /^Souvenir /.test(o.name), locked: o.locked,
+      insp: !!o.insp, stk: o.stk || [], nt: o.nt || "", seed: o.seed == null ? null : o.seed };
   }
   const CACHE = new Map();   // so'rov -> { ts, val }
   // lis-skins'ga keshdan tashqari so'rovlar chegarasi: daqiqasiga jami 150, bitta mijozdan 20
@@ -486,6 +514,13 @@ module.exports = function (ctx) {
         .catch(e => busy(res, e));
       return true;
     }
+    // O'yinda ko'rish: faqat biz ko'rsatgan takliflarning Steam inspect havolasiga yo'naltiradi
+    if (url === "/api/cs2/inspect" && m === "GET") {
+      const of = OFFERS.get(str(q.get("id"), 40));
+      if (!of || !of.insp) { send(res, 404, { error: "not_found" }); return true; }
+      res.writeHead(302, { Location: of.insp, "Cache-Control": "no-store" }); res.end();
+      return true;
+    }
     // Yaqinda yetkazilgan skinlar (ishonch uchun lenta): kim olgani ko'rsatilmaydi
     if (url === "/api/cs2/recent" && m === "GET") {
       if (!RECENT || Date.now() - RECENT.ts > 30000) {
@@ -524,7 +559,8 @@ module.exports = function (ctx) {
     if (url === "/api/admin/cs2" && (m === "GET" || m === "POST")) {
       if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
       const view = () => { const c = cfg(); return { enabled: c.enabled, rate: c.rate, markup: c.markup, minUsd: c.minUsd, maxUsd: c.maxUsd, onlyUnlocked: c.onlyUnlocked,
-        apiKeySet: !!c.apiKey, catalog: CAT.length, skins: GROUPS.length, catalogTs: CAT_TS, prices: PRICES ? PRICES.size : 0, pricesTs: PRICES_TS }; };
+        apiKeySet: !!c.apiKey, catalog: CAT.length, skins: GROUPS.length, catalogTs: CAT_TS, prices: PRICES ? PRICES.size : 0, pricesTs: PRICES_TS,
+        pricesUrl: c.pricesUrl || "", pricesSrc: PRICES_SRC, pricesDiag: PRICES_DIAG.map(d => d.url.replace(/^https?:\/\//, "") + " → " + (d.error || d.rows + " ta nom, " + d.kb + " KB")) }; };
       if (m === "GET") { send(res, 200, view()); return true; }
       ctx.readBody(req, res, b => {
         const c = cfg(), num = (x, lo, hi) => { const n = Number(x); return n >= lo && n <= hi ? n : null; };
@@ -534,7 +570,13 @@ module.exports = function (ctx) {
         const mk = num(b.markup, 0, 300); if (mk !== null && b.markup !== undefined && b.markup !== "") c.markup = mk;
         const mn = num(b.minUsd, 0.01, 1000); if (mn) c.minUsd = mn;
         const mx = num(b.maxUsd, 1, 100000); if (mx) c.maxUsd = mx;
-        if (b.apiKey) { c.apiKey = str(b.apiKey, 500); setTimeout(loadPrices, 500); }
+        if (b.apiKey) c.apiKey = str(b.apiKey, 500);
+        if ("pricesUrl" in b) {
+          const pu = str(b.pricesUrl, 300);
+          if (pu && !/^https:\/\/[\w.-]+\/\S*$/.test(pu)) return send(res, 400, { error: "Narxlar havolasi https:// bilan boshlanishi kerak" });
+          c.pricesUrl = pu;
+        }
+        if (b.apiKey || "pricesUrl" in b || "enabled" in b) setTimeout(() => loadPrices().catch(() => {}), 300);
         CACHE.clear(); ctx.save();
         send(res, 200, Object.assign({ ok: true }, view()));
       });
@@ -546,10 +588,12 @@ module.exports = function (ctx) {
         if (!cfg().apiKey) return send(res, 200, { ok: false, message: "API kalit kiritilmagan" });
         const bal = await balance();
         const r = await call("GET", "market/search", { params: { game: "csgo", sort_by: "lowest_price", only_unlocked: 1 } });
-        const first = listOf(r.json)[0];
-        const norm = normOffer(first);
+        const list = listOf(r.json), parsed = list.map(normOffer);
+        const okN = parsed.filter(Boolean).length, iFirst = parsed.findIndex(Boolean), norm = parsed[iFirst];
+        const first = iFirst >= 0 ? list[iFirst] : list[0];
         send(res, 200, { ok: bal.ok && !!norm, balance: bal.message, search: r.status, sample: first ? JSON.stringify(first).slice(0, 600) : str(r.text, 300),
-          parsed: norm ? (norm.name + " — $" + norm.usd + (norm.float != null ? ", float " + norm.float : "") + " → " + money(uzs(norm.usd))) : "Javobni o'qib bo'lmadi — namunani dasturchiga yuboring",
+          parsed: norm ? (list.length + " ta taklifdan " + okN + " tasi o'qildi. " + norm.name + " — $" + norm.usd + (norm.float != null ? ", float " + norm.float.toFixed(4) : "")
+            + (norm.insp ? ", o'yinda ko'rish bor" : "") + " → " + money(uzs(norm.usd))) : "Javobni o'qib bo'lmadi — namunani dasturchiga yuboring",
           catalog: CAT.length });
       })().catch(e => send(res, 200, { ok: false, message: e.message }));
       return true;

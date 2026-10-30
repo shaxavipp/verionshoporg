@@ -857,6 +857,10 @@ body.c2-open{overflow:hidden}
 .c2-fl{position:relative;height:3px;border-radius:2px;margin-top:7px;
   background:linear-gradient(90deg,#3fb950 0 7%,#8bc34a 7% 15%,#d8b520 15% 38%,#e5852a 38% 45%,#d94b45 45% 100%);opacity:.9}
 .c2-fl i{position:absolute;top:-3px;width:2px;height:9px;margin-left:-1px;background:#fff;border-radius:1px;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.c2-ex{font-size:10.5px;color:#9aa1ad;font-weight:700;margin-top:4px;line-height:1.35;overflow:hidden;text-overflow:ellipsis}
+.c2-insp{display:inline-block;margin-top:4px;font-size:11px;font-weight:800;color:var(--c2acc);text-decoration:none}
+.c2-off .c2-flv,.c2-off .c2-ex,.c2-off .c2-insp{display:inline;margin:0 8px 0 0;white-space:nowrap}
+.c2-off .mid{line-height:1.5}
 .c2-flv{font-size:10px;color:var(--c2mut);font-weight:700;margin-top:4px;font-family:ui-monospace,Menlo,monospace}
 .c2-more{display:block;width:calc(100% - 28px);margin:12px 14px 0;height:42px;border-radius:10px;border:1px solid var(--c2line);background:var(--c2card);color:var(--c2txt);font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
 .c2-empty{padding:40px 24px;text-align:center;color:var(--c2mut);font-size:13px;line-height:1.5}
@@ -1201,7 +1205,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.2";
+var CLIENT_BUILD="2026-10-31.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4537,6 +4541,18 @@ function c2Float(f){
   var p=Math.max(0,Math.min(100,f*100));
   return '<div class="c2-fl"><i style="left:'+p.toFixed(1)+'%"></i></div><div class="c2-flv">'+Number(f).toFixed(4)+'</div>';
 }
+// Taklifning qo'shimchalari: pattern, stikerlar, nom yorlig'i, o'yinda ko'rish
+function c2Extra(o,full){
+  var a=[];
+  if(o.seed!=null)a.push("Pattern "+Number(o.seed));
+  if(o.stk&&o.stk.length)a.push("🏷 "+(full?o.stk.map(esc).join(", "):o.stk.length+" stiker"));
+  if(o.nt)a.push("«"+esc(o.nt)+"»");
+  var h=a.length?'<div class="c2-ex">'+a.join(" · ")+'</div>':'';
+  if(o.insp)h+='<a href="#" class="c2-insp" data-insp="'+esc(o.id)+'">👁 '+(full?'O\'yinda ko\'rish':'Ko\'rish')+'</a>';
+  return h;
+}
+function c2Inspect(id){c2Ext(location.origin+"/api/cs2/inspect?id="+encodeURIComponent(id));}
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-insp]");if(a){e.preventDefault();e.stopPropagation();haptic();c2Inspect(a.getAttribute("data-insp"));}},true);
 function c2Card(x){
   var rc=c2rc(x);
   return '<button class="c2-card" data-c2b="'+esc(x.b)+'"><div class="c2-im" style="--rc:'+rc+';background:radial-gradient(ellipse at 50% 64%,'+rc+'33,transparent 66%)">'
@@ -4748,7 +4764,7 @@ function c2OpenItem(b){
       var L=offs.map(function(o,i){return [o,i];}).filter(function(p){var o=p[0];return !sel||(sel==="st"?o.st:o.wear===sel);});
       list.innerHTML=L.length?L.map(function(p){var o=p[0],i=p[1];
         var lab=[o.st?"StatTrak™":"",o.sv?"Souvenir":"",C2_WEAR[o.wear]||""].filter(Boolean).join(" · ")||"Oddiy";
-        return '<div class="c2-off"><div class="wr">'+esc(o.wear||"—")+'</div><div class="mid"><b>'+esc(lab)+'</b>'+c2Float(o.float)+'</div>'
+        return '<div class="c2-off"><div class="wr">'+esc(o.wear||"—")+'</div><div class="mid"><b>'+esc(lab)+'</b>'+c2Float(o.float)+c2Extra(o,false)+'</div>'
           +'<div style="text-align:right"><div class="pr">'+esc(money(o.price))+'</div></div><button class="c2-btn" data-c2buy="'+i+'">Olish</button></div>';
       }).join(""):'<div class="c2-empty" style="padding:20px 10px"><b>Hozir sotuvda yo\'q</b>Bu skin bozorda tugagan — birozdan keyin qarang yoki boshqasini tanlang.</div>';
       box.querySelectorAll("[data-tab]").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-tab")===sel);});
@@ -4763,7 +4779,7 @@ function c2Confirm(o,back){
   var tu=C2.info&&C2.info.tradeUrl,bal=ME.balance||0,need=o.price-bal;
   var lab=[o.st?"StatTrak™":"",o.sv?"Souvenir":"",C2_WEAR[o.wear]||""].filter(Boolean).join(" · ");
   var html=c2Hero(o,140)+'<div class="c2-w" style="font-size:11px">'+esc(o.w||"")+'</div><div class="c2-ttl">'+esc(o.s||o.name)+'</div>'
-    +'<div class="c2-sub">'+esc(lab)+(o.float!=null?' · float '+Number(o.float).toFixed(4):'')+'</div>'
+    +'<div class="c2-sub">'+esc(lab)+(o.float!=null?' · float '+Number(o.float).toFixed(4):'')+'</div>'+c2Extra(o,true)
     +'<div style="margin-top:10px"><div class="c2-row"><span>Narx</span><b style="color:var(--c2acc)">'+esc(money(o.price))+'</b></div>'
     +'<div class="c2-row"><span>Balansingiz</span><b>'+esc(money(bal))+'</b></div>'
     +'<div class="c2-row"><span>Qayerga</span><b>'+(tu?"Steam · trade havolangiz":"Trade havola kiritilmagan")+'</b></div></div>'
@@ -4841,7 +4857,9 @@ function openAdminCs2(){
       +'<div class="arow"><div style="flex:1"><label>Kurs: 1$ = so\'m</label><input id="c2Rate" type="number" value="'+c.rate+'"></div><div style="flex:1"><label>Ustama, %</label><input id="c2Mk" type="number" value="'+c.markup+'"></div></div>'
       +'<div class="arow"><div style="flex:1"><label>Eng arzon, $</label><input id="c2Min" type="number" step="0.1" value="'+c.minUsd+'"></div><div style="flex:1"><label>Eng qimmat, $</label><input id="c2Max" type="number" value="'+c.maxUsd+'"></div></div>'
       +sw("c2Unl","Faqat darhol yuboriladigan skinlar (trade-lock yo'q)",c.onlyUnlocked)
-      +'<div class="paynote" style="margin:8px 0">📦 Katalog: '+c.skins+' ta skin ('+c.catalog+' variant), yangilangan: '+esc(when(c.catalogTs))+'<br>💲 Narxlar ro\'yxati: '+(c.prices?c.prices+' ta, '+esc(when(c.pricesTs)):"yo'q — narxlar qidiruv orqali olinadi")+'</div>'
+      +'<label>Narxlar ro\'yxati havolasi (JSON, ixtiyoriy)</label><input id="c2Pu" value="'+esc(c.pricesUrl||"")+'" placeholder="lis-skins hujjatidagi «JSON Price Lists» havolasi">'
+      +'<div class="paynote" style="margin:8px 0">📦 Katalog: '+c.skins+' ta skin ('+c.catalog+' variant), yangilangan: '+esc(when(c.catalogTs))+'<br>💲 Narxlar ro\'yxati: '+(c.prices?c.prices+' ta, '+esc(when(c.pricesTs)):"yo'q — narxlar qidiruv orqali olinadi")
+      +((c.pricesDiag||[]).length?'<br><span style="font-size:11.5px;word-break:break-all">'+c.pricesDiag.map(esc).join("<br>")+'</span>':'')+'</div>'
       +'<div class="arow"><button class="btn gray" id="c2Test" style="flex:1">'+ic("check",14)+' Ulanishni sinash</button><button class="btn gray" id="c2Cat" style="flex:1">↻ Katalogni yangilash</button></div>'
       +'<div class="d" id="c2Res" style="margin-top:6px;white-space:pre-wrap;word-break:break-word"></div>'
       +'<div style="height:12px"></div><button class="btn" id="c2Save">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
@@ -4861,7 +4879,7 @@ function openAdminCs2(){
     sh.querySelector("#c2Save").addEventListener("click",function(){
       var b=this,v=function(id){return sh.querySelector("#"+id).value;},on=function(id){return sh.querySelector("#"+id).classList.contains("on");};
       b.disabled=true;
-      api("/api/admin/cs2","POST",{enabled:on("c2On"),onlyUnlocked:on("c2Unl"),apiKey:v("c2Key")||undefined,rate:Number(v("c2Rate")),markup:v("c2Mk")===""?undefined:Number(v("c2Mk")),minUsd:Number(v("c2Min")),maxUsd:Number(v("c2Max"))})
+      api("/api/admin/cs2","POST",{enabled:on("c2On"),onlyUnlocked:on("c2Unl"),apiKey:v("c2Key")||undefined,pricesUrl:v("c2Pu").trim(),rate:Number(v("c2Rate")),markup:v("c2Mk")===""?undefined:Number(v("c2Mk")),minUsd:Number(v("c2Min")),maxUsd:Number(v("c2Max"))})
         .then(function(r){b.disabled=false;haptic("ok");toast(t("a_saved"));ME.cs2=!!(r.enabled&&r.apiKeySet);sh.querySelector("#c2Key").value="";})
         .catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
     });

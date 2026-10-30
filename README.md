@@ -344,6 +344,7 @@ Alohida to'liq ekranli do'kon — to'q, sokin "gaming" ko'rinishida (ilova mavzu
 - «Yaqinda sotib olindi» lentasida oxirgi yetkazilgan skinlar ko'rinadi (kim olgani ko'rsatilmaydi).
 - «?» tugmasi «Qanday ishlaydi?» oynasini ochadi: 3 qadam va ko'p so'raladigan savollar (trade havola, Steam Guard, float, StatTrak™, pul qaytishi).
 - Skin oynasida float oralig'i, holat bo'yicha saralash (FN, MW…, ST™) va «Steam bozorida solishtirish» havolasi bor.
+- Har taklifda pattern (paint seed), stikerlar, nom yorlig'i va «👁 O'yinda ko'rish» bor. Ko'rish havolasi faqat biz ko'rsatgan taklif uchun ishlaydi: `/api/cs2/inspect?id=` → `steam://run/730/...`.
 - Ro'yxat oxirida Steam hamyonni to'ldirishga havola bor.
 - Har skin bitta kartochkada: barcha eskirganlik darajalari, StatTrak™ va Souvenir variantlari. Kartochkada noyoblik rangi va «…so'mdan» narx ko'rinadi.
 - Skin oynasida sotuvdagi takliflar chiqadi: FN/MW/FT/WW/BS, float shkalasi va narx bilan.
@@ -373,6 +374,9 @@ Alohida to'liq ekranli do'kon — to'q, sokin "gaming" ko'rinishida (ilova mavzu
 
 **Ma'lumot manbalari:**
 - Skin nomlari, rasmlari va toifalari ochiq CS2 bazasidan olinadi (ByMykel/CSGO-API, ~21 ming variant). Baza haftada bir yangilanadi va diskda saqlanadi.
-- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (`LIS_PRICES_URL`, 10 daqiqada yangilanadi). U bo'lmasa, narxlar API qidiruvi orqali olinadi.
+- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (10 daqiqada yangilanadi).
+  - Havola admin paneldan kiritiladi: «Narxlar ro'yxati havolasi» — lis-skins hujjatidagi «JSON Price Lists» bo'limidan olinadi.
+  - Kiritilmagan bo'lsa, `LIS_PRICES_URL` va bir nechta ma'lum manzil sinab ko'riladi. Har urinish natijasi (HTTP kodi, hajmi, nechta nom o'qilgani) admin panelda ko'rinadi.
+  - Ro'yxat bo'lmasa, narxlar API qidiruvi orqali olinadi. Bu holatda filtrlar va «Arzon / Qimmat» tartibi yashiriladi.
 
 lis-skins balansi «🚀 Tayyorlik» va 20 daqiqalik liniya kuzatuviga ulangan.
