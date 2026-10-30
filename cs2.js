@@ -324,10 +324,12 @@ module.exports = function (ctx) {
   // Holat so'zlari hujjatda aniq emas — keng mos keladi, xom qiymat saqlanadi (admin ko'radi).
   function stateWord(s) {
     s = String(s || "").toLowerCase();
+    if (/not[_ -]|return|refund|cancel|fail|declin|expire|error|reject/.test(s)) return "failed";
     if (/accept|complet|success|deliver|done|finish|transferred/.test(s)) return "done";
-    if (/return|refund|cancel|fail|declin|expire|error|reject/.test(s)) return "failed";
-    return "pending";
+    if (!s || /process|pend|wait|new|creat|send|sent|queue|hold|lock|progress|trade/.test(s)) return "pending";
+    return "other";
   }
+  const SEEN_STATES = new Set();
   const UNKNOWN_MS = Number(process.env.CS2_UNKNOWN_MS) || 15 * 60e3;
   let polling = false;
   async function poll() {
@@ -337,7 +339,8 @@ module.exports = function (ctx) {
       const list = DBx().orders.filter(o => o.status === "pending" && o.cs2 && (o.cs2.state === "sent" || o.cs2.state === "unknown"));
       for (let i = 0; i < list.length; i += 100) {
         const chunk = list.slice(i, i + 100);
-        const r = await call("GET", "market/info", { params: { "custom_ids": chunk.map(o => o.id) } });
+        const pids = chunk.map(o => o.cs2.purchaseId).filter(x => /^\d+$/.test(x || ""));
+        const r = await call("GET", "market/info", { params: { "custom_ids": chunk.map(o => o.id), "purchase_ids": pids.length ? pids : undefined } });
         if (!r.json || r.status >= 400) continue;
         const seen = new Set();
         for (const x of listOf(r.json)) {
@@ -351,6 +354,11 @@ module.exports = function (ctx) {
           if (o.cs2.state === "unknown") o.cs2.state = "sent";
           o.cs2.raw = str(raw, 60);
           const w = stateWord(raw);
+          // Hujjatda yo'q holat nomi kelsa — adminga bir marta: shu orqali haqiqiy nomlarni bilib olamiz
+          if (w === "other" && !SEEN_STATES.has(o.cs2.raw) && SEEN_STATES.size < 50) {
+            SEEN_STATES.add(o.cs2.raw);
+            ctx.notifyAdmins("ℹ️ CS2: lis-skins'dan yangi holat keldi: «" + o.cs2.raw + "» (#" + o.seq + "). Buyurtma kutishda turibdi — bu xabarni dasturchiga yuboring.");
+          }
           if (w === "done") markDone(o);
           else if (w === "failed") {
             refund(o, "Trade qabul qilinmadi yoki bekor bo'ldi — pul balansga qaytdi.");
