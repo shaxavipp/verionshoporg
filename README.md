@@ -339,8 +339,12 @@ Alohida to'liq ekranli do'kon — to'q, sokin "gaming" ko'rinishida (ilova mavzu
 **Mijoz uchun:**
 - Toifalar: Hammasi, 🔥 Yangi (jonli bozor), Pichoqlar, Qo'lqoplar, Avtomatlar, Snayperlar, To'pponchalar, PP, Og'ir. Qidiruv va «Ommabop / Arzon / Qimmat» tartibi bor.
 - Toifa ichida qurol turlari chiqadi (masalan Karambit, Butterfly…) — bosilsa faqat o'sha qurol skinlari qoladi.
-- Filtrlar: narx oralig'i (so'mda, tez tugmalar bilan), holati (FN/MW/FT/WW/BS) va faqat StatTrak™. Faol filtrlar ro'yxat tepasida ko'rinadi, bosilsa olib tashlanadi.
-- Tepada ishonch qatori bor: «~1 daqiqada Steam'ga», «Kelmasa — pul qaytadi», «So'mda to'lov». Balans tugmasi to'ldirish sahifasini ochadi.
+- Kirishda sarlavha bloki bor: «Steam'ga ~1 daqiqada», trade havolani kiritish tugmasi, statistika (sotuvdagi skinlar, yetkazish vaqti, yetkazilganlar soni yoki pul kafolati) va ishonch belgilari. U faqat filtrsiz bosh ko'rinishda chiqadi.
+- Asboblar paneli: filtr tugmasi (faol filtrlar soni bilan), qidiruv, tartib ro'yxati (Ommabop / Arzon / Qimmat / Noyob avval) va «Trade URL» holati.
+- Filtrlar oynasi: «Faqat sevimlilar», narx oralig'i (so'mda, tez tugmalar bilan), holati (bir nechtasini tanlash mumkin, rangli nuqtalar bilan), noyoblik (Covert, Classified…, rangli), StatTrak™ / Souvenir / Oddiy va «★ Pichoq va qo'lqoplar». Faol filtrlar ro'yxat tepasida ko'rinadi, bosilsa olib tashlanadi.
+- Sevimlilar: kartochka va skin oynasidagi ❤ — mijoz hisobida saqlanadi (200 tagacha).
+- Kartochka pastida «N ta taklif →» tugmasi bor. Skin oynasida katta narx, «⚡ Eng arzonini olish» (bitta bosishda), «Darhol yuboriladi» belgisi va nomni nusxalash bor.
+- Balans tugmasi to'ldirish sahifasini ochadi.
 - «Yaqinda sotib olindi» lentasida oxirgi yetkazilgan skinlar ko'rinadi (kim olgani ko'rsatilmaydi).
 - «?» tugmasi «Qanday ishlaydi?» oynasini ochadi: 3 qadam va ko'p so'raladigan savollar (trade havola, Steam Guard, float, StatTrak™, pul qaytishi).
 - Skin oynasida float oralig'i, holat bo'yicha saralash (FN, MW…, ST™) va «Steam bozorida solishtirish» havolasi bor.

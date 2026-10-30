@@ -23,6 +23,8 @@ const CATS = [["knife", "Pichoqlar"], ["gloves", "Qo'lqoplar"], ["rifle", "Avtom
 const WEAR = { "Factory New": "FN", "Minimal Wear": "MW", "Field-Tested": "FT", "Well-Worn": "WW", "Battle-Scarred": "BS" };
 // Noyoblik tartibi (qimmatbaholari oldin)
 const RARITY_RANK = { "#e4ae39": 0, "#eb4b4b": 1, "#d32ce6": 2, "#8847ff": 3, "#4b69ff": 4, "#5e98d9": 5, "#b0c3d9": 6 };
+// Filtr uchun noyoblik kalitlari (rang bo'yicha)
+const RARITY_KEY = { contraband: "#e4ae39", covert: "#eb4b4b", classified: "#d32ce6", restricted: "#8847ff", milspec: "#4b69ff", industrial: "#5e98d9", consumer: "#b0c3d9" };
 
 module.exports = function (ctx) {
   const DBx = () => ctx.getDB();
@@ -213,8 +215,11 @@ module.exports = function (ctx) {
   function fromOf(G, f) {
     const c = cfg(); let best = null, cnt = 0;
     for (const n of G.v) {
-      if (f && f.wear && (BY_NAME.get(n) || {}).wr !== f.wear) continue;
-      if (f && f.st && n.indexOf("StatTrak™") === -1) continue;
+      if (f && f.wear.length && f.wear.indexOf((BY_NAME.get(n) || {}).wr) === -1) continue;
+      if (f && f.types.length) {   // st — StatTrak™, sv — Souvenir, plain — oddiy
+        const t = n.indexOf("StatTrak™") !== -1 ? "st" : /^Souvenir /.test(n) ? "sv" : "plain";
+        if (f.types.indexOf(t) === -1) continue;
+      }
       const p = PRICES.get(n);
       if (!p || p.usd < c.minUsd || p.usd > c.maxUsd) continue;
       if (f && (f.umin || f.umax)) { const so = uzs(p.usd); if ((f.umin && so < f.umin) || (f.umax && so > f.umax)) continue; }
@@ -432,12 +437,31 @@ module.exports = function (ctx) {
   /* ---------- HTTP ---------- */
   const catsPublic = () => CATS.map(([k, label]) => ({ k, label }));
   const WEAR_KEYS = ["FN", "MW", "FT", "WW", "BS"];
-  let RECENT = null;
+  let RECENT = null, DONE_C = { ts: 0, n: 0 };
+  // Yetkazilgan CS2 buyurtmalari soni (ishonch uchun), 1 daqiqa keshlanadi
+  const DONE_N = () => { if (Date.now() - DONE_C.ts > 60000) { let n = 0; for (const o of DBx().orders) if (o.cs2 && o.status === "done") n++; DONE_C = { ts: Date.now(), n }; } return DONE_C.n; };
   function handle(req, res, url, m, q) {
     if (url === "/api/cs2" && m === "GET") {
       const u = ctx.auth(req);
       const acc = u ? DBx().users[String(u.id)] : null;
-      send(res, 200, { enabled: ready(), cats: catsPublic(), catalog: CAT.length, tradeUrl: (acc && acc.cs2Trade) || "", steamOffers: STEAM_OFFERS });
+      send(res, 200, { enabled: ready(), cats: catsPublic(), catalog: CAT.length, tradeUrl: (acc && acc.cs2Trade) || "", steamOffers: STEAM_OFFERS,
+        favs: acc && Array.isArray(acc.cs2Fav) ? acc.cs2Fav : [], inStock: ready() && pricesFresh() ? PRICES.size : null,
+        delivered: DONE_N() });
+      return true;
+    }
+    // Sevimli skinlar (mijoz hisobida, 200 tagacha)
+    if (url === "/api/cs2/fav" && m === "POST") {
+      const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
+      ctx.readBody(req, res, b => {
+        const name = str(b.b, 200);
+        if (!G_BY.has(name)) return send(res, 404, { error: "not_found" });
+        const acc = ctx.user(u); const f = Array.isArray(acc.cs2Fav) ? acc.cs2Fav.filter(x => typeof x === "string") : [];
+        const i = f.indexOf(name);
+        if (b.on && i === -1) { f.unshift(name); if (f.length > 200) f.length = 200; }
+        if (!b.on && i !== -1) f.splice(i, 1);
+        acc.cs2Fav = f; ctx.save();
+        send(res, 200, { ok: true, favs: f });
+      });
       return true;
     }
     // Jonli bozor: sotuvdagi takliflar (narx bo'yicha, oraliq bilan)
@@ -458,10 +482,17 @@ module.exports = function (ctx) {
     if (url === "/api/cs2/catalog" && m === "GET") {
       const cat = str(q.get("cat"), 10), text = str(q.get("q"), 60).toLowerCase(), page = Math.max(0, Math.min(500, Number(q.get("page")) || 0));
       const sort = str(q.get("sort"), 10), wpn = str(q.get("w"), 40);
-      const flt = { wear: WEAR_KEYS.indexOf(q.get("wear")) !== -1 ? q.get("wear") : "", st: q.get("st") === "1",
+      const list = k => String(q.get(k) || "").split(",").map(x => x.trim()).filter(Boolean).slice(0, 10);
+      const types = list("type").filter(t => ["st", "sv", "plain"].indexOf(t) !== -1);
+      if (q.get("st") === "1" && types.indexOf("st") === -1) types.push("st");   // eski mijozlar uchun
+      const flt = { wear: list("wear").filter(w => WEAR_KEYS.indexOf(w) !== -1), types,
         umin: Math.max(0, Math.floor(Number(q.get("pmin")) || 0)), umax: Math.max(0, Math.floor(Number(q.get("pmax")) || 0)) };
+      const rar = list("rar").map(k => RARITY_KEY[k]).filter(Boolean), star = q.get("star") === "1";
+      let favs = null;
+      if (q.get("fav") === "1") { const uf = ctx.auth(req), acc = uf && DBx().users[String(uf.id)]; favs = new Set(acc && Array.isArray(acc.cs2Fav) ? acc.cs2Fav : []); }
       const words = text.split(/\s+/).filter(Boolean);
-      const inCat = GROUPS.filter(g => (!cat || g.c === cat) && (!words.length || words.every(w => g.b.toLowerCase().indexOf(w) !== -1)));
+      const inCat = GROUPS.filter(g => (!cat || g.c === cat) && (!words.length || words.every(w => g.b.toLowerCase().indexOf(w) !== -1))
+        && (!rar.length || rar.indexOf(g.r) !== -1) && (!star || g.c === "knife" || g.c === "gloves") && (!favs || favs.has(g.b)));
       const all = wpn ? inCat.filter(g => g.w === wpn) : inCat;
       const PER = 20;
       const out = (g, f) => ({ b: g.b, w: g.w, s: g.s, img: g.i, rc: g.r, rn: g.rn, st: g.st, sv: g.sv, cat: g.c,
@@ -473,7 +504,8 @@ module.exports = function (ctx) {
         // Narxlar ro'yxati bor: faqat sotuvdagilari (filtrlarga mos variant bilan), kerakli tartibda
         const priced = inCat.map(g => ({ g, f: fromOf(g, flt) })).filter(x => x.f.usd);
         let rows = wpn ? priced.filter(x => x.g.w === wpn) : priced;
-        if (sort === "cheap") rows.sort((a, b) => a.f.usd - b.f.usd);
+        if (sort === "rare") rows.sort((a, b) => (RARITY_RANK[a.g.r] ?? 9) - (RARITY_RANK[b.g.r] ?? 9) || b.f.usd - a.f.usd);
+        else if (sort === "cheap") rows.sort((a, b) => a.f.usd - b.f.usd);
         else if (sort === "expensive") rows.sort((a, b) => b.f.usd - a.f.usd);
         // Ommabop: bozorda ko'p sotiladigan (taklif soni) va noyobroq skinlar oldinda
         else rows.sort((a, b) => b.f.cnt * (7 - (RARITY_RANK[b.g.r] ?? 6)) - a.f.cnt * (7 - (RARITY_RANK[a.g.r] ?? 6)) || a.g.b.localeCompare(b.g.b));

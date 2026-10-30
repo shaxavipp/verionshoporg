@@ -812,10 +812,10 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .stat .k{font-size:10px;color:var(--mut);margin-top:2px}
 
 /* CS2 skinlar do'koni — alohida, to'q "gaming" ko'rinish (ilova mavzusidan qat'i nazar) */
-.c2{--c2bg:#0b0d10;--c2card:#13161b;--c2line:#20242c;--c2txt:#e8eaed;--c2mut:#7d8490;--c2acc:#f0a030;
+.c2{--c2disp:"Oxanium",system-ui,-apple-system,sans-serif;--c2bg:#0b0d10;--c2card:#13161b;--c2line:#20242c;--c2txt:#e8eaed;--c2mut:#7d8490;--c2acc:#f0a030;
   position:fixed;inset:0;z-index:92;background-color:var(--c2bg);color:var(--c2txt);overflow-y:auto;-webkit-overflow-scrolling:touch;
   background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
-  background-size:28px 28px;padding-bottom:calc(86px + env(safe-area-inset-bottom));animation:c2in .22s var(--ease)}
+  background-size:28px 28px;padding-bottom:calc(28px + env(safe-area-inset-bottom));animation:c2in .22s var(--ease)}
 @keyframes c2in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 body.c2-open{overflow:hidden}
 .c2 [hidden],.sheet.c2s [hidden]{display:none!important}
@@ -900,6 +900,74 @@ body.c2-open{overflow:hidden}
 .c2-rc img{max-width:88%;max-height:56px;object-fit:contain}
 .c2-rc .nm{font-size:11.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
 .c2-rc .mt{font-size:10px;color:var(--c2mut);font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* sarlavha bloki (hero) */
+.c2-hero2{position:relative;margin:12px 14px 4px;padding:18px 16px 14px;border-radius:16px;border:1px solid rgba(240,160,48,.22);overflow:hidden;
+  background:radial-gradient(120% 90% at 85% 0%,rgba(240,160,48,.20),transparent 55%),linear-gradient(180deg,#15171c,#0f1114)}
+.c2-pill{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:#c9ced6;padding:6px 10px;border-radius:999px;border:1px solid #2a2f38;background:rgba(11,13,16,.6)}
+.c2-pill i{width:7px;height:7px;border-radius:50%;background:#3fb950;box-shadow:0 0 0 3px rgba(63,185,80,.2)}
+.c2-hero2 h1{margin:12px 0 6px;font-family:var(--c2disp);font-size:27px;line-height:1.02;font-weight:800;letter-spacing:-.2px;text-transform:uppercase}
+.c2-hero2 h1 em{font-style:normal;color:var(--c2acc)}
+.c2-hero2 p{margin:0;font-size:13px;line-height:1.5;color:#9aa1ad}
+.c2-cta{display:flex;gap:8px;margin-top:14px}
+.c2-cta .c2-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-transform:none;letter-spacing:0;font-size:13.5px;padding:0 14px;box-shadow:0 6px 24px rgba(240,160,48,.25)}
+.c2-cta .c2-btn:first-child{flex:1 1 auto}
+.c2-cta .c2-btn.ghost{box-shadow:none}
+.c2-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
+.c2-stats div{padding:9px 6px;border-radius:10px;background:rgba(11,13,16,.55);border:1px solid #20242c;text-align:center}
+.c2-stats b{display:block;font-family:var(--c2disp);font-size:17px;font-weight:800;color:var(--c2txt)}
+.c2-stats span{display:block;font-size:10.5px;color:var(--c2mut);font-weight:700;margin-top:1px}
+.c2-hero2 .c2-trust{padding:12px 0 0;flex-wrap:wrap}
+/* asboblar paneli */
+.c2-tool{margin:10px 14px 0;padding:10px;border-radius:14px;background:var(--c2card);border:1px solid var(--c2line)}
+.c2-tool .c2-srow{margin:0}
+.c2-tool .c2-srch{background:#0b0d10}
+.c2-tool .c2-fbtn{background:#0b0d10}
+.c2-trow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.c2-sel{position:relative;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:9px;background:#0b0d10;border:1px solid var(--c2line);color:#cfd3da}
+.c2-sel select{appearance:none;-webkit-appearance:none;background:none;border:none;outline:none;color:inherit;font:inherit;font-size:12.5px;font-weight:800;padding-right:2px}
+.c2-sel select option{background:#13161b;color:#e8eaed}
+.c2-tu{display:inline-flex;align-items:center;gap:6px;border:none;background:none;color:var(--c2acc);font-size:12.5px;font-weight:800;padding:6px 2px}
+.c2-tu.ok{color:#58c472}
+.c2-go{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;height:32px;border-radius:9px;background:#0b0d10;border:1px solid var(--c2line);
+  font-size:11.5px;font-weight:800;color:#cfd3da}
+.c2-go span{color:var(--c2acc)}
+.c2-h2 em{margin-left:auto;font-style:normal;color:var(--c2acc);letter-spacing:.04em}
+.c2-hwrap{position:relative}
+.c2-avl{position:absolute;top:10px;left:10px;font-size:11.5px;font-weight:800;color:#58c472;padding:6px 10px;border-radius:9px;border:1px dashed rgba(88,196,114,.55);background:rgba(16,40,24,.75)}
+.c2-copy{display:inline-flex;align-items:center;gap:6px;max-width:100%;margin-top:6px;border:none;background:none;padding:0;color:var(--c2mut);font:inherit;font-size:12px;font-weight:700;text-align:left}
+.c2-copy span{color:#cfd3da}
+.c2-pbig{display:flex;align-items:baseline;gap:6px;margin-top:12px}
+.c2-pbig b{font-family:var(--c2disp);font-size:28px;font-weight:800;color:var(--c2acc);letter-spacing:.2px}
+.c2-pbig span{font-size:13px;font-weight:700;color:var(--c2mut)}
+.c2-quick{margin-top:10px;height:50px;font-size:14px;box-shadow:0 8px 26px rgba(240,160,48,.28)}
+.c2-prow{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:6px}
+.c2-prow .c2-p{margin-top:0}
+.c2-cnt{font-size:10.5px;color:var(--c2mut);font-weight:700;white-space:nowrap}
+.c2-p{font-family:var(--c2disp);letter-spacing:.2px}
+.c2-fav{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:rgba(11,13,16,.75);fill:none;stroke:#9aa1ad;stroke-width:2;transition:transform .12s}
+.c2-fav svg{fill:inherit;stroke:inherit}
+.c2-fav.on{fill:#ef5b5b;stroke:#ef5b5b}
+.c2-fav:active{transform:scale(.88)}
+.c2-fav.big{position:static;width:40px;height:40px;flex:0 0 40px;border:1px solid var(--c2line);background:var(--c2card)}
+.c2-th{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.c2-logo>div{font-family:var(--c2disp)}
+.c2-ttl{font-family:var(--c2disp)}
+/* filtr oynasi */
+.c2-fs{border-bottom:1px solid var(--c2line);padding:4px 0}
+.c2-fh{display:flex;width:100%;justify-content:space-between;align-items:center;border:none;background:none;color:var(--c2mut);font:inherit;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:12px 0 8px}
+.c2-fh span{font-size:16px;color:var(--c2mut)}
+.c2-fb{padding-bottom:8px}
+.c2-ck{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;color:var(--c2txt);font:inherit;font-size:13.5px;font-weight:700;padding:8px 0;text-align:left}
+.c2-ck .bx{flex:0 0 20px;height:20px;border-radius:6px;border:1.5px solid #3a404b;position:relative}
+.c2-ck.on .bx{background:var(--c2acc);border-color:var(--c2acc)}
+.c2-ck.on .bx:after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #111;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.c2-ck .dt{flex:0 0 9px;height:9px;border-radius:50%}
+.c2-ck.sw{justify-content:space-between;padding:12px 0}
+.c2-ck .tg{flex:0 0 42px;height:24px;border-radius:12px;background:#2a2f38;position:relative;transition:background .15s}
+.c2-ck .tg:after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#9aa1ad;transition:transform .15s,background .15s}
+.c2-ck.sw.on .tg{background:rgba(240,160,48,.35)}
+.c2-ck.sw.on .tg:after{transform:translateX(18px);background:var(--c2acc)}
 .c2-x{display:flex;align-items:center;gap:12px;width:calc(100% - 28px);margin:14px 14px 0;padding:12px;border-radius:12px;border:1px solid var(--c2line);
   background:linear-gradient(135deg,#132238,#13161b 70%);color:var(--c2txt);text-align:left}
 .c2-x .ic{flex:0 0 40px;height:40px;border-radius:10px;background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547);display:flex;align-items:center;justify-content:center}
@@ -908,7 +976,7 @@ body.c2-open{overflow:hidden}
 .c2-x .tx b{display:block;font-size:13px;color:var(--c2txt)}
 .c2-x .ar{color:var(--c2mut);font-weight:900}
 /* CS2 oynalari (pastdan chiqadigan) */
-.sheet.c2s{--c2card:#13161b;--c2line:#20242c;--c2txt:#e8eaed;--c2mut:#7d8490;--c2acc:#f0a030;background:#0f1114;border-top-color:#23272f;color:var(--c2txt)}
+.sheet.c2s{--c2disp:"Oxanium",system-ui,-apple-system,sans-serif;--c2card:#13161b;--c2line:#20242c;--c2txt:#e8eaed;--c2mut:#7d8490;--c2acc:#f0a030;background:#0f1114;border-top-color:#23272f;color:var(--c2txt)}
 .sheet.c2s .grab{background:#2a2f38}
 .sheet.c2s .sheet-x,.sheet.c2s .sheet-back{background:#1b1f26;color:#cfd3da;border-color:#2a2f38}
 .c2-hero{position:relative;display:flex;align-items:center;justify-content:center;height:170px;border-radius:14px;border:1px solid var(--c2line);margin-bottom:12px}
@@ -941,10 +1009,11 @@ body.c2-open{overflow:hidden}
 .c2-steps{display:grid;gap:8px;margin-top:12px}
 .c2-steps div{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--c2card);border:1px solid var(--c2line);font-size:13px;font-weight:700}
 .c2-steps b{flex:0 0 28px;height:28px;border-radius:8px;background:var(--c2acc);color:#111;display:flex;align-items:center;justify-content:center;font-weight:900}
-.c2-faq{border-bottom:1px solid var(--c2line);padding:2px 0}
-.c2-faq summary{list-style:none;cursor:pointer;padding:11px 22px 11px 0;font-size:13.5px;font-weight:800;position:relative}
+.c2-faq{border:1px solid var(--c2line);background:var(--c2card);border-radius:12px;padding:0 14px;margin-bottom:8px;transition:border-color .15s}
+.c2-faq[open]{border-color:rgba(240,160,48,.55)}
+.c2-faq summary{list-style:none;cursor:pointer;padding:13px 22px 13px 0;font-size:13.5px;font-weight:800;position:relative}
 .c2-faq summary::-webkit-details-marker{display:none}
-.c2-faq summary:after{content:"+";position:absolute;right:2px;top:9px;font-size:18px;color:var(--c2mut);font-weight:700}
+.c2-faq summary:after{content:"+";position:absolute;right:0;top:11px;font-size:18px;color:var(--c2mut);font-weight:700}
 .c2-faq[open] summary:after{content:"–"}
 .c2-faq p{margin:0 0 12px;font-size:12.5px;line-height:1.55;color:#aab0ba}
 .c2-ok{text-align:center;padding:10px 4px}
@@ -1205,7 +1274,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.3";
+var CLIENT_BUILD="2026-10-31.4";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4531,7 +4600,7 @@ function promoErrText(e){
    Katalog — barcha CS2 skinlari (toifa, qidiruv); narx va takliflar — jonli bozordan (lis-skins).
    Xarid: mijozning Steam trade havolasi bir marta saqlanadi → skin to'g'ridan-to'g'ri Steam'ga keladi. */
 var CS2_SVG='<svg viewBox="0 0 48 48" width="56%" height="56%" fill="none" stroke="#f0a030" stroke-width="2.6" stroke-linecap="round"><circle cx="24" cy="24" r="12.5"/><path d="M24 4.5v9M24 34.5v9M4.5 24h9M34.5 24h9"/><circle cx="24" cy="24" r="2.3" fill="#f0a030" stroke="none"/></svg>';
-var C2={cat:"",q:"",sort:"",page:0,items:[],more:false,loading:false,err:"",info:null,seq:0,priced:false,next:"",total:0,w:"",weapons:[],f:{wear:"",st:false,pmin:0,pmax:0},recent:null};
+var C2={cat:"",q:"",sort:"",page:0,items:[],more:false,loading:false,err:"",info:null,seq:0,priced:false,next:"",total:0,w:"",weapons:[],f:{fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false},recent:null,favs:[]};
 var C2_CATS=[["","Hammasi"],["new","Yangi"],["knife","Pichoqlar"],["gloves","Qo'lqoplar"],["rifle","Avtomatlar"],["sniper","Snayperlar"],["pistol","To'pponchalar"],["smg","PP"],["heavy","Og'ir"]];
 var C2_WEAR={FN:"Factory New",MW:"Minimal Wear",FT:"Field-Tested",WW:"Well-Worn",BS:"Battle-Scarred"};
 function c2rc(x){return /^#[0-9a-f]{6}$/i.test(String(x&&x.rc||""))?x.rc:"#b0c3d9";}
@@ -4554,12 +4623,14 @@ function c2Extra(o,full){
 function c2Inspect(id){c2Ext(location.origin+"/api/cs2/inspect?id="+encodeURIComponent(id));}
 document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-insp]");if(a){e.preventDefault();e.stopPropagation();haptic();c2Inspect(a.getAttribute("data-insp"));}},true);
 function c2Card(x){
-  var rc=c2rc(x);
+  var rc=c2rc(x),fav=C2.favs.indexOf(x.b)!==-1;
   return '<button class="c2-card" data-c2b="'+esc(x.b)+'"><div class="c2-im" style="--rc:'+rc+';background:radial-gradient(ellipse at 50% 64%,'+rc+'33,transparent 66%)">'
     +(x.img?'<img loading="lazy" src="'+esc(x.img)+'" alt="">':'')
-    +'<div class="c2-tags"><span>'+(x.st?'<span class="c2-tag st">ST™</span>':x.sv?'<span class="c2-tag sv">SV</span>':'')+'</span>'+(x.cnt?'<span class="c2-tag">'+Number(x.cnt)+' ta</span>':'')+'</div></div>'
+    +'<div class="c2-tags"><span>'+(x.st?'<span class="c2-tag st">ST™</span>':x.sv?'<span class="c2-tag sv">SV</span>':'')+'</span></div>'
+    +'<span class="c2-fav'+(fav?' on':'')+'" data-c2fav="'+esc(x.b)+'" role="button" aria-label="Sevimli">'+C2_ICO.heart+'</span></div>'
     +'<div class="c2-bd"><div class="c2-w">'+esc(x.w||"")+'</div><div class="c2-n">'+esc(x.s||x.b)+'</div>'
-    +(x.from?'<div class="c2-p">'+esc(money(x.from))+'<small>dan</small></div>':'<div class="c2-p na">Narxini ko\'rish →</div>')+'</div></button>';
+    +(x.from?'<div class="c2-p">'+esc(money(x.from))+'<small>dan</small></div>':'<div class="c2-p na">Narxi skin oynasida</div>')
+    +'<div class="c2-go">'+(x.cnt?Number(x.cnt)+' ta taklif':'Ko\'rish')+' <span>→</span></div></div></button>';
 }
 function c2OfferCard(o,i){
   var rc=c2rc(o);
@@ -4569,17 +4640,29 @@ function c2OfferCard(o,i){
     +'<div class="c2-bd"><div class="c2-w">'+esc(o.w||"")+'</div><div class="c2-n">'+esc(o.s||o.name)+'</div>'+c2Float(o.float)
     +'<div class="c2-p">'+esc(money(o.price))+'</div></div></button>';
 }
-function c2FiltN(){var f=C2.f;return (f.wear?1:0)+(f.st?1:0)+(f.pmin||f.pmax?1:0);}
+var C2_RAR=[["contraband","Contraband","#e4ae39"],["covert","Covert · ★","#eb4b4b"],["classified","Classified","#d32ce6"],["restricted","Restricted","#8847ff"],["milspec","Mil-Spec","#4b69ff"],["industrial","Industrial","#5e98d9"],["consumer","Consumer","#b0c3d9"]];
+var C2_WCOL={FN:"#3fb950",MW:"#8bc34a",FT:"#d8b520",WW:"#e5852a",BS:"#d94b45"};
+var C2_TYPES=[["st","StatTrak™"],["sv","Souvenir"],["plain","Oddiy"]];
+function c2F0(){return {fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false};}
+function c2FiltN(){var f=C2.f;return (f.fav?1:0)+(f.pmin||f.pmax?1:0)+f.wear.length+f.rar.length+f.types.length+(f.star?1:0);}
+function c2Home(){return !C2.cat&&!C2.q&&!C2.w&&!c2FiltN();}
 var C2_ICO={
   sliders:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>',
   help:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
   shield:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.4-3.4 8.2-8 9-4.6-.8-8-4.6-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>',
   card:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/></svg>',
-  plus:'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+  plus:'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.7 3.6 4.5 7 4.5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.6 3.2 4.3 6.6-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>',
+  link:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+  down:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>'
 };
+function c2LoadFont(){
+  if(document.getElementById("c2Font"))return;
+  var l=document.createElement("link");l.id="c2Font";l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Oxanium:wght@600;700;800&display=swap";document.head.appendChild(l);
+}
 function openCs2(){
-  closeSheet();
+  closeSheet();c2LoadFont();
   var el=document.getElementById("c2");
   if(!el){el=document.createElement("div");el.id="c2";el.className="c2";document.body.appendChild(el);}
   document.body.classList.add("c2-open");
@@ -4587,15 +4670,19 @@ function openCs2(){
     +'<div class="c2-logo">'+CS2_SVG.replace('width="56%" height="56%"','width="26" height="26"')+'<div>CS2 Skins<small>Steam\'ga darhol</small></div></div>'
     +'<button class="c2-bal" id="c2Bal" aria-label="Balansni to\'ldirish"></button>'
     +'<button class="c2-back" id="c2Help" aria-label="Qanday ishlaydi">'+C2_ICO.help+'</button></div>'
-    +'<div class="c2-trust"><span>'+C2_ICO.bolt+' ~1 daqiqada Steam\'ga</span><span>'+C2_ICO.shield+' Kelmasa — pul qaytadi</span><span>'+C2_ICO.card+' So\'mda to\'lov</span></div>'
-    +'<div class="c2-srow"><div class="c2-srch">'+ic("search",16)+'<input id="c2Q" placeholder="AK-47, Karambit, Asiimov…" value="'+esc(C2.q)+'" autocomplete="off"></div>'
-    +'<button class="c2-fbtn" id="c2Filt" aria-label="Filtrlar">'+C2_ICO.sliders+'<i id="c2FiltN" hidden></i></button></div>'
+    +'<div id="c2HeroBox"></div>'
+    +'<div class="c2-tool" id="c2Tool"><div class="c2-srow"><button class="c2-fbtn" id="c2Filt" aria-label="Filtrlar">'+C2_ICO.sliders+'<i id="c2FiltN" hidden></i></button>'
+    +'<div class="c2-srch">'+ic("search",16)+'<input id="c2Q" placeholder="Skin nomi: AK-47, Karambit…" value="'+esc(C2.q)+'" autocomplete="off"></div></div>'
+    +'<div class="c2-trow"><label class="c2-sel" id="c2SortBox"><select id="c2Sort" aria-label="Tartib">'
+    +[["","Ommabop avval"],["cheap","Arzon avval"],["expensive","Qimmat avval"],["rare","Noyob avval"]].map(function(o){return '<option value="'+o[0]+'"'+(C2.sort===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")
+    +'</select>'+C2_ICO.down+'</label><button class="c2-tu" id="c2Trade"></button></div></div>'
     +'<div class="c2-chips" id="c2Chips"></div><div class="c2-chips sub" id="c2Wpn" hidden></div>'
-    +'<div class="c2-bar"><span id="c2Cnt"></span><div class="c2-sort" id="c2Sort"></div></div>'
     +'<div class="c2-act" id="c2Act" hidden></div>'
-    +'<div id="c2Rec"></div><div id="c2List"></div><div class="c2-foot" id="c2Foot"></div>';
+    +'<div id="c2Rec"></div><div class="c2-bar"><span id="c2Cnt"></span></div>'
+    +'<div id="c2List"></div><div class="c2-foot" id="c2Foot" hidden></div>';
   el.scrollTop=0;
   el.querySelector("#c2Back").addEventListener("click",function(){haptic();closeCs2();});
+  el.querySelector("#c2Sort").addEventListener("change",function(){haptic();C2.sort=this.value;c2Load(true);});
   var tmr=null;
   el.querySelector("#c2Q").addEventListener("input",function(){
     var v=this.value;clearTimeout(tmr);
@@ -4603,24 +4690,28 @@ function openCs2(){
     tmr=setTimeout(function(){var nq=v.trim();if(nq&&nq!==C2.q||C2.cat==="new"){C2.cat="";C2.w="";}C2.q=nq;c2Chips();c2Load(true);},350);
   });
   el.addEventListener("click",function(e){
-    var t=e.target.closest("[data-c2cat],[data-c2w],[data-c2sort],[data-c2b],[data-c2o],[data-c2rm],#c2More,#c2Trade,#c2Retry,#c2Filt,#c2Help,#c2Bal,#c2Steam");if(!t)return;
+    var t=e.target.closest("[data-c2fav],[data-c2cat],[data-c2w],[data-c2b],[data-c2o],[data-c2rm],#c2More,#c2Trade,#c2Trade2,#c2Retry,#c2Filt,#c2Help,#c2Bal,#c2Steam,#c2GoCat");if(!t)return;
     haptic();
-    if(t.hasAttribute("data-c2cat")){C2.cat=t.getAttribute("data-c2cat");C2.w="";c2Chips();c2Load(true);}
+    if(t.hasAttribute("data-c2fav")){e.stopPropagation();c2ToggleFav(t.getAttribute("data-c2fav"));}
+    else if(t.hasAttribute("data-c2cat")){C2.cat=t.getAttribute("data-c2cat");C2.w="";c2Chips();c2Load(true);}
     else if(t.hasAttribute("data-c2w")){var w=t.getAttribute("data-c2w");C2.w=C2.w===w?"":w;c2Load(true);}
-    else if(t.hasAttribute("data-c2sort")){C2.sort=t.getAttribute("data-c2sort");c2Load(true);}
     else if(t.hasAttribute("data-c2b"))c2OpenItem(t.getAttribute("data-c2b"));
     else if(t.hasAttribute("data-c2o")){var o=C2.items[Number(t.getAttribute("data-c2o"))];if(o)c2Confirm(o,null);}
-    else if(t.hasAttribute("data-c2rm")){var k=t.getAttribute("data-c2rm");if(k==="price"){C2.f.pmin=0;C2.f.pmax=0;}else if(k==="w")C2.w="";else C2.f[k]=k==="st"?false:"";c2Load(true);}
+    else if(t.hasAttribute("data-c2rm")){var k=t.getAttribute("data-c2rm").split(":"),f=C2.f;
+      if(k[0]==="price"){f.pmin=0;f.pmax=0;}else if(k[0]==="w")C2.w="";else if(k[0]==="fav"||k[0]==="star")f[k[0]]=false;
+      else if(f[k[0]]){var i=f[k[0]].indexOf(k[1]);if(i!==-1)f[k[0]].splice(i,1);}
+      c2Load(true);}
     else if(t.id==="c2More"){if(C2.cat!=="new")C2.page++;c2Load(false);}
-    else if(t.id==="c2Trade")c2TradeSheet(null);
+    else if(t.id==="c2Trade"||t.id==="c2Trade2")c2TradeSheet(null);
     else if(t.id==="c2Retry")c2Load(true);
     else if(t.id==="c2Filt")c2FilterSheet();
     else if(t.id==="c2Help")c2HelpSheet();
     else if(t.id==="c2Bal"){closeCs2();go("pay");}
+    else if(t.id==="c2GoCat"){var tb=document.getElementById("c2Tool");if(tb)el.scrollTo({top:tb.offsetTop-70,behavior:"smooth"});}
     else if(t.id==="c2Steam"){closeCs2();S.screen="home";S.steamPage=true;STEAM=null;render();window.scrollTo(0,0);}
   });
   c2Chips();c2Foot();
-  api("/api/cs2").then(function(r){C2.info=r;c2Foot();if(!r.enabled)c2Paint();}).catch(function(){});
+  api("/api/cs2").then(function(r){C2.info=r;C2.favs=Array.isArray(r.favs)?r.favs:[];c2Foot();c2Paint();}).catch(function(){});
   C2.recent=null;api("/api/cs2/recent").then(function(r){C2.recent=r.items||[];c2Paint();}).catch(function(){});
   c2Load(true);
 }
@@ -4629,22 +4720,33 @@ function c2Chips(){
   var b=document.getElementById("c2Chips");if(!b)return;
   b.innerHTML=C2_CATS.map(function(c){return '<button class="c2-chip'+(C2.cat===c[0]?" on":"")+'" data-c2cat="'+c[0]+'">'+(c[0]==="new"?"🔥 ":"")+esc(c[1])+'</button>';}).join("");
 }
+function c2ToggleFav(b){
+  var i=C2.favs.indexOf(b),on=i===-1;
+  if(on)C2.favs.unshift(b);else C2.favs.splice(i,1);
+  document.querySelectorAll('[data-c2fav]').forEach(function(x){if(x.getAttribute("data-c2fav")===b)x.classList.toggle("on",on);});
+  if(on)toast("❤ Sevimlilarga qo'shildi");
+  api("/api/cs2/fav","POST",{b:b,on:on}).then(function(r){if(Array.isArray(r.favs))C2.favs=r.favs;if(C2.f.fav&&!on)c2Load(true);})
+    .catch(function(){var j=C2.favs.indexOf(b);if(on&&j!==-1)C2.favs.splice(j,1);else if(!on&&j===-1)C2.favs.push(b);
+      document.querySelectorAll('[data-c2fav]').forEach(function(x){if(x.getAttribute("data-c2fav")===b)x.classList.toggle("on",!on);});toast(t("srv_off"),true);});
+}
 function c2Foot(){
-  var f=document.getElementById("c2Foot"),bal=document.getElementById("c2Bal");if(!f)return;
+  var f=document.getElementById("c2Foot"),bal=document.getElementById("c2Bal"),tu=document.getElementById("c2Trade");if(!f)return;
   // Sarlavhada joy kam — katta summa qisqa yoziladi (2,9 mln)
   var sh=function(n){n=Number(n)||0;return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace(".",",")+" mln":n>=1e5?Math.round(n/1000)+" ming":money(n);};
   if(bal)bal.innerHTML=esc(ME.balance!=null?sh(ME.balance):"—")+'<span class="pl">'+C2_ICO.plus+'</span>';
-  var tu=C2.info&&C2.info.tradeUrl;
-  f.innerHTML=tu?'<div class="t"><b>🔗 Trade havola saqlangan</b>Skinlar shu Steam hisobga keladi</div><button class="c2-btn ghost" id="c2Trade">O\'zgartirish</button>'
-    :'<div class="t"><b>Steam trade havolangiz</b>Xarid uchun bir marta kiriting</div><button class="c2-btn" id="c2Trade">Kiritish</button>';
+  var has=!!(C2.info&&C2.info.tradeUrl);
+  if(tu){tu.className="c2-tu"+(has?" ok":"");tu.innerHTML=C2_ICO.link+(has?' Trade URL ✓':' Trade URL kiritilmagan');}
+  // Havola sarlavha blokida, asboblar panelida va xarid oynasida so'raladi — pastki panel kerak emas
+  f.hidden=true;
 }
 function c2Load(reset){
-  if(reset){C2.page=0;C2.items=[];C2.next="";C2.more=false;var el=document.getElementById("c2");if(el)el.scrollTop=0;}
+  if(reset){C2.page=0;C2.items=[];C2.next="";C2.more=false;}
   var my=++C2.seq;C2.loading=true;C2.err="";c2Paint();
   var e=encodeURIComponent,f=C2.f;
   var url=C2.cat==="new"?"/api/cs2/market?sort=newest"+(C2.next?"&cursor="+e(C2.next):"")
     :"/api/cs2/catalog?cat="+e(C2.cat)+"&q="+e(C2.q)+"&sort="+e(C2.sort)+"&page="+C2.page+(C2.w?"&w="+e(C2.w):"")
-      +(f.wear?"&wear="+f.wear:"")+(f.st?"&st=1":"")+(f.pmin?"&pmin="+f.pmin:"")+(f.pmax?"&pmax="+f.pmax:"");
+      +(f.wear.length?"&wear="+f.wear.join(","):"")+(f.types.length?"&type="+f.types.join(","):"")+(f.rar.length?"&rar="+f.rar.join(","):"")
+      +(f.star?"&star=1":"")+(f.fav?"&fav=1":"")+(f.pmin?"&pmin="+f.pmin:"")+(f.pmax?"&pmax="+f.pmax:"");
   api(url).then(function(r){
     if(my!==C2.seq)return;
     C2.loading=false;C2.items=C2.items.concat(r.items||[]);
@@ -4656,86 +4758,121 @@ function c2Load(reset){
     C2.loading=false;C2.err=(err&&err.resp&&(err.resp.message||(err.resp.error==="off"?"CS2 do'koni hozircha yopiq":"")))||t("srv_off");c2Paint();
   });
 }
+function c2HeroHTML(){
+  var I=C2.info||{},has=!!I.tradeUrl,n=I.inStock||C2.total||0,d=Number(I.delivered)||0;
+  var fmt=function(x){return Number(x).toLocaleString("ru-RU").replace(/,/g," ");};
+  return '<div class="c2-hero2"><span class="c2-pill"><i></i>Steam\'ga ~1 daqiqada</span>'
+    +'<h1>CS2 skinlar<br><em>so\'mda</em></h1>'
+    +'<p>Skin to\'g\'ridan-to\'g\'ri Steam hisobingizga keladi. Yetkazilmasa — pul balansga avtomatik qaytadi.</p>'
+    +'<div class="c2-cta">'+(has?'<button class="c2-btn" id="c2GoCat">Skinlarni ko\'rish ↓</button>':'<button class="c2-btn" id="c2Trade2">'+C2_ICO.link+' Trade havolani kiritish</button><button class="c2-btn ghost" id="c2GoCat">Skinlar ↓</button>')+'</div>'
+    +'<div class="c2-stats"><div><b>'+(n?fmt(n):"—")+'</b><span>skin sotuvda</span></div><div><b>~1 daq</b><span>yetkazish</span></div>'
+    +(d>=20?'<div><b>'+fmt(d)+'</b><span>yetkazildi</span></div>':'<div><b>100%</b><span>pul kafolati</span></div>')+'</div>'
+    +'<div class="c2-trust">'+'<span>'+C2_ICO.shield+' Xavfsiz: parol so\'ralmaydi</span><span>'+C2_ICO.card+' Humo · Uzcard · so\'mda</span><span>'+C2_ICO.bolt+' Avtomatik yetkazish</span></div></div>';
+}
 function c2RecentHTML(){
   var L=C2.recent||[];
-  if(!L.length||C2.cat||C2.q||C2.w||c2FiltN())return "";
+  if(!L.length||!c2Home()||C2.cat==="new")return "";
   var ago=function(m){return m<1?"hozirgina":m<60?m+" daq. oldin":m<1440?Math.round(m/60)+" soat oldin":Math.round(m/1440)+" kun oldin";};
-  return '<div class="c2-h2"><span class="dot"></span>Yaqinda sotib olindi</div><div class="c2-rec">'+L.map(function(x){var rc=c2rc(x);
+  var d=Number(C2.info&&C2.info.delivered)||0;
+  return '<div class="c2-h2"><span class="dot"></span>Yaqinda sotib olindi'+(d>=20?'<em>Jami: '+d.toLocaleString("ru-RU").replace(/,/g," ")+'</em>':'')+'</div><div class="c2-rec">'+L.map(function(x){var rc=c2rc(x);
     return '<button class="c2-rc" data-c2b="'+esc(x.b)+'"><div class="im" style="background:radial-gradient(ellipse at 50% 60%,'+rc+'38,transparent 70%)">'+(x.img?'<img loading="lazy" src="'+esc(x.img)+'" alt="">':'')+'</div>'
       +'<div class="nm">'+esc(x.s)+'</div><div class="mt"><span style="color:'+rc+'">'+esc(x.wear||x.w||"")+'</span> · '+esc(ago(x.ago))+'</div></button>';}).join("")+'</div>';
 }
 function c2Paint(){
-  var box=document.getElementById("c2List"),cnt=document.getElementById("c2Cnt"),so=document.getElementById("c2Sort");if(!box)return;
-  var rec=document.getElementById("c2Rec"),wp=document.getElementById("c2Wpn"),act=document.getElementById("c2Act"),fb=document.getElementById("c2Filt"),fn=document.getElementById("c2FiltN");
+  var box=document.getElementById("c2List"),cnt=document.getElementById("c2Cnt");if(!box)return;
+  var rec=document.getElementById("c2Rec"),wp=document.getElementById("c2Wpn"),act=document.getElementById("c2Act"),fn=document.getElementById("c2FiltN"),
+    hero=document.getElementById("c2HeroBox"),tool=document.getElementById("c2Tool"),chips=document.getElementById("c2Chips"),sb=document.getElementById("c2SortBox");
   if(C2.info&&C2.info.enabled===false){
     box.innerHTML='<div class="c2-empty"><b>🎯 CS2 do\'koni tez orada ochiladi</b>Skinlar to\'g\'ridan-to\'g\'ri Steam hisobingizga yetkaziladi.</div>';
-    if(cnt)cnt.textContent="";if(so)so.innerHTML="";if(rec)rec.innerHTML="";if(wp)wp.hidden=true;if(act)act.hidden=true;if(fb)fb.hidden=true;return;
+    [cnt,rec,hero].forEach(function(x){if(x)x.innerHTML="";});[wp,act,tool,chips].forEach(function(x){if(x)x.hidden=true;});return;
   }
+  if(tool)tool.hidden=false;if(chips)chips.hidden=false;
   var isNew=C2.cat==="new",nf=c2FiltN();
-  if(fb)fb.hidden=isNew||!C2.priced;
+  if(hero)hero.innerHTML=c2Home()&&!isNew?c2HeroHTML():"";
   if(fn){fn.hidden=!nf;fn.textContent=nf;}
+  if(sb)sb.hidden=isNew||!C2.priced;
   // Toifa ichidagi qurollar
   if(wp){var W=!isNew&&C2.cat&&C2.weapons&&C2.weapons.length>1?C2.weapons:[];wp.hidden=!W.length;
     wp.innerHTML=W.map(function(x){return '<button class="c2-chip'+(C2.w===x.w?" on":"")+'" data-c2w="'+esc(x.w)+'">'+esc(x.w)+'</button>';}).join("");}
   // Faol filtrlar (bosilsa olib tashlanadi)
-  if(act){var A=[];
-    if(!isNew&&C2.f.pmin||!isNew&&C2.f.pmax)A.push(['price',(C2.f.pmin?money(C2.f.pmin):"0")+" – "+(C2.f.pmax?money(C2.f.pmax):"∞")]);
-    if(!isNew&&C2.f.wear)A.push(['wear',C2_WEAR[C2.f.wear]]);
-    if(!isNew&&C2.f.st)A.push(['st',"StatTrak™"]);
-    act.hidden=!A.length;act.innerHTML=A.map(function(a){return '<button data-c2rm="'+a[0]+'">'+esc(a[1])+' ✕</button>';}).join("");}
+  if(act){var A=[],f=C2.f;
+    if(!isNew){
+      if(f.fav)A.push(["fav","❤ Sevimlilar"]);
+      if(f.pmin||f.pmax)A.push(["price",(f.pmin?money(f.pmin):"0")+" – "+(f.pmax?money(f.pmax):"∞")]);
+      f.wear.forEach(function(w){A.push(["wear:"+w,C2_WEAR[w]]);});
+      f.rar.forEach(function(r){var x=C2_RAR.filter(function(y){return y[0]===r;})[0];if(x)A.push(["rar:"+r,x[1]]);});
+      f.types.forEach(function(ty){var x=C2_TYPES.filter(function(y){return y[0]===ty;})[0];if(x)A.push(["types:"+ty,x[1]]);});
+      if(f.star)A.push(["star","★ Pichoq va qo'lqoplar"]);
+    }
+    act.hidden=!A.length;act.innerHTML=A.map(function(a){return '<button data-c2rm="'+esc(a[0])+'">'+esc(a[1])+' ✕</button>';}).join("");}
   if(rec)rec.innerHTML=isNew?"":c2RecentHTML();
   if(cnt)cnt.textContent=isNew?"Jonli bozor · yangi qo'shilganlar":(C2.loading&&!C2.items.length?"":C2.total+" ta skin");
-  if(so)so.innerHTML=!isNew&&C2.priced?[["","Ommabop"],["cheap","Arzon"],["expensive","Qimmat"]].map(function(s){return '<button data-c2sort="'+s[0]+'" class="'+(C2.sort===s[0]?"on":"")+'">'+s[1]+'</button>';}).join(""):"";
   var html="";
   if(C2.items.length)html='<div class="c2-grid">'+C2.items.map(function(x,i){return isNew?c2OfferCard(x,i):c2Card(x);}).join("")+'</div>';
   if(C2.loading)html+='<div class="c2-grid" style="margin-top:8px">'+'<div class="c2-sk"></div>'.repeat(C2.items.length?2:6)+'</div>';
   else if(C2.err&&!C2.items.length)html='<div class="c2-empty"><b>Bozor javob bermadi</b>'+esc(C2.err)+'<br><br><button class="c2-btn ghost" id="c2Retry">Qayta urinish</button></div>';
-  else if(!C2.items.length)html='<div class="c2-empty"><b>Hech narsa topilmadi</b>'+(nf||C2.w?'Filtrlarni yumshatib ko\'ring.':'Boshqa nom yoki toifani sinab ko\'ring.')+'</div>';
+  else if(!C2.items.length)html='<div class="c2-empty"><b>'+(C2.f.fav&&!C2.favs.length?"Sevimlilar hali bo'sh":"Hech narsa topilmadi")+'</b>'
+    +(C2.f.fav&&!C2.favs.length?'Skin kartochkasidagi ❤ belgisini bosing — shu yerda saqlanadi.':nf||C2.w?'Filtrlarni yumshatib ko\'ring.':'Boshqa nom yoki toifani sinab ko\'ring.')+'</div>';
   else if(C2.more)html+='<button class="c2-more" id="c2More">Ko\'proq ko\'rsatish</button>';
   else html+='<button class="c2-x" id="c2Steam"><span class="ic">'+STEAM_SVG+'</span><span class="tx"><b>Steam hamyonni ham to\'ldiring</b>Istalgan summa, so\'mda</span><span class="ar">→</span></button>';
   box.innerHTML=html;
 }
 function c2FilterSheet(){
-  var f={wear:C2.f.wear,st:C2.f.st,pmin:C2.f.pmin,pmax:C2.f.pmax};
+  var f=JSON.parse(JSON.stringify(C2.f)),priced=C2.priced;
   var Q=[[0,50000,"50 mingacha"],[50000,200000,"50–200 ming"],[200000,1000000,"200 ming – 1 mln"],[1000000,5000000,"1–5 mln"],[5000000,0,"5 mln dan"]];
-  var sh=c2Sheet('<div class="c2-ttl">Filtrlar</div>'
-    +'<div class="c2-sect">Narx, so\'m</div><div class="c2-pr"><input class="c2-in" id="c2Pmin" type="number" inputmode="numeric" placeholder="dan"><span>—</span><input class="c2-in" id="c2Pmax" type="number" inputmode="numeric" placeholder="gacha"></div>'
-    +'<div class="c2-chips sub flat" id="c2Pq">'+Q.map(function(q,i){return '<button class="c2-chip" data-pq="'+i+'">'+q[2]+'</button>';}).join("")+'</div>'
-    +'<div class="c2-sect">Holati</div><div class="c2-chips sub flat" id="c2Wr">'+[["","Hammasi"]].concat(Object.keys(C2_WEAR).map(function(k){return [k,C2_WEAR[k]];})).map(function(w){return '<button class="c2-chip" data-wr="'+w[0]+'">'+w[1]+'</button>';}).join("")+'</div>'
-    +'<div class="c2-sect">Tur</div><div class="c2-chips sub flat"><button class="c2-chip" id="c2St">StatTrak™ — o\'ldirishlar hisoblagichi bilan</button></div>'
-    +'<div class="c2-fact"><button class="c2-btn ghost" id="c2Clr">Tozalash</button><button class="c2-btn" id="c2Apply">Ko\'rsatish</button></div><div style="height:10px"></div>',null);
+  var ck=function(attr,val,label,col){return '<button class="c2-ck" data-'+attr+'="'+val+'"><i class="bx"></i>'+(col?'<i class="dt" style="background:'+col+'"></i>':'')+'<span>'+label+'</span></button>';};
+  var sec=function(id,title,body){return '<div class="c2-fs"><button class="c2-fh" data-sec="'+id+'">'+title+'<span>–</span></button><div class="c2-fb" id="c2S_'+id+'">'+body+'</div></div>';};
+  var html='<div class="c2-ttl">Filtrlar</div>'
+    +'<div class="c2-fs"><button class="c2-ck sw" id="c2Fav"><span>❤ Faqat sevimlilar</span><i class="tg"></i></button></div>'
+    +(priced?sec("p","Narx, so'm",'<div class="c2-pr"><input class="c2-in" id="c2Pmin" type="number" inputmode="numeric" placeholder="dan"><span>—</span><input class="c2-in" id="c2Pmax" type="number" inputmode="numeric" placeholder="gacha"></div>'
+      +'<div class="c2-chips sub flat">'+Q.map(function(q,i){return '<button class="c2-chip" data-pq="'+i+'">'+q[2]+'</button>';}).join("")+'</div>'):'')
+    +(priced?sec("w","Holati",Object.keys(C2_WEAR).map(function(k){return ck("wr",k,C2_WEAR[k],C2_WCOL[k]);}).join("")):'')
+    +sec("r","Noyoblik",C2_RAR.map(function(r){return ck("rr",r[0],r[1],r[2]);}).join(""))
+    +sec("o","Boshqa",(priced?C2_TYPES.map(function(x){return ck("ty",x[0],x[1],"");}).join(""):'')+ck("st2","1","★ Pichoq va qo'lqoplar",""))
+    +'<div class="c2-fact"><button class="c2-btn ghost" id="c2Clr">Tozalash</button><button class="c2-btn" id="c2Apply">Ko\'rsatish</button></div><div style="height:10px"></div>';
+  var sh=c2Sheet(html,null);
   var pmin=sh.querySelector("#c2Pmin"),pmax=sh.querySelector("#c2Pmax");
+  var has=function(a,v){return a.indexOf(v)!==-1;},tog=function(a,v){var i=a.indexOf(v);if(i===-1)a.push(v);else a.splice(i,1);};
   var paint=function(){
-    pmin.value=f.pmin||"";pmax.value=f.pmax||"";
+    if(pmin&&document.activeElement!==pmin)pmin.value=f.pmin||"";
+    if(pmax&&document.activeElement!==pmax)pmax.value=f.pmax||"";
+    sh.querySelector("#c2Fav").classList.toggle("on",!!f.fav);
     sh.querySelectorAll("[data-pq]").forEach(function(b){var q=Q[Number(b.getAttribute("data-pq"))];b.classList.toggle("on",f.pmin===q[0]&&f.pmax===q[1]);});
-    sh.querySelectorAll("[data-wr]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-wr")===f.wear);});
-    sh.querySelector("#c2St").classList.toggle("on",!!f.st);
+    sh.querySelectorAll("[data-wr]").forEach(function(b){b.classList.toggle("on",has(f.wear,b.getAttribute("data-wr")));});
+    sh.querySelectorAll("[data-rr]").forEach(function(b){b.classList.toggle("on",has(f.rar,b.getAttribute("data-rr")));});
+    sh.querySelectorAll("[data-ty]").forEach(function(b){b.classList.toggle("on",has(f.types,b.getAttribute("data-ty")));});
+    sh.querySelectorAll("[data-st2]").forEach(function(b){b.classList.toggle("on",!!f.star);});
   };
   var num=function(v){v=Math.floor(Number(v)||0);return v>0?v:0;};
-  pmin.addEventListener("input",function(){f.pmin=num(this.value);paint();pmin.focus();});
-  pmax.addEventListener("input",function(){f.pmax=num(this.value);paint();pmax.focus();});
-  sh.querySelectorAll("[data-pq]").forEach(function(b){b.addEventListener("click",function(){var q=Q[Number(this.getAttribute("data-pq"))];haptic();
-    if(f.pmin===q[0]&&f.pmax===q[1]){f.pmin=0;f.pmax=0;}else{f.pmin=q[0];f.pmax=q[1];}paint();});});
-  sh.querySelectorAll("[data-wr]").forEach(function(b){b.addEventListener("click",function(){haptic();f.wear=this.getAttribute("data-wr");paint();});});
-  sh.querySelector("#c2St").addEventListener("click",function(){haptic();f.st=!f.st;paint();});
-  sh.querySelector("#c2Clr").addEventListener("click",function(){haptic();f={wear:"",st:false,pmin:0,pmax:0};paint();});
-  sh.querySelector("#c2Apply").addEventListener("click",function(){
-    if(f.pmin&&f.pmax&&f.pmin>f.pmax){var x=f.pmin;f.pmin=f.pmax;f.pmax=x;}
-    haptic();C2.f=f;closeSheet();c2Load(true);
+  if(pmin)pmin.addEventListener("input",function(){f.pmin=num(this.value);paint();});
+  if(pmax)pmax.addEventListener("input",function(){f.pmax=num(this.value);paint();});
+  sh.addEventListener("click",function(e){
+    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],[data-sec],#c2Fav,#c2Clr,#c2Apply");if(!b)return;haptic();
+    if(b.hasAttribute("data-pq")){var q=Q[Number(b.getAttribute("data-pq"))];if(f.pmin===q[0]&&f.pmax===q[1]){f.pmin=0;f.pmax=0;}else{f.pmin=q[0];f.pmax=q[1];}}
+    else if(b.hasAttribute("data-wr"))tog(f.wear,b.getAttribute("data-wr"));
+    else if(b.hasAttribute("data-rr"))tog(f.rar,b.getAttribute("data-rr"));
+    else if(b.hasAttribute("data-ty"))tog(f.types,b.getAttribute("data-ty"));
+    else if(b.hasAttribute("data-st2"))f.star=!f.star;
+    else if(b.hasAttribute("data-sec")){var bd=sh.querySelector("#c2S_"+b.getAttribute("data-sec"));bd.hidden=!bd.hidden;b.querySelector("span").textContent=bd.hidden?"+":"–";return;}
+    else if(b.id==="c2Fav")f.fav=!f.fav;
+    else if(b.id==="c2Clr")f=c2F0();
+    else if(b.id==="c2Apply"){if(f.pmin&&f.pmax&&f.pmin>f.pmax){var x=f.pmin;f.pmin=f.pmax;f.pmax=x;}C2.f=f;closeSheet();c2Load(true);return;}
+    paint();
   });
   paint();
 }
 function c2HelpSheet(){
-  var Q=[["Trade havolani qayerdan olaman?","Steam ilovasi yoki saytida: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?». «Savdo havolasi» ostidagi havolani nusxalab, do'kondagi «Kiritish» tugmasiga qo'ying. Bu bir marta qilinadi."],
+  var Q=[["Trade havolani qayerdan olaman?","Steam ilovasi yoki saytida: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?». «Savdo havolasi» ostidagi havolani nusxalab, do'kondagi «Trade URL» tugmasiga qo'ying. Bu bir marta qilinadi."],
     ["Skin qancha vaqtda keladi?","Odatda 1–5 daqiqada Steam'ga savdo taklifi bo'lib keladi. Steam ilovasida «Savdo takliflari»ni ochib qabul qiling."],
     ["Steam Guard nega kerak?","Steam mobil autentifikatori 7 kundan kam yoqilgan bo'lsa, Steam savdoni bir necha kunga ushlab turadi. Shuning uchun uni oldindan yoqib qo'ying."],
     ["Skin kelmasa yoki taklifni qabul qilmasam?","Xarid amalga oshmasa yoki savdo bekor bo'lsa, pul balansingizga avtomatik qaytadi. Holati «Buyurtmalar» bo'limida ko'rinadi."],
+    ["Steam akkauntim bloklanmaydimi?","Yo'q. Biz parolingizni so'ramaymiz va akkauntingizga kirmaymiz — skin oddiy Steam savdo taklifi orqali keladi. Faqat trade havolangiz kerak."],
     ["Float va holat (FN, MW…) nima?","Float — skinning qanchalik eskirganligi (0 — yangi, 1 — juda eskirgan). FN — Factory New, MW — Minimal Wear, FT — Field-Tested, WW — Well-Worn, BS — Battle-Scarred. Float qancha kichik bo'lsa, skin shuncha toza ko'rinadi."],
     ["StatTrak™ nima?","Shu qurol bilan qilgan o'ldirishlaringizni sanaydigan hisoblagichli variant. Odatda oddiysidan qimmatroq."]];
   c2Sheet('<div class="c2-ttl">Qanday ishlaydi?</div>'
     +'<div class="c2-steps"><div><b>1</b><span>Steam trade havolangizni bir marta kiriting</span></div><div><b>2</b><span>Skinni tanlang va balansdan to\'lang</span></div><div><b>3</b><span>Steam\'da kelgan taklifni qabul qiling</span></div></div>'
     +'<div class="c2-sect">Ko\'p so\'raladigan savollar</div>'
-    +Q.map(function(q){return '<details class="c2-faq"><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>';}).join("")
+    +Q.map(function(q,i){return '<details class="c2-faq"'+(i?'':' open')+'><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>';}).join("")
     +'<div style="height:12px"></div><button class="c2-btn wide ghost" id="c2HelpTu">🔗 Trade havolani kiritish</button><div style="height:10px"></div>',null)
     .querySelector("#c2HelpTu").addEventListener("click",function(){c2TradeSheet(null);});
 }
@@ -4751,9 +4888,13 @@ function c2OpenItem(b){
     Object.keys(C2_WEAR).forEach(function(k){if(offs.some(function(o){return o.wear===k;}))tabs.push([k,k]);});
     if(offs.some(function(o){return o.st;})&&offs.some(function(o){return !o.st;}))tabs.push(["st","ST™"]);
     var steamUrl="https://steamcommunity.com/market/search?appid=730&q="+encodeURIComponent(it.b||b);
-    box.innerHTML=c2Hero(it)
-      +'<div class="c2-w" style="font-size:11px">'+esc(it.w||"")+'</div><div class="c2-ttl">'+esc(it.s||it.b)+'</div>'
+    var cheap=offs.slice().sort(function(a,b){return a.price-b.price;})[0];
+    box.innerHTML='<div class="c2-hwrap">'+c2Hero(it)+(offs.length?'<span class="c2-avl">🔓 Darhol yuboriladi</span>':'')+'</div>'
+      +'<div class="c2-th"><div><div class="c2-w" style="font-size:11px">'+esc(it.w||"")+'</div><div class="c2-ttl">'+esc(it.s||it.b)+'</div></div>'
+      +'<span class="c2-fav big'+(C2.favs.indexOf(it.b||b)!==-1?' on':'')+'" data-c2fav="'+esc(it.b||b)+'" role="button" aria-label="Sevimli">'+C2_ICO.heart+'</span></div>'
       +'<div class="c2-sub"><span class="rar" style="color:'+rc+'">'+esc(it.rn||"")+'</span>'+(it.st?'<span class="c2-tag st">StatTrak™ bor</span>':'')+(it.sv?'<span class="c2-tag sv">Souvenir</span>':'')+'</div>'
+      +'<button class="c2-copy" id="c2Copy">'+esc(it.b||b)+' <span>⧉</span></button>'
+      +(cheap?'<div class="c2-pbig"><b>'+esc(money(cheap.price))+'</b><span>dan</span></div><button class="c2-btn wide c2-quick" id="c2Quick">⚡ Eng arzonini olish · '+esc(money(cheap.price))+'</button>':'')
       +'<div class="c2-meta">'+(it.mn!=null&&it.mx!=null?'<div><span>Float oralig\'i</span><b>'+Number(it.mn).toFixed(2)+' – '+Number(it.mx).toFixed(2)+'</b></div>':'')
       +'<div><span>Yetkazish</span><b>~1–5 daqiqa</b></div><a href="#" id="c2SteamMk">Steam bozorida solishtirish ↗</a></div>'
       +'<div class="c2-sect">Sotuvdagi takliflar'+(offs.length?' · '+offs.length:'')+'</div>'
@@ -4772,6 +4913,10 @@ function c2OpenItem(b){
     };
     box.querySelectorAll("[data-tab]").forEach(function(t){t.addEventListener("click",function(){haptic();sel=this.getAttribute("data-tab");paint();});});
     box.querySelector("#c2SteamMk").addEventListener("click",function(e){e.preventDefault();c2Ext(steamUrl);});
+    var qb=box.querySelector("#c2Quick");if(qb)qb.addEventListener("click",function(){haptic();c2Confirm(cheap,function(){c2OpenItem(b);});});
+    box.querySelector("#c2Copy").addEventListener("click",function(){var v=it.b||b;haptic();
+      try{navigator.clipboard.writeText(v).then(function(){toast("Nusxalandi");},function(){toast(v);});}catch(e){toast(v);}});
+    var hf=box.querySelector("[data-c2fav]");if(hf)hf.addEventListener("click",function(){haptic();c2ToggleFav(this.getAttribute("data-c2fav"));});
     paint();
   }).catch(function(e){var box=sh.querySelector("#c2It");if(box)box.innerHTML='<div class="c2-empty"><b>Bozor javob bermadi</b>'+esc((e&&e.resp&&e.resp.message)||t("srv_off"))+'</div>';});
 }
