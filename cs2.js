@@ -81,7 +81,7 @@ module.exports = function (ctx) {
   const pick = (o, keys) => { for (const k of keys) { const v = k.split(".").reduce((a, x) => a == null ? a : a[x], o); if (v !== undefined && v !== null && v !== "") return v; } return null; };
 
   /* ---------- katalog (ochiq CS2 bazasi) ---------- */
-  const CAT_FILE = path.join(ctx.DATA_DIR, "cs2-catalog.json");
+  const CAT_FILE = path.join(ctx.DATA_DIR, "cs2-catalog.json"), CAT_V = 2;
   let CAT = [], BY_NAME = new Map(), GROUPS = [], G_BY = new Map(), CAT_TS = 0, catLoading = null;
   function catKey(x) {
     const c = (x.category && x.category.name) || "", w = (x.weapon && x.weapon.name) || "";
@@ -103,7 +103,7 @@ module.exports = function (ctx) {
       BY_NAME.set(e.n, e); CAT.push(e);
       const b = baseOf(e.n);
       let G = g.get(b);
-      if (!G) { G = { b, w: e.w, s: e.s, c: e.c, r: e.r, rn: e.rn, st: false, sv: false, i: e.i, v: [] }; g.set(b, G); }
+      if (!G) { G = { b, w: e.w, s: e.s, c: e.c, r: e.r, rn: e.rn, st: false, sv: false, i: e.i, v: [], mn: e.mn, mx: e.mx }; g.set(b, G); }
       if (e.st) G.st = true;
       if (e.sv) G.sv = true;
       G.v.push(e.n);
@@ -112,7 +112,11 @@ module.exports = function (ctx) {
     GROUPS = [...g.values()].sort((a, b) => (RARITY_RANK[a.r] ?? 9) - (RARITY_RANK[b.r] ?? 9) || a.b.localeCompare(b.b));
   }
   function loadCatalogFromDisk() {
-    try { const j = JSON.parse(fs.readFileSync(CAT_FILE, "utf8")); if (Array.isArray(j.items) && j.items.length) { index(j.items); CAT_TS = j.ts || 0; return true; } } catch (e) {}
+    try {
+      const j = JSON.parse(fs.readFileSync(CAT_FILE, "utf8"));
+      // CAT_V — saqlangan katalog tuzilishi; eskisi bo'lsa ham ishlatiladi, lekin darhol yangilanadi
+      if (Array.isArray(j.items) && j.items.length) { index(j.items); CAT_TS = j.v === CAT_V ? j.ts || 0 : 0; return true; }
+    } catch (e) {}
     return false;
   }
   function downloadCatalog() {
@@ -131,11 +135,12 @@ module.exports = function (ctx) {
               if (!n || typeof n !== "string" || !/^https:\/\/[a-z0-9.-]+\.steamstatic\.com\//.test(String(x.image || ""))) continue;
               items.push({ n, w: (x.weapon && x.weapon.name) || "", s: (x.pattern && x.pattern.name) || "", c: catKey(x),
                 r: (x.rarity && x.rarity.color) || "#b0c3d9", rn: (x.rarity && x.rarity.name) || "", wr: WEAR[x.wear && x.wear.name] || "",
-                st: !!x.stattrak, sv: !!x.souvenir, i: x.image });
+                st: !!x.stattrak, sv: !!x.souvenir, i: x.image,
+                mn: isFinite(x.min_float) ? Number(x.min_float) : null, mx: isFinite(x.max_float) ? Number(x.max_float) : null });
             }
             if (items.length < 1000) return resolve({ ok: false, error: "baza juda kichik (" + items.length + ")" });
             index(items); CAT_TS = Date.now();
-            fs.writeFile(CAT_FILE, JSON.stringify({ ts: CAT_TS, items }), () => {});
+            fs.writeFile(CAT_FILE, JSON.stringify({ v: CAT_V, ts: CAT_TS, items }), () => {});
             resolve({ ok: true, count: items.length });
           } catch (e) { resolve({ ok: false, error: e.message }); }
         });
@@ -184,9 +189,17 @@ module.exports = function (ctx) {
   setTimeout(loadPrices, 8000).unref();
   { const t = setInterval(loadPrices, 10 * 60e3); if (t.unref) t.unref(); }
   const pricesFresh = () => !!PRICES && Date.now() - PRICES_TS < 60 * 60e3;
-  function fromOf(G) {
+  // f — mijoz filtrlari: wear (FN..BS), st (faqat StatTrak™), umin/umax (so'mda narx oralig'i)
+  function fromOf(G, f) {
     const c = cfg(); let best = null, cnt = 0;
-    for (const n of G.v) { const p = PRICES.get(n); if (p && p.usd >= c.minUsd && p.usd <= c.maxUsd) { cnt += p.cnt; if (best === null || p.usd < best) best = p.usd; } }
+    for (const n of G.v) {
+      if (f && f.wear && (BY_NAME.get(n) || {}).wr !== f.wear) continue;
+      if (f && f.st && n.indexOf("StatTrak™") === -1) continue;
+      const p = PRICES.get(n);
+      if (!p || p.usd < c.minUsd || p.usd > c.maxUsd) continue;
+      if (f && (f.umin || f.umax)) { const so = uzs(p.usd); if ((f.umin && so < f.umin) || (f.umax && so > f.umax)) continue; }
+      cnt += p.cnt; if (best === null || p.usd < best) best = p.usd;
+    }
     return { usd: best, cnt };
   }
 
@@ -262,6 +275,7 @@ module.exports = function (ctx) {
   function markDone(o) {
     if (o.status !== "pending") return;
     o.status = "done"; o.doneTs = Date.now(); o.cs2.state = "done";
+    RECENT = null;
     o.delivered = "🎯 " + o.cs2.name + (o.cs2.float != null ? " (float " + o.cs2.float.toFixed(4) + ")" : "") + " — Steam hisobingizga tushdi.";
     ctx.save();
     try { ctx.creditReferralOnOrder(o); ctx.creditLoyaltyOnOrder(o); } catch (e) {}
@@ -389,6 +403,8 @@ module.exports = function (ctx) {
 
   /* ---------- HTTP ---------- */
   const catsPublic = () => CATS.map(([k, label]) => ({ k, label }));
+  const WEAR_KEYS = ["FN", "MW", "FT", "WW", "BS"];
+  let RECENT = null;
   function handle(req, res, url, m, q) {
     if (url === "/api/cs2" && m === "GET") {
       const u = ctx.auth(req);
@@ -413,25 +429,33 @@ module.exports = function (ctx) {
     // Katalog: toifa yoki qidiruv bo'yicha skinlar (har biriga "dan" narx — shu sahifa uchun)
     if (url === "/api/cs2/catalog" && m === "GET") {
       const cat = str(q.get("cat"), 10), text = str(q.get("q"), 60).toLowerCase(), page = Math.max(0, Math.min(500, Number(q.get("page")) || 0));
-      const sort = str(q.get("sort"), 10);
+      const sort = str(q.get("sort"), 10), wpn = str(q.get("w"), 40);
+      const flt = { wear: WEAR_KEYS.indexOf(q.get("wear")) !== -1 ? q.get("wear") : "", st: q.get("st") === "1",
+        umin: Math.max(0, Math.floor(Number(q.get("pmin")) || 0)), umax: Math.max(0, Math.floor(Number(q.get("pmax")) || 0)) };
       const words = text.split(/\s+/).filter(Boolean);
-      let all = GROUPS.filter(g => (!cat || g.c === cat) && (!words.length || words.every(w => g.b.toLowerCase().indexOf(w) !== -1)));
+      const inCat = GROUPS.filter(g => (!cat || g.c === cat) && (!words.length || words.every(w => g.b.toLowerCase().indexOf(w) !== -1)));
+      const all = wpn ? inCat.filter(g => g.w === wpn) : inCat;
       const PER = 20;
       const out = (g, f) => ({ b: g.b, w: g.w, s: g.s, img: g.i, rc: g.r, rn: g.rn, st: g.st, sv: g.sv, cat: g.c,
         from: f && f.usd ? uzs(f.usd) : null, cnt: f ? f.cnt : null });
+      // Toifa tanlanganda — undagi qurollar (ko'p skinlilari oldin), qurol bo'yicha tez tanlash uchun
+      const weaponsOf = list => { if (!cat) return undefined; const m = new Map(); for (const g of list) m.set(g.w, (m.get(g.w) || 0) + 1);
+        return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 30).map(([w, n]) => ({ w, n })); };
       if (ready() && pricesFresh()) {
-        // Narxlar ro'yxati bor: faqat sotuvdagilari, kerakli tartibda
-        let rows = all.map(g => ({ g, f: fromOf(g) })).filter(x => x.f.usd);
+        // Narxlar ro'yxati bor: faqat sotuvdagilari (filtrlarga mos variant bilan), kerakli tartibda
+        const priced = inCat.map(g => ({ g, f: fromOf(g, flt) })).filter(x => x.f.usd);
+        let rows = wpn ? priced.filter(x => x.g.w === wpn) : priced;
         if (sort === "cheap") rows.sort((a, b) => a.f.usd - b.f.usd);
         else if (sort === "expensive") rows.sort((a, b) => b.f.usd - a.f.usd);
         // Ommabop: bozorda ko'p sotiladigan (taklif soni) va noyobroq skinlar oldinda
         else rows.sort((a, b) => b.f.cnt * (7 - (RARITY_RANK[b.g.r] ?? 6)) - a.f.cnt * (7 - (RARITY_RANK[a.g.r] ?? 6)) || a.g.b.localeCompare(b.g.b));
         const slice = rows.slice(page * PER, page * PER + PER);
-        send(res, 200, { items: slice.map(x => out(x.g, x.f)), total: rows.length, page, more: rows.length > (page + 1) * PER, priced: true });
+        send(res, 200, { items: slice.map(x => out(x.g, x.f)), total: rows.length, page, more: rows.length > (page + 1) * PER, priced: true,
+          weapons: page ? undefined : weaponsOf(priced.map(x => x.g)) });
         return true;
       }
       const slice = all.slice(page * PER, page * PER + PER);
-      if (!ready() || !slice.length) { send(res, 200, { items: slice.map(g => out(g)), total: all.length, page, more: all.length > (page + 1) * PER }); return true; }
+      if (!ready() || !slice.length) { send(res, 200, { items: slice.map(g => out(g)), total: all.length, page, more: all.length > (page + 1) * PER, weapons: page ? undefined : weaponsOf(inCat) }); return true; }
       // Narxlar ro'yxati yo'q: shu sahifadagi skinlarning oddiy variantlari bo'yicha bitta qidiruv
       const names = slice.reduce((a, g) => a.concat(g.v.filter(n => !/StatTrak™|^Souvenir /.test(n))), []).slice(0, 100);
       const uc = ctx.auth(req);
@@ -440,7 +464,7 @@ module.exports = function (ctx) {
         .then(r => {
           const min = new Map();
           for (const o of r.items) { const b = baseOf(o.name); if (!min.has(b) || o.usd < min.get(b)) min.set(b, o.usd); }
-          send(res, 200, { items: slice.map(g => out(g, min.has(g.b) ? { usd: min.get(g.b), cnt: null } : null)), total: all.length, page, more: all.length > (page + 1) * PER });
+          send(res, 200, { items: slice.map(g => out(g, min.has(g.b) ? { usd: min.get(g.b), cnt: null } : null)), total: all.length, page, more: all.length > (page + 1) * PER, weapons: page ? undefined : weaponsOf(inCat) });
         });
       return true;
     }
@@ -451,11 +475,32 @@ module.exports = function (ctx) {
       const g = G_BY.get(b);
       const nm = g ? g.v : (BY_NAME.has(b) ? [b] : []);
       if (!nm.length) { send(res, 404, { error: "not_found" }); return true; }
-      const head = g ? { b: g.b, w: g.w, s: g.s, img: g.i, rc: g.r, rn: g.rn, st: g.st } : null;
+      const head = g ? { b: g.b, w: g.w, s: g.s, img: g.i, rc: g.r, rn: g.rn, st: g.st, sv: g.sv, cat: g.c, mn: g.mn, mx: g.mx } : null;
       if (!ready()) { send(res, 200, { item: head, offers: [] }); return true; }
       cached("i|" + nm.join("|"), 60000, () => search({ names: nm, sort_by: "lowest_price" }), u.id)
-        .then(r => send(res, 200, { item: head, offers: r.items.filter(o => OFFERS.has(o.id)).slice(0, 40).map(pubOffer) }))
+        .then(r => {
+          const per = new Map(), offers = [];
+          for (const o of r.items) { if (!OFFERS.has(o.id)) continue; const k = per.get(o.name) || 0; if (k >= 10) continue; per.set(o.name, k + 1); offers.push(o); }
+          send(res, 200, { item: head, offers: offers.slice(0, 80).map(pubOffer) });
+        })
         .catch(e => busy(res, e));
+      return true;
+    }
+    // Yaqinda yetkazilgan skinlar (ishonch uchun lenta): kim olgani ko'rsatilmaydi
+    if (url === "/api/cs2/recent" && m === "GET") {
+      if (!RECENT || Date.now() - RECENT.ts > 30000) {
+        const list = [];
+        const os = DBx().orders;
+        for (let i = os.length - 1; i >= 0 && list.length < 12 && i >= os.length - 5000; i--) {
+          const o = os[i];
+          if (!o.cs2 || o.status !== "done") continue;
+          const e = BY_NAME.get(o.cs2.name) || {};
+          list.push({ b: baseOf(o.cs2.name), w: e.w || "", s: e.s || o.cs2.name, img: o.cs2.img || e.i || "", rc: e.r || "#b0c3d9", wear: e.wr || "",
+            st: /StatTrak/.test(o.cs2.name), price: o.price, ago: Math.max(0, Math.round((Date.now() - (o.doneTs || o.ts)) / 60000)) });
+        }
+        RECENT = { ts: Date.now(), list };
+      }
+      send(res, 200, { items: RECENT.list });
       return true;
     }
     if (url === "/api/cs2/trade-url" && m === "POST") {

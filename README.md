@@ -338,6 +338,13 @@ Alohida to'liq ekranli do'kon — to'q, sokin "gaming" ko'rinishida (ilova mavzu
 
 **Mijoz uchun:**
 - Toifalar: Hammasi, 🔥 Yangi (jonli bozor), Pichoqlar, Qo'lqoplar, Avtomatlar, Snayperlar, To'pponchalar, PP, Og'ir. Qidiruv va «Ommabop / Arzon / Qimmat» tartibi bor.
+- Toifa ichida qurol turlari chiqadi (masalan Karambit, Butterfly…) — bosilsa faqat o'sha qurol skinlari qoladi.
+- Filtrlar: narx oralig'i (so'mda, tez tugmalar bilan), holati (FN/MW/FT/WW/BS) va faqat StatTrak™. Faol filtrlar ro'yxat tepasida ko'rinadi, bosilsa olib tashlanadi.
+- Tepada ishonch qatori bor: «~1 daqiqada Steam'ga», «Kelmasa — pul qaytadi», «So'mda to'lov». Balans tugmasi to'ldirish sahifasini ochadi.
+- «Yaqinda sotib olindi» lentasida oxirgi yetkazilgan skinlar ko'rinadi (kim olgani ko'rsatilmaydi).
+- «?» tugmasi «Qanday ishlaydi?» oynasini ochadi: 3 qadam va ko'p so'raladigan savollar (trade havola, Steam Guard, float, StatTrak™, pul qaytishi).
+- Skin oynasida float oralig'i, holat bo'yicha saralash (FN, MW…, ST™) va «Steam bozorida solishtirish» havolasi bor.
+- Ro'yxat oxirida Steam hamyonni to'ldirishga havola bor.
 - Har skin bitta kartochkada: barcha eskirganlik darajalari, StatTrak™ va Souvenir variantlari. Kartochkada noyoblik rangi va «…so'mdan» narx ko'rinadi.
 - Skin oynasida sotuvdagi takliflar chiqadi: FN/MW/FT/WW/BS, float shkalasi va narx bilan.
 - Steam trade havola bir marta saqlanadi. «Ochish →» tugmasi Steam'dagi havola sahifasini ochadi.
