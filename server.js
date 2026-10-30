@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-30.2";
+const BUILD = "2026-10-30.3";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -554,12 +554,29 @@ async function computeReadiness() {
   const revs = DB.reviews.filter(r => r.status === "approved").length;
   add("should", "reviews", "Kamida 5 ta tasdiqlangan sharh (ishonch uchun)", revs >= 5, revs + " ta sharh", "reviews");
   add("should", "support", "Mijozga yordam: AI yoki operator", !!((AI && AI.ready && AI.ready()) || SUPPORT_USERNAME), AI && AI.ready && AI.ready() ? "AI yoqilgan" : "Operator: @" + SUPPORT_USERNAME, "aibot");
+  // — Sinov xaridlari: sotuvdagi har mahsulot turi haqiqatan kamida 1 marta muvaffaqiyatli sotilganmi —
+  // (sozlama to'g'ri bo'lishi hali "ishlaydi" degani emas; 100% = har turi haqiqiy xarid bilan sinalgan).
+  const doneOrders = DB.orders.filter(o => o.status === "done");
+  const tested = (level, key, label, available, pred, fix) => {
+    if (!available) return;
+    const n = doneOrders.filter(pred).length;
+    add(level, "t_" + key, label, n > 0, n ? n + " ta muvaffaqiyatli xarid" : "Hali sotilmagan — o'zingiz eng arzonini sotib olib sinang", fix);
+  };
+  const special = o => o.game || o.steam || o.vnum || o.fragment || o.giftRecipient || String(o.itemId || "").indexOf("nk_") === 0;
+  tested("test", "games", "O'yin paketi sotib olindi va yetkazildi", gc.packages.length > 0, o => !!o.game, "games");
+  tested("test", "shop", "Do'kon mahsuloti sotib olindi", cat.some(x => x.active !== false && Number(x.price) > 0 && !x.fulfill), o => !special(o), "catalog");
+  tested("test", "stars", "Telegram Stars/Premium yuborildi", stars, o => !!o.fragment, "");
+  tested("test", "gift", "Telegram Gift yuborildi", gifts, o => !!o.giftRecipient, "");
+  tested("test", "smm", "Nakrutka buyurtmasi bajarildi", smmReady.length > 0, o => String(o.itemId || "").indexOf("nk_") === 0, "nakrutka");
+  tested("test", "steam", "Steam hamyon to'ldirildi", !!st.enabled && (st.mode === "manual" || lvx), o => !!o.steam, "steamvn");
+  tested("test", "vnum", "Virtual raqam berildi va kod keldi", !!(vn.enabled && vn.apiKey), o => !!o.vnum, "steamvn");
   // — Hisob —
-  const W = { must: 3, should: 1 };
+  const W = { must: 3, test: 2, should: 1 };
   let tot = 0, got = 0;
   for (const x of L) { tot += W[x.level]; if (x.ok === true) got += W[x.level]; }
   const blockers = L.filter(x => x.level === "must" && x.ok !== true).length;
-  return { percent: tot ? Math.round(got * 100 / tot) : 0, blockers, build: BUILD, items: L };
+  const untested = L.filter(x => x.level === "test" && x.ok !== true).length;
+  return { percent: tot ? Math.round(got * 100 / tot) : 0, blockers, untested, build: BUILD, items: L };
 }
 /* ---------- Moliya hisoboti (admin bot "📊 Moliya" va mini-ilova "Moliya") ----------
    Kirim — mijozlar to'ldirgan pul (qo'lda o'zgartirishlar alohida). Sotuv — bajarilgan

@@ -1066,7 +1066,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-30.1";
+var CLIENT_BUILD="2026-10-30.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5334,7 +5334,7 @@ function openAdminFinance(backFn){
 /* Admin panel tepasidagi karta: admin bot ulanmagan bo'lsa — token shu yerning o'zida kiritiladi. */
 /* ===== Ishga tushirishga tayyorlik: server nima sozlangan / nima yetishmayotganini tekshiradi ===== */
 var RD_LAST=null;
-function rdIcon(x){return x.ok===true?"✅":x.ok===null?"⏳":x.level==="must"?"❌":"⚠️";}
+function rdIcon(x){return x.ok===true?"✅":x.ok===null?"⏳":x.level==="must"?"❌":x.level==="test"?"🧪":"⚠️";}
 function paintReadinessCard(box){
   if(!box)return;
   api("/api/admin/readiness").then(function(r){
@@ -5342,7 +5342,9 @@ function paintReadinessCard(box){
     var pct=Math.max(0,Math.min(100,r.percent|0));
     box.innerHTML='<button class="rd-card" id="rdOpen"><div class="rd-top"><span class="rd-t">🚀 Ishga tushirishga tayyorlik</span><span class="rd-p">'+pct+'%</span></div>'
       +'<div class="rd-bar"><i style="width:'+pct+'%"></i></div>'
-      +'<div class="rd-s">'+(r.blockers?'❌ '+r.blockers+' ta majburiy band qoldi — bosing va tuzating':'✅ Majburiy bandlar tayyor'+(pct<100?' · tavsiyalar qoldi':''))+'</div></button>';
+      +'<div class="rd-s">'+(r.blockers?'❌ '+r.blockers+' ta majburiy band qoldi — bosing va tuzating'
+        :r.untested?'🧪 '+r.untested+' ta mahsulot turi hali haqiqiy xarid bilan sinalmagan'
+        :'✅ Majburiy bandlar tayyor'+(pct<100?' · tavsiyalar qoldi':''))+'</div></button>';
     box.querySelector("#rdOpen").addEventListener("click",function(){haptic();openAdminReadiness();});
   }).catch(function(){box.innerHTML="";});
 }
@@ -5355,12 +5357,13 @@ function openAdminReadiness(){
     }).join("");
   }
   function paint(r){
-    var must=r.items.filter(function(x){return x.level==="must";}),should=r.items.filter(function(x){return x.level!=="must";});
+    var must=r.items.filter(function(x){return x.level==="must";}),test=r.items.filter(function(x){return x.level==="test";}),should=r.items.filter(function(x){return x.level==="should";});
     var pct=Math.max(0,Math.min(100,r.percent|0));
     var html='<h2 id="rdH">🚀 Tayyorlik: '+pct+'%</h2>'
       +'<div class="rd-bar"><i style="width:'+pct+'%"></i></div>'
       +'<div class="paynote" style="margin:4px 0 10px">'+(r.blockers?'❌ belgili bandlar — ishga tushirishdan oldin albatta kerak. ⚠️ — tavsiya.':'Majburiy bandlar tayyor. ⚠️ belgililarni ham yoping — do\'kon to\'liq ishlaydi.')+' Server versiyasi: '+esc(r.build)+'</div>'
       +'<div class="sect" style="margin:8px 0 2px">Majburiy</div><div class="card" style="padding:4px 14px">'+rows(must)+'</div>'
+      +(test.length?'<div class="sect" style="margin:14px 0 2px">Sinov xaridlari (haqiqiy pul bilan)</div><div class="card" style="padding:4px 14px">'+rows(test)+'</div>':'')
       +'<div class="sect" style="margin:14px 0 2px">Tavsiya</div><div class="card" style="padding:4px 14px">'+rows(should)+'</div>'
       +'<button class="btn" id="rdReload" style="margin-top:14px">↻ Qayta tekshirish</button>';
     var sh=openSheet(html,openAdmin);
