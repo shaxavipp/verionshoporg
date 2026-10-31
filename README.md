@@ -334,7 +334,7 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 
 ## CS2 skinlar do'koni (cs2.js, lis-skins.com)
 
-Alohida to'liq ekranli do'kon — to'q, sokin "gaming" ko'rinishida (ilova mavzusidan qat'i nazar). Kirish: O'yinlar → «CS2 skinlar» kartasi. Kartochka faqat do'kon yoqilganda ko'rinadi.
+Alohida to'liq ekranli do'kon — to'q "gaming" ko'rinishida (ilova mavzusidan qat'i nazar): grafit fon, 32px to'r teksturasi, burchaklarda iliq nur va uchqunlar, diagonal teksturali kartochkalar va noyoblik rangidagi nur, Oxanium + Inter shriftlari. Dizayn maketi: Claude Design kanvasi «CS2 Skins do'koni — yangi dizayn». Kirish: O'yinlar → «CS2 skinlar» kartasi. Kartochka faqat do'kon yoqilganda ko'rinadi.
 
 **Mijoz uchun:**
 - Toifalar: Hammasi, 🔥 Yangi (jonli bozor), Pichoqlar, Qo'lqoplar, Avtomatlar, Snayperlar, To'pponchalar, PP, Og'ir. Qidiruv va «Ommabop / Arzon / Qimmat» tartibi bor.
