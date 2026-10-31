@@ -332,28 +332,32 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 
 **Xatolar:** sayt puli tugasa, mijozga «keyinroq urinib ko'ring» chiqadi, adminga esa darhol xabar boradi.
 
-## CS2 skinlar do'koni (cs2.js, lis-skins.com)
+## Skinlar do'koni — CS2, Dota 2, Rust (cs2.js, lis-skins.com)
 
-Alohida to'liq ekranli do'kon — to'q "gaming" ko'rinishida (ilova mavzusidan qat'i nazar): grafit fon, 32px to'r teksturasi, burchaklarda iliq nur va uchqunlar, diagonal teksturali kartochkalar va noyoblik rangidagi nur, Oxanium + Inter shriftlari. Dizayn maketi: Claude Design kanvasi «CS2 Skins do'koni — yangi dizayn». Kirish: O'yinlar → «CS2 skinlar» kartasi. Kartochka faqat do'kon yoqilganda ko'rinadi.
+Ilova ichidagi alohida do'kon. Mahsulotlar → O'yinlar bo'limidagi «CS2 skinlar», «Dota 2 skinlar» yoki «Rust skinlar» kartochkasi bosilganda do'kon shu kartochkadan butun ekranga kengayib ochiladi (logotip bilan qisqa animatsiya; «kamroq harakat» sozlamasida animatsiyasiz). Kartochka faqat o'sha o'yin yoqilganda ko'rinadi.
 
-**Mijoz uchun:**
-- Toifalar: Hammasi, 🔥 Yangi (jonli bozor), Pichoqlar, Qo'lqoplar, Avtomatlar, Snayperlar, To'pponchalar, PP, Og'ir. Qidiruv va «Ommabop / Arzon / Qimmat» tartibi bor.
-- Toifa ichida qurol turlari chiqadi (masalan Karambit, Butterfly…) — bosilsa faqat o'sha qurol skinlari qoladi.
-- Kirishda sarlavha bloki bor: «Steam'ga ~1 daqiqada», trade havolani kiritish tugmasi, statistika (sotuvdagi skinlar, yetkazish vaqti, yetkazilganlar soni yoki pul kafolati) va ishonch belgilari. U faqat filtrsiz bosh ko'rinishda chiqadi.
-- Asboblar paneli: filtr tugmasi (faol filtrlar soni bilan), qidiruv, tartib ro'yxati (Ommabop / Arzon / Qimmat / Noyob avval) va «Trade URL» holati.
-- Filtrlar oynasi: «Faqat sevimlilar», narx oralig'i (so'mda, tez tugmalar bilan), holati (bir nechtasini tanlash mumkin, rangli nuqtalar bilan), noyoblik (Covert, Classified…, rangli), StatTrak™ / Souvenir / Oddiy va «★ Pichoq va qo'lqoplar». Faol filtrlar ro'yxat tepasida ko'rinadi, bosilsa olib tashlanadi.
-- Sevimlilar: kartochka va skin oynasidagi ❤ — mijoz hisobida saqlanadi (200 tagacha).
-- Kartochka pastida «N ta taklif →» tugmasi bor. Skin oynasida katta narx, «⚡ Eng arzonini olish» (bitta bosishda), «Darhol yuboriladi» belgisi va nomni nusxalash bor.
-- Balans tugmasi to'ldirish sahifasini ochadi.
-- «Yaqinda sotib olindi» lentasida oxirgi yetkazilgan skinlar ko'rinadi (kim olgani ko'rsatilmaydi).
-- «?» tugmasi «Qanday ishlaydi?» oynasini ochadi: 3 qadam va ko'p so'raladigan savollar (trade havola, Steam Guard, float, StatTrak™, pul qaytishi).
-- Skin oynasida float oralig'i, holat bo'yicha saralash (FN, MW…, ST™) va «Steam bozorida solishtirish» havolasi bor.
-- Har taklifda pattern (paint seed), stikerlar, nom yorlig'i va «👁 O'yinda ko'rish» bor. Ko'rish havolasi faqat biz ko'rsatgan taklif uchun ishlaydi: `/api/cs2/inspect?id=` → `steam://run/730/...`.
-- Ro'yxat oxirida Steam hamyonni to'ldirishga havola bor.
-- Har skin bitta kartochkada: barcha eskirganlik darajalari, StatTrak™ va Souvenir variantlari. Kartochkada noyoblik rangi va «…so'mdan» narx ko'rinadi.
-- Skin oynasida sotuvdagi takliflar chiqadi: FN/MW/FT/WW/BS, float shkalasi va narx bilan.
-- Steam trade havola bir marta saqlanadi. «Ochish →» tugmasi Steam'dagi havola sahifasini ochadi.
-- Xariddan keyin skin Steam'ga trade taklifi bo'lib keladi. Holati «Buyurtmalar» bo'limida skin rasmi bilan ko'rinadi.
+Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, iliq nur va uchqunlar, Unbounded (sarlavhalar) + Inter Tight (matn) shriftlari, o'zimizning sariq-amber urg'u rangi va yashil narxlar. skinsavdo.uz faqat namuna sifatida o'rganilgan — ularning nomi, logotipi, rangi va matnlari olinmagan.
+
+**Do'kon tuzilishi** — o'z sarlavhasi (orqaga, «Verion Skins», balans → to'ldirish, avatar → profil) va pastki menyusi bor:
+- **Bosh sahifa:** katta sarlavha «Skinlar so'mda — CS2 / DOTA 2 / RUST» (yoqilgan o'yin nomlari aylanib turadi), «Bozorga o'tish» va trade havola tugmalari, ishonch belgilari, statistika, o'yin plitkalari, «Top skinlar» lentasi, «Yaqinda sotib olindi», «Qanday ishlaydi», Steam hamyon ($5/$10/$20/$50 — Steam sahifasini shu summa bilan ochadi), to'lov usullari, savollar va yakuniy chaqiriq.
+- **Bozor:** o'yin tablari (CS2 / Dota 2 / Rust; yopiq o'yin «tez orada»), filtr + qidiruv, tartib, «Trade URL» holati, belgili toifalar qatori, kartochkalar (❤, katta rasm, «…so'mdan», «N ta taklif →»).
+- **Skin sahifasi** (o'ngdan suriladi): rasm sahnasi va noyoblik nuri, «Mavjud: N», «O'yinda ko'rish», float oralig'i (CS2), katta nom, noyoblik belgisi, nuqtali jadval (o'yin, qurol/turi, noyoblik, StatTrak™, yetkazish, kafolat), katta yashil narx, «⚡ Sotib olish», «Barcha takliflar»: holat plitkalari (FN/MW/FT/WW/BS — soni va eng arzon narxi) va taklif kartochkalari.
+- **Xaridni tasdiqlash** — markazdagi oyna: skin qatori, trade havola (kiritilmagan bo'lsa), JAMI, balans; pul yetmasa «Balansni to'ldirish». Natija oynasi: «Steam'da qabul qilish», «Buyurtmalarim», «Xaridni davom ettirish».
+- **Buyurtmalar:** faqat skin xaridlari, holat bo'yicha filtr (Jarayonda / Yetkazildi / Bekor), «Steam'da qabul qilish» tugmasi.
+- **Profil:** ism, balans va to'ldirish, statistika (xarid, yetkazildi, sevimli), trade havola, sevimlilar, Steam savdo takliflari, «Qanday ishlaydi?», qo'llab-quvvatlash, asosiy do'konga qaytish.
+
+**O'yinlar bo'yicha farq:**
+- **CS2:** toifalar Pichoqlar, Qo'lqoplar, Avtomatlar, Snayperlar, To'pponchalar, PP, Og'ir; toifa ichida qurol turlari; holat, float, StatTrak™/Souvenir, pattern, stikerlar va «O'yinda ko'rish».
+- **Dota 2:** toifalar Kiyimlar, Kuryerlar, Wardlar, Sandiqlar, To'plamlar, Taunt, Boshqa; noyoblik (Arcana, Immortal, Legendary…) filtri.
+- **Rust:** toifalar Qurollar, Asboblar, Kiyimlar, Jihozlar, Boshqa.
+- Sevimlilar o'yin bo'yicha alohida saqlanadi (CS2 — nomi, boshqalar — `o'yin|nomi`).
+
+**Mijoz uchun (umumiy):**
+- Filtrlar oynasi: «Faqat sevimlilar», narx oralig'i (so'mda, tez tugmalar bilan), holati (CS2), noyoblik, StatTrak™ / Souvenir / Oddiy va «★ Pichoq va qo'lqoplar» (CS2). Faol filtrlar ro'yxat tepasida ko'rinadi, bosilsa olib tashlanadi.
+- «Jonli» toifasi — lis-skins'dagi eng yangi takliflar, darhol «Olish».
+- «O'yinda ko'rish» havolasi faqat biz ko'rsatgan taklif uchun ishlaydi: `/api/cs2/inspect?id=` → `steam://run/730/...`.
+- Steam trade havola bir marta saqlanadi va uchala o'yin uchun ishlatiladi.
+- Xariddan keyin skin Steam'ga trade taklifi bo'lib keladi. Holati do'kondagi va ilovadagi «Buyurtmalar»da skin rasmi bilan ko'rinadi.
 
 **Pul xavfsizligi:**
 - Xarid mijoz ko'rgan narx bilan qilinadi: `max_price`. Narx shu orada oshsa, lis-skins sotmaydi va pul qaytadi.
@@ -367,18 +371,21 @@ Alohida to'liq ekranli do'kon — to'q "gaming" ko'rinishida (ilova mavzusidan q
 - 2 soatda qabul qilinmasa, mijozga bir marta eslatma boradi.
 - Jonli bozor so'rovlari faqat Telegram foydalanuvchisiga ochiq. Limit: daqiqasiga bitta mijozdan 20 ta, jami 150 ta. Natijalar keshlanadi.
 
-**Sozlash (Admin → «CS2 skinlar»):**
-- yoqish va lis-skins API kaliti (kalit hech qachon qaytib ko'rsatilmaydi);
+**Sozlash (Admin → «Skinlar do'koni»):**
+- umumiy yoqish va lis-skins API kaliti (kalit hech qachon qaytib ko'rsatilmaydi);
 - kurs (1$ = so'm) va ustama %;
-- narx oralig'i ($) va «faqat darhol yuboriladigan skinlar» (trade-lock yo'q).
+- narx oralig'i ($) va «faqat darhol yuboriladigan skinlar» (trade-lock yo'q);
+- har o'yin uchun alohida: «mijozlarga ochiq» (CS2 / Dota 2 / Rust), katalog holati, narxlar ro'yxati havolasi va «Katalogni yangilash». Standart holatda faqat CS2 ochiq.
 
 **Admin tugmalari:**
 - «Ulanishni sinash» lis-skins balansi va bitta namuna taklifni ko'rsatadi. Javobni o'qib bo'lmasa, xom javob ham chiqadi.
-- «Katalogni yangilash» bor.
+- «… katalogini yangilash» — har o'yin uchun. Dota 2 / Rust sekin yuklanadi: tugma darhol javob beradi, holat oynada yangilanib turadi.
 
 **Ma'lumot manbalari:**
-- Skin nomlari, rasmlari va toifalari ochiq CS2 bazasidan olinadi (ByMykel/CSGO-API, ~21 ming variant). Baza haftada bir yangilanadi va diskda saqlanadi.
-- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (10 daqiqada yangilanadi).
+- CS2 nomlari, rasmlari va toifalari ochiq CS2 bazasidan olinadi (ByMykel/CSGO-API, ~21 ming variant).
+- Dota 2 va Rust katalogi Steam bozoridan olinadi (eng ommabop narsalar, sahifalab, Steam cheklovi uchun sekin). Dota 2 noyobligi va toifasi Steam'dagi «type» maydonidan, Rust toifasi nomidan aniqlanadi. Rasmlar faqat `*.steamstatic.com` dan.
+- Kataloglar diskda saqlanadi va haftada bir yangilanadi (Dota 2 / Rust — faqat yoqilgan bo'lsa). Yangilash xato bo'lsa, eski katalog qoladi va xato admin panelda ko'rinadi.
+- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (har o'yinga alohida, 10 daqiqada yangilanadi).
   - Havola admin paneldan kiritiladi: «Narxlar ro'yxati havolasi» — lis-skins hujjatidagi «JSON Price Lists» bo'limidan olinadi.
   - Kiritilmagan bo'lsa, `LIS_PRICES_URL` va bir nechta ma'lum manzil sinab ko'riladi. Har urinish natijasi (HTTP kodi, hajmi, nechta nom o'qilgani) admin panelda ko'rinadi.
   - Ro'yxat bo'lmasa, narxlar API qidiruvi orqali olinadi. Bu holatda filtrlar va «Arzon / Qimmat» tartibi yashiriladi.

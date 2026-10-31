@@ -811,266 +811,396 @@ nav button:nth-child(5) svg{animation-delay:1s}
 .stat:nth-child(3n+3) .v{color:var(--navy)}
 .stat .k{font-size:10px;color:var(--mut);margin-top:2px}
 
-/* CS2 skinlar do'koni — alohida to'q "gaming" ko'rinish (ilova mavzusidan qat'i nazar).
-   Fon: grafit + 32px to'r + burchaklarda iliq nur + uchqunlar; kartochkalar diagonal tekstura va noyoblik nuri bilan. */
-.c2{--c2disp:"Oxanium",system-ui,-apple-system,sans-serif;--c2bg:#0b0c0f;--c2card:#14161b;--c2card2:#0d0e12;--c2line:#262a32;--c2line2:#23262e;--c2txt:#eceef2;--c2mut:#8b93a1;--c2acc:#f0a030;
-  position:fixed;inset:0;z-index:92;color:var(--c2txt);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  background-color:var(--c2bg);
-  background-image:radial-gradient(540px 400px at 105% -4%,rgba(240,160,48,.17),transparent 70%),radial-gradient(420px 360px at -20% 46%,rgba(92,110,255,.08),transparent 70%),
-    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
-  background-size:auto,auto,32px 32px,32px 32px;background-attachment:local;
-  padding-bottom:calc(28px + env(safe-area-inset-bottom));animation:c2in .22s var(--ease)}
-@keyframes c2in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-body.c2-open{overflow:hidden}
-.c2 [hidden],.sheet.c2s [hidden]{display:none!important}
-.c2 button,.sheet.c2s button{font-family:inherit;cursor:pointer}
-/* uchqunlar */
-.c2-em{position:absolute;width:4px;height:4px;border-radius:50%;background:#f0a030;box-shadow:0 0 12px 4px rgba(240,160,48,.5);opacity:.75;pointer-events:none;animation:c2em 6s ease-in-out infinite}
-.c2-em.s{width:3px;height:3px;opacity:.55;animation-duration:8s}
-@keyframes c2em{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(-10px);opacity:.35}}
-@media (prefers-reduced-motion:reduce){.c2-em,.c2{animation:none}}
+/* ================= Skinlar do'koni (CS2 · Dota 2 · Rust) — alohida do'kon =================
+   O'z sarlavhasi, pastki menyusi (Bosh sahifa / Bozor / Buyurtmalar / Profil), uchqunli fon,
+   Unbounded (sarlavhalar) + Inter Tight (matn). Ilova mavzusidan qat'i nazar doim to'q. */
+.sk{--skbg:#0f1013;--skp:#18191e;--skp2:#1e2027;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skt:#fff;--skm:#7d8999;--skm2:#a3adbb;
+  --ska:#ffb81c;--ska2:#ffd36b;--skg:#30d158;--skr:#ef5350;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;--skb:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  position:fixed;inset:0;z-index:92;display:flex;flex-direction:column;background:var(--skbg);color:var(--skt);font-family:var(--skb);overflow:hidden;-webkit-font-smoothing:antialiased;
+  opacity:0;transform:scale(1.015);transition:opacity .3s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
+.sk.on{opacity:1;transform:none}
+.sk.out{opacity:0;transform:scale(.98);pointer-events:none}
+.sk .na .sk-in,.sk .na.sk-in{animation:none}
+.sk *{box-sizing:border-box}
+.sk button,.sks button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sk [hidden],.sks [hidden]{display:none!important}
+body.sk-open{overflow:hidden}
+/* fon: nur, to'r, uchqunlar */
+.sk-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:radial-gradient(600px 420px at 110% -5%,rgba(255,184,28,.16),transparent 70%),radial-gradient(520px 420px at -25% 40%,rgba(70,90,255,.10),transparent 70%),
+    radial-gradient(500px 380px at 120% 95%,rgba(255,184,28,.08),transparent 70%)}
+.sk-bg:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:36px 36px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 20%,#000 30%,transparent 80%);mask-image:radial-gradient(ellipse 80% 60% at 50% 20%,#000 30%,transparent 80%)}
+.sk-bg i{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--ska);box-shadow:0 0 14px 5px rgba(255,184,28,.45);opacity:.7;animation:skFloat 7s ease-in-out infinite}
+.sk-bg i:nth-child(3n){width:3px;height:3px;opacity:.5;animation-duration:9s}
+.sk-bg i:nth-child(4n){filter:blur(1px);animation-duration:11s}
+@keyframes skFloat{0%,100%{transform:translate(0,0);opacity:.7}50%{transform:translate(6px,-16px);opacity:.25}}
 /* sarlavha */
-.c2-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;
-  background:rgba(11,12,15,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.07)}
-.c2-back{flex:0 0 auto;width:40px;height:40px;border-radius:11px;border:1px solid var(--c2line);background:var(--c2card);color:#d5d9e0;display:flex;align-items:center;justify-content:center;padding:0}
-.c2-logo{flex:1;min-width:0;display:flex;align-items:center;gap:9px}
-.c2-logo .lb{flex:0 0 34px;height:34px;border-radius:10px;background:radial-gradient(circle at 50% 40%,#4a300a,#15110a 75%);border:1px solid rgba(240,160,48,.35);display:flex;align-items:center;justify-content:center}
-.c2-logo>div:last-child{min-width:0;overflow:hidden;white-space:nowrap;font-family:var(--c2disp);font-weight:800;font-size:16px;letter-spacing:.14em;line-height:1}
-.c2-logo small{display:block;font-family:Inter,sans-serif;font-size:10.5px;letter-spacing:.12em;color:var(--c2mut);font-weight:700;margin-top:4px}
-.c2-bal{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:40px;padding:0 8px 0 12px;border-radius:11px;background:var(--c2card);border:1px solid var(--c2line);
-  color:var(--c2acc);font-family:var(--c2disp);font-weight:700;font-size:14px;white-space:nowrap}
-.c2-bal .pl{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:var(--c2acc);color:#121212}
-/* sarlavha bloki (hero) */
-.c2-hero2{position:relative;margin:14px 14px 0;padding:20px 18px 18px;border-radius:22px;overflow:hidden;border:1px solid rgba(240,160,48,.3);
-  background-color:#121318;
-  background-image:radial-gradient(300px 220px at 92% 18%,rgba(240,160,48,.26),transparent 70%),repeating-linear-gradient(135deg,rgba(255,255,255,.022) 0 2px,transparent 2px 10px),linear-gradient(180deg,rgba(255,255,255,.03),transparent 40%);
-  box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
-.c2-hero2>*{position:relative}
-.c2-hero2 .deco{position:absolute;right:-54px;top:44px;transform:rotate(-24deg);opacity:.9;filter:drop-shadow(0 12px 26px rgba(240,160,48,.45));pointer-events:none}
-.c2-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(11,12,15,.7);border:1px solid #2a2e37;font-size:12px;font-weight:700;color:#d5d9e0}
-.c2-pill i{width:8px;height:8px;border-radius:50%;background:#3fd07a;box-shadow:0 0 0 4px rgba(63,208,122,.18)}
-.c2-hero2 h1{margin:16px 0 0;font-family:var(--c2disp);font-weight:800;font-size:38px;line-height:.98;letter-spacing:-.3px;text-transform:uppercase}
-.c2-hero2 h1 em{font-style:normal;color:var(--c2acc);text-shadow:0 0 28px rgba(240,160,48,.35)}
-.c2-hero2 p{margin:12px 0 0;max-width:270px;font-size:13.5px;line-height:1.55;color:#a3aab6}
-.c2-cta{display:flex;gap:8px;margin-top:18px}
-.c2-cta .c2-btn{height:48px;border-radius:13px;font-size:14px;text-transform:none;letter-spacing:0;display:flex;align-items:center;justify-content:center;gap:8px}
-.c2-cta .c2-btn:first-child{flex:1 1 auto;box-shadow:0 10px 30px rgba(240,160,48,.35),inset 0 1px 0 rgba(255,255,255,.35)}
-.c2-cta .c2-btn.ghost{background:rgba(11,12,15,.6);border-color:#2c3039;box-shadow:none}
-.c2-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
-.c2-stats div{padding:11px 6px;border-radius:12px;background:rgba(11,12,15,.62);border:1px solid var(--c2line2);text-align:center}
-.c2-stats b{display:block;font-family:var(--c2disp);font-size:19px;font-weight:800}
-.c2-stats span{display:block;font-size:11px;color:var(--c2mut);font-weight:600;margin-top:2px}
-.c2-trust{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.c2-trust span{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:9px;font-size:11.5px;font-weight:700;color:#b9bfca;background:rgba(240,160,48,.07);border:1px solid rgba(240,160,48,.2)}
-.c2-trust svg{color:var(--c2acc)}
-/* asboblar paneli */
-.c2-tool{margin:14px 14px 0;padding:10px;border-radius:18px;background:rgba(20,22,27,.92);border:1px solid var(--c2line2)}
-.c2-srow{display:flex;gap:8px}
-.c2-fbtn{position:relative;flex:0 0 46px;height:46px;border-radius:12px;border:1px solid #2a2e37;background:var(--c2card2);color:#d5d9e0;display:flex;align-items:center;justify-content:center;padding:0}
-.c2-fbtn i{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;border-radius:10px;background:var(--c2acc);color:#121212;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 0 0 2px #14161b}
-.c2-srch{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid #2a2e37;background:var(--c2card2);display:flex;align-items:center;gap:9px;padding:0 13px;box-sizing:border-box;color:var(--c2mut)}
-.c2-srch:focus-within{border-color:var(--c2acc)}
-.c2-srch input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--c2txt);font:inherit;font-size:14px}
-.c2-trow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
-.c2-sel{position:relative;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:11px;background:var(--c2card2);border:1px solid #2a2e37;color:#d5d9e0}
-.c2-sel select{appearance:none;-webkit-appearance:none;background:none;border:none;outline:none;color:inherit;font:inherit;font-size:13px;font-weight:700;padding:0}
-.c2-sel select option{background:#14161b;color:#eceef2}
-.c2-tu{display:inline-flex;align-items:center;gap:6px;border:none;background:none;color:var(--c2acc);font-size:13px;font-weight:800;padding:6px 2px}
-.c2-tu.ok{color:#5fdc92}
-/* toifalar */
-.c2-chips{display:flex;gap:8px;overflow-x:auto;padding:14px 14px 0;scrollbar-width:none}
-.c2-chips::-webkit-scrollbar{display:none}
-.c2-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:12px;border:1px solid var(--c2line);background:var(--c2card);color:#c4cad4;
-  font-size:12.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-.c2-chip.on{color:#121212;background:var(--c2acc);border-color:var(--c2acc);box-shadow:0 6px 18px rgba(240,160,48,.25)}
-.c2-chips.sub{padding-top:8px}
-.c2-chips.sub .c2-chip{height:34px;padding:0 12px;border-radius:10px;font-size:12px;text-transform:none;letter-spacing:0;font-weight:700}
-.c2-chips.flat{flex-wrap:wrap;overflow:visible;padding-left:0;padding-right:0}
-.c2-act{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px 0}
-.c2-act button{height:32px;border:1px solid rgba(240,160,48,.45);background:rgba(240,160,48,.1);color:var(--c2acc);font-size:12px;font-weight:800;padding:0 10px;border-radius:9px}
-/* bo'lim sarlavhalari */
-.c2-h2{display:flex;align-items:center;gap:8px;padding:20px 14px 10px;font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--c2mut);text-transform:uppercase}
-.c2-h2 .dot{width:8px;height:8px;border-radius:50%;background:#3fd07a;box-shadow:0 0 0 4px rgba(63,208,122,.16)}
-.c2-h2 em{margin-left:auto;font-style:normal;color:var(--c2acc);letter-spacing:.04em}
-.c2-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:20px 14px 10px}
-.c2-bar b{font-family:var(--c2disp);font-weight:800;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
-.c2-bar span{font-size:12px;font-weight:700;color:var(--c2mut)}
+.sk-top{position:relative;z-index:4;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+  background:rgba(22,23,28,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+.sk-ib{flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#dfe4ec;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-ib:active{transform:scale(.94)}
+.sk-logo{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-family:var(--skd);font-weight:800;font-size:15px;letter-spacing:-.2px;line-height:.95;text-transform:uppercase}
+.sk-logo .mk{flex:0 0 32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#ffcf4a,#ff9d00);color:#141414;box-shadow:0 6px 18px rgba(255,170,0,.35)}
+.sk-logo b{display:block;color:var(--ska);font-weight:800}
+.sk-bal{flex:0 0 auto;display:flex;align-items:center;gap:7px;height:40px;padding:0 5px 0 11px;border-radius:12px;border:1.5px solid rgba(255,184,28,.55);background:rgba(255,184,28,.08);color:var(--ska);font-weight:800;font-size:14px;white-space:nowrap}
+.sk-bal .pl{width:28px;height:28px;border-radius:9px;background:var(--ska);color:#141414;display:flex;align-items:center;justify-content:center}
+.sk-av{position:relative;flex:0 0 40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid var(--skl2);background:linear-gradient(135deg,#2b3550,#121726);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-av img,.sk-me .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* asosiy qism va pastki menyu */
+.sk-main{position:relative;z-index:1;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+.sk-nav{position:absolute;left:0;right:0;bottom:0;z-index:5;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  background:rgba(20,21,26,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.07)}
+.sk-nav button{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;height:56px;justify-content:center;border:none;background:none;color:#8a93a3;font-size:10.5px;font-weight:700;border-radius:14px}
+.sk-nav button svg{width:23px;height:23px;transition:transform .2s}
+.sk-nav button.on{color:var(--ska)}
+.sk-nav button.on:before{content:"";position:absolute;top:-7px;left:50%;width:26px;height:3px;margin-left:-13px;border-radius:0 0 3px 3px;background:var(--ska);box-shadow:0 0 14px 2px rgba(255,184,28,.6)}
+.sk-nav button.on svg{transform:translateY(-1px) scale(1.06)}
+.sk-nav button:active{background:rgba(255,255,255,.04)}
+/* kirish animatsiyasi */
+.sk-fx{position:fixed;z-index:93;border-radius:20px;overflow:hidden;pointer-events:none;
+  background:radial-gradient(circle at 50% 42%,rgba(255,184,28,.35),transparent 55%),#0f1013;
+  transition:top .46s cubic-bezier(.7,0,.2,1),left .46s cubic-bezier(.7,0,.2,1),width .46s cubic-bezier(.7,0,.2,1),height .46s cubic-bezier(.7,0,.2,1),border-radius .46s,opacity .28s}
+.sk-fx .lg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);opacity:0;display:flex;flex-direction:column;align-items:center;gap:14px;transition:transform .5s cubic-bezier(.2,1.4,.4,1) .12s,opacity .3s .12s}
+.sk-fx.go .lg{transform:translate(-50%,-50%) scale(1);opacity:1}
+.sk-fx .lg .mk{width:76px;height:76px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#ffcf4a,#ff9d00);color:#141414;box-shadow:0 0 60px rgba(255,170,0,.55);animation:skPulse 1s ease-in-out infinite}
+.sk-fx .lg span{font-family:var(--skd,"Unbounded",sans-serif);font-weight:800;font-size:22px;letter-spacing:-.3px;color:#fff;text-transform:uppercase}
+.sk-fx .lg span b{color:#ffb81c}
+@keyframes skPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.sk-in{animation:skIn .5s cubic-bezier(.2,.8,.2,1) both}
+.sk-in:nth-child(2){animation-delay:.05s}.sk-in:nth-child(3){animation-delay:.1s}.sk-in:nth-child(4){animation-delay:.15s}.sk-in:nth-child(5){animation-delay:.2s}.sk-in:nth-child(n+6){animation-delay:.25s}
+@keyframes skIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sk-bg i,.sk-in,.sk-fx .lg .mk{animation:none}.sk-fx{transition:none}}
+/* umumiy */
+.sk-sec{padding:0 16px;margin-top:26px}
+.sk-lbl{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--ska)}
+.sk-h2{margin:6px 0 0;font-family:var(--skd);font-weight:800;font-size:26px;line-height:1.08;letter-spacing:-.4px}
+.sk-h2.c{text-align:center}
+.sk-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:54px;padding:0 22px;border:none;border-radius:16px;background:var(--ska);color:#141414;font-weight:800;font-size:16px;
+  box-shadow:0 10px 34px rgba(255,170,0,.35),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .12s}
+.sk-btn:active{transform:scale(.97)}
+.sk-btn.gh{background:rgba(255,255,255,.04);color:#fff;border:1.5px solid var(--skl2);box-shadow:none}
+.sk-btn.wd{display:flex;width:100%}
+.sk-btn.sm{height:44px;font-size:14px;border-radius:13px;padding:0 16px}
+.sk-btn:disabled{opacity:.55}
+.sk-empty{padding:46px 24px;text-align:center;color:var(--skm);font-size:14px;line-height:1.55}
+.sk-empty b{display:block;color:#fff;font-family:var(--skd);font-size:17px;margin-bottom:6px}
+.sk-sk{background:linear-gradient(90deg,#17181d 0,#20222a 50%,#17181d 100%);background-size:200% 100%;animation:skSh 1.2s linear infinite;border-radius:20px}
+@keyframes skSh{from{background-position:200% 0}to{background-position:-200% 0}}
+/* ---- Bosh sahifa ---- */
+.sk-hero{position:relative;padding:26px 16px 6px;overflow:hidden}
+.sk-pill{display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;border:1px solid var(--skl2);background:rgba(255,255,255,.03);font-size:13px;font-weight:700;color:#cfd5df}
+.sk-pill i{width:9px;height:9px;border-radius:50%;background:var(--skg);box-shadow:0 0 0 4px rgba(48,209,88,.18),0 0 12px rgba(48,209,88,.7)}
+.sk-hero h1{margin:18px 0 0;font-family:var(--skd);font-weight:800;font-size:40px;line-height:1.02;letter-spacing:-1px}
+.sk-hero h1 .rot{display:block;height:1.1em;overflow:hidden;color:var(--ska)}
+.sk-hero h1 .rot span{display:block}
+.sk-hero h1 .rot i{display:block;height:1.1em;line-height:1.1em;font-style:normal}
+.sk-hero p{margin:14px 0 0;font-size:16px;line-height:1.55;color:var(--skm2)}
+.sk-hero p b{color:var(--ska);font-weight:800}
+.sk-hero .cta{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.sk-hero .cta .sk-btn{width:100%}
+.sk-trust{display:grid;gap:12px;margin-top:22px}
+.sk-trust div{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--skm2);font-weight:500}
+.sk-trust svg{flex:0 0 22px;color:var(--ska)}
+.sk-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin:28px 0 0;border-top:1px solid var(--skl);border-bottom:1px solid var(--skl);background:var(--skl)}
+.sk-stats div{padding:20px 10px;text-align:center;background:var(--skbg)}
+.sk-stats b{display:block;font-family:var(--skd);font-weight:800;font-size:28px;letter-spacing:-.6px}
+.sk-stats span{display:block;font-size:13px;color:var(--skm);margin-top:4px}
+.sk-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.sk-gt{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:118px;padding:14px 12px;border-radius:20px;border:1px solid var(--skl);overflow:hidden;color:#fff;text-align:left;background:var(--skp)}
+.sk-gt:before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:var(--gc);opacity:.22;filter:blur(18px)}
+.sk-gt .gi{position:relative;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--gc);color:#fff;font-family:var(--skd);font-weight:800;font-size:13px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.sk-gt b{position:relative;font-family:var(--skd);font-size:15px;font-weight:800}
+.sk-gt small{position:relative;font-size:12px;color:var(--skm);font-weight:600}
+.sk-gt.off{opacity:.5}
+.sk-card2{position:relative;margin:0 16px;padding:24px 20px 22px;border-radius:26px;overflow:hidden;border:1px solid var(--skl)}
+.sk-card2.y{border-color:rgba(255,184,28,.35);background:radial-gradient(420px 260px at 50% 110%,rgba(255,184,28,.22),transparent 70%),linear-gradient(180deg,#1b1c21,#15161a)}
+.sk-card2.b{border-color:rgba(86,150,220,.35);background:radial-gradient(380px 260px at 100% 100%,rgba(70,130,210,.25),transparent 70%),linear-gradient(180deg,#1a2230,#141820)}
+.sk-tag{display:inline-flex;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.sk-tag.y{color:var(--ska);border:1px solid rgba(255,184,28,.45);background:rgba(255,184,28,.08)}
+.sk-tag.b{color:#78b8f2;border:1px solid rgba(120,184,242,.4);background:rgba(120,184,242,.08)}
+.sk-card2 h3{margin:16px 0 0;font-family:var(--skd);font-weight:800;font-size:26px;line-height:1.1;letter-spacing:-.5px}
+.sk-card2 p{margin:10px 0 0;font-size:15px;line-height:1.5;color:var(--skm2)}
+.sk-steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.sk-steps span{display:inline-flex;align-items:center;gap:9px;padding:6px 14px 6px 6px;border-radius:999px;background:rgba(0,0,0,.35);font-size:14px;font-weight:700}
+.sk-steps span i{width:26px;height:26px;border-radius:50%;background:var(--ska);color:#141414;font-style:normal;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}
+.sk-card2 .bigs{position:absolute;right:-50px;top:-40px;width:200px;height:200px;opacity:.1;pointer-events:none}
+.sk-card2 .bigs svg{width:100%;height:100%}
+.sk-amts{display:flex;gap:8px;margin-top:16px}
+.sk-amts button{height:46px;min-width:62px;padding:0 14px;border-radius:13px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.4);color:#fff;font-weight:800;font-size:15px}
+.sk-pay{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+.sk-pay span{display:inline-flex;align-items:center;justify-content:center;height:52px;min-width:130px;padding:0 20px;border-radius:999px;border:1px solid var(--skl);background:var(--skp);font-weight:800;font-size:17px;letter-spacing:.06em}
+.sk-faq{margin-top:20px;display:grid;gap:10px}
+.sk-faq details{border-radius:20px;background:#121317;border:1px solid var(--skl);padding:0 20px;transition:border-color .2s}
+.sk-faq details[open]{border-color:rgba(255,184,28,.6)}
+.sk-faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:20px 0;font-size:16px;font-weight:700}
+.sk-faq summary::-webkit-details-marker{display:none}
+.sk-faq summary:after{content:"+";font-size:24px;line-height:18px;font-weight:300;color:#fff}
+.sk-faq details[open] summary:after{content:"–"}
+.sk-faq p{margin:0 0 20px;font-size:15px;line-height:1.6;color:var(--skm)}
+.sk-final{margin-top:30px;padding:46px 20px;text-align:center;background:radial-gradient(400px 220px at 50% 50%,rgba(255,184,28,.16),transparent 70%),linear-gradient(180deg,#1a1912,#131310)}
+.sk-final p{margin:12px 0 22px;font-size:16px;color:var(--skm2)}
 /* yaqinda sotilganlar */
-.c2-rec{display:flex;gap:8px;overflow-x:auto;padding:0 14px 2px;scrollbar-width:none}
-.c2-rec::-webkit-scrollbar{display:none}
-.c2-rc{flex:0 0 124px;text-align:left;background:var(--c2card);border:1px solid var(--c2line2);border-radius:14px;padding:8px;color:inherit}
-.c2-rc .im{height:60px;display:flex;align-items:center;justify-content:center;border-radius:10px}
-.c2-rc img{max-width:90%;max-height:56px;object-fit:contain}
-.c2-rc .nm{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:6px}
-.c2-rc .mt{font-size:10.5px;color:var(--c2mut);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* kartochkalar */
-.c2-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 14px}
-.c2-card{position:relative;display:block;width:100%;padding:0;text-align:left;color:inherit;border-radius:18px;overflow:hidden;
-  background:linear-gradient(180deg,#17191f,#111317);border:1px solid var(--c2line);box-shadow:0 10px 30px rgba(0,0,0,.35);transition:transform .12s,border-color .12s}
-.c2-card:active{transform:scale(.97);border-color:#3a3f49}
-.c2-im{position:relative;height:128px;display:flex;align-items:center;justify-content:center;background-color:#101216;
-  background-image:radial-gradient(closest-side,var(--rg,rgba(176,195,217,.25)),transparent 90%),repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px)}
-.c2-im img{max-width:86%;max-height:108px;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.55))}
-.c2-im:after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;border-radius:2px;background:var(--rc,#b0c3d9)}
-.c2-tags{position:absolute;top:9px;left:9px;display:flex;gap:4px;pointer-events:none}
-.c2-tag{padding:3px 7px;border-radius:6px;background:rgba(11,12,15,.8);font-size:10px;font-weight:800;color:#cfd3da;letter-spacing:.05em}
-.c2-tag.st{color:#ff8a4c}
-.c2-tag.sv{color:#f0d36a}
-.c2-fav{position:absolute;top:7px;right:7px;width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
-  background:rgba(11,12,15,.75);fill:none;stroke:#9aa1ad;stroke-width:2;transition:transform .12s}
-.c2-fav svg{fill:inherit;stroke:inherit}
-.c2-fav.on{fill:#ef5b5b;stroke:#ef5b5b}
-.c2-fav:active{transform:scale(.88)}
-.c2-fav.big{position:static;width:44px;height:44px;flex:0 0 44px;border-radius:12px;border:1px solid var(--c2line);background:var(--c2card)}
-.c2-fav.big.on{border-color:#3a2a2e;background:#1a1316}
-.c2-bd{padding:10px 11px 11px}
-.c2-w{font-size:10.5px;color:var(--c2mut);text-transform:uppercase;letter-spacing:.09em;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c2-n{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.c2-p{margin-top:6px;font-family:var(--c2disp);font-size:16px;font-weight:800;color:var(--c2acc);white-space:nowrap;letter-spacing:.2px}
-.c2-p small{font-family:Inter,sans-serif;font-weight:700;color:var(--c2mut);font-size:11px;margin-left:3px}
-.c2-p.na{font-family:Inter,sans-serif;color:var(--c2mut);font-size:12px;font-weight:700}
-.c2-go{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:9px;height:36px;border-radius:10px;background:var(--c2card2);border:1px solid #2a2e37;font-size:12px;font-weight:800;color:#d5d9e0}
-.c2-go span{color:var(--c2acc)}
-.c2-fl{position:relative;height:4px;border-radius:3px;margin-top:8px;background:linear-gradient(90deg,#3fb950 0 7%,#8bc34a 7% 15%,#d8b520 15% 38%,#e5852a 38% 45%,#d94b45 45% 100%)}
-.c2-fl i{position:absolute;top:-4px;width:3px;height:12px;margin-left:-1px;border-radius:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.6)}
-.c2-flv{font-size:10.5px;color:var(--c2mut);font-weight:600;margin-top:5px;font-family:ui-monospace,Menlo,monospace}
-.c2-ex{font-size:10.5px;color:var(--c2mut);font-weight:600;margin-top:4px;line-height:1.35;overflow:hidden;text-overflow:ellipsis}
-.c2-insp{display:inline-block;margin-top:4px;font-size:11px;font-weight:800;color:var(--c2acc);text-decoration:none}
-.c2-more{display:block;width:calc(100% - 28px);margin:12px 14px 0;height:46px;border-radius:13px;border:1px solid var(--c2line);background:var(--c2card);color:var(--c2txt);font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
-.c2-empty{padding:40px 24px;text-align:center;color:var(--c2mut);font-size:13px;line-height:1.5}
-.c2-empty b{display:block;color:var(--c2txt);font-size:15px;margin-bottom:4px}
-.c2-sk{background:linear-gradient(90deg,#14161b 0,#1c1f26 50%,#14161b 100%);background-size:200% 100%;animation:c2sk 1.2s linear infinite;border-radius:18px;aspect-ratio:3/3.6}
-@keyframes c2sk{from{background-position:200% 0}to{background-position:-200% 0}}
-.c2-foot{display:none}
-.c2-x{display:flex;align-items:center;gap:12px;width:calc(100% - 28px);margin:14px 14px 0;padding:14px;border-radius:18px;border:1px solid #22344d;
-  background:linear-gradient(135deg,#14243a,#121419 70%);color:var(--c2txt);text-align:left}
-.c2-x .ic{flex:0 0 44px;height:44px;border-radius:12px;background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547);display:flex;align-items:center;justify-content:center}
-.c2-x .ic svg{width:26px;height:26px}
-.c2-x .tx{flex:1;min-width:0;font-size:12px;color:var(--c2mut);line-height:1.35}
-.c2-x .tx b{display:block;font-size:14px;color:var(--c2txt);margin-bottom:2px}
-.c2-x .ar{color:var(--c2mut);font-weight:800}
-/* tugmalar */
-.c2-btn{border:none;border-radius:13px;height:46px;padding:0 16px;font-weight:800;font-size:13.5px;letter-spacing:.03em;text-transform:uppercase;background:var(--c2acc);color:#121212;white-space:nowrap}
-.c2-btn.ghost{background:var(--c2card);color:var(--c2txt);border:1px solid var(--c2line)}
-.c2-btn.wide{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
-.c2-btn:disabled{opacity:.55}
-/* pastdan chiqadigan oynalar */
-.sheet.c2s{--c2disp:"Oxanium",system-ui,-apple-system,sans-serif;--c2card:#16181d;--c2card2:#0b0c0f;--c2line:#2a2e37;--c2line2:#23262e;--c2txt:#eceef2;--c2mut:#8b93a1;--c2acc:#f0a030;
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--c2txt);border-top-color:#2a2e37;
-  background-color:#101116;background-image:radial-gradient(360px 220px at 100% 0%,rgba(240,160,48,.10),transparent 70%)}
-.sheet.c2s .grab{background:#2e333c}
-.sheet.c2s .sheet-x,.sheet.c2s .sheet-back{background:#16181d;color:#c4cad4;border-color:#2a2e37}
-.c2-ttl{font-family:var(--c2disp);font-size:24px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
-.c2-sub{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-size:12px;color:var(--c2mut);font-weight:700}
-.c2-sub .rar{font-weight:800}
-.c2-sect{margin:20px 0 10px;font-size:11.5px;font-weight:800;letter-spacing:.12em;color:var(--c2mut);text-transform:uppercase}
-.c2-in{width:100%;height:48px;box-sizing:border-box;border-radius:13px;border:1px solid var(--c2line);background:#0b0c0f;color:var(--c2txt);padding:0 13px;font-size:13.5px;font-family:inherit;outline:none}
-.c2-in:focus{border-color:var(--c2acc)}
-.c2-note{font-size:12px;color:var(--c2mut);line-height:1.55;margin-top:8px}
-.c2-note a{color:var(--c2acc);font-weight:800;text-decoration:none}
-/* skin oynasi */
-.c2-hwrap{position:relative;height:250px;border-radius:22px;overflow:hidden;border:1px solid var(--c2line);display:flex;align-items:center;justify-content:center;
-  background-color:#0f1014;background-image:radial-gradient(closest-side at 50% 58%,var(--rg,rgba(176,195,217,.3)),transparent 100%),repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 10px),linear-gradient(180deg,rgba(255,255,255,.04),transparent 50%)}
-.c2-hwrap img{max-width:82%;max-height:200px;object-fit:contain;filter:drop-shadow(0 16px 28px rgba(0,0,0,.6))}
-.c2-hwrap:after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:3px;border-radius:3px;background:var(--rc,#b0c3d9)}
-.c2-hwrap .c2-em{background:var(--rc,#f0a030);box-shadow:0 0 12px 4px var(--rg,rgba(240,160,48,.5))}
-.c2-avl{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:6px;padding:7px 11px;border-radius:10px;border:1px dashed rgba(63,208,122,.6);background:rgba(14,38,24,.8);color:#5fdc92;font-size:12px;font-weight:800}
-.c2-stb{position:absolute;top:12px;right:12px;padding:7px 10px;border-radius:10px;background:rgba(11,12,15,.8);border:1px solid var(--c2line);color:#ff8a4c;font-size:11.5px;font-weight:800}
-.c2-ins2{position:absolute;bottom:12px;right:12px;height:34px;padding:0 11px;border-radius:10px;border:1px solid var(--c2line);background:rgba(11,12,15,.8);color:#d5d9e0;font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px}
-.c2-th{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:16px}
-.c2-th .c2-w{font-size:11.5px;letter-spacing:.12em}
-.c2-th .c2-ttl{font-size:32px;margin-top:4px}
-.c2-copy{display:inline-flex;align-items:center;gap:6px;max-width:100%;margin-top:8px;border:none;background:none;padding:0;color:var(--c2mut);font-size:12.5px;font-weight:600;text-align:left}
-.c2-copy span{color:#cfd3da}
-.c2-pbig{display:flex;align-items:baseline;gap:8px;margin-top:14px}
-.c2-pbig b{font-family:var(--c2disp);font-size:34px;font-weight:800;color:var(--c2acc);letter-spacing:.2px;text-shadow:0 0 24px rgba(240,160,48,.3)}
-.c2-pbig span{font-size:13px;font-weight:700;color:var(--c2mut)}
-.c2-pbig a{margin-left:auto;font-size:12.5px;font-weight:800;text-decoration:none;color:var(--c2mut)}
-.c2-quick{margin-top:12px;height:54px;border-radius:15px;font-size:15px;text-transform:none;letter-spacing:0;box-shadow:0 12px 34px rgba(240,160,48,.35),inset 0 1px 0 rgba(255,255,255,.35)}
-.c2-info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
-.c2-info div{padding:10px;border-radius:13px;background:var(--c2card);border:1px solid var(--c2line2);font-size:10.5px;font-weight:700;color:var(--c2mut)}
-.c2-info b{display:block;font-family:var(--c2disp);font-size:14px;font-weight:800;color:var(--c2txt);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c2-offs{margin-top:18px;padding:14px;border-radius:20px;background:rgba(20,22,27,.92);border:1px solid var(--c2line2)}
-.c2-offs h3{margin:0;font-family:var(--c2disp);font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
-.c2-offs h3 span{color:var(--c2mut)}
-.c2-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.c2-tabs button{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:10px;border:1px solid var(--c2line);background:#0d0e12;color:#c4cad4;font-size:12px;font-weight:800}
-.c2-tabs button i{width:7px;height:7px;border-radius:50%}
-.c2-tabs button.on{background:var(--c2acc);border-color:var(--c2acc);color:#121212}
-.c2-off{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:#0f1014;border:1px solid var(--c2line2);margin-top:8px}
-.c2-off .th{flex:0 0 52px;height:52px;border-radius:12px;border:1px solid var(--c2line2);display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side,var(--rg,rgba(176,195,217,.3)),transparent)}
-.c2-off .th img{max-width:46px;max-height:40px;object-fit:contain}
-.c2-off .mid{flex:1;min-width:0}
-.c2-off .mid b{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.c2-off .wb{flex:0 0 auto;padding:2px 6px;border-radius:5px;font-size:10.5px;font-weight:800}
-.c2-off .c2-flv,.c2-off .c2-ex,.c2-off .c2-insp{display:inline;margin:0 8px 0 0;white-space:nowrap}
-.c2-off .mid .ln{display:inline;line-height:1.6}
-.c2-off .rt{text-align:right;flex:0 0 auto}
-.c2-off .pr{font-family:var(--c2disp);font-size:15px;font-weight:800;color:var(--c2acc);white-space:nowrap}
-.c2-off .c2-btn{height:32px;margin-top:6px;padding:0 14px;border-radius:9px;font-size:12px;text-transform:none;letter-spacing:0}
-.c2-guar{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px;border-radius:14px;background:rgba(63,208,122,.06);border:1px solid rgba(63,208,122,.2);font-size:12px;line-height:1.55;color:#a3aab6}
-.c2-guar svg{flex:0 0 18px;margin-top:1px}
-/* xarid oynasi */
-.c2-mini{display:flex;gap:14px;align-items:center}
-.c2-mini .th{flex:0 0 104px;height:84px;border-radius:16px;border:1px solid var(--c2line);display:flex;align-items:center;justify-content:center;
-  background-color:#0f1014;background-image:radial-gradient(closest-side,var(--rg,rgba(176,195,217,.3)),transparent),repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px)}
-.c2-mini .th img{max-width:92px;max-height:70px;object-fit:contain}
-.c2-mini .c2-ttl{font-size:22px;margin-top:2px}
-.c2-rows{margin-top:16px;border-radius:16px;background:var(--c2card);border:1px solid var(--c2line2);padding:4px 14px}
-.c2-row{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--c2line2);font-size:13.5px}
-.c2-row:last-child{border-bottom:none}
-.c2-row span{color:var(--c2mut)}
-.c2-row b{text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.c2-row b.acc{font-family:var(--c2disp);color:var(--c2acc);font-size:15px}
-.c2-row b.ok{color:#5fdc92}
-.c2-steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
-.c2-steps3 div{padding:10px 8px;border-radius:13px;background:var(--c2card);border:1px solid var(--c2line2);display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;color:#c4cad4;line-height:1.35}
-.c2-steps3 b{width:24px;height:24px;border-radius:8px;background:var(--c2acc);color:#121212;font-family:var(--c2disp);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
-.c2-buy{margin-top:16px;height:56px;border-radius:15px;font-size:15px;text-transform:none;letter-spacing:0;box-shadow:0 12px 34px rgba(240,160,48,.35),inset 0 1px 0 rgba(255,255,255,.35)}
-/* filtrlar oynasi */
-.c2-swrow{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:16px;padding:14px;border-radius:14px;background:var(--c2card);border:1px solid var(--c2line2);color:var(--c2txt);font-size:14px;font-weight:800}
-.c2-swrow .lb{display:flex;align-items:center;gap:10px}
-.c2-swrow .tg{flex:0 0 46px;height:26px;border-radius:13px;background:#2a2f38;position:relative;transition:background .15s}
-.c2-swrow .tg:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#8b93a1;transition:transform .15s,background .15s}
-.c2-swrow.on .tg{background:rgba(240,160,48,.35)}
-.c2-swrow.on .tg:after{transform:translateX(20px);background:var(--c2acc)}
-.c2-pr{display:flex;align-items:center;gap:8px}
-.c2-pr span{color:var(--c2mut)}
-.c2-wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.c2-ck{display:flex;align-items:center;gap:9px;height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--c2line);background:var(--c2card);color:var(--c2txt);font-size:13px;font-weight:700;text-align:left;width:100%}
-.c2-ck .bx{flex:0 0 18px;height:18px;border-radius:5px;border:1.5px solid #3a404b;box-sizing:border-box;position:relative}
-.c2-ck.on{border-color:var(--c2acc);background:rgba(240,160,48,.1)}
-.c2-ck.on .bx{background:var(--c2acc);border-color:var(--c2acc)}
-.c2-ck.on .bx:after{content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;border:solid #121212;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
-.c2-ck .dt{flex:0 0 8px;height:8px;border-radius:50%}
-.c2-pills{display:flex;flex-wrap:wrap;gap:8px}
-.c2-pk{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:11px;border:1px solid var(--c2line);background:var(--c2card);color:var(--c2txt);font-size:12.5px;font-weight:700}
-.c2-pk i{width:9px;height:9px;border-radius:50%}
-.c2-pk.on{border-color:var(--pc,var(--c2acc));background:var(--pb,rgba(240,160,48,.12));font-weight:800}
-.c2-qp{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.c2-qp button{height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--c2line);background:var(--c2card);color:#c4cad4;font-size:12px;font-weight:700}
-.c2-qp button.on{border-color:var(--c2acc);background:rgba(240,160,48,.14);color:var(--c2acc);font-weight:800}
-.c2-fact{position:sticky;bottom:0;display:flex;gap:10px;margin:18px -16px 0;padding:14px 16px 6px;background:linear-gradient(180deg,rgba(16,17,22,0),#101116 30%)}
-.c2-fact .c2-btn{height:52px;border-radius:14px;font-size:14px;text-transform:none;letter-spacing:0}
-.c2-fact .c2-btn.ghost{flex:0 0 120px}
-.c2-fact .c2-btn:not(.ghost){flex:1;box-shadow:0 10px 30px rgba(240,160,48,.32)}
-/* yordam oynasi */
-.c2-steps{display:grid;gap:8px;margin-top:14px}
-.c2-steps div{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--c2card);border:1px solid var(--c2line2);font-size:13px;font-weight:700}
-.c2-steps b{flex:0 0 30px;height:30px;border-radius:9px;background:var(--c2acc);color:#121212;font-family:var(--c2disp);display:flex;align-items:center;justify-content:center;font-weight:800}
-.c2-faq{border:1px solid var(--c2line2);background:var(--c2card);border-radius:14px;padding:0 14px;margin-bottom:8px;transition:border-color .15s}
-.c2-faq[open]{border-color:rgba(240,160,48,.55)}
-.c2-faq summary{list-style:none;cursor:pointer;padding:14px 22px 14px 0;font-size:13.5px;font-weight:800;position:relative}
-.c2-faq summary::-webkit-details-marker{display:none}
-.c2-faq summary:after{content:"+";position:absolute;right:0;top:12px;font-size:18px;color:var(--c2mut);font-weight:700}
-.c2-faq[open] summary:after{content:"–"}
-.c2-faq p{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:#a3aab6}
-/* natija */
-.c2-ok{text-align:center;padding:10px 4px}
-.c2-ok .big{width:72px;height:72px;margin:6px auto 0;border-radius:22px;display:flex;align-items:center;justify-content:center;background:rgba(63,208,122,.12);border:1px solid rgba(63,208,122,.35);box-shadow:0 0 40px rgba(63,208,122,.25)}
-.c2-ok .big.wait{background:rgba(240,160,48,.12);border-color:rgba(240,160,48,.4);box-shadow:0 0 40px rgba(240,160,48,.25)}
-.c2-ok h3{margin:14px 0 6px;font-family:var(--c2disp);font-size:22px;font-weight:800;text-transform:uppercase}
+.sk-rec{display:flex;gap:10px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}
+.sk-rec::-webkit-scrollbar{display:none}
+.sk-rc{position:relative;flex:0 0 150px;padding:12px;border-radius:18px;background:linear-gradient(160deg,#1f2433,#16181d 70%);border:1px solid var(--skl);color:#fff;text-align:left;overflow:hidden}
+.sk-rc .pr{font-weight:800;font-size:15px;color:var(--skg)}
+.sk-rc .pr small{font-size:11px;color:var(--skm);font-weight:600}
+.sk-rc .wr{position:absolute;top:12px;right:12px;font-size:12px;font-weight:800;color:var(--skm)}
+.sk-rc .im{height:74px;display:flex;align-items:center;justify-content:center;margin:6px 0}
+.sk-rc .im img{max-width:100%;max-height:70px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+.sk-rc .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-rc .ag{font-size:11.5px;color:var(--skm);margin-top:2px}
+/* ---- Bozor ---- */
+.sk-gtabs{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
+.sk-gtabs::-webkit-scrollbar{display:none}
+.sk-gtab{flex:0 0 auto;display:flex;align-items:center;gap:9px;height:48px;padding:0 16px 0 7px;border-radius:14px;border:1.5px solid var(--skl);background:var(--skp);color:#cfd5df;font-weight:700;font-size:15px}
+.sk-gtab .gi{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--gc);color:#fff;font-family:var(--skd);font-weight:800;font-size:11px}
+.sk-gtab.on{border-color:#4fc3f7;background:rgba(79,195,247,.08);color:#fff;box-shadow:0 0 0 3px rgba(79,195,247,.12)}
+.sk-gtab.off{opacity:.45}
+.sk-tool{margin:14px 16px 0;padding:12px;border-radius:22px;border:1px solid var(--skl);background:rgba(24,25,30,.92)}
+.sk-tool .r1{display:flex;gap:10px}
+.sk-fb{position:relative;flex:0 0 52px;height:52px;border-radius:14px;border:none;background:var(--skp3);color:#e6eaf0;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-fb i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--ska);color:#141414;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px #18191e}
+.sk-srch{flex:1;min-width:0;height:52px;border-radius:14px;border:1.5px solid var(--skl2);background:#141519;display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--skm)}
+.sk-srch:focus-within{border-color:var(--ska)}
+.sk-srch input{flex:1;min-width:0;border:none;outline:none;background:none;color:#fff;font:inherit;font-size:16px}
+.sk-tool .r2{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.sk-sel{position:relative;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:14px;background:var(--skp3);color:#fff}
+.sk-sel select{appearance:none;-webkit-appearance:none;border:none;outline:none;background:none;color:inherit;font:inherit;font-size:15px;font-weight:600;padding-right:18px}
+.sk-sel select option{background:#1e2027;color:#fff}
+.sk-sel .dn{position:absolute;right:12px;pointer-events:none;color:var(--skm)}
+.sk-tu{display:inline-flex;align-items:center;gap:8px;border:none;background:none;color:var(--ska);font-size:15px;font-weight:800;padding:8px 2px}
+.sk-tu.ok{color:var(--skg)}
+.sk-cats{display:flex;gap:8px;margin:12px 16px 0;padding:8px;border-radius:20px;border:1px solid var(--skl);background:rgba(24,25,30,.92);overflow-x:auto;scrollbar-width:none}
+.sk-cats::-webkit-scrollbar{display:none}
+.sk-cat{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:13px;border:none;background:none;color:#c8ced8;font-weight:700;font-size:14px;white-space:nowrap}
+.sk-cat svg{color:#8a93a3}
+.sk-cat.on{background:var(--ska);color:#141414}
+.sk-cat.on svg{color:#141414}
+.sk-wpn{display:flex;gap:8px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
+.sk-wpn::-webkit-scrollbar{display:none}
+.sk-wpn button{flex:0 0 auto;height:38px;padding:0 14px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#c8ced8;font-weight:700;font-size:13px}
+.sk-wpn button.on{border-color:var(--ska);color:var(--ska);background:rgba(255,184,28,.08)}
+.sk-act{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px 0}
+.sk-act button{height:34px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,184,28,.5);background:rgba(255,184,28,.1);color:var(--ska);font-weight:800;font-size:13px}
+.sk-bar{display:flex;align-items:baseline;justify-content:space-between;padding:22px 16px 12px}
+.sk-bar b{font-family:var(--skd);font-weight:800;font-size:19px;letter-spacing:-.3px}
+.sk-bar span{font-size:13px;color:var(--skm);font-weight:600}
+.sk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 16px}
+.sk-card{position:relative;display:flex;flex-direction:column;width:100%;padding:0;text-align:left;color:#fff;border-radius:22px;overflow:hidden;background:var(--skp);border:1px solid var(--skl);transition:transform .14s,border-color .14s}
+.sk-card:active{transform:scale(.97)}
+.sk-card:focus-visible,.sk-card:hover{border-color:rgba(255,184,28,.55);background-image:radial-gradient(rgba(255,184,28,.16) 1.2px,transparent 1.3px);background-size:14px 14px}
+.sk-cim{position:relative;height:150px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side at 50% 55%,var(--rg,rgba(176,195,217,.18)),transparent 100%)}
+.sk-cim .wm{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;opacity:.06;color:#fff}
+.sk-cim img{position:relative;max-width:84%;max-height:118px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));transition:transform .25s}
+.sk-card:active .sk-cim img{transform:scale(1.05)}
+.sk-cim:after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:2px;border-radius:2px;background:var(--rc,#b0c3d9);opacity:.9}
+.sk-ct{position:absolute;top:12px;left:12px;display:flex;gap:5px}
+.sk-ct span{padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);font-size:11px;font-weight:800;color:#d5dae2}
+.sk-ct .st{color:#ff8a4c}.sk-ct .sv{color:#f3d36a}.sk-ct .st2{color:#ffc94d}
+.sk-fav{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:none;color:#9aa3b2;fill:none;stroke:currentColor;stroke-width:2}
+.sk-fav svg{fill:inherit;stroke:inherit}
+.sk-fav.on{color:#ff5d6c;fill:#ff5d6c}
+.sk-fav:active{transform:scale(.85)}
+.sk-cb{padding:12px 14px 14px}
+.sk-cp{font-weight:800;font-size:17px;letter-spacing:-.2px;white-space:nowrap}
+.sk-cp small{font-size:12px;color:var(--skm);font-weight:600;margin-left:4px}
+.sk-cp.na{font-size:13.5px;color:var(--skm);font-weight:600}
+.sk-cn{font-size:13.5px;color:var(--skm);font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-cg{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;margin-top:12px;border-radius:13px;background:var(--skp3);color:#fff;font-weight:700;font-size:14.5px;transition:background .15s,color .15s}
+.sk-card:hover .sk-cg,.sk-card:focus-visible .sk-cg{background:var(--ska);color:#141414}
+.sk-more{display:block;width:calc(100% - 32px);margin:14px 16px 0;height:52px;border-radius:16px;border:1.5px solid var(--skl2);background:var(--skp);color:#fff;font-weight:800;font-size:15px}
+.sk-x{display:flex;align-items:center;gap:14px;width:calc(100% - 32px);margin:16px 16px 0;padding:16px;border-radius:20px;border:1px solid rgba(86,150,220,.35);background:linear-gradient(135deg,#1a2738,#15181e 70%);color:#fff;text-align:left}
+.sk-x .ic{flex:0 0 48px;height:48px;border-radius:14px;background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547);display:flex;align-items:center;justify-content:center}
+.sk-x .ic svg{width:28px;height:28px}
+.sk-x .tx{flex:1;min-width:0;font-size:13px;color:var(--skm)}
+.sk-x .tx b{display:block;font-size:15px;color:#fff;margin-bottom:2px}
+/* ---- Skin sahifasi ---- */
+.sk-page{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;background:var(--skbg);transform:translateX(100%);transition:transform .34s cubic-bezier(.2,.8,.2,1)}
+.sk-page.on{transform:none}
+.sk-page .sk-main{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+.sk-crumb{flex:1;min-width:0;font-size:14px;color:var(--skm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-crumb b{color:#d8dde5;font-weight:600}
+.sk-stage{position:relative;margin:14px 16px 0;padding:16px;border-radius:26px;border:1px solid var(--skl);background:var(--skp);overflow:hidden}
+.sk-stage .glow{position:absolute;left:50%;top:48%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(closest-side,var(--rg,rgba(120,140,190,.3)),transparent);pointer-events:none}
+.sk-stage .bd{position:relative;display:flex;gap:10px;align-items:center}
+.sk-badge{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 16px;border-radius:14px;font-weight:800;font-size:15px}
+.sk-badge.bolt{width:46px;padding:0;border:1.5px solid rgba(255,184,28,.6);background:rgba(255,184,28,.12);color:var(--ska)}
+.sk-badge.av{border:1.5px dashed rgba(48,209,88,.6);background:rgba(48,209,88,.08);color:#4fe07a}
+.sk-stage .im{position:relative;height:230px;display:flex;align-items:center;justify-content:center}
+.sk-stage .im img{max-width:92%;max-height:210px;object-fit:contain;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+.sk-stk{position:absolute;right:4px;top:6px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.sk-stk span{max-width:130px;padding:3px 8px;border-radius:7px;background:rgba(0,0,0,.5);font-size:10.5px;font-weight:700;color:#d5dae2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-stage .ft{position:relative;display:flex;gap:10px;align-items:center}
+.sk-insp{display:inline-flex;align-items:center;gap:10px;height:50px;padding:0 18px;border-radius:15px;border:1px solid var(--skl2);background:rgba(0,0,0,.25);color:#fff;font-weight:700;font-size:15px;text-decoration:none}
+.sk-fl{position:relative;margin-top:16px}
+.sk-fl .lb{display:flex;justify-content:space-between;font-size:14px;color:var(--skm);margin-bottom:10px}
+.sk-fl .lb b{color:#fff}
+.sk-fl .bar{position:relative;height:6px;border-radius:4px;background:linear-gradient(90deg,#4fbf77 0 7%,#8bc34a 7% 15%,#e2c044 15% 38%,#ef9a3c 38% 45%,#e5534b 45% 100%)}
+.sk-fl .bar i{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:5px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.sk-title{margin:22px 16px 0;font-family:var(--skd);font-weight:800;font-size:30px;line-height:1.1;letter-spacing:-.6px}
+.sk-rch{display:inline-flex;margin:14px 16px 0;padding:10px 16px;border-radius:14px;font-weight:800;font-size:16px}
+.sk-copy{display:flex;align-items:center;gap:10px;margin:16px 16px 0;padding:0;border:none;background:none;color:var(--skm);font-size:16px;text-align:left}
+.sk-dt{margin:18px 16px 0}
+.sk-dt div{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:16px}
+.sk-dt dt{color:var(--skm)}
+.sk-dt div:after{content:"";order:2;flex:1;border-bottom:1px solid var(--skl2);margin-top:6px}
+.sk-dt dd{order:3;margin:0;font-weight:700;text-align:right}
+.sk-pz{display:flex;align-items:baseline;gap:14px;margin:22px 16px 0}
+.sk-pz b{font-family:var(--skd);font-weight:800;font-size:36px;letter-spacing:-.8px;color:var(--skg);text-shadow:0 0 30px rgba(48,209,88,.25)}
+.sk-pz span{font-size:14px;color:var(--skm);font-weight:600}
+.sk-pz a{margin-left:auto;font-size:16px;color:var(--skm);text-decoration:none;font-weight:600}
+.sk-page .sk-buyb{margin:16px 16px 0;width:calc(100% - 32px);height:62px;font-size:18px;border-radius:18px}
+.sk-offs{margin:24px 16px 0;padding:18px 16px;border-radius:26px;border:1px solid var(--skl);background:rgba(24,25,30,.92)}
+.sk-offs h3{margin:0 0 16px;padding-bottom:16px;border-bottom:1px solid var(--skl);font-family:var(--skd);font-weight:800;font-size:21px;letter-spacing:-.4px}
+.sk-offs h3 span{color:var(--skm)}
+.sk-wt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sk-wt button{position:relative;display:block;padding:14px 14px 14px 18px;border-radius:18px;border:1.5px solid var(--skl);background:#141519;color:#fff;text-align:left;overflow:hidden}
+.sk-wt button:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--wc)}
+.sk-wt b{display:block;font-weight:800;font-size:19px;color:var(--wc)}
+.sk-wt small{display:block;font-size:13px;color:var(--skm);margin-top:2px}
+.sk-wt em{display:block;font-style:normal;font-weight:800;font-size:16px;margin-top:12px}
+.sk-wt i{position:absolute;top:14px;right:12px;padding:2px 9px;border-radius:999px;background:var(--skp3);color:#c8ced8;font-style:normal;font-size:12px;font-weight:700}
+.sk-wt button.on{border-color:var(--ska);background:rgba(255,184,28,.12)}
+.sk-og{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.sk-oc{display:flex;flex-direction:column;padding:12px;border-radius:20px;border:1px solid var(--skl);background:radial-gradient(160px 130px at 50% 42%,var(--rg,rgba(80,100,150,.22)),transparent 75%),#1a1c22}
+.sk-oc .t{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--skm)}
+.sk-oc .t b{font-weight:800}
+.sk-oc .im{position:relative;height:96px;display:flex;align-items:center;justify-content:center;margin:6px 0}
+.sk-oc .im img{max-width:92%;max-height:86px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+.sk-oc .cube{position:absolute;right:0;bottom:0;width:32px;height:32px;border-radius:10px;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;color:#fff}
+.sk-oc .cube svg{width:17px;height:17px}
+.sk-oc .n{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-oc .x{font-size:11.5px;color:var(--skm);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-oc .p{font-weight:800;font-size:17px;color:var(--skg);margin-top:6px}
+.sk-oc .sk-btn{height:46px;margin-top:10px;font-size:15px;border-radius:13px;box-shadow:none}
+/* ---- Tasdiqlash oynasi ---- */
+.sk-modal{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,8,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:skFade .2s both}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+.sk-mb{width:100%;max-width:440px;max-height:calc(100% - 20px);overflow-y:auto;border-radius:26px;border:1px solid var(--skl);background:#18191e;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:skPop .28s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes skPop{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
+.sk-mh{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px}
+.sk-mh b{font-family:var(--skd);font-weight:800;font-size:20px;letter-spacing:-.4px}
+.sk-mh button{width:44px;height:44px;border-radius:50%;border:none;background:var(--skp3);color:#c8ced8;display:flex;align-items:center;justify-content:center}
+.sk-mi{display:flex;align-items:center;gap:12px;margin:0 16px;padding:12px;border-radius:18px;background:var(--skp3)}
+.sk-mi .w{flex:0 0 auto;font-weight:800;font-size:15px}
+.sk-mi .th{flex:0 0 66px;height:56px;border-radius:12px;background:#121317;display:flex;align-items:center;justify-content:center}
+.sk-mi .th img{max-width:58px;max-height:46px;object-fit:contain}
+.sk-mi .nm{flex:1;min-width:0}
+.sk-mi .nm b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-mi .nm span{display:block;font-size:13px;color:var(--skm);margin-top:3px}
+.sk-mi .pr{flex:0 0 auto;font-weight:800;font-size:15px}
+.sk-mt{margin-top:16px;padding:16px 20px;border-top:1px solid var(--skl)}
+.sk-mt small{display:block;font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--skm);text-transform:uppercase}
+.sk-mt b{display:block;margin-top:4px;font-family:var(--skd);font-weight:800;font-size:28px;letter-spacing:-.6px}
+.sk-mt .bl{font-size:13px;color:var(--skm);margin-top:4px}
+.sk-mtu{padding:0 20px;margin-top:16px}
+.sk-mtu label{display:block;font-size:13px;font-weight:700;color:var(--skm);margin-bottom:8px}
+.sk-inp{width:100%;height:52px;border-radius:14px;border:1.5px solid var(--skl2);background:#121317;color:#fff;padding:0 14px;font:inherit;font-size:15px;outline:none}
+.sk-inp:focus{border-color:var(--ska)}
+.sk-note{font-size:13px;line-height:1.55;color:var(--skm);margin-top:8px}
+.sk-note a{color:var(--ska);font-weight:800;text-decoration:none}
+.sk-mf{display:grid;gap:10px;padding:16px 16px 18px}
+.sk-mf .sk-btn{height:56px;border-radius:16px;font-size:17px}
+.sk-mf .sk-btn.gh{background:var(--skp3);border:none}
+.sk-ok{padding:26px 20px 6px;text-align:center}
+.sk-ok .ic{width:86px;height:86px;margin:0 auto;border-radius:28px;display:flex;align-items:center;justify-content:center;background:rgba(48,209,88,.12);border:1.5px solid rgba(48,209,88,.45);box-shadow:0 0 50px rgba(48,209,88,.3)}
+.sk-ok .ic.w{background:rgba(255,184,28,.12);border-color:rgba(255,184,28,.5);box-shadow:0 0 50px rgba(255,184,28,.3)}
+.sk-ok h3{margin:18px 0 8px;font-family:var(--skd);font-weight:800;font-size:22px}
+.sk-ok p{margin:0;font-size:14.5px;line-height:1.55;color:var(--skm2)}
+/* ---- Buyurtmalar ---- */
+.sk-ph{padding:22px 16px 0}
+.sk-ph h2{margin:0;font-family:var(--skd);font-weight:800;font-size:26px;letter-spacing:-.5px}
+.sk-ph p{margin:6px 0 0;font-size:14px;color:var(--skm)}
+.sk-chips{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
+.sk-chips::-webkit-scrollbar{display:none}
+.sk-chips button{flex:0 0 auto;height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#c8ced8;font-weight:700;font-size:14px}
+.sk-chips button.on{background:var(--ska);border-color:var(--ska);color:#141414}
+.sk-ol{display:grid;gap:12px;padding:14px 16px 0}
+.sk-or{display:flex;gap:12px;padding:12px;border-radius:20px;border:1px solid var(--skl);background:var(--skp)}
+.sk-or .th{flex:0 0 76px;height:76px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side,rgba(255,184,28,.14),transparent),#121317}
+.sk-or .th img{max-width:68px;max-height:58px;object-fit:contain}
+.sk-or .md{flex:1;min-width:0}
+.sk-or .md b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-or .md small{display:block;font-size:12.5px;color:var(--skm);margin-top:3px}
+.sk-or .rw{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.sk-or .pr{font-weight:800;font-size:15px}
+.sk-st{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:9px;font-size:12px;font-weight:800}
+.sk-st.p{background:rgba(255,184,28,.12);color:var(--ska)}
+.sk-st.d{background:rgba(48,209,88,.12);color:#4fe07a}
+.sk-st.c{background:rgba(239,83,80,.12);color:#ff7b78}
+.sk-or .ac{display:inline-flex;margin-top:10px;height:36px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,184,28,.5);background:none;color:var(--ska);font-weight:800;font-size:13px;align-items:center;gap:6px}
+/* ---- Profil ---- */
+.sk-me{display:flex;align-items:center;gap:14px;margin:22px 16px 0;padding:18px;border-radius:24px;border:1px solid var(--skl);background:radial-gradient(260px 160px at 100% 0%,rgba(255,184,28,.14),transparent 70%),var(--skp)}
+.sk-me .av{position:relative;flex:0 0 64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,184,28,.55);background:linear-gradient(135deg,#2b3550,#121726);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px}
+.sk-me b{display:block;font-family:var(--skd);font-weight:800;font-size:19px}
+.sk-me small{display:block;font-size:13.5px;color:var(--skm);margin-top:4px}
+.sk-wal{margin:12px 16px 0;padding:18px;border-radius:24px;border:1px solid rgba(255,184,28,.35);background:linear-gradient(180deg,#1d1b14,#16161a)}
+.sk-wal small{font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--skm);text-transform:uppercase}
+.sk-wal b{display:block;margin-top:6px;font-family:var(--skd);font-weight:800;font-size:30px;letter-spacing:-.6px}
+.sk-wal .sk-btn{margin-top:14px}
+.sk-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 16px 0}
+.sk-tiles div{padding:14px 10px;border-radius:18px;border:1px solid var(--skl);background:var(--skp);text-align:center}
+.sk-tiles b{display:block;font-family:var(--skd);font-weight:800;font-size:22px}
+.sk-tiles span{display:block;font-size:12px;color:var(--skm);margin-top:4px}
+.sk-list{margin:12px 16px 0;border-radius:22px;border:1px solid var(--skl);background:var(--skp);overflow:hidden}
+.sk-list button{display:flex;align-items:center;gap:14px;width:100%;min-height:62px;padding:12px 16px;border:none;border-bottom:1px solid var(--skl);background:none;color:#fff;font-size:15px;font-weight:600;text-align:left}
+.sk-list button:last-child{border-bottom:none}
+.sk-list .ic{flex:0 0 38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--skp3);color:var(--ska)}
+.sk-list .tx{flex:1;min-width:0}
+.sk-list .tx small{display:block;font-size:12.5px;color:var(--skm);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-list .ar{color:var(--skm)}
+/* pastdan chiqadigan oynalar (filtr, trade havola, yordam) */
+.sheet.sks{--skp:#18191e;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skm:#7d8999;--skm2:#a3adbb;--ska:#ffb81c;--skg:#30d158;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;
+  font-family:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;background:#141519;border-top-color:#2a2d35}
+.sheet.sks .grab{background:#353a45}
+.sheet.sks .sheet-x,.sheet.sks .sheet-back{background:#262931;color:#c8ced8;border-color:#353a45}
+.sks h3.t{margin:4px 0 0;font-family:var(--skd);font-weight:800;font-size:22px;letter-spacing:-.4px}
+.sks .sec{margin:22px 0 10px;font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--skm);text-transform:uppercase}
+.sks .sw{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:16px;padding:16px;border-radius:18px;border:1px solid var(--skl);background:var(--skp);color:#fff;font-size:15px;font-weight:700}
+.sks .sw .tg{flex:0 0 50px;height:30px;border-radius:15px;background:#353a45;position:relative;transition:background .15s}
+.sks .sw .tg:after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#9aa3b2;transition:transform .15s,background .15s}
+.sks .sw.on .tg{background:rgba(255,184,28,.35)}
+.sks .sw.on .tg:after{transform:translateX(20px);background:var(--ska)}
+.sks .pr2{display:flex;align-items:center;gap:10px}
+.sks .pr2 span{color:var(--skm)}
+.sks .qp{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.sks .qp button{height:38px;padding:0 13px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#c8ced8;font-size:13px;font-weight:700}
+.sks .qp button.on{border-color:var(--ska);background:rgba(255,184,28,.12);color:var(--ska)}
+.sks .ck{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border:none;background:none;color:#fff;font-size:15px;font-weight:600;text-align:left}
+.sks .ck .bx{flex:0 0 24px;height:24px;border-radius:7px;border:1.5px solid #4a505c;position:relative}
+.sks .ck.on .bx{background:var(--ska);border-color:var(--ska)}
+.sks .ck.on .bx:after{content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid #141414;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.sks .ck .dt{flex:0 0 10px;height:10px;border-radius:50%}
+.sks .grp{font-size:12px;font-weight:800;letter-spacing:.1em;color:#5d6573;text-transform:uppercase;margin:8px 0 2px}
+.sks .fact{position:sticky;bottom:0;display:flex;gap:10px;margin:20px -16px 0;padding:14px 16px 8px;background:linear-gradient(180deg,rgba(20,21,25,0),#141519 30%)}
+.sks .fact .sk-btn{height:54px;border-radius:16px;font-size:16px}
+.sks .fact .sk-btn.gh{flex:0 0 130px}
+.sks .fact .sk-btn:not(.gh){flex:1}
+.sks .stp{display:grid;gap:10px;margin-top:16px}
+.sks .stp div{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;border:1px solid var(--skl);background:var(--skp);font-size:15px;font-weight:600}
+.sks .stp b{flex:0 0 34px;height:34px;border-radius:11px;background:var(--ska);color:#141414;font-family:var(--skd);display:flex;align-items:center;justify-content:center;font-weight:800}
+/* qo'shimcha: bosh sahifa lentalari, skin sahifasi, kafolat */
+.sk-hero>*{position:relative}
+.sk-hero .art{position:absolute;right:-34px;top:54px;width:220px;height:160px;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.5;transform:rotate(-16deg);animation:skArt 6s ease-in-out infinite}
+.sk-hero .art img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 18px 40px rgba(255,170,0,.4))}
+@keyframes skArt{0%,100%{transform:rotate(-16deg) translateY(0)}50%{transform:rotate(-13deg) translateY(-10px)}}
+.sk-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.sk-all{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:40px;padding:0 6px 0 14px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#fff;font-weight:700;font-size:14px}
+.sk-rail{display:flex;gap:12px;overflow-x:auto;margin:14px -16px 0;padding:0 16px 4px;scrollbar-width:none;scroll-snap-type:x proximity}
+.sk-rail::-webkit-scrollbar{display:none}
+.sk-rail .sk-card{flex:0 0 164px;scroll-snap-align:start}
+.sk-rail .sk-cim{height:128px}
+.sk-ib.sk-fv{color:#9aa3b2;fill:none;stroke:currentColor;stroke-width:2}
+.sk-ib.sk-fv svg{fill:inherit;stroke:inherit}
+.sk-ib.sk-fv.on{color:#ff5d6c;fill:#ff5d6c;border-color:rgba(255,93,108,.45)}
+.sk-fl .bar .sk-fd{position:absolute;top:0;bottom:0;background:rgba(24,25,30,.78)}
+.sk-guar{display:flex;gap:12px;align-items:flex-start;margin:16px 16px 0;padding:14px;border-radius:18px;border:1px solid rgba(48,209,88,.22);background:rgba(48,209,88,.06);font-size:13.5px;line-height:1.55;color:var(--skm2)}
+.sk-guar svg{flex:0 0 22px;color:#4fe07a}
+.sk-bal svg{flex:0 0 auto}
+.sk-list .ic svg{width:20px;height:20px}
+.sk-x>svg{color:var(--skm)}
 /* admin boshqaruv paneli (to'liq ekran) */
 .adm{position:fixed;inset:0;z-index:90;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(env(safe-area-inset-top) + 0px) 0 env(safe-area-inset-bottom)}
@@ -1326,7 +1456,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.5";
+var CLIENT_BUILD="2026-10-31.6";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -1888,7 +2018,7 @@ function loadMe(cb){
     var sig=JSON.stringify(r);
     var changed=sig!==_meSig;
     _meSig=sig;
-    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null,cs2:r.cs2===true};
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null,cs2:r.cs2===true,skins:r.skins&&typeof r.skins==="object"?r.skins:null};
     ME_ERROR=false;
     if(ME.isAdmin&&!GAMES.admin)loadGames();
     if(!_adminDeepDone){_adminDeepDone=true;setTimeout(handleAdminDeepLink,350);}
@@ -2434,9 +2564,13 @@ function stockOf(it){
   var n=Number(it.stock);return it.stock===""||it.stock==null||isNaN(n)?null:n;
 }
 function stockBadgeText(n){return n===null?"":(n<=0?t("out_stock"):n+" "+t("in_stock"));}
+// Skin o'yinining belgisi (mahsulot kartochkasi va katalog plitkasi uchun)
+function skTile(g,cls){var G=SK_G[g];return '<div class="'+cls+'" style="background:radial-gradient(circle at 50% 38%,'+G.c+'55,#0d0e12 70%)">'
+  +(g==="cs2"?CS2_SVG:'<span style="width:58%;height:58%;border-radius:22%;display:flex;align-items:center;justify-content:center;background:'+G.bg+';color:#fff;font:800 clamp(15px,5vw,24px)/1 Unbounded,Inter,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45)">'+G.mk+'</span>')+'</div>';}
+function skGamesOn(){var o=ME.skins;if(!o)return ME.cs2?["cs2"]:[];return SK_GK.filter(function(g){return o[g];});}
 function xProductCard(k){
-  if(k==="cs2")return '<button class="pcard" data-cs2open="1"><div class="ptile" style="background:radial-gradient(circle at 50% 40%,#3a2608,#0b0d10 72%)">'+CS2_SVG+'</div>'
-    +'<div class="pbody"><div class="nm">CS2 skinlar</div><div class="ct">Steam\'ga darhol</div></div></button>';
+  if(SK_G[k])return '<button class="pcard" data-cs2open="'+k+'">'+skTile(k,"ptile")
+    +'<div class="pbody"><div class="nm">'+SK_G[k].n+' skinlar</div><div class="ct">Steam\'ga darhol</div></div></button>';
   if(k==="steam")return '<button class="pcard" data-xopen="steam"><div class="ptile" style="background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547)">'+STEAM_SVG+'</div>'
     +'<div class="pbody"><div class="nm">Steam hamyon</div><div class="ct">Istalgan summa</div></div></button>';
   return '<button class="pcard" data-xopen="vnum"><div class="ptile" style="background:linear-gradient(135deg,#3b2a05,#0b1020)"><span class="emj">📱</span></div>'
@@ -2564,7 +2698,7 @@ function categoryDetailHTML(kind,labelKey){
   var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
   var items=activeItems(kind).filter(function(x){return x.fulfill!=="telegram_gift";});
   return '<button class="backrow" id="catBackBtn">'+ic("arrowLeft",16)+' <b>'+esc(label)+'</b></button>'
-    +productGridHTML(items,kind==="telegram"?["vnum"]:kind==="games"?(ME.cs2?["cs2"]:[]).concat(gamesOf("games").map(gameCardHTML),["steam"]):[]);
+    +productGridHTML(items,kind==="telegram"?["vnum"]:kind==="games"?skGamesOn().concat(gamesOf("games").map(gameCardHTML),["steam"]):[]);
 }
 /* ===== Telegram Sovg'alar — to'liq ekranli sahifa (Limited / Oddiy tablar) ===== */
 function giftHubItems(){
@@ -2772,7 +2906,8 @@ function gIconSVG(icon,tier){
   return s+'</svg>';
 }
 function steamTileIf(q){
-  var cs=ME.cs2&&(!q||"cs2 counter strike skin skinlar".indexOf(q)!==-1)?'<button class="gtile" data-cs2open="1"><div class="gti" style="background:radial-gradient(circle at 50% 40%,#3a2608,#0b0d10 72%)">'+CS2_SVG+'</div><div class="gtn">CS2 skinlar</div></button>':"";
+  var kw={cs2:"cs2 counter strike skin skinlar",dota2:"dota 2 dota2 skin skinlar",rust:"rust skin skinlar"};
+  var cs=skGamesOn().filter(function(g){return !q||kw[g].indexOf(q)!==-1;}).map(function(g){return '<button class="gtile" data-cs2open="'+g+'">'+skTile(g,"gti")+'<div class="gtn">'+SK_G[g].n+' skinlar</div></button>';}).join("");
   if(q&&"steam hamyon".indexOf(q)===-1)return cs;
   return cs+'<button class="gtile" data-xopen="steam"><div class="gti" style="background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547)">'+STEAM_SVG+'</div><div class="gtn">Steam</div></button>';
 }
@@ -4489,7 +4624,7 @@ var ADM_TILES=[
     ["catalog","clipboard","#0ea5e9","Mahsulotlar","Katalog, narx, zaxira"],
     ["games","gamepad","#ef4444","O'yinlar va liniyalar","MooGold, G2Bulk, Smile"],
     ["nakrutka","trendUp","#10b981","Nakrutka","Xizmatlar, buyurtmalar"],
-    ["cs2","gamepad","#f0a030","CS2 skinlar","lis-skins, kurs, ustama"],
+    ["cs2","gamepad","#f0a030","Skinlar do'koni","CS2 · Dota 2 · Rust"],
     ["cats","clipboard","#6366f1","Kategoriyalar","Bo'limlar ko'rinishi"],
     ["deliveries","key","#14b8a6","Yetkazilganlar","Sotilganlar qidiruvi"],
     ["reviews","star","#eab308","Sharhlar","Tasdiqlash, tahrirlash"]]],
@@ -4648,259 +4783,637 @@ function promoErrText(e){
   if(r.reason==="already_used")return "Bu promo-kodni allaqachon ishlatgansiz";
   return t("promo_bad");
 }
-/* ================= CS2 skinlar do'koni (alohida oyna, to'q gaming uslub) =================
-   Katalog — barcha CS2 skinlari (toifa, qidiruv); narx va takliflar — jonli bozordan (lis-skins).
-   Xarid: mijozning Steam trade havolasi bir marta saqlanadi → skin to'g'ridan-to'g'ri Steam'ga keladi. */
+/* ================= Skinlar do'koni (CS2 · Dota 2 · Rust) — alohida do'kon =================
+   Mahsulot kartochkasi bosilganda shu kartochkadan butun ekranga ochiladi. Ichida o'z bo'limlari bor:
+   Bosh sahifa / Bozor / Buyurtmalar / Profil. Narx va takliflar — jonli bozordan (lis-skins);
+   skin mijozning Steam trade havolasiga to'g'ridan-to'g'ri yuboriladi. */
 var CS2_SVG='<svg viewBox="0 0 48 48" width="56%" height="56%" fill="none" stroke="#f0a030" stroke-width="2.6" stroke-linecap="round"><circle cx="24" cy="24" r="12.5"/><path d="M24 4.5v9M24 34.5v9M4.5 24h9M34.5 24h9"/><circle cx="24" cy="24" r="2.3" fill="#f0a030" stroke="none"/></svg>';
-var C2={cat:"",q:"",sort:"",page:0,items:[],more:false,loading:false,err:"",info:null,seq:0,priced:false,next:"",total:0,w:"",weapons:[],f:{fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false},recent:null,favs:[]};
-var C2_CATS=[["","Hammasi"],["new","Yangi"],["knife","Pichoqlar"],["gloves","Qo'lqoplar"],["rifle","Avtomatlar"],["sniper","Snayperlar"],["pistol","To'pponchalar"],["smg","PP"],["heavy","Og'ir"]];
+var SK_G={
+  cs2:{n:"CS2",full:"Counter-Strike 2",mk:"CS",c:"#f0a030",bg:"linear-gradient(145deg,#f7b53c,#c25e0c)",app:730,ph:"AK-47, Karambit, AWP…"},
+  dota2:{n:"Dota 2",full:"Dota 2",mk:"D2",c:"#e2483a",bg:"linear-gradient(145deg,#ec5a43,#7a160e)",app:570,ph:"Pudge, Arcana, kuryer…"},
+  rust:{n:"Rust",full:"Rust",mk:"R",c:"#d9773f",bg:"linear-gradient(145deg,#e0844a,#6b2c10)",app:252490,ph:"AK-47, Hoodie, eshik…"}
+};
+var SK_GK=["cs2","dota2","rust"];
+var SK_CATS={
+  cs2:[["knife","Pichoqlar"],["gloves","Qo'lqoplar"],["rifle","Avtomatlar"],["sniper","Snayperlar"],["pistol","To'pponchalar"],["smg","PP"],["heavy","Og'ir"]],
+  dota2:[["wearable","Kiyimlar"],["courier","Kuryerlar"],["ward","Wardlar"],["treasure","Sandiqlar"],["bundle","To'plamlar"],["taunt","Taunt"],["other","Boshqa"]],
+  rust:[["weapon","Qurollar"],["tool","Asboblar"],["clothing","Kiyimlar"],["deploy","Jihozlar"],["other","Boshqa"]]
+};
+var SK_RAR={
+  cs2:[["contraband","Contraband","#e4ae39"],["covert","Covert","#eb4b4b"],["classified","Classified","#d32ce6"],["restricted","Restricted","#8847ff"],["milspec","Mil-Spec","#4b69ff"],["industrial","Industrial","#5e98d9"],["consumer","Consumer","#b0c3d9"]],
+  dota2:[["arcana","Arcana","#ade55c"],["contraband","Immortal","#e4ae39"],["covert","Ancient","#eb4b4b"],["classified","Legendary","#d32ce6"],["restricted","Mythical","#8847ff"],["milspec","Rare","#4b69ff"],["industrial","Uncommon","#5e98d9"],["consumer","Common","#b0c3d9"]],
+  rust:[]
+};
 var C2_WEAR={FN:"Factory New",MW:"Minimal Wear",FT:"Field-Tested",WW:"Well-Worn",BS:"Battle-Scarred"};
-function c2rc(x){return /^#[0-9a-f]{6}$/i.test(String(x&&x.rc||""))?x.rc:"#b0c3d9";}
+var C2_WCOL={FN:"#3fb950",MW:"#8bc34a",FT:"#d8b520",WW:"#e5852a",BS:"#d94b45"};
+var SK_TYPES=[["st","StatTrak™"],["sv","Souvenir"],["plain","Oddiy"]];
+var SK_SORT=[["","Ommabop avval"],["cheap","Arzon avval"],["expensive","Qimmat avval"],["rare","Noyob avval"]];
+var SK_FAQ=[["Trade havolani qayerdan olaman?","Steam ilovasi yoki saytida: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?». «Savdo havolasi» ostidagi havolani nusxalab, do'kondagi «Trade URL» tugmasiga qo'ying. Bu bir marta qilinadi."],
+  ["Skin qancha vaqtda keladi?","Odatda 1–5 daqiqada Steam'ga savdo taklifi bo'lib keladi. Steam ilovasida «Savdo takliflari»ni ochib qabul qiling."],
+  ["Steam Guard nega kerak?","Steam mobil autentifikatori 7 kundan kam yoqilgan bo'lsa, Steam savdoni bir necha kunga ushlab turadi. Shuning uchun uni oldindan yoqib qo'ying."],
+  ["Skin kelmasa yoki taklifni qabul qilmasam?","Xarid amalga oshmasa yoki savdo bekor bo'lsa, pul balansingizga avtomatik qaytadi. Holati «Buyurtmalar» bo'limida ko'rinadi."],
+  ["Steam akkauntim bloklanmaydimi?","Yo'q. Biz parolingizni so'ramaymiz va akkauntingizga kirmaymiz — skin oddiy Steam savdo taklifi orqali keladi. Faqat trade havolangiz kerak."],
+  ["Float va holat (FN, MW…) nima?","Float — CS2 skinining qanchalik eskirganligi (0 — yangi, 1 — juda eskirgan). FN — Factory New, MW — Minimal Wear, FT — Field-Tested, WW — Well-Worn, BS — Battle-Scarred. Float qancha kichik bo'lsa, skin shuncha toza ko'rinadi."],
+  ["StatTrak™ nima?","Shu qurol bilan qilgan o'ldirishlaringizni sanaydigan hisoblagichli variant. Odatda oddiysidan qimmatroq."]];
+var SK={tab:"home",game:"cs2",games:null,info:null,favs:[],tradeUrl:"",delivered:0,
+  cat:"",q:"",sort:"",page:0,items:[],more:false,loading:false,err:"",seq:0,priced:false,next:"",total:0,w:"",weapons:[],f:null,listGame:"",
+  recent:null,pop:null,popGame:"",ordF:"all",rotT:0,cur:null,mo:null};
+function skF0(){return {fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false};}
+SK.f=skF0();
+var SK_SV=function(p,w,extra){return '<svg viewBox="0 0 24 24" width="'+(w||20)+'" height="'+(w||20)+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'+(extra||"")+'>'+p+'</svg>';};
+var SK_I={
+  back:SK_SV('<path d="M15 18l-6-6 6-6"/>'),
+  close:SK_SV('<path d="M6 6l12 12M18 6L6 18"/>',20),
+  home:SK_SV('<path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h5v-6h4v6h5V9.5"/>',23),
+  market:SK_SV('<path d="M4 8h16l-1.2 11.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8z"/><path d="M8.5 8V6.5a3.5 3.5 0 0 1 7 0V8"/>',23),
+  orders:SK_SV('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8h5M9.5 12h5"/>',23),
+  user:SK_SV('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',23),
+  bolt:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
+  mark:'<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
+  markBig:'<svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
+  plus:SK_SV('<path d="M12 5v14M5 12h14"/>',16,' stroke-width="3"'),
+  search:SK_SV('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',20),
+  sliders:SK_SV('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',22),
+  down:SK_SV('<path d="M6 9l6 6 6-6"/>',16,' stroke-width="2.4"'),
+  link:SK_SV('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',18,' stroke-width="2.2"'),
+  heart:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.7 3.6 4.5 7 4.5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.6 3.2 4.3 6.6-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>',
+  eye:SK_SV('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',20),
+  copy:SK_SV('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',18),
+  shield:SK_SV('<path d="M12 3l8 3v6c0 4.4-3.4 8.2-8 9-4.6-.8-8-4.6-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',22),
+  clock24:SK_SV('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',22),
+  card:SK_SV('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/>',22),
+  check:SK_SV('<path d="M5 12.5l4.5 4.5L19 7.5"/>',16,' stroke-width="2.8"'),
+  checkBig:'<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#4fe07a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  clockBig:'<svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="#ffb81c" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  ext:SK_SV('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',16),
+  help:SK_SV('<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.8"/><path d="M12 17.2h.01"/>',20),
+  chat:SK_SV('<path d="M4 5h16v11H9l-5 4z"/>',20),
+  exit:SK_SV('<path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/>',20),
+  arr:SK_SV('<path d="M9 6l6 6-6 6"/>',18),
+  lock:SK_SV('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',14,' stroke-width="2.4"'),
+  cross:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="7"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>'
+};
+// Toifa belgilari (o'zimiz chizgan, hammasi bitta uslubda)
+var SK_CI={
+  "":'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  "new":'<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+  knife:'<path d="M4 20l5-5"/><path d="M9 15L20 4c0 5-3 9-8 11z"/>',
+  gloves:'<path d="M8 21v-5l-3.5-4 1.8-1.3L9 13V5.5a1.5 1.5 0 0 1 3 0V11V4.5a1.5 1.5 0 0 1 3 0V11V6.5a1.5 1.5 0 0 1 3 0V15c0 3.3-2.2 6-5 6z"/>',
+  rifle:'<path d="M2 10.5h13l2-2h4.5v3h-3l-2 2h-3l-2 5H8.5l2-5H2z"/>',
+  sniper:'<path d="M2 13h20"/><path d="M8 13v3.5L6 19"/><rect x="9" y="8.5" width="7" height="3" rx="1"/><path d="M18 13v3"/>',
+  pistol:'<path d="M4 7.5h15v4h-8l-1 2H8l-1.2 5.5H3.5L5 12H4z"/>',
+  smg:'<path d="M3 9.5h16v3.5h-5l-1 6h-3l1-6H8l-1 3H4z"/><path d="M19 11h2"/>',
+  heavy:'<path d="M2 9.5h17v4.5H2z"/><path d="M7 14v5M13 14l2 5M19 11.5h3"/>',
+  wearable:'<path d="M4.5 15a7.5 7.5 0 0 1 15 0v3h-15z"/><path d="M12 7.5V18M8 18v2.5M16 18v2.5"/>',
+  courier:'<path d="M3 16c5 0 9-3 11-9 1 4 0 7-2 9 3 0 6-2 8-5-1 5-6 9-12 9-2 0-4-1-5-4z"/>',
+  ward:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  treasure:'<rect x="3" y="9" width="18" height="11" rx="2"/><path d="M3 13.5h18M5.5 9a6.5 4.5 0 0 1 13 0"/><path d="M11 12h2v3.5h-2z"/>',
+  bundle:'<path d="M3 7.5l9-4 9 4v9.5l-9 4-9-4z"/><path d="M3 7.5l9 4 9-4M12 11.5V21"/>',
+  taunt:'<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.3l6-.7z"/>',
+  other:'<circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/>',
+  weapon:'<path d="M2 10.5h13l2-2h4.5v3h-3l-2 2h-3l-2 5H8.5l2-5H2z"/>',
+  tool:'<path d="M3.5 20.5l10-10"/><path d="M6 7c4-4 10-4 14 0-3-1-7-.6-10 2.4"/>',
+  clothing:'<path d="M8 3.5l-5 3 2 5 3-1V21h8V10.5l3 1 2-5-5-3c0 2-2 3-4 3s-4-1-4-3z"/>',
+  deploy:'<path d="M3 11l9-7 9 7v9.5H3z"/><path d="M9.5 20.5v-6h5v6"/>'
+};
+function skCi(k,w){return SK_SV(SK_CI[k]||SK_CI.other,w||18);}
+var SK_SPARKS=[[7,12],[88,8],[74,30],[16,46],[93,57],[42,70],[66,84],[10,88],[54,20],[30,33],[80,72]].map(function(p,i){
+  return '<i style="left:'+p[0]+'%;top:'+p[1]+'%;animation-delay:-'+(i*0.9).toFixed(1)+'s"></i>';}).join("");
 function c2Ext(u){try{if(TG&&TG.openLink){TG.openLink(u);return;}}catch(e){}try{window.open(u,"_blank");}catch(e){}}
-function c2Float(f){
-  if(f==null||!isFinite(f))return "";
-  var p=Math.max(0,Math.min(100,f*100));
-  return '<div class="c2-fl"><i style="left:'+p.toFixed(1)+'%"></i></div><div class="c2-flv">'+Number(f).toFixed(4)+'</div>';
-}
-// Taklifning qo'shimchalari: pattern, stikerlar, nom yorlig'i, o'yinda ko'rish
-function c2Extra(o,full){
-  var a=[];
-  if(o.seed!=null)a.push("Pattern "+Number(o.seed));
-  if(o.stk&&o.stk.length)a.push("🏷 "+(full?o.stk.map(esc).join(", "):o.stk.length+" stiker"));
-  if(o.nt)a.push("«"+esc(o.nt)+"»");
-  var h=a.length?'<div class="c2-ex">'+a.join(" · ")+'</div>':'';
-  if(o.insp)h+='<a href="#" class="c2-insp" data-insp="'+esc(o.id)+'">👁 '+(full?'O\'yinda ko\'rish':'Ko\'rish')+'</a>';
-  return h;
-}
 function c2Inspect(id){c2Ext(location.origin+"/api/cs2/inspect?id="+encodeURIComponent(id));}
 document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-insp]");if(a){e.preventDefault();e.stopPropagation();haptic();c2Inspect(a.getAttribute("data-insp"));}},true);
-// Noyoblik rangidan nur (rgba) — kartochka va skin oynasi foni uchun
-function c2rg(rc,a){var h=String(rc||"#b0c3d9").replace("#","");return "rgba("+parseInt(h.slice(0,2),16)+","+parseInt(h.slice(2,4),16)+","+parseInt(h.slice(4,6),16)+","+(a||.32)+")";}
-function c2Card(x){
-  var rc=c2rc(x),fav=C2.favs.indexOf(x.b)!==-1,star=x.cat==="knife"||x.cat==="gloves";
-  return '<button class="c2-card" data-c2b="'+esc(x.b)+'"><div class="c2-im" style="--rc:'+rc+';--rg:'+c2rg(rc,.32)+'">'
-    +(x.img?'<img loading="lazy" src="'+esc(x.img)+'" alt="">':'')
-    +'<div class="c2-tags">'+(star?'<span class="c2-tag sv">★</span>':'')+(x.st?'<span class="c2-tag st">ST™</span>':x.sv?'<span class="c2-tag sv">SV</span>':'')+'</div>'
-    +'<span class="c2-fav'+(fav?' on':'')+'" data-c2fav="'+esc(x.b)+'" role="button" aria-label="Sevimli">'+C2_ICO.heart+'</span></div>'
-    +'<div class="c2-bd"><div class="c2-w">'+esc(x.w||"")+'</div><div class="c2-n">'+esc(x.s||x.b)+'</div>'
-    +(x.from?'<div class="c2-p">'+esc(String(money(x.from)).replace(" so'm",""))+'<small>so\'mdan</small></div>':'<div class="c2-p na">Narxi skin oynasida</div>')
-    +'<div class="c2-go">'+(x.cnt?Number(x.cnt)+' ta taklif':'Ko\'rish')+' <span>→</span></div></div></button>';
+function skRc(x){return /^#[0-9a-f]{6}$/i.test(String(x&&x.rc||""))?x.rc:"#b0c3d9";}
+function skRg(rc,a){var h=String(rc||"#b0c3d9").replace("#","");return "rgba("+parseInt(h.slice(0,2),16)+","+parseInt(h.slice(2,4),16)+","+parseInt(h.slice(4,6),16)+","+(a||.32)+")";}
+function skNum(n){return String(money(n)).replace(" so'm","");}
+function skShort(n){n=Number(n)||0;return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace(".",",")+" mln":n>=1e5?Math.round(n/1000)+" ming":skNum(n);}
+function skOn(g){return !!(SK.games&&SK.games[g]);}
+function skFavKey(g,b){return g==="cs2"?b:g+"|"+b;}
+function skIsFav(g,b){return SK.favs.indexOf(skFavKey(g,b))!==-1;}
+function skFiltN(){var f=SK.f;return (f.fav?1:0)+(f.pmin||f.pmax?1:0)+f.wear.length+f.rar.length+f.types.length+(f.star?1:0);}
+function skEl(id){var r=document.getElementById("sk");return r?(id?r.querySelector("#"+id):r):null;}
+function skImg(src,cls){return src?'<img'+(cls?' class="'+cls+'"':'')+' loading="lazy" src="'+esc(src)+'" alt="" onerror="this.style.visibility=\'hidden\'">':"";}
+function skTitle(x){return x.s&&x.w&&x.w!==x.s&&(x.game||SK.game)==="cs2"?x.w+" | "+x.s:(x.s||x.b||x.name||"");}
+function skLoadFont(){
+  if(document.getElementById("skFont"))return;
+  var l=document.createElement("link");l.id="skFont";l.rel="stylesheet";
+  l.href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Inter+Tight:wght@400;500;600;700;800;900&display=swap";document.head.appendChild(l);
 }
-function c2OfferCard(o,i){
-  var rc=c2rc(o);
-  return '<button class="c2-card" data-c2o="'+i+'"><div class="c2-im" style="--rc:'+rc+';--rg:'+c2rg(rc,.32)+'">'
-    +(o.img?'<img loading="lazy" src="'+esc(o.img)+'" alt="">':'')
-    +'<div class="c2-tags">'+(o.wear?'<span class="c2-tag">'+esc(o.wear)+'</span>':'')+(o.st?'<span class="c2-tag st">ST™</span>':o.sv?'<span class="c2-tag sv">SV</span>':'')+'</div></div>'
-    +'<div class="c2-bd"><div class="c2-w">'+esc(o.w||"")+'</div><div class="c2-n">'+esc(o.s||o.name)+'</div>'+c2Float(o.float)
-    +'<div class="c2-p">'+esc(String(money(o.price)).replace(" so'm",""))+'<small>so\'m</small></div><div class="c2-go">Olish <span>→</span></div></div></button>';
+function skAvatar(){
+  var u=tgUser()||{},ph=/^https:\/\//.test(String(u.photo_url||""))?u.photo_url:"";
+  var l=String(u.first_name||u.username||"V").trim().charAt(0).toUpperCase()||"V";
+  return '<span>'+esc(l)+'</span>'+(ph?'<img src="'+esc(ph)+'" alt="" onerror="this.remove()">':'');
 }
-var C2_RAR=[["contraband","Contraband","#e4ae39"],["covert","Covert · ★","#eb4b4b"],["classified","Classified","#d32ce6"],["restricted","Restricted","#8847ff"],["milspec","Mil-Spec","#4b69ff"],["industrial","Industrial","#5e98d9"],["consumer","Consumer","#b0c3d9"]];
-var C2_WCOL={FN:"#3fb950",MW:"#8bc34a",FT:"#d8b520",WW:"#e5852a",BS:"#d94b45"};
-var C2_TYPES=[["st","StatTrak™"],["sv","Souvenir"],["plain","Oddiy"]];
-function c2F0(){return {fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false};}
-function c2FiltN(){var f=C2.f;return (f.fav?1:0)+(f.pmin||f.pmax?1:0)+f.wear.length+f.rar.length+f.types.length+(f.star?1:0);}
-function c2Home(){return !C2.cat&&!C2.q&&!C2.w&&!c2FiltN();}
-var C2_ICO={
-  sliders:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>',
-  help:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.8"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg>',
-  bolt:'<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.4-3.4 8.2-8 9-4.6-.8-8-4.6-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>',
-  card:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/></svg>',
-  plus:'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
-  heart:'<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.7 3.6 4.5 7 4.5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.6 3.2 4.3 6.6-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>',
-  link:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
-  down:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>',
-  flame:'<svg viewBox="0 0 24 24" width="13" height="13" fill="#ff7a3d" aria-hidden="true"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-3 1.6-4.4 2.5-6 .5 2 1.5 3 2.5 3 0-3-1-5 0-8z"/></svg>',
-  eye:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
-  lock:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>',
-  copy:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>',
-  check:'<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#5fdc92" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-  clock:'<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#f0a030" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-  shieldG:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#5fdc92" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.4-3.4 8.2-8 9-4.6-.8-8-4.6-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>'
-};
-function c2LoadFont(){
-  if(document.getElementById("c2Font"))return;
-  var l=document.createElement("link");l.id="c2Font";l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Oxanium:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap";document.head.appendChild(l);
+/* ---- ochish / yopish (kartochkadan kengayib ochiladi) ---- */
+function openCs2(src,game){
+  closeSheet();skLoadFont();
+  var old=document.getElementById("sk");if(old)old.remove();
+  if(game&&SK_G[game])skResetGame(game);
+  SK.tab="home";SK.cur=null;
+  var el=document.createElement("div");el.id="sk";el.className="sk";
+  el.innerHTML='<div class="sk-bg" aria-hidden="true">'+SK_SPARKS+'</div>'
+    +'<header class="sk-top"><button class="sk-ib" id="skExit" aria-label="Asosiy do\'konga qaytish">'+SK_I.back+'</button>'
+    +'<div class="sk-logo"><span class="mk">'+SK_I.mark+'</span><div>Verion<b>Skins</b></div></div>'
+    +'<button class="sk-bal" id="skBal" aria-label="Balansni to\'ldirish"></button>'
+    +'<button class="sk-av" id="skAv" aria-label="Profil">'+skAvatar()+'</button></header>'
+    +'<main class="sk-main" id="skMain"></main>'
+    +'<nav class="sk-nav" aria-label="Skinlar do\'koni">'+[["home","Bosh sahifa","home"],["market","Bozor","market"],["orders","Buyurtmalar","orders"],["profile","Profil","user"]].map(function(t){
+      return '<button data-sktab="'+t[0]+'"'+(t[0]==="home"?' class="on"':'')+'>'+SK_I[t[2]]+'<span>'+t[1]+'</span></button>';}).join("")+'</nav>';
+  document.body.appendChild(el);document.body.classList.add("sk-open");
+  el.addEventListener("click",skClick);
+  skBal();
+  var shown=false,show=function(){if(shown)return;shown=true;el.classList.add("on");skTab(SK.tab);};
+  var reduce=false;try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+  var r=src&&src.getBoundingClientRect?src.getBoundingClientRect():null;
+  if(!reduce&&r&&r.width>0){
+    var fx=document.createElement("div");fx.className="sk-fx";
+    fx.style.cssText="top:"+r.top+"px;left:"+r.left+"px;width:"+r.width+"px;height:"+r.height+"px";
+    fx.innerHTML='<div class="lg"><span class="mk">'+SK_I.markBig+'</span><span>Verion <b>Skins</b></span></div>';
+    document.body.appendChild(fx);fx.getBoundingClientRect();
+    requestAnimationFrame(function(){fx.style.cssText="top:0;left:0;width:100%;height:100%;border-radius:0";fx.classList.add("go");});
+    setTimeout(show,560);
+    setTimeout(function(){fx.style.opacity="0";},680);
+    setTimeout(function(){fx.remove();},1000);
+  }else show();
+  skInfo(SK.game,function(){if(SK.games&&!skOn(SK.game)){var g=SK_GK.filter(skOn)[0];if(g&&g!==SK.game){skResetGame(g);skInfo(g);}}});
+  SK.recent=null;
+  api("/api/cs2/recent").then(function(r){SK.recent=r.items||[];if(SK.tab==="home")skHomeRec();}).catch(function(){});
 }
-function openCs2(){
-  closeSheet();c2LoadFont();
-  var el=document.getElementById("c2");
-  if(!el){el=document.createElement("div");el.id="c2";el.className="c2";document.body.appendChild(el);}
-  document.body.classList.add("c2-open");
-  el.innerHTML='<div class="c2-head"><button class="c2-back" id="c2Back" aria-label="Orqaga">'+ic("arrowLeft",18)+'</button>'
-    +'<div class="c2-logo"><span class="lb">'+CS2_SVG.replace('width="56%" height="56%"','width="22" height="22"')+'</span><div>CS2 SKINS<small>VERION SHOP</small></div></div>'
-    +'<button class="c2-bal" id="c2Bal" aria-label="Balansni to\'ldirish"></button>'
-    +'<button class="c2-back" id="c2Help" aria-label="Qanday ishlaydi">'+C2_ICO.help+'</button></div>'
-    +'<div aria-hidden="true">'+[[318,150,""],[252,96,"s"],[356,330,""],[24,690,"s"],[340,1080,"s"],[60,1400,"s"]].map(function(p){return '<i class="c2-em '+p[2]+'" style="left:'+p[0]+'px;top:'+p[1]+'px;animation-delay:-'+(p[0]%6)+'s"></i>';}).join("")+'</div>'
-    +'<div id="c2HeroBox"></div>'
-    +'<div class="c2-tool" id="c2Tool"><div class="c2-srow"><button class="c2-fbtn" id="c2Filt" aria-label="Filtrlar">'+C2_ICO.sliders+'<i id="c2FiltN" hidden></i></button>'
-    +'<div class="c2-srch">'+ic("search",16)+'<input id="c2Q" placeholder="Skin nomi: AK-47, Karambit…" value="'+esc(C2.q)+'" autocomplete="off"></div></div>'
-    +'<div class="c2-trow"><label class="c2-sel" id="c2SortBox"><select id="c2Sort" aria-label="Tartib">'
-    +[["","Ommabop avval"],["cheap","Arzon avval"],["expensive","Qimmat avval"],["rare","Noyob avval"]].map(function(o){return '<option value="'+o[0]+'"'+(C2.sort===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")
-    +'</select>'+C2_ICO.down+'</label><button class="c2-tu" id="c2Trade"></button></div></div>'
-    +'<div class="c2-chips" id="c2Chips"></div><div class="c2-chips sub" id="c2Wpn" hidden></div>'
-    +'<div class="c2-act" id="c2Act" hidden></div>'
-    +'<div id="c2Rec"></div><div class="c2-bar"><b id="c2BarT">Barcha skinlar</b><span id="c2Cnt"></span></div>'
-    +'<div id="c2List"></div><div class="c2-foot" id="c2Foot" hidden></div>';
-  el.scrollTop=0;
-  el.querySelector("#c2Back").addEventListener("click",function(){haptic();closeCs2();});
-  el.querySelector("#c2Sort").addEventListener("change",function(){haptic();C2.sort=this.value;c2Load(true);});
+function closeCs2(){
+  closeSheet();skStopRot();
+  var el=document.getElementById("sk");document.body.classList.remove("sk-open");
+  if(!el)return;el.id="";el.classList.remove("on");el.classList.add("out");
+  setTimeout(function(){el.remove();},300);
+}
+function skInfo(g,cb){
+  api("/api/cs2?game="+encodeURIComponent(g)).then(function(r){
+    if(r.game&&r.game!==SK.game)return;
+    SK.info=r;SK.games=r.games||null;SK.favs=Array.isArray(r.favs)?r.favs:[];SK.tradeUrl=r.tradeUrl||"";SK.delivered=Number(r.delivered)||0;
+    if(cb)cb();
+    skBal();skRepaint();
+  }).catch(function(){});
+}
+function skRepaint(){
+  if(!skEl())return;
+  // Ma'lumot kelgach qayta chiziladi — kirish animatsiyasi ikkinchi marta o'ynamasin
+  var m=skEl("skMain");if(m)m.classList.add("na");
+  if(SK.tab==="home")skHome();
+  else if(SK.tab==="market"){skGtabs();skTuBtn();skPaint();}
+  else if(SK.tab==="profile")skProfile();
+}
+function skBal(){
+  var b=skEl("skBal");if(!b)return;
+  b.innerHTML=SK_I.bolt+'<span>'+esc(ME.balance!=null?skShort(ME.balance):"—")+'</span><span class="pl">'+SK_I.plus+'</span>';
+}
+function skStopRot(){if(SK.rotT){clearInterval(SK.rotT);SK.rotT=0;}}
+function skTab(tab){
+  SK.tab=tab;skStopRot();
+  var el=skEl();if(!el)return;
+  el.querySelectorAll("[data-sktab]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-sktab")===tab);});
+  var pg=el.querySelector(".sk-page");if(pg)pg.remove();
+  var md=el.querySelector(".sk-modal");if(md)md.remove();
+  var m=skEl("skMain");m.scrollTop=0;m.classList.remove("na");
+  if(tab==="home")skHome();else if(tab==="market")skMarket();else if(tab==="orders")skOrders();else skProfile();
+}
+/* ---- umumiy bosishlar ---- */
+function skClick(e){
+  var t=e.target.closest("[data-sktab],[data-skgo],[data-skgame],[data-skfav],[data-skb],[data-skcat],[data-skw],[data-skrm],[data-skact],[data-skamt],[data-skof],[data-skpg],[data-skm],[data-skwt],[data-skbuy],[data-skordf],#skExit,#skBal,#skAv,#skMore,#skRetry,#skFilt,#skTu");
+  if(!t)return;
+  haptic();
+  var a=function(n){return t.getAttribute(n);};
+  if(t.hasAttribute("data-skfav")){e.stopPropagation();e.preventDefault();return skToggleFav(a("data-skg")||SK.game,a("data-skfav"));}
+  if(t.hasAttribute("data-sktab"))return skTab(a("data-sktab"));
+  if(t.hasAttribute("data-skgo"))return skTab(a("data-skgo"));
+  if(t.hasAttribute("data-skgame")){var g=a("data-skgame");if(!skOn(g))return toast("⏳ "+SK_G[g].n+" bozori tez orada ochiladi");return skSetGame(g,true);}
+  if(t.hasAttribute("data-skb"))return skOpenItem(a("data-skb"),a("data-skg")||SK.game);
+  if(t.hasAttribute("data-skcat")){SK.cat=a("data-skcat");SK.w="";skCats();return skLoad(true);}
+  if(t.hasAttribute("data-skw")){var w=a("data-skw");SK.w=SK.w===w?"":w;return skLoad(true);}
+  if(t.hasAttribute("data-skrm")){var k=a("data-skrm").split(":"),f=SK.f;
+    if(k[0]==="price"){f.pmin=0;f.pmax=0;}else if(k[0]==="w")SK.w="";else if(k[0]==="fav"||k[0]==="star")f[k[0]]=false;
+    else if(f[k[0]]){var i=f[k[0]].indexOf(k[1]);if(i!==-1)f[k[0]].splice(i,1);}
+    return skLoad(true);}
+  if(t.hasAttribute("data-skof")){var o=SK.items[Number(a("data-skof"))];if(o)skConfirm(o);return;}
+  if(t.hasAttribute("data-skamt")){closeCs2();S.st=S.st||{login:Store.get("steamLogin","")||"",usd:"10"};S.st.usd=a("data-skamt");S.screen="home";S.steamPage=true;STEAM=null;render();window.scrollTo(0,0);return;}
+  if(t.hasAttribute("data-skpg"))return skItemAct(a("data-skpg"),t);
+  if(t.hasAttribute("data-skwt")||t.hasAttribute("data-skbuy"))return skItemAct(t.hasAttribute("data-skwt")?"wt":"buy",t);
+  if(t.hasAttribute("data-skm"))return skModalAct(a("data-skm"),t);
+  if(t.hasAttribute("data-skordf")){SK.ordF=a("data-skordf");return skOrders();}
+  if(t.hasAttribute("data-skact"))return skAct(a("data-skact"));
+  if(t.id==="skExit")return closeCs2();
+  if(t.id==="skBal")return skAct("pay");
+  if(t.id==="skAv")return skTab("profile");
+  if(t.id==="skMore"){if(SK.cat!=="new")SK.page++;return skLoad(false);}
+  if(t.id==="skRetry")return skLoad(true);
+  if(t.id==="skFilt")return skFilterSheet();
+  if(t.id==="skTu")return skTradeSheet(null);
+}
+function skAct(k){
+  if(k==="pay"){closeCs2();go("pay");}
+  else if(k==="trade")skTradeSheet(null);
+  else if(k==="help")skHelpSheet();
+  else if(k==="support"){closeCs2();openSupportChat("Skinlar do'koni bo'yicha savol: ");}
+  else if(k==="offers")c2Ext((SK.info&&SK.info.steamOffers)||"https://steamcommunity.com/my/tradeoffers/");
+  else if(k==="exit")closeCs2();
+  else if(k==="steam"){closeCs2();S.screen="home";S.steamPage=true;STEAM=null;render();window.scrollTo(0,0);}
+  else if(k==="favs"){SK.f=skF0();SK.f.fav=true;SK.cat="";SK.w="";SK.q="";SK.items=[];skTab("market");}
+  else if(k==="market")skTab("market");
+}
+// O'yin almashganda oldingi o'yinning toifa, qidiruv va filtrlari tozalanadi
+function skResetGame(g){
+  if(g===SK.game)return;
+  SK.game=g;SK.cat="";SK.w="";SK.q="";SK.sort="";SK.f=skF0();SK.items=[];SK.listGame="";SK.seq++;SK.loading=false;
+  SK.info=Object.assign({},SK.info||{},{enabled:skOn(g),game:g});
+}
+function skSetGame(g,toMarket){
+  if(g!==SK.game){skResetGame(g);skInfo(g);}
+  if(toMarket&&SK.tab!=="market")skTab("market");
+  else if(SK.tab==="market")skMarket();
+}
+/* ---- Bosh sahifa ---- */
+function skHome(){
+  var m=skEl("skMain");if(!m)return;
+  skStopRot();
+  var I=SK.info||{},on=SK_GK.filter(skOn),d=SK.delivered||0,has=!!SK.tradeUrl;
+  var words=(on.length?on:["cs2"]).map(function(g){return SK_G[g].n.toUpperCase();});
+  var cat=Number(I.catalog)||0;
+  m.innerHTML='<section class="sk-hero sk-in"><div class="art" id="skArt" aria-hidden="true"></div>'
+    +'<span class="sk-pill"><i></i>Steam\'ga ~1 daqiqada</span>'
+    +'<h1>Skinlar<br>so\'mda —<span class="rot"><span id="skRot">'+words.concat(words.length>1?[words[0]]:[]).map(function(w){return '<i>'+esc(w)+'</i>';}).join("")+'</span></span></h1>'
+    +'<p>Skin to\'g\'ridan-to\'g\'ri <b>Steam hisobingizga</b> keladi. Parol so\'ralmaydi, yetkazilmasa — pul balansga qaytadi.</p>'
+    +'<div class="cta"><button class="sk-btn" data-skgo="market">'+SK_I.bolt+' Bozorga o\'tish</button>'
+    +(has?'':'<button class="sk-btn gh" data-skact="trade">'+SK_I.link+' Trade havolani kiritish</button>')+'</div>'
+    +'<div class="sk-trust"><div>'+SK_I.shield+'Akkauntingizga kirmaymiz — faqat trade havola</div><div>'+SK_I.clock24+'Avtomatik yetkazish, 24/7</div><div>'+SK_I.card+'Humo va Uzcard bilan to\'lov</div></div></section>'
+    +'<div class="sk-stats sk-in"><div><b>~1 daq</b><span>yetkazish vaqti</span></div><div><b>24/7</b><span>avtomatik</span></div>'
+    +'<div><b>'+(cat>=1000?skNum(Math.floor(cat/1000)*1000)+'+':(on.length||1)+' ta')+'</b><span>'+(cat>=1000?'skin turlari':'o\'yin')+'</span></div>'
+    +'<div><b>'+(d>=20?skNum(d):'100%')+'</b><span>'+(d>=20?'yetkazildi':'pul kafolati')+'</span></div></div>'
+    +'<section class="sk-sec sk-in"><div class="sk-lbl">O\'yinlar</div><h2 class="sk-h2">O\'yiningizni tanlang</h2><div class="sk-games">'
+    +SK_GK.map(function(g){var G=SK_G[g],o=skOn(g);return '<button class="sk-gt'+(o?'':' off')+'" data-skgame="'+g+'" style="--gc:'+G.c+'"><span class="gi" style="background:'+G.bg+'">'+G.mk+'</span><b>'+G.n+'</b><small>'+(o?'Bozorga →':'Tez orada')+'</small></button>';}).join("")+'</div></section>'
+    +'<section class="sk-sec sk-in"><div class="sk-hd"><div><div class="sk-lbl">Ommabop · '+esc(SK_G[SK.game].n)+'</div><h2 class="sk-h2">Top skinlar</h2></div><button class="sk-all" data-skgo="market">Hammasi '+SK_I.arr+'</button></div>'
+    +'<div class="sk-rail" id="skPop">'+'<div class="sk-sk" style="flex:0 0 164px;height:250px"></div>'.repeat(3)+'</div></section>'
+    +'<div id="skRecBox"></div>'
+    +'<section class="sk-sec sk-in" style="padding:0;margin-top:30px"><div class="sk-card2 y"><span class="sk-tag y">Qanday ishlaydi</span>'
+    +'<h3>3 qadamda skin Steam\'da</h3><p>Trade havolangizni bir marta kiriting, skinni tanlang va balansdan to\'lang. Skin Steam\'ga savdo taklifi bo\'lib keladi.</p>'
+    +'<div class="sk-steps"><span><i>1</i>Trade havola</span><span><i>2</i>To\'lov</span><span><i>3</i>Qabul qilish</span></div>'
+    +'<div style="margin-top:20px"><button class="sk-btn sm gh" data-skact="help">Batafsil '+SK_I.arr+'</button></div></div></section>'
+    +'<section class="sk-sec sk-in" style="padding:0"><div class="sk-card2 b"><span class="bigs" aria-hidden="true">'+STEAM_SVG+'</span><span class="sk-tag b">Steam hamyon</span>'
+    +'<h3>Steam balansni so\'mda to\'ldiring</h3><p>Login orqali, karta kerak emas. Summani tanlang:</p>'
+    +'<div class="sk-amts">'+[5,10,20,50].map(function(a){return '<button data-skamt="'+a+'">$'+a+'</button>';}).join("")+'</div></div></section>'
+    +'<section class="sk-sec sk-in" style="text-align:center"><div class="sk-lbl">To\'lov</div><h2 class="sk-h2 c">To\'lov usullari</h2>'
+    +'<div class="sk-pay"><span>HUMO</span><span>UZCARD</span></div></section>'
+    +'<section class="sk-sec sk-in"><div class="sk-lbl" style="text-align:center">FAQ</div><h2 class="sk-h2 c">Ko\'p so\'raladigan<br>savollar</h2><div class="sk-faq">'
+    +SK_FAQ.slice(0,5).map(function(q){return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>';}).join("")+'</div></section>'
+    +'<section class="sk-final sk-in"><h2 class="sk-h2 c">Birinchi skiningiz —<br>bir daqiqada</h2><p>Narxlar so\'mda, yetkazish avtomatik.</p><button class="sk-btn" data-skgo="market">'+SK_I.bolt+' Bozorga o\'tish</button></section>';
+  // O'yin nomi aylanib turadi (CS2 → DOTA 2 → RUST)
+  var rot=m.querySelector("#skRot"),n=words.length,i=0,reduce=false;
+  try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+  if(rot&&n>1&&!reduce)SK.rotT=setInterval(function(){
+    if(!document.body.contains(rot))return skStopRot();
+    i++;rot.style.transition="transform .55s cubic-bezier(.7,0,.2,1)";rot.style.transform="translateY(-"+(i*1.1)+"em)";
+    if(i===n)setTimeout(function(){rot.style.transition="none";rot.style.transform="none";i=0;},600);
+  },2600);
+  skHomeRec();skHomePop();
+}
+function skHomePop(){
+  var g=SK.game;
+  var paint=function(){
+    var box=skEl("skPop"),art=skEl("skArt");if(!box)return;
+    var L=(SK.pop||[]).filter(function(x){return x.img;}).slice(0,10);
+    if(!L.length){var sec=box.closest("section");if(sec&&SK.pop)sec.hidden=true;return;}
+    box.innerHTML=L.map(function(x){return skCard(x);}).join("");
+    if(art&&!art.innerHTML)art.innerHTML=skImg(L[0].img);
+  };
+  if(SK.pop&&SK.popGame===g)return paint();
+  if(!skOn(g)&&SK.games){SK.pop=[];SK.popGame=g;return paint();}
+  api("/api/cs2/catalog?game="+g+(g==="cs2"?"&cat=knife":"")).then(function(r){SK.pop=r.items||[];SK.popGame=g;paint();}).catch(function(){SK.pop=[];paint();});
+}
+function skHomeRec(){
+  var box=skEl("skRecBox");if(!box)return;
+  var L=SK.recent||[];if(!L.length){box.innerHTML="";return;}
+  var ago=function(m){return m<1?"hozirgina":m<60?m+" daq. oldin":m<1440?Math.round(m/60)+" soat oldin":Math.round(m/1440)+" kun oldin";};
+  box.innerHTML='<section class="sk-sec"><div class="sk-hd"><div><div class="sk-lbl">Jonli</div><h2 class="sk-h2">Yaqinda sotib olindi</h2></div></div></section>'
+    +'<div class="sk-rec">'+L.map(function(x){var rc=skRc(x);
+      return '<button class="sk-rc" data-skb="'+esc(x.b)+'" data-skg="'+esc(x.game||"cs2")+'"><div class="pr">'+esc(skNum(x.price))+' <small>so\'m</small></div>'+(x.wear?'<span class="wr" style="color:'+(C2_WCOL[x.wear]||rc)+'">'+esc(x.wear)+'</span>':'')
+        +'<div class="im" style="background:radial-gradient(closest-side,'+skRg(rc,.3)+',transparent)">'+skImg(x.img)+'</div><div class="nm">'+esc(x.s||x.b)+'</div><div class="ag">'+esc((SK_G[x.game]||SK_G.cs2).n+" · "+ago(x.ago))+'</div></button>';}).join("")+'</div>';
+}
+/* ---- kartochkalar ---- */
+function skCard(x){
+  var g=x.game||SK.game,rc=skRc(x),fav=skIsFav(g,x.b),star=x.cat==="knife"||x.cat==="gloves";
+  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+'"><span class="wm">'+SK_I.cross+'</span>'+skImg(x.img)
+    +'<div class="sk-ct">'+(star?'<span class="st2">★</span>':'')+(x.st?'<span class="st">ST™</span>':x.sv?'<span class="sv">SV</span>':'')+'</div>'
+    +'<span class="sk-fav'+(fav?' on':'')+'" data-skfav="'+esc(x.b)+'" data-skg="'+esc(g)+'" role="button" aria-label="Sevimli">'+SK_I.heart+'</span></div>'
+    +'<div class="sk-cb">'+(x.from?'<div class="sk-cp">'+esc(skNum(x.from))+'<small>so\'mdan</small></div>':'<div class="sk-cp na">Narxi ichkarida</div>')
+    +'<div class="sk-cn">'+esc(skTitle(x))+'</div><div class="sk-cg">'+(x.cnt?Number(x.cnt)+' ta taklif':'Ko\'rish')+' '+SK_I.arr+'</div></div></button>';
+}
+function skOfferCard(o,i,attr){
+  var rc=skRc(o),wc=C2_WCOL[o.wear]||rc;
+  var top=o.wear?'<b style="color:'+wc+'">'+esc(o.wear)+'</b>':o.rn?'<b style="color:'+rc+'">'+esc(o.rn)+'</b>':'<b>'+esc((SK_G[o.game]||SK_G.cs2).n)+'</b>';
+  var ex=[];if(o.seed!=null)ex.push("Pattern "+Number(o.seed));if(o.stk&&o.stk.length)ex.push(o.stk.length+" stiker");if(o.nt)ex.push("«"+o.nt+"»");if(o.locked)ex.push("Trade-lock");
+  return '<div class="sk-oc" style="--rg:'+skRg(rc,.24)+'"><div class="t">'+top+'<span>'+(o.float!=null?Number(o.float).toFixed(4):o.st?'StatTrak™':'')+'</span></div>'
+    +'<div class="im">'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+'</div>'
+    +'<div class="n">'+esc(skTitle(o))+'</div>'+(ex.length?'<div class="x">'+esc(ex.join(" · "))+'</div>':'')
+    +'<div class="p">'+esc(skNum(o.price))+' so\'m</div><button class="sk-btn" '+attr+'="'+i+'">Olish</button></div>';
+}
+/* ---- Bozor ---- */
+function skMarket(){
+  var m=skEl("skMain");if(!m)return;
+  m.innerHTML='<div class="sk-gtabs sk-in" id="skGt"></div>'
+    +'<div class="sk-tool sk-in"><div class="r1"><button class="sk-fb" id="skFilt" aria-label="Filtrlar">'+SK_I.sliders+'<i id="skFn" hidden></i></button>'
+    +'<label class="sk-srch">'+SK_I.search+'<input id="skQ" placeholder="'+esc(SK_G[SK.game].ph)+'" value="'+esc(SK.q)+'" autocomplete="off" enterkeyhint="search"></label></div>'
+    +'<div class="r2"><label class="sk-sel" id="skSortBox"><select id="skSort" aria-label="Tartib">'+SK_SORT.map(function(o){return '<option value="'+o[0]+'"'+(SK.sort===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="dn">'+SK_I.down+'</span></label>'
+    +'<button class="sk-tu" id="skTu"></button></div></div>'
+    +'<div class="sk-cats sk-in" id="skCats"></div><div class="sk-wpn" id="skWpn" hidden></div><div class="sk-act" id="skAct" hidden></div>'
+    +'<div class="sk-bar"><b id="skBarT"></b><span id="skCnt"></span></div><div id="skList"></div>';
+  m.querySelector("#skSort").addEventListener("change",function(){haptic();SK.sort=this.value;skLoad(true);});
   var tmr=null;
-  el.querySelector("#c2Q").addEventListener("input",function(){
+  m.querySelector("#skQ").addEventListener("input",function(){
     var v=this.value;clearTimeout(tmr);
-    // Yozilganda hamma toifadan qidiriladi; keyin toifa tugmasi bilan toraytirish mumkin.
-    tmr=setTimeout(function(){var nq=v.trim();if(nq&&nq!==C2.q||C2.cat==="new"){C2.cat="";C2.w="";}C2.q=nq;c2Chips();c2Load(true);},350);
+    // Yozilganda hamma toifadan qidiriladi; keyin toifa tugmasi bilan toraytirish mumkin
+    tmr=setTimeout(function(){var nq=v.trim();if(nq&&nq!==SK.q||SK.cat==="new"){SK.cat="";SK.w="";}SK.q=nq;skCats();skLoad(true);},350);
   });
-  el.addEventListener("click",function(e){
-    var t=e.target.closest("[data-c2fav],[data-c2cat],[data-c2w],[data-c2b],[data-c2o],[data-c2rm],#c2More,#c2Trade,#c2Trade2,#c2Retry,#c2Filt,#c2Help,#c2Bal,#c2Steam,#c2GoCat");if(!t)return;
-    haptic();
-    if(t.hasAttribute("data-c2fav")){e.stopPropagation();c2ToggleFav(t.getAttribute("data-c2fav"));}
-    else if(t.hasAttribute("data-c2cat")){C2.cat=t.getAttribute("data-c2cat");C2.w="";c2Chips();c2Load(true);}
-    else if(t.hasAttribute("data-c2w")){var w=t.getAttribute("data-c2w");C2.w=C2.w===w?"":w;c2Load(true);}
-    else if(t.hasAttribute("data-c2b"))c2OpenItem(t.getAttribute("data-c2b"));
-    else if(t.hasAttribute("data-c2o")){var o=C2.items[Number(t.getAttribute("data-c2o"))];if(o)c2Confirm(o,null);}
-    else if(t.hasAttribute("data-c2rm")){var k=t.getAttribute("data-c2rm").split(":"),f=C2.f;
-      if(k[0]==="price"){f.pmin=0;f.pmax=0;}else if(k[0]==="w")C2.w="";else if(k[0]==="fav"||k[0]==="star")f[k[0]]=false;
-      else if(f[k[0]]){var i=f[k[0]].indexOf(k[1]);if(i!==-1)f[k[0]].splice(i,1);}
-      c2Load(true);}
-    else if(t.id==="c2More"){if(C2.cat!=="new")C2.page++;c2Load(false);}
-    else if(t.id==="c2Trade"||t.id==="c2Trade2")c2TradeSheet(null);
-    else if(t.id==="c2Retry")c2Load(true);
-    else if(t.id==="c2Filt")c2FilterSheet();
-    else if(t.id==="c2Help")c2HelpSheet();
-    else if(t.id==="c2Bal"){closeCs2();go("pay");}
-    else if(t.id==="c2GoCat"){var tb=document.getElementById("c2Tool");if(tb)el.scrollTo({top:tb.offsetTop-70,behavior:"smooth"});}
-    else if(t.id==="c2Steam"){closeCs2();S.screen="home";S.steamPage=true;STEAM=null;render();window.scrollTo(0,0);}
-  });
-  c2Chips();c2Foot();
-  api("/api/cs2").then(function(r){C2.info=r;C2.favs=Array.isArray(r.favs)?r.favs:[];c2Foot();c2Paint();}).catch(function(){});
-  C2.recent=null;api("/api/cs2/recent").then(function(r){C2.recent=r.items||[];c2Paint();}).catch(function(){});
-  c2Load(true);
+  skGtabs();skCats();skTuBtn();
+  if(SK.listGame!==SK.game||!SK.items.length&&!SK.loading)skLoad(true);else skPaint();
 }
-function closeCs2(){closeSheet();var el=document.getElementById("c2");if(el)el.remove();document.body.classList.remove("c2-open");}
-function c2Chips(){
-  var b=document.getElementById("c2Chips");if(!b)return;
-  b.innerHTML=C2_CATS.map(function(c){return '<button class="c2-chip'+(C2.cat===c[0]?" on":"")+'" data-c2cat="'+c[0]+'">'+(c[0]==="new"?C2_ICO.flame:"")+esc(c[1])+'</button>';}).join("");
+function skGtabs(){
+  var b=skEl("skGt");if(!b)return;
+  b.innerHTML=SK_GK.map(function(g){var G=SK_G[g];return '<button class="sk-gtab'+(g===SK.game?' on':'')+(SK.games&&!skOn(g)?' off':'')+'" data-skgame="'+g+'"><span class="gi" style="background:'+G.bg+'">'+G.mk+'</span>'+G.n+'</button>';}).join("");
 }
-function c2ToggleFav(b){
-  var i=C2.favs.indexOf(b),on=i===-1;
-  if(on)C2.favs.unshift(b);else C2.favs.splice(i,1);
-  document.querySelectorAll('[data-c2fav]').forEach(function(x){if(x.getAttribute("data-c2fav")===b)x.classList.toggle("on",on);});
-  if(on)toast("❤ Sevimlilarga qo'shildi");
-  api("/api/cs2/fav","POST",{b:b,on:on}).then(function(r){if(Array.isArray(r.favs))C2.favs=r.favs;if(C2.f.fav&&!on)c2Load(true);})
-    .catch(function(){var j=C2.favs.indexOf(b);if(on&&j!==-1)C2.favs.splice(j,1);else if(!on&&j===-1)C2.favs.push(b);
-      document.querySelectorAll('[data-c2fav]').forEach(function(x){if(x.getAttribute("data-c2fav")===b)x.classList.toggle("on",!on);});toast(t("srv_off"),true);});
+function skCats(){
+  var b=skEl("skCats");if(!b)return;
+  var L=[["","Hammasi"],["new","Jonli"]].concat(SK_CATS[SK.game]||[]);
+  b.innerHTML=L.map(function(c){return '<button class="sk-cat'+(SK.cat===c[0]?' on':'')+'" data-skcat="'+c[0]+'">'+skCi(c[0])+esc(c[1])+'</button>';}).join("");
 }
-function c2Foot(){
-  var f=document.getElementById("c2Foot"),bal=document.getElementById("c2Bal"),tu=document.getElementById("c2Trade");if(!f)return;
-  // Sarlavhada joy kam — katta summa qisqa yoziladi (2,9 mln)
-  var sh=function(n){n=Number(n)||0;return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace(".",",")+" mln":n>=1e5?Math.round(n/1000)+" ming":money(n);};
-  if(bal)bal.innerHTML=esc(ME.balance!=null?sh(ME.balance):"—")+'<span class="pl">'+C2_ICO.plus+'</span>';
-  var has=!!(C2.info&&C2.info.tradeUrl);
-  if(tu){tu.className="c2-tu"+(has?" ok":"");tu.innerHTML=C2_ICO.link+(has?' Trade URL ✓':' Trade URL kiritilmagan');}
-  // Havola sarlavha blokida, asboblar panelida va xarid oynasida so'raladi — pastki panel kerak emas
-  f.hidden=true;
+function skTuBtn(){
+  var b=skEl("skTu");if(!b)return;
+  var has=!!SK.tradeUrl;b.className="sk-tu"+(has?" ok":"");b.innerHTML=(has?SK_I.check:SK_I.link)+(has?' Trade URL':' Trade URL kiriting');
 }
-function c2Load(reset){
-  if(reset){C2.page=0;C2.items=[];C2.next="";C2.more=false;}
-  var my=++C2.seq;C2.loading=true;C2.err="";c2Paint();
-  var e=encodeURIComponent,f=C2.f;
-  var url=C2.cat==="new"?"/api/cs2/market?sort=newest"+(C2.next?"&cursor="+e(C2.next):"")
-    :"/api/cs2/catalog?cat="+e(C2.cat)+"&q="+e(C2.q)+"&sort="+e(C2.sort)+"&page="+C2.page+(C2.w?"&w="+e(C2.w):"")
+function skLoad(reset){
+  if(reset){SK.page=0;SK.items=[];SK.next="";SK.more=false;}
+  SK.listGame=SK.game;
+  var my=++SK.seq,g=SK.game;SK.loading=true;SK.err="";skPaint();
+  var e=encodeURIComponent,f=SK.f;
+  var url=SK.cat==="new"?"/api/cs2/market?game="+g+"&sort=newest"+(SK.next?"&cursor="+e(SK.next):"")
+    :"/api/cs2/catalog?game="+g+"&cat="+e(SK.cat)+"&q="+e(SK.q)+"&sort="+e(SK.sort)+"&page="+SK.page+(SK.w?"&w="+e(SK.w):"")
       +(f.wear.length?"&wear="+f.wear.join(","):"")+(f.types.length?"&type="+f.types.join(","):"")+(f.rar.length?"&rar="+f.rar.join(","):"")
       +(f.star?"&star=1":"")+(f.fav?"&fav=1":"")+(f.pmin?"&pmin="+f.pmin:"")+(f.pmax?"&pmax="+f.pmax:"");
   api(url).then(function(r){
-    if(my!==C2.seq)return;
-    C2.loading=false;C2.items=C2.items.concat(r.items||[]);
-    if(C2.cat==="new"){C2.next=r.next||"";C2.more=!!r.next;}
-    else{C2.more=!!r.more;C2.total=r.total||0;C2.priced=!!r.priced;if(r.weapons!==undefined)C2.weapons=r.weapons||[];}
-    c2Paint();
+    if(my!==SK.seq)return;
+    SK.loading=false;SK.items=SK.items.concat(r.items||[]);
+    if(SK.cat==="new"){SK.next=r.next||"";SK.more=!!r.next;}
+    else{SK.more=!!r.more;SK.total=r.total||0;SK.priced=!!r.priced;if(r.weapons!==undefined)SK.weapons=r.weapons||[];}
+    skPaint();
   }).catch(function(err){
-    if(my!==C2.seq)return;
-    C2.loading=false;C2.err=(err&&err.resp&&(err.resp.message||(err.resp.error==="off"?"CS2 do'koni hozircha yopiq":"")))||t("srv_off");c2Paint();
+    if(my!==SK.seq)return;
+    SK.loading=false;SK.err=(err&&err.resp&&(err.resp.message||(err.resp.error==="off"?SK_G[g].n+" bozori hozircha yopiq":"")))||t("srv_off");skPaint();
   });
 }
-function c2HeroHTML(){
-  var I=C2.info||{},has=!!I.tradeUrl,d=Number(I.delivered)||0;
-  var fmt=function(x){return Number(x).toLocaleString("ru-RU").replace(/,/g," ");};
-  return '<div class="c2-hero2">'+'<svg class="deco" aria-hidden="true" width="250" height="110" viewBox="0 0 200 80"><path d="M24 46c30-3 72-12 110-25 22-7 40-11 58-9-14 9-42 21-72 29-26 7-52 10-76 11z" fill="#f0a030" opacity=".9"/><path d="M24 46c40-3 90-14 150-31" stroke="#fff3d6" stroke-width="1.6" opacity=".55" fill="none"/><path d="M6 42h26l7 8-7 9H10l-6-9z" fill="#3a3f49"/><circle cx="18" cy="50" r="3.5" fill="#0b0c0f"/></svg>'
-    +'<span class="c2-pill"><i></i>Steam\'ga ~1 daqiqada</span>'
-    +'<h1>CS2 skinlar<br><em>so\'mda</em></h1>'
-    +'<p>Skin to\'g\'ridan-to\'g\'ri Steam hisobingizga keladi. Yetkazilmasa — pul balansga avtomatik qaytadi.</p>'
-    +'<div class="c2-cta">'+(has?'<button class="c2-btn" id="c2GoCat">Skinlarni ko\'rish ↓</button>':'<button class="c2-btn" id="c2Trade2">'+C2_ICO.link+' Trade havolani kiritish</button><button class="c2-btn ghost" id="c2GoCat">Skinlar ↓</button>')+'</div>'
-    +'<div class="c2-stats"><div><b>~1 daq</b><span>yetkazish</span></div><div><b>24/7</b><span>avtomatik</span></div>'
-    +(d>=20?'<div><b>'+fmt(d)+'</b><span>yetkazildi</span></div>':'<div><b>100%</b><span>pul kafolati</span></div>')+'</div>'
-    +'<div class="c2-trust"><span>'+C2_ICO.shield+' Parol so\'ralmaydi</span><span>'+C2_ICO.card+' Humo · Uzcard</span><span>'+C2_ICO.bolt+' Avtomatik yetkazish</span></div></div>';
-}
-function c2RecentHTML(){
-  var L=C2.recent||[];
-  if(!L.length||!c2Home()||C2.cat==="new")return "";
-  var ago=function(m){return m<1?"hozirgina":m<60?m+" daq. oldin":m<1440?Math.round(m/60)+" soat oldin":Math.round(m/1440)+" kun oldin";};
-  var d=Number(C2.info&&C2.info.delivered)||0;
-  return '<div class="c2-h2"><span class="dot"></span>Yaqinda sotib olindi'+(d>=20?'<em>Jami: '+d.toLocaleString("ru-RU").replace(/,/g," ")+'</em>':'')+'</div><div class="c2-rec">'+L.map(function(x){var rc=c2rc(x);
-    return '<button class="c2-rc" data-c2b="'+esc(x.b)+'"><div class="im" style="background:radial-gradient(ellipse at 50% 60%,'+rc+'38,transparent 70%)">'+(x.img?'<img loading="lazy" src="'+esc(x.img)+'" alt="">':'')+'</div>'
-      +'<div class="nm">'+esc(x.s)+'</div><div class="mt"><span style="color:'+rc+'">'+esc(x.wear||x.w||"")+'</span> · '+esc(ago(x.ago))+'</div></button>';}).join("")+'</div>';
-}
-function c2Paint(){
-  var box=document.getElementById("c2List"),cnt=document.getElementById("c2Cnt");if(!box)return;
-  var rec=document.getElementById("c2Rec"),wp=document.getElementById("c2Wpn"),act=document.getElementById("c2Act"),fn=document.getElementById("c2FiltN"),
-    hero=document.getElementById("c2HeroBox"),tool=document.getElementById("c2Tool"),chips=document.getElementById("c2Chips"),sb=document.getElementById("c2SortBox");
-  if(C2.info&&C2.info.enabled===false){
-    box.innerHTML='<div class="c2-empty"><b>🎯 CS2 do\'koni tez orada ochiladi</b>Skinlar to\'g\'ridan-to\'g\'ri Steam hisobingizga yetkaziladi.</div>';
-    [cnt,rec,hero].forEach(function(x){if(x)x.innerHTML="";});[wp,act,tool,chips].forEach(function(x){if(x)x.hidden=true;});return;
+function skPaint(){
+  var box=skEl("skList");if(!box)return;
+  var cnt=skEl("skCnt"),wp=skEl("skWpn"),act=skEl("skAct"),fn=skEl("skFn"),sb=skEl("skSortBox"),bt=skEl("skBarT");
+  var G=SK_G[SK.game],off=SK.games&&!skOn(SK.game);
+  if(off){
+    box.innerHTML='<div class="sk-empty"><b>'+esc(G.n)+' bozori tez orada</b>Skinlar to\'g\'ridan-to\'g\'ri Steam hisobingizga yetkaziladi. Hozircha boshqa o\'yinni tanlang.</div>';
+    if(bt)bt.textContent=G.full;if(cnt)cnt.textContent="";[wp,act].forEach(function(x){if(x)x.hidden=true;});return;
   }
-  if(tool)tool.hidden=false;if(chips)chips.hidden=false;
-  var isNew=C2.cat==="new",nf=c2FiltN();
-  if(hero)hero.innerHTML=c2Home()&&!isNew?c2HeroHTML():"";
+  var isNew=SK.cat==="new",nf=skFiltN();
   if(fn){fn.hidden=!nf;fn.textContent=nf;}
-  if(sb)sb.hidden=isNew||!C2.priced;
-  // Toifa ichidagi qurollar
-  if(wp){var W=!isNew&&C2.cat&&C2.weapons&&C2.weapons.length>1?C2.weapons:[];wp.hidden=!W.length;
-    wp.innerHTML=W.map(function(x){return '<button class="c2-chip'+(C2.w===x.w?" on":"")+'" data-c2w="'+esc(x.w)+'">'+esc(x.w)+'</button>';}).join("");}
-  // Faol filtrlar (bosilsa olib tashlanadi)
-  if(act){var A=[],f=C2.f;
+  if(sb)sb.hidden=isNew||!SK.priced;
+  if(wp){var W=!isNew&&SK.game==="cs2"&&SK.cat&&SK.weapons&&SK.weapons.length>1?SK.weapons:[];wp.hidden=!W.length;
+    wp.innerHTML=W.map(function(x){return '<button class="'+(SK.w===x.w?"on":"")+'" data-skw="'+esc(x.w)+'">'+esc(x.w)+'</button>';}).join("");}
+  if(act){var A=[],f=SK.f;
     if(!isNew){
       if(f.fav)A.push(["fav","❤ Sevimlilar"]);
-      if(f.pmin||f.pmax)A.push(["price",(f.pmin?money(f.pmin):"0")+" – "+(f.pmax?money(f.pmax):"∞")]);
+      if(f.pmin||f.pmax)A.push(["price",(f.pmin?skShort(f.pmin):"0")+" – "+(f.pmax?skShort(f.pmax):"∞")]);
       f.wear.forEach(function(w){A.push(["wear:"+w,C2_WEAR[w]]);});
-      f.rar.forEach(function(r){var x=C2_RAR.filter(function(y){return y[0]===r;})[0];if(x)A.push(["rar:"+r,x[1]]);});
-      f.types.forEach(function(ty){var x=C2_TYPES.filter(function(y){return y[0]===ty;})[0];if(x)A.push(["types:"+ty,x[1]]);});
+      f.rar.forEach(function(r){var x=(SK_RAR[SK.game]||[]).filter(function(y){return y[0]===r;})[0];if(x)A.push(["rar:"+r,x[1]]);});
+      f.types.forEach(function(ty){var x=SK_TYPES.filter(function(y){return y[0]===ty;})[0];if(x)A.push(["types:"+ty,x[1]]);});
       if(f.star)A.push(["star","★ Pichoq va qo'lqoplar"]);
     }
-    act.hidden=!A.length;act.innerHTML=A.map(function(a){return '<button data-c2rm="'+esc(a[0])+'">'+esc(a[1])+' ✕</button>';}).join("");}
-  if(rec)rec.innerHTML=isNew?"":c2RecentHTML();
-  var bt=document.getElementById("c2BarT"),cl=C2_CATS.filter(function(c){return c[0]===C2.cat;})[0];
-  if(bt)bt.textContent=isNew?"Jonli bozor":C2.f.fav?"Sevimlilar":C2.w?C2.w:C2.cat&&cl?cl[1]:C2.q?"Qidiruv":"Barcha skinlar";
-  if(cnt)cnt.textContent=isNew?"yangi qo'shilganlar":(C2.loading&&!C2.items.length?"":C2.total+" ta skin");
+    act.hidden=!A.length;act.innerHTML=A.map(function(a){return '<button data-skrm="'+esc(a[0])+'">'+esc(a[1])+' ✕</button>';}).join("");}
+  var cl=(SK_CATS[SK.game]||[]).filter(function(c){return c[0]===SK.cat;})[0];
+  if(bt)bt.textContent=isNew?"Jonli bozor":SK.f.fav?"Sevimlilar":SK.w?SK.w:SK.cat&&cl?cl[1]:SK.q?"Qidiruv":G.n+" skinlari";
+  if(cnt)cnt.textContent=isNew?"yangi qo'shilganlar":(SK.loading&&!SK.items.length?"":skNum(SK.total)+" ta");
   var html="";
-  if(C2.items.length)html='<div class="c2-grid">'+C2.items.map(function(x,i){return isNew?c2OfferCard(x,i):c2Card(x);}).join("")+'</div>';
-  if(C2.loading)html+='<div class="c2-grid" style="margin-top:8px">'+'<div class="c2-sk"></div>'.repeat(C2.items.length?2:6)+'</div>';
-  else if(C2.err&&!C2.items.length)html='<div class="c2-empty"><b>Bozor javob bermadi</b>'+esc(C2.err)+'<br><br><button class="c2-btn ghost" id="c2Retry">Qayta urinish</button></div>';
-  else if(!C2.items.length)html='<div class="c2-empty"><b>'+(C2.f.fav&&!C2.favs.length?"Sevimlilar hali bo'sh":"Hech narsa topilmadi")+'</b>'
-    +(C2.f.fav&&!C2.favs.length?'Skin kartochkasidagi ❤ belgisini bosing — shu yerda saqlanadi.':nf||C2.w?'Filtrlarni yumshatib ko\'ring.':'Boshqa nom yoki toifani sinab ko\'ring.')+'</div>';
-  else if(C2.more)html+='<button class="c2-more" id="c2More">Ko\'proq ko\'rsatish</button>';
-  else html+='<button class="c2-x" id="c2Steam"><span class="ic">'+STEAM_SVG+'</span><span class="tx"><b>Steam hamyonni ham to\'ldiring</b>Istalgan summa, so\'mda</span><span class="ar">→</span></button>';
+  if(SK.items.length)html='<div class="sk-grid">'+SK.items.map(function(x,i){return isNew?skOfferCard(x,i,"data-skof"):skCard(x);}).join("")+'</div>';
+  if(SK.loading)html+='<div class="sk-grid"'+(SK.items.length?' style="margin-top:12px"':'')+'>'+'<div class="sk-sk" style="height:262px"></div>'.repeat(SK.items.length?2:6)+'</div>';
+  else if(SK.err&&!SK.items.length)html='<div class="sk-empty"><b>Bozor javob bermadi</b>'+esc(SK.err)+'<br><br><button class="sk-btn sm gh" id="skRetry">Qayta urinish</button></div>';
+  else if(!SK.items.length)html='<div class="sk-empty"><b>'+(SK.f.fav&&!SK.favs.length?"Sevimlilar hali bo'sh":"Hech narsa topilmadi")+'</b>'
+    +(SK.f.fav&&!SK.favs.length?'Skin kartochkasidagi ❤ belgisini bosing — shu yerda saqlanadi.':nf||SK.w?'Filtrlarni yumshatib ko\'ring.':'Boshqa nom yoki toifani sinab ko\'ring.')+'</div>';
+  else if(SK.more)html+='<button class="sk-more" id="skMore">Ko\'proq ko\'rsatish</button>';
+  else html+='<button class="sk-x" data-skact="steam"><span class="ic">'+STEAM_SVG+'</span><span class="tx"><b>Steam hamyonni ham to\'ldiring</b>Istalgan summa, so\'mda</span>'+SK_I.arr+'</button>';
   box.innerHTML=html;
 }
-function c2FilterSheet(){
-  var f=JSON.parse(JSON.stringify(C2.f)),priced=C2.priced;
+function skToggleFav(g,b){
+  var key=skFavKey(g,b),i=SK.favs.indexOf(key),on=i===-1;
+  if(on)SK.favs.unshift(key);else SK.favs.splice(i,1);
+  var sync=function(v){document.querySelectorAll("#sk [data-skfav]").forEach(function(x){if(x.getAttribute("data-skfav")===b&&(x.getAttribute("data-skg")||SK.game)===g)x.classList.toggle("on",v);});};
+  sync(on);if(on)toast("❤ Sevimlilarga qo'shildi");
+  api("/api/cs2/fav","POST",{game:g,b:b,on:on}).then(function(r){if(Array.isArray(r.favs))SK.favs=r.favs;if(SK.tab==="market"&&SK.f.fav&&!on&&!skEl().querySelector(".sk-page"))skLoad(true);})
+    .catch(function(){var j=SK.favs.indexOf(key);if(on&&j!==-1)SK.favs.splice(j,1);else if(!on&&j===-1)SK.favs.push(key);sync(!on);toast(t("srv_off"),true);});
+}
+/* ---- Skin sahifasi (o'ngdan suriladi) ---- */
+function skOpenItem(b,g){
+  var el=skEl();if(!el)return;
+  g=SK_G[g]?g:SK.game;
+  var old=el.querySelector(".sk-page");if(old)old.remove();
+  var md=el.querySelector(".sk-modal");if(md)md.remove();
+  var p=document.createElement("div");p.className="sk-page";
+  p.innerHTML='<header class="sk-top"><button class="sk-ib" data-skpg="back" aria-label="Orqaga">'+SK_I.back+'</button>'
+    +'<div class="sk-crumb">'+esc(SK_G[g].n)+' / <b>'+esc(b)+'</b></div>'
+    +'<button class="sk-ib sk-fv'+(skIsFav(g,b)?' on':'')+'" data-skfav="'+esc(b)+'" data-skg="'+g+'" aria-label="Sevimli">'+SK_I.heart+'</button></header>'
+    +'<div class="sk-main" id="skPm"><div class="sk-sk" style="margin:14px 16px 0;height:330px;border-radius:26px"></div><div class="sk-sk" style="margin:22px 16px 0;height:34px;width:70%"></div><div class="sk-sk" style="margin:14px 16px 0;height:120px"></div></div>';
+  el.appendChild(p);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){p.classList.add("on");});});
+  SK.cur={b:b,g:g,item:null,offs:[],sel:""};
+  api("/api/cs2/item?game="+g+"&b="+encodeURIComponent(b)).then(function(r){
+    if(!SK.cur||SK.cur.b!==b||!document.body.contains(p))return;
+    SK.cur.item=r.item||{b:b,game:g};SK.cur.offs=r.offers||[];
+    skItemPaint(p);
+  }).catch(function(e){var m=p.querySelector("#skPm");if(m)m.innerHTML='<div class="sk-empty"><b>Bozor javob bermadi</b>'+esc((e&&e.resp&&e.resp.message)||t("srv_off"))+'</div>';});
+}
+function skItemPaint(p){
+  var C=SK.cur,it=C.item,offs=C.offs,g=C.g,rc=skRc(it),m=p.querySelector("#skPm");if(!m)return;
+  var cheap=offs.slice().sort(function(a,b){return a.price-b.price;})[0];
+  var insp=offs.filter(function(o){return o.insp;})[0];
+  var title=skTitle(Object.assign({game:g},it));
+  var cr=p.querySelector(".sk-crumb");if(cr)cr.innerHTML=esc(SK_G[g].n)+(it.w&&g==="cs2"?' / '+esc(it.w):'')+' / <b>'+esc(it.s||it.b)+'</b>';
+  var fl="";
+  if(g==="cs2"&&it.mn!=null&&it.mx!=null){
+    var a=Math.max(0,Math.min(100,it.mn*100)),z=Math.max(0,Math.min(100,it.mx*100));
+    fl='<div class="sk-fl"><div class="lb"><span>Float oralig\'i</span><b>'+Number(it.mn).toFixed(2)+' – '+Number(it.mx).toFixed(2)+'</b></div><div class="bar"><span class="sk-fd" style="left:0;width:'+a.toFixed(1)+'%"></span><span class="sk-fd" style="left:'+z.toFixed(1)+'%;right:0"></span><i style="left:'+a.toFixed(1)+'%"></i><i style="left:'+z.toFixed(1)+'%"></i></div></div>';
+  }
+  var stk=cheap&&cheap.stk&&cheap.stk.length?'<div class="sk-stk">'+cheap.stk.slice(0,4).map(function(s){return '<span>'+esc(s)+'</span>';}).join("")+'</div>':'';
+  var dt=[["O'yin",SK_G[g].full]];
+  if(it.w&&it.w!==it.s)dt.push([g==="cs2"?"Qurol":"Turi",it.w]);
+  if(it.rn)dt.push(["Noyoblik",it.rn]);
+  if(g==="cs2")dt.push(["StatTrak™",it.st?"Bor":"Yo'q"]);
+  dt.push(["Yetkazish","~1–5 daqiqa"],["Kafolat","Pul qaytadi"]);
+  // Holatlar (FN, MW…): soni va eng arzon narxi — bosilsa takliflar shu holatga saralanadi
+  var wt=[];
+  Object.keys(C2_WEAR).forEach(function(k){var L=offs.filter(function(o){return o.wear===k;});if(L.length)wt.push([k,L.length,Math.min.apply(null,L.map(function(o){return o.price;}))]);});
+  m.innerHTML='<div class="sk-stage sk-in" style="--rg:'+skRg(rc,.42)+'"><div class="glow"></div>'
+    +'<div class="bd"><span class="sk-badge bolt">'+SK_I.bolt+'</span>'+(offs.length?'<span class="sk-badge av">'+SK_I.check+' Mavjud: '+offs.length+'</span>':'<span class="sk-badge av" style="border-color:#4a505c;color:#9aa3b2;background:none">Sotuvda yo\'q</span>')+'</div>'
+    +'<div class="im">'+skImg(it.img)+stk+'</div>'
+    +'<div class="ft">'+(insp?'<a href="#" class="sk-insp" data-insp="'+esc(insp.id)+'">'+SK_I.eye+' O\'yinda ko\'rish</a>':'')+(it.st&&g==="cs2"?'<span class="sk-badge" style="height:50px;border:1px solid rgba(255,138,76,.45);color:#ff8a4c;background:rgba(255,138,76,.08)">StatTrak™</span>':'')+'</div>'+fl+'</div>'
+    +'<h1 class="sk-title sk-in">'+esc(title)+'</h1>'
+    +(it.rn?'<span class="sk-rch sk-in" style="background:'+skRg(rc,.14)+';color:'+rc+';border:1px solid '+skRg(rc,.4)+'">'+esc(it.rn)+'</span>':'')
+    +'<button class="sk-copy" data-skpg="copy">'+esc(it.b||C.b)+' '+SK_I.copy+'</button>'
+    +'<dl class="sk-dt">'+dt.map(function(r){return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';}).join("")+'</dl>'
+    +(cheap?'<div class="sk-pz"><b>'+esc(skNum(cheap.price))+'</b><span>so\'mdan</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>'
+      +'<button class="sk-btn sk-buyb" data-skpg="cheap">'+SK_I.bolt+' Sotib olish</button>'
+      :'<div class="sk-pz"><span style="font-size:16px">Hozir sotuvda yo\'q — birozdan keyin qarang</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>')
+    +'<section class="sk-offs"><h3>Barcha takliflar <span>('+offs.length+')</span></h3>'
+    +(wt.length>1?'<div class="sk-wt">'+wt.map(function(w){return '<button data-skwt="'+w[0]+'" style="--wc:'+C2_WCOL[w[0]]+'"><b>'+w[0]+'</b><small>'+C2_WEAR[w[0]]+'</small><em>'+esc(skNum(w[2]))+' dan</em><i>'+w[1]+'</i></button>';}).join("")+'</div>':'')
+    +'<div class="sk-og" id="skOg"></div></section>'
+    +'<div class="sk-guar">'+SK_I.shield+'<div>Skin Steam\'ga savdo taklifi bo\'lib keladi. Steam Guard 7 kundan beri yoqilgan bo\'lishi kerak. Yetkazilmasa — pul balansingizga avtomatik qaytadi.</div></div>';
+  skOffPaint(p);
+}
+function skOffPaint(p){
+  var C=SK.cur,og=p.querySelector("#skOg");if(!og)return;
+  var L=C.offs.map(function(o,i){return [o,i];}).filter(function(x){return !C.sel||x[0].wear===C.sel;});
+  og.innerHTML=L.length?L.map(function(x){return skOfferCard(x[0],x[1],"data-skbuy");}).join("")
+    :'<div class="sk-empty" style="grid-column:1/-1;padding:24px 10px"><b>Hozir sotuvda yo\'q</b>Bu skin bozorda tugagan — birozdan keyin qarang yoki boshqasini tanlang.</div>';
+  p.querySelectorAll("[data-skwt]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-skwt")===C.sel);});
+}
+function skItemAct(k,btn){
+  var p=skEl()&&skEl().querySelector(".sk-page"),C=SK.cur;
+  if(k==="back"){if(p){p.classList.remove("on");setTimeout(function(){p.remove();},340);}SK.cur=null;return;}
+  if(!C||!C.item)return;
+  var it=C.item;
+  if(k==="copy"){var v=it.b||C.b;try{navigator.clipboard.writeText(v).then(function(){toast("Nusxalandi");},function(){toast(v);});}catch(e){toast(v);}}
+  else if(k==="steam")c2Ext("https://steamcommunity.com/market/search?appid="+SK_G[C.g].app+"&q="+encodeURIComponent(it.b||C.b));
+  else if(k==="cheap"){var ch=C.offs.slice().sort(function(a,b){return a.price-b.price;})[0];if(ch)skConfirm(ch);}
+  else if(k==="wt"){var w=btn.getAttribute("data-skwt");C.sel=C.sel===w?"":w;if(p)skOffPaint(p);}
+  else if(k==="buy"){var o=C.offs[Number(btn.getAttribute("data-skbuy"))];if(o)skConfirm(o);}
+}
+/* ---- Xaridni tasdiqlash (markazdagi oyna) ---- */
+function skConfirm(o){
+  var el=skEl();if(!el)return;
+  var old=el.querySelector(".sk-modal");if(old)old.remove();
+  SK.mo=o;
+  var tu=SK.tradeUrl,bal=ME.balance||0,need=o.price-bal,rc=skRc(o),wc=C2_WCOL[o.wear]||rc;
+  var sub=[o.st?"StatTrak™":"",o.sv?"Souvenir":"",C2_WEAR[o.wear]||o.rn||""].filter(Boolean).join(" · ")+(o.float!=null?" · "+Number(o.float).toFixed(4):"");
+  var d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true" aria-label="Xaridni tasdiqlang">'
+    +'<div class="sk-mh"><b>Xaridni tasdiqlang</b><button data-skm="x" aria-label="Yopish">'+SK_I.close+'</button></div>'
+    +'<div class="sk-mi">'+(o.wear?'<span class="w" style="color:'+wc+'">'+esc(o.wear)+'</span>':'')+'<div class="th">'+skImg(o.img)+'</div>'
+    +'<div class="nm"><b>'+esc(skTitle(o))+'</b><span>'+esc(sub||SK_G[o.game||SK.game].n)+'</span></div></div>'
+    +(tu?'<div class="sk-mtu"><div class="sk-note" style="margin:0;display:flex;align-items:center;gap:8px;color:#4fe07a">'+SK_I.check+' Steam trade havolangizga yuboriladi</div></div>'
+      :'<div class="sk-mtu"><label for="skTuIn">Steam trade havolangiz</label><input class="sk-inp" id="skTuIn" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…" autocomplete="off">'
+      +'<div class="sk-note">Steam → Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?» bo\'limidagi havola. <a href="#" data-skm="tuhelp">Havolani olish →</a></div></div>')
+    +'<div class="sk-mt"><small>Jami</small><b>'+esc(money(o.price))+'</b><div class="bl">Balansingiz: '+esc(money(bal))+(need>0?' · <span style="color:#ff7b78">yetishmaydi '+esc(money(need))+'</span>':'')+'</div></div>'
+    +'<div class="sk-mf">'+(need>0?'<button class="sk-btn" data-skm="top">'+SK_I.plus+' Balansni to\'ldirish</button>':'<button class="sk-btn" data-skm="go">'+SK_I.bolt+' Tasdiqlash</button>')
+    +'<button class="sk-btn gh" data-skm="x">Bekor qilish</button></div>'
+    +'<div class="sk-note" style="margin:0;padding:0 20px 20px">Steam Guard mobil autentifikatori 7 kundan beri yoqilgan bo\'lishi kerak. Yetkazilmasa pul balansga avtomatik qaytadi.</div></div>';
+  d.addEventListener("click",function(e){if(e.target===d){haptic();skModalAct("x");}});
+  el.appendChild(d);
+}
+function skModalAct(k,btn){
+  var el=skEl(),d=el&&el.querySelector(".sk-modal"),o=SK.mo;
+  if(k==="x"){if(d)d.remove();return;}
+  if(k==="tuhelp")return c2Ext("https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url");
+  if(k==="top")return skAct("pay");
+  if(k==="steam")return c2Ext((SK.info&&SK.info.steamOffers)||"https://steamcommunity.com/my/tradeoffers/");
+  if(k==="orders"){if(d)d.remove();return skTab("orders");}
+  if(k==="more"){if(d)d.remove();if(SK.cur&&SK.cur.item)skOpenItem(SK.cur.b,SK.cur.g);else if(SK.tab==="market"&&SK.cat==="new")skLoad(true);return;}
+  if(k!=="go"||!o||!btn)return;
+  var inp=d&&d.querySelector("#skTuIn"),label=btn.innerHTML;
+  btn.disabled=true;btn.textContent="⏳ …";
+  var fail=function(msg){btn.disabled=false;btn.innerHTML=label;if(msg)toast(msg,true);};
+  var buy=function(){
+    api("/api/cs2/buy","POST",{offerId:o.id}).then(function(r){
+      if(typeof r.balance==="number")ME.balance=r.balance;haptic("ok");skBal();loadMe(function(){});skDone(o,r);
+    }).catch(function(e){
+      var j=(e&&e.resp)||{};fail("");
+      if(typeof j.balance==="number"){ME.balance=j.balance;skBal();}
+      if(j.error==="balance"){toast("Balans yetarli emas",true);return skConfirm(o);}
+      if(j.error==="trade_url"){SK.tradeUrl="";skTuBtn();return skConfirm(o);}
+      toast(j.message||t("srv_off"),true);
+      if(j.error==="stale"||j.error==="gone"){if(d)d.remove();if(SK.cur&&SK.cur.item)skOpenItem(SK.cur.b,SK.cur.g);else if(SK.cat==="new")skLoad(true);}
+    });
+  };
+  if(!inp)return buy();
+  skSaveTrade(inp.value).then(buy).catch(fail);
+}
+function skDone(o,r){
+  var el=skEl();if(!el)return;
+  var old=el.querySelector(".sk-modal");if(old)old.remove();
+  var wait=!!(r&&r.pending),d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true"><div class="sk-ok"><div class="ic'+(wait?' w':'')+'">'+(wait?SK_I.clockBig:SK_I.checkBig)+'</div>'
+    +'<h3>'+(wait?"Xarid tasdiqlanmoqda":"Xarid qilindi!")+'</h3>'
+    +'<p>'+esc(skTitle(o))+' Steam\'ga savdo taklifi bo\'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.</p></div>'
+    +'<div class="sk-mf"><button class="sk-btn" data-skm="steam">Steam\'da qabul qilish '+SK_I.ext+'</button>'
+    +'<button class="sk-btn gh" data-skm="orders">Buyurtmalarim</button><button class="sk-btn gh" data-skm="more">Xaridni davom ettirish</button></div></div>';
+  d.addEventListener("click",function(e){if(e.target===d){haptic();skModalAct("more");}});
+  el.appendChild(d);
+}
+function skSaveTrade(v){
+  return new Promise(function(res,rej){
+    api("/api/cs2/trade-url","POST",{url:String(v||"").trim()}).then(function(r){SK.tradeUrl=r.tradeUrl||"";skTuBtn();res(r);})
+      .catch(function(e){rej((e&&e.resp&&e.resp.message)||t("srv_off"));});
+  });
+}
+/* ---- Buyurtmalar ---- */
+function skOrdSt(o){
+  if(o.status==="done")return ["d","Yetkazildi"];
+  if(o.status==="cancelled")return ["c","Bekor · pul qaytdi"];
+  var s=o.cs2&&o.cs2.state;
+  return ["p",s==="sent"?"Steam'da kutmoqda":s==="unknown"?"Tekshirilmoqda":"Sotib olinmoqda"];
+}
+function skOrders(paintOnly){
+  var m=skEl("skMain");if(!m)return;
+  var all=(ME.orders||[]).filter(function(o){return o.cs2;});
+  var F=[["all","Hammasi"],["pending","Jarayonda"],["done","Yetkazildi"],["cancelled","Bekor"]];
+  var stOf=function(o){return o.status==="done"?"done":o.status==="cancelled"?"cancelled":"pending";};
+  var L=all.filter(function(o){return SK.ordF==="all"||stOf(o)===SK.ordF;});
+  var dt=function(ts){try{return new Date(ts).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Asia/Tashkent"});}catch(e){return "";}};
+  m.innerHTML='<div class="sk-ph sk-in"><h2>Buyurtmalar</h2><p>Skin xaridlaringiz va ularning holati</p></div>'
+    +'<div class="sk-chips sk-in">'+F.map(function(f){var n=f[0]==="all"?all.length:all.filter(function(o){return stOf(o)===f[0];}).length;
+      return '<button class="'+(SK.ordF===f[0]?"on":"")+'" data-skordf="'+f[0]+'">'+f[1]+(n?' · '+n:'')+'</button>';}).join("")+'</div>'
+    +(L.length?'<div class="sk-ol">'+L.map(function(o){var s=skOrdSt(o),g=SK_G[o.cs2.game]||SK_G.cs2;
+      return '<div class="sk-or sk-in"><div class="th">'+skImg(o.cs2.img)+'</div><div class="md"><b>'+esc(o.cs2.name||o.item)+'</b>'
+        +'<small>'+esc(g.n)+(o.seq?' · #'+esc(o.seq):'')+' · '+esc(dt(o.ts))+(o.cs2.float!=null?' · '+Number(o.cs2.float).toFixed(4):'')+'</small>'
+        +'<div class="rw"><span class="pr">'+esc(money(o.price))+'</span><span class="sk-st '+s[0]+'">'+esc(s[1])+'</span></div>'
+        +(s[0]==="p"&&o.cs2.state==="sent"?'<button class="ac" data-skact="offers">Steam\'da qabul qilish '+SK_I.ext+'</button>':'')+'</div></div>';}).join("")+'</div>'
+      :'<div class="sk-empty sk-in"><b>'+(all.length?"Bu bo'limda buyurtma yo'q":"Hali skin sotib olmagansiz")+'</b>'+(all.length?'Boshqa filtrni tanlang.':'Bozordan birinchi skiningizni tanlang — u Steam\'ga ~1 daqiqada keladi.')
+        +'<br><br><button class="sk-btn sm" data-skgo="market">'+SK_I.bolt+' Bozorga o\'tish</button></div>');
+  if(!paintOnly)loadMe(function(){if(SK.tab==="orders"&&skEl())skOrders(true);skBal();});
+}
+/* ---- Profil ---- */
+function skProfile(){
+  var m=skEl("skMain");if(!m)return;
+  var u=tgUser()||{},nm=[u.first_name,u.last_name].filter(Boolean).join(" ")||"Mehmon";
+  var all=(ME.orders||[]).filter(function(o){return o.cs2;}),done=all.filter(function(o){return o.status==="done";}).length;
+  var has=!!SK.tradeUrl;
+  var row=function(act,icon,title,sub){return '<button data-skact="'+act+'"><span class="ic">'+icon+'</span><span class="tx">'+esc(title)+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><span class="ar">'+SK_I.arr+'</span></button>';};
+  m.innerHTML='<div class="sk-me sk-in"><div class="av">'+skAvatar()+'</div><div style="min-width:0"><b>'+esc(nm)+'</b><small>'+(u.username?'@'+esc(u.username):'Verion Skins')+'</small></div></div>'
+    +'<div class="sk-wal sk-in"><small>Balans</small><b>'+esc(money(ME.balance||0))+'</b><button class="sk-btn wd" data-skact="pay">'+SK_I.plus+' Balansni to\'ldirish</button></div>'
+    +'<div class="sk-tiles sk-in"><div><b>'+all.length+'</b><span>xarid</span></div><div><b>'+done+'</b><span>yetkazildi</span></div><div><b>'+SK.favs.length+'</b><span>sevimli</span></div></div>'
+    +'<div class="sk-list sk-in">'+row("trade",SK_I.link,"Steam trade havola",has?"Saqlangan ✓":"Kiritilmagan — xariddan oldin kerak")
+    +row("favs",'<span style="color:#ff5d6c;fill:#ff5d6c;display:flex">'+SK_I.heart+'</span>',"Sevimli skinlar",SK.favs.length?SK.favs.length+" ta":"Hali bo'sh")
+    +row("offers",STEAM_SVG.replace(/width="[^"]*"/,'width="20"').replace(/height="[^"]*"/,'height="20"'),"Steam'dagi savdo takliflarim","Kelgan skinni qabul qilish")+'</div>'
+    +'<div class="sk-list sk-in">'+row("help",SK_I.help,"Qanday ishlaydi?","Savollar va javoblar")+row("support",SK_I.chat,"Qo'llab-quvvatlash","Operator bilan yozishish")
+    +row("exit",SK_I.exit,"Asosiy do'konga qaytish","Verion Shop")+'</div>';
+}
+/* ---- pastdan chiqadigan oynalar ---- */
+function skSheet(inner,back){var sh=openSheet(inner,back);sh.classList.add("sks");return sh;}
+function skFilterSheet(){
+  var f=JSON.parse(JSON.stringify(SK.f)),priced=SK.priced,g=SK.game,R=SK_RAR[g]||[];
   var Q=[[0,50000,"50 mingacha"],[50000,200000,"50–200 ming"],[200000,1000000,"200 ming – 1 mln"],[1000000,5000000,"1–5 mln"],[5000000,0,"5 mln dan"]];
-  var pk=function(attr,val,label,col){return '<button class="c2-pk" data-'+attr+'="'+val+'"'+(col?' style="--pc:'+col+';--pb:'+c2rg(col,.12)+'"':'')+'>'+(col?'<i style="background:'+col+'"></i>':'')+label+'</button>';};
-  var html='<div style="display:flex;align-items:center;justify-content:space-between"><div class="c2-ttl">Filtrlar</div></div>'
-    +'<button class="c2-swrow" id="c2Fav"><span class="lb"><svg width="18" height="18" viewBox="0 0 24 24" fill="#ef5b5b" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.7 3.6 4.5 7 4.5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.6 3.2 4.3 6.6-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>Faqat sevimlilar</span><i class="tg"></i></button>'
-    +(priced?'<div class="c2-sect">Narx, so\'m</div><div class="c2-pr"><input class="c2-in" id="c2Pmin" type="number" inputmode="numeric" placeholder="dan" aria-label="Narx, dan"><span>—</span><input class="c2-in" id="c2Pmax" type="number" inputmode="numeric" placeholder="gacha" aria-label="Narx, gacha"></div>'
-      +'<div class="c2-qp">'+Q.map(function(q,i){return '<button data-pq="'+i+'">'+q[2]+'</button>';}).join("")+'</div>':'')
-    +(priced?'<div class="c2-sect">Holati</div><div class="c2-wgrid">'+Object.keys(C2_WEAR).map(function(k){return '<button class="c2-ck" data-wr="'+k+'"><i class="bx"></i><i class="dt" style="background:'+C2_WCOL[k]+'"></i><span>'+C2_WEAR[k]+'</span></button>';}).join("")+'</div>':'')
-    +'<div class="c2-sect">Noyoblik</div><div class="c2-pills">'+C2_RAR.map(function(r){return pk("rr",r[0],r[1],r[2]);}).join("")+'</div>'
-    +'<div class="c2-sect">Boshqa</div><div class="c2-pills">'+(priced?C2_TYPES.map(function(x){return pk("ty",x[0],x[1],x[0]==="st"?"#ff8a4c":x[0]==="sv"?"#f0d36a":"");}).join(""):'')+pk("st2","1","★ Pichoq va qo'lqoplar","#e4ae39")+'</div>'
-    +'<div class="c2-fact"><button class="c2-btn ghost" id="c2Clr">Tozalash</button><button class="c2-btn" id="c2Apply">Ko\'rsatish</button></div>';
-  var sh=c2Sheet(html,null);
-  var pmin=sh.querySelector("#c2Pmin"),pmax=sh.querySelector("#c2Pmax");
+  var ck=function(attr,val,label,col){return '<button class="ck" data-'+attr+'="'+val+'"><i class="bx"></i>'+(col?'<i class="dt" style="background:'+col+'"></i>':'')+'<span>'+esc(label)+'</span></button>';};
+  var html='<h3 class="t">Filtrlar</h3>'
+    +'<button class="sw" id="skFFav"><span style="display:flex;align-items:center;gap:10px"><span style="color:#ff5d6c;fill:#ff5d6c;display:flex">'+SK_I.heart+'</span>Faqat sevimlilar</span><i class="tg"></i></button>'
+    +(priced?'<div class="sec">Narx, so\'m</div><div class="pr2"><input class="sk-inp" id="skPmin" type="number" inputmode="numeric" placeholder="dan" aria-label="Narx, dan"><span>—</span><input class="sk-inp" id="skPmax" type="number" inputmode="numeric" placeholder="gacha" aria-label="Narx, gacha"></div>'
+      +'<div class="qp">'+Q.map(function(q,i){return '<button data-pq="'+i+'">'+q[2]+'</button>';}).join("")+'</div>':'')
+    +(priced&&g==="cs2"?'<div class="sec">Holati</div>'+Object.keys(C2_WEAR).map(function(k){return ck("wr",k,C2_WEAR[k],C2_WCOL[k]);}).join(""):'')
+    +(R.length?'<div class="sec">Noyoblik</div>'+R.map(function(r){return ck("rr",r[0],r[1],r[2]);}).join(""):'')
+    +(g==="cs2"?'<div class="sec">Boshqa</div>'+(priced?SK_TYPES.map(function(x){return ck("ty",x[0],x[1],x[0]==="st"?"#ff8a4c":x[0]==="sv"?"#f0d36a":"");}).join(""):'')+ck("st2","1","★ Pichoq va qo'lqoplar","#e4ae39"):'')
+    +'<div class="fact"><button class="sk-btn gh" id="skFClr">Tozalash</button><button class="sk-btn" id="skFApply">Ko\'rsatish</button></div>';
+  var sh=skSheet(html,null);
+  var pmin=sh.querySelector("#skPmin"),pmax=sh.querySelector("#skPmax");
   var has=function(a,v){return a.indexOf(v)!==-1;},tog=function(a,v){var i=a.indexOf(v);if(i===-1)a.push(v);else a.splice(i,1);};
   var paint=function(){
     if(pmin&&document.activeElement!==pmin)pmin.value=f.pmin||"";
     if(pmax&&document.activeElement!==pmax)pmax.value=f.pmax||"";
-    sh.querySelector("#c2Fav").classList.toggle("on",!!f.fav);
+    sh.querySelector("#skFFav").classList.toggle("on",!!f.fav);
     sh.querySelectorAll("[data-pq]").forEach(function(b){var q=Q[Number(b.getAttribute("data-pq"))];b.classList.toggle("on",f.pmin===q[0]&&f.pmax===q[1]);});
     sh.querySelectorAll("[data-wr]").forEach(function(b){b.classList.toggle("on",has(f.wear,b.getAttribute("data-wr")));});
     sh.querySelectorAll("[data-rr]").forEach(function(b){b.classList.toggle("on",has(f.rar,b.getAttribute("data-rr")));});
@@ -4911,178 +5424,72 @@ function c2FilterSheet(){
   if(pmin)pmin.addEventListener("input",function(){f.pmin=num(this.value);paint();});
   if(pmax)pmax.addEventListener("input",function(){f.pmax=num(this.value);paint();});
   sh.addEventListener("click",function(e){
-    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],#c2Fav,#c2Clr,#c2Apply");if(!b)return;haptic();
+    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],#skFFav,#skFClr,#skFApply");if(!b)return;haptic();
     if(b.hasAttribute("data-pq")){var q=Q[Number(b.getAttribute("data-pq"))];if(f.pmin===q[0]&&f.pmax===q[1]){f.pmin=0;f.pmax=0;}else{f.pmin=q[0];f.pmax=q[1];}}
     else if(b.hasAttribute("data-wr"))tog(f.wear,b.getAttribute("data-wr"));
     else if(b.hasAttribute("data-rr"))tog(f.rar,b.getAttribute("data-rr"));
     else if(b.hasAttribute("data-ty"))tog(f.types,b.getAttribute("data-ty"));
     else if(b.hasAttribute("data-st2"))f.star=!f.star;
-    else if(b.id==="c2Fav")f.fav=!f.fav;
-    else if(b.id==="c2Clr")f=c2F0();
-    else if(b.id==="c2Apply"){if(f.pmin&&f.pmax&&f.pmin>f.pmax){var x=f.pmin;f.pmin=f.pmax;f.pmax=x;}C2.f=f;closeSheet();c2Load(true);return;}
+    else if(b.id==="skFFav")f.fav=!f.fav;
+    else if(b.id==="skFClr")f=skF0();
+    else if(b.id==="skFApply"){if(f.pmin&&f.pmax&&f.pmin>f.pmax){var x=f.pmin;f.pmin=f.pmax;f.pmax=x;}SK.f=f;if(SK.cat==="new")SK.cat="";closeSheet();skCats();skLoad(true);return;}
     paint();
   });
   paint();
 }
-function c2HelpSheet(){
-  var Q=[["Trade havolani qayerdan olaman?","Steam ilovasi yoki saytida: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?». «Savdo havolasi» ostidagi havolani nusxalab, do'kondagi «Trade URL» tugmasiga qo'ying. Bu bir marta qilinadi."],
-    ["Skin qancha vaqtda keladi?","Odatda 1–5 daqiqada Steam'ga savdo taklifi bo'lib keladi. Steam ilovasida «Savdo takliflari»ni ochib qabul qiling."],
-    ["Steam Guard nega kerak?","Steam mobil autentifikatori 7 kundan kam yoqilgan bo'lsa, Steam savdoni bir necha kunga ushlab turadi. Shuning uchun uni oldindan yoqib qo'ying."],
-    ["Skin kelmasa yoki taklifni qabul qilmasam?","Xarid amalga oshmasa yoki savdo bekor bo'lsa, pul balansingizga avtomatik qaytadi. Holati «Buyurtmalar» bo'limida ko'rinadi."],
-    ["Steam akkauntim bloklanmaydimi?","Yo'q. Biz parolingizni so'ramaymiz va akkauntingizga kirmaymiz — skin oddiy Steam savdo taklifi orqali keladi. Faqat trade havolangiz kerak."],
-    ["Float va holat (FN, MW…) nima?","Float — skinning qanchalik eskirganligi (0 — yangi, 1 — juda eskirgan). FN — Factory New, MW — Minimal Wear, FT — Field-Tested, WW — Well-Worn, BS — Battle-Scarred. Float qancha kichik bo'lsa, skin shuncha toza ko'rinadi."],
-    ["StatTrak™ nima?","Shu qurol bilan qilgan o'ldirishlaringizni sanaydigan hisoblagichli variant. Odatda oddiysidan qimmatroq."]];
-  c2Sheet('<div class="c2-ttl">Qanday ishlaydi?</div>'
-    +'<div class="c2-steps"><div><b>1</b><span>Steam trade havolangizni bir marta kiriting</span></div><div><b>2</b><span>Skinni tanlang va balansdan to\'lang</span></div><div><b>3</b><span>Steam\'da kelgan taklifni qabul qiling</span></div></div>'
-    +'<div class="c2-sect">Ko\'p so\'raladigan savollar</div>'
-    +Q.map(function(q,i){return '<details class="c2-faq"'+(i?'':' open')+'><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>';}).join("")
-    +'<div style="height:12px"></div><button class="c2-btn wide ghost" id="c2HelpTu">🔗 Trade havolani kiritish</button><div style="height:10px"></div>',null)
-    .querySelector("#c2HelpTu").addEventListener("click",function(){c2TradeSheet(null);});
+function skHelpSheet(){
+  var sh=skSheet('<h3 class="t">Qanday ishlaydi?</h3>'
+    +'<div class="stp"><div><b>1</b><span>Steam trade havolangizni bir marta kiriting</span></div><div><b>2</b><span>Skinni tanlang va balansdan to\'lang</span></div><div><b>3</b><span>Steam\'da kelgan taklifni qabul qiling</span></div></div>'
+    +'<div class="sec">Ko\'p so\'raladigan savollar</div><div class="sk-faq" style="margin-top:0">'
+    +SK_FAQ.map(function(q,i){return '<details'+(i?'':' open')+'><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>';}).join("")+'</div>'
+    +'<div style="height:16px"></div><button class="sk-btn wd gh" id="skHelpTu">'+SK_I.link+' Trade havolani kiritish</button><div style="height:12px"></div>',null);
+  sh.querySelector("#skHelpTu").addEventListener("click",function(){haptic();skTradeSheet(null);});
 }
-function c2Sheet(inner,back){var sh=openSheet(inner,back);sh.classList.add("c2s");return sh;}
-function c2OpenItem(b){
-  var sh=c2Sheet('<div id="c2It"><div class="c2-hwrap c2-sk" style="aspect-ratio:auto"></div><div class="c2-sk" style="height:70px;aspect-ratio:auto;margin-top:14px"></div></div>',null);
-  api("/api/cs2/item?b="+encodeURIComponent(b)).then(function(r){
-    var box=sh.querySelector("#c2It");if(!box)return;
-    var it=r.item||{b:b},offs=r.offers||[],rc=c2rc(it),sel="",fav=C2.favs.indexOf(it.b||b)!==-1;
-    var cheap=offs.slice().sort(function(a,b){return a.price-b.price;})[0];
-    var insp=offs.filter(function(o){return o.insp;})[0];
-    // Takliflardagi holatlar (FN, MW…) va StatTrak™ — tez saralash uchun
-    var tabs=[["","Hammasi",""]];
-    Object.keys(C2_WEAR).forEach(function(k){if(offs.some(function(o){return o.wear===k;}))tabs.push([k,k,C2_WCOL[k]]);});
-    if(offs.some(function(o){return o.st;})&&offs.some(function(o){return !o.st;}))tabs.push(["st","ST™",""]);
-    var rar=C2_RAR.filter(function(x){return x[2]===rc;})[0];
-    var steamUrl="https://steamcommunity.com/market/search?appid=730&q="+encodeURIComponent(it.b||b);
-    box.innerHTML='<div class="c2-hwrap" style="--rc:'+rc+';--rg:'+c2rg(rc,.42)+'">'
-      +'<i class="c2-em" style="left:60px;top:60px"></i><i class="c2-em s" style="right:70px;bottom:54px"></i>'
-      +(it.img?'<img src="'+esc(it.img)+'" alt="">':'')
-      +(offs.length?'<span class="c2-avl">'+C2_ICO.lock+' Darhol yuboriladi</span>':'')
-      +(it.st?'<span class="c2-stb">StatTrak™ bor</span>':'')
-      +(insp?'<a href="#" class="c2-ins2" data-insp="'+esc(insp.id)+'">'+C2_ICO.eye+' O\'yinda ko\'rish</a>':'')+'</div>'
-      +'<div class="c2-th"><div style="min-width:0"><div class="c2-w">'+esc(it.w||"")+(it.rn?' · <span style="color:'+rc+'">'+esc(it.rn)+'</span>':'')+'</div>'
-      +'<div class="c2-ttl">'+esc(it.s||it.b)+'</div></div>'
-      +'<span class="c2-fav big'+(fav?' on':'')+'" data-c2fav="'+esc(it.b||b)+'" role="button" aria-label="Sevimli">'+C2_ICO.heart+'</span></div>'
-      +'<button class="c2-copy" id="c2Copy">'+esc(it.b||b)+' <span>'+C2_ICO.copy+'</span></button>'
-      +(cheap?'<div class="c2-pbig"><b>'+esc(money(cheap.price))+'</b><span>dan</span><a href="#" id="c2SteamMk">Steam ↗</a></div>'
-        +'<button class="c2-btn wide c2-quick" id="c2Quick">'+C2_ICO.bolt+' Eng arzonini olish · '+esc(money(cheap.price))+'</button>'
-        :'<div class="c2-pbig"><span>Hozir sotuvda yo\'q</span><a href="#" id="c2SteamMk">Steam ↗</a></div>')
-      +'<div class="c2-info"><div>Float<b>'+(it.mn!=null&&it.mx!=null?Number(it.mn).toFixed(2)+'–'+Number(it.mx).toFixed(2):'—')+'</b></div><div>Yetkazish<b>~1–5 daq</b></div><div>Kafolat<b>Pul qaytadi</b></div></div>'
-      +'<div class="c2-offs"><h3>Barcha takliflar <span>('+offs.length+')</span></h3>'
-      +(tabs.length>2?'<div class="c2-tabs" id="c2Tabs">'+tabs.map(function(x){return '<button data-tab="'+x[0]+'">'+(x[2]?'<i style="background:'+x[2]+'"></i>':'')+x[1]+'</button>';}).join("")+'</div>':'')
-      +'<div id="c2Offs"></div></div>'
-      +'<div class="c2-guar">'+C2_ICO.shieldG+'<div>Skin Steam\'ga savdo taklifi bo\'lib keladi. Yetkazilmasa — pul balansingizga avtomatik qaytadi.</div></div><div style="height:10px"></div>';
-    var list=box.querySelector("#c2Offs");
-    var paint=function(){
-      var L=offs.map(function(o,i){return [o,i];}).filter(function(p){var o=p[0];return !sel||(sel==="st"?o.st:o.wear===sel);});
-      list.innerHTML=L.length?L.map(function(p){var o=p[0],i=p[1],wc=C2_WCOL[o.wear]||"#8b93a1";
-        var lab=[o.st?"StatTrak™":"",o.sv?"Souvenir":"",C2_WEAR[o.wear]||""].filter(Boolean).join(" · ")||"Oddiy";
-        return '<div class="c2-off" style="--rg:'+c2rg(rc,.35)+'"><div class="th">'+(o.img?'<img loading="lazy" src="'+esc(o.img)+'" alt="">':'')+'</div>'
-          +'<div class="mid"><b><span class="wb wr" style="background:'+c2rg(wc,.16)+';color:'+wc+'">'+esc(o.wear||"—")+'</span>'+esc(lab)+'</b>'+c2Float(o.float)+'<div class="ln">'+c2Extra(o,false)+'</div></div>'
-          +'<div class="rt"><div class="pr">'+esc(String(money(o.price)).replace(" so'm",""))+'</div><button class="c2-btn" data-c2buy="'+i+'">Olish</button></div></div>';
-      }).join(""):'<div class="c2-empty" style="padding:20px 10px"><b>Hozir sotuvda yo\'q</b>Bu skin bozorda tugagan — birozdan keyin qarang yoki boshqasini tanlang.</div>';
-      box.querySelectorAll("[data-tab]").forEach(function(t){t.classList.toggle("on",t.getAttribute("data-tab")===sel);});
-      list.querySelectorAll("[data-c2buy]").forEach(function(btn){btn.addEventListener("click",function(){haptic();c2Confirm(offs[Number(this.getAttribute("data-c2buy"))],function(){c2OpenItem(b);});});});
-    };
-    box.querySelectorAll("[data-tab]").forEach(function(t){t.addEventListener("click",function(){haptic();sel=this.getAttribute("data-tab");paint();});});
-    box.querySelector("#c2SteamMk").addEventListener("click",function(e){e.preventDefault();c2Ext(steamUrl);});
-    var qb=box.querySelector("#c2Quick");if(qb)qb.addEventListener("click",function(){haptic();c2Confirm(cheap,function(){c2OpenItem(b);});});
-    box.querySelector("#c2Copy").addEventListener("click",function(){var v=it.b||b;haptic();
-      try{navigator.clipboard.writeText(v).then(function(){toast("Nusxalandi");},function(){toast(v);});}catch(e){toast(v);}});
-    var hf=box.querySelector("[data-c2fav]");if(hf)hf.addEventListener("click",function(){haptic();c2ToggleFav(this.getAttribute("data-c2fav"));});
-    paint();
-  }).catch(function(e){var box=sh.querySelector("#c2It");if(box)box.innerHTML='<div class="c2-empty"><b>Bozor javob bermadi</b>'+esc((e&&e.resp&&e.resp.message)||t("srv_off"))+'</div>';});
-}
-function c2Confirm(o,back){
-  var tu=C2.info&&C2.info.tradeUrl,bal=ME.balance||0,need=o.price-bal,rc=c2rc(o);
-  var lab=[o.st?"StatTrak™":"",o.sv?"Souvenir":"",C2_WEAR[o.wear]||""].filter(Boolean).join(" · ");
-  var html='<div class="c2-mini"><div class="th" style="--rg:'+c2rg(rc,.42)+'">'+(o.img?'<img src="'+esc(o.img)+'" alt="">':'')+'</div>'
-    +'<div style="min-width:0"><div class="c2-w">'+esc(o.w||"")+'</div><div class="c2-ttl">'+esc(o.s||o.name)+'</div>'
-    +'<div class="c2-sub">'+esc(lab)+(o.float!=null?' · float '+Number(o.float).toFixed(4):'')+'</div>'+c2Extra(o,true)+'</div></div>'
-    +'<div class="c2-rows"><div class="c2-row"><span>Narx</span><b class="acc">'+esc(money(o.price))+'</b></div>'
-    +'<div class="c2-row"><span>Balansingiz</span><b>'+esc(money(bal))+'</b></div>'
-    +'<div class="c2-row"><span>Qayerga</span>'+(tu?'<b class="ok">Steam · trade havolangiz</b>':'<b>Trade havola kiritilmagan</b>')+'</div></div>'
-    +(tu?'':'<div class="c2-sect">Steam trade havolangiz</div><input class="c2-in" id="c2TuIn" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…" autocomplete="off">'
-      +'<div class="c2-note">Steam → Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?» bo\'limidagi havola. <a href="#" id="c2TuHelp">Ochish →</a></div>')
-    +'<div class="c2-steps3"><div><b>1</b>To\'lov balansdan</div><div><b>2</b>Steam\'ga taklif keladi</div><div><b>3</b>Qabul qilasiz</div></div>'
-    +(need>0?'<button class="c2-btn wide c2-buy" id="c2Top">Balansni to\'ldirish · yana '+esc(money(need))+'</button>'
-      :'<button class="c2-btn wide c2-buy" id="c2Go">'+C2_ICO.bolt+' Sotib olish · '+esc(money(o.price))+'</button>')
-    +'<div class="c2-guar">'+C2_ICO.shieldG+'<div>Steam Guard mobil autentifikatori 7 kundan beri yoqilgan bo\'lishi kerak — aks holda Steam savdoni ushlab turadi. Yetkazilmasa pul balansga avtomatik qaytadi.</div></div>'
-    +'<div style="height:10px"></div>';
-  var sh=c2Sheet(html,back);
-  var help=sh.querySelector("#c2TuHelp");if(help)help.addEventListener("click",function(e){e.preventDefault();c2Ext("https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url");});
-  var top=sh.querySelector("#c2Top");if(top)top.addEventListener("click",function(){closeCs2();go("pay");});
-  var go2=sh.querySelector("#c2Go");
-  if(go2)go2.addEventListener("click",function(){
-    var b=this,inp=sh.querySelector("#c2TuIn");
-    b.disabled=true;b.textContent="⏳ …";
-    var buy=function(){
-      api("/api/cs2/buy","POST",{offerId:o.id}).then(function(r){
-        if(typeof r.balance==="number")ME.balance=r.balance;haptic("ok");c2Foot();loadMe();c2Done(o,r);
-      }).catch(function(e){
-        var j=(e&&e.resp)||{};b.disabled=false;b.innerHTML=C2_ICO.bolt+" Sotib olish · "+esc(money(o.price));
-        if(typeof j.balance==="number"){ME.balance=j.balance;c2Foot();}
-        if(j.error==="balance"){toast("Balans yetarli emas",true);return c2Confirm(o,back);}
-        if(j.error==="trade_url"){if(C2.info)C2.info.tradeUrl="";c2Foot();return c2Confirm(o,back);}
-        toast(j.message||t("srv_off"),true);
-        if(j.error==="stale"||j.error==="gone"){if(back)back();else{closeSheet();c2Load(true);}}
-      });
-    };
-    if(!inp)return buy();
-    c2SaveTrade(inp.value).then(buy).catch(function(msg){b.disabled=false;b.innerHTML=C2_ICO.bolt+" Sotib olish · "+esc(money(o.price));toast(msg,true);});
-  });
-}
-function c2SaveTrade(v){
-  return new Promise(function(res,rej){
-    api("/api/cs2/trade-url","POST",{url:String(v||"").trim()}).then(function(r){if(!C2.info)C2.info={};C2.info.tradeUrl=r.tradeUrl;c2Foot();res(r);})
-      .catch(function(e){rej((e&&e.resp&&e.resp.message)||t("srv_off"));});
-  });
-}
-function c2TradeSheet(after){
-  var tu=C2.info&&C2.info.tradeUrl||"";
-  var sh=c2Sheet('<div class="c2-ttl">Steam trade havola</div>'
-    +'<div class="c2-note" style="margin:6px 0 12px">Sotib olgan skinlaringiz shu havola orqali Steam hisobingizga trade taklifi bo\'lib keladi. Havola bir marta saqlanadi.</div>'
-    +'<input class="c2-in" id="c2TuIn" value="'+esc(tu)+'" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…&token=…" autocomplete="off">'
-    +'<div class="c2-sect">Havolani qayerdan olaman?</div>'
-    +'<div class="c2-note" style="margin-top:0">1. Steam\'da: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?»<br>2. «Savdo havolasi» ostidagi havolani nusxalang<br>3. Shu yerga qo\'ying va saqlang<br><br><a href="#" id="c2TuHelp">Steam\'da ochish →</a></div>'
-    +'<div style="height:14px"></div><button class="c2-btn wide" id="c2TuSave">Saqlash</button><div style="height:10px"></div>',null);
-  sh.querySelector("#c2TuHelp").addEventListener("click",function(e){e.preventDefault();c2Ext("https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url");});
-  sh.querySelector("#c2TuSave").addEventListener("click",function(){
+function skTradeSheet(after){
+  var tu=SK.tradeUrl||"";
+  var sh=skSheet('<h3 class="t">Steam trade havola</h3>'
+    +'<div class="sk-note" style="margin:8px 0 14px">Sotib olgan skinlaringiz shu havola orqali Steam hisobingizga savdo taklifi bo\'lib keladi. Havola bir marta saqlanadi.</div>'
+    +'<input class="sk-inp" id="skTuIn" value="'+esc(tu)+'" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…&token=…" autocomplete="off">'
+    +'<div class="sec">Havolani qayerdan olaman?</div>'
+    +'<div class="stp" style="margin-top:0"><div><b>1</b><span>Steam\'da: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?»</span></div><div><b>2</b><span>«Savdo havolasi» ostidagi havolani nusxalang</span></div><div><b>3</b><span>Shu yerga qo\'ying va saqlang</span></div></div>'
+    +'<div style="height:14px"></div><button class="sk-btn wd gh" id="skTuHelp">Steam\'da ochish '+SK_I.ext+'</button>'
+    +'<div style="height:10px"></div><button class="sk-btn wd" id="skTuSave">Saqlash</button><div style="height:12px"></div>',null);
+  sh.querySelector("#skTuHelp").addEventListener("click",function(){c2Ext("https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url");});
+  sh.querySelector("#skTuSave").addEventListener("click",function(){
     var b=this;b.disabled=true;
-    c2SaveTrade(sh.querySelector("#c2TuIn").value).then(function(){haptic("ok");toast("✅ Saqlandi");closeSheet();if(after)after();})
+    skSaveTrade(sh.querySelector("#skTuIn").value).then(function(){haptic("ok");toast("✅ Saqlandi");closeSheet();if(SK.tab==="profile")skProfile();else if(SK.tab==="home")skHome();if(after)after();})
       .catch(function(msg){b.disabled=false;toast(msg,true);});
   });
 }
-function c2Done(o,r){
-  var url=(r&&r.steamOffers)||"https://steamcommunity.com/my/tradeoffers/";
-  var sh=c2Sheet('<div class="c2-ok"><div class="big'+(r&&r.pending?' wait':'')+'">'+(r&&r.pending?C2_ICO.clock:C2_ICO.check)+'</div><h3>'+(r&&r.pending?"Xarid tasdiqlanmoqda":"Xarid qilindi!")+'</h3>'
-    +'<div class="c2-note" style="margin:0 0 14px">'+esc(o.s?(o.w+" | "+o.s):o.name)+' Steam\'ga trade taklifi bo\'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling. Holati «Buyurtmalar» bo\'limida ko\'rinadi.</div>'
-    +'<button class="c2-btn wide" id="c2Steam">Steam\'da ochish</button><div style="height:8px"></div>'
-    +'<button class="c2-btn wide ghost" id="c2Ords">Buyurtmalarim</button><div style="height:8px"></div>'
-    +'<button class="c2-btn wide ghost" id="c2Back2">Do\'konga qaytish</button></div>',null);
-  sh.querySelector("#c2Steam").addEventListener("click",function(){c2Ext(url);});
-  sh.querySelector("#c2Ords").addEventListener("click",function(){closeCs2();go("orders");});
-  sh.querySelector("#c2Back2").addEventListener("click",function(){closeSheet();if(C2.cat==="new")c2Load(true);});
-}
-document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-cs2open]");if(b){haptic();openCs2();}});
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-cs2open]");if(b){haptic();openCs2(b,b.getAttribute("data-cs2open"));}});
 function openAdminCs2(){
   api("/api/admin/cs2").then(function(c){
     var sw=function(id,label,on){return '<div class="switch"><span style="font-size:13.5px">'+label+'</span><button class="swbtn'+(on?" on":"")+'" id="'+id+'"><i></i></button></div>';};
     var when=function(ts){return ts?new Date(ts).toLocaleString("ru-RU",{timeZone:"Asia/Tashkent"}):"—";};
-    var html='<h2>🎯 CS2 skinlar (lis-skins)</h2>'
-      +'<div class="paynote" style="margin:4px 0 8px">Skinlar lis-skins.com bozoridan sotib olinib, mijozning Steam\'iga to\'g\'ridan-to\'g\'ri yuboriladi. lis-skins hamyoniga oldindan pul solib qo\'ying. Narx oshib ketsa xarid bo\'lmaydi, yetkazilmasa pul mijozga avtomatik qaytadi.</div>'
-      +sw("c2On","Mijozlarga ochiq",c.enabled)
+    var Gs=c.games||{};
+    var stat=function(g){var x=Gs[g]||{};
+      return '📦 Katalog: '+(x.loading?'⏳ yuklanmoqda…':(x.skins||0)+' ta skin ('+(x.catalog||0)+' variant), '+esc(when(x.catalogTs)))
+        +(x.error?'<br>⚠️ '+esc(x.error):'')
+        +'<br>💲 Narxlar: '+(x.prices?x.prices+' ta, '+esc(when(x.pricesTs)):"ro'yxat yo'q — narx qidiruv orqali olinadi")
+        +((x.pricesDiag||[]).length?'<br><span style="font-size:11px;word-break:break-all">'+x.pricesDiag.map(esc).join("<br>")+'</span>':'');};
+    var html='<h2>'+ic("gamepad",18)+' Skinlar do\'koni (lis-skins)</h2>'
+      +'<div class="paynote" style="margin:4px 0 8px">CS2, Dota 2 va Rust skinlari lis-skins.com bozoridan sotib olinib, mijozning Steam\'iga to\'g\'ridan-to\'g\'ri yuboriladi. lis-skins hamyoniga oldindan pul solib qo\'ying. Narx oshib ketsa xarid bo\'lmaydi, yetkazilmasa pul mijozga avtomatik qaytadi.</div>'
+      +sw("c2On","Do'kon yoqilgan (umumiy)",c.enabled)
       +'<label>lis-skins API kaliti '+(c.apiKeySet?'<span style="color:var(--ok)">(o\'rnatilgan)</span>':'')+'</label><input id="c2Key" type="password" autocomplete="off" placeholder="'+(c.apiKeySet?"o'zgartirmaslik uchun bo'sh qoldiring":"lis-skins.com → Profil → API")+'">'
       +'<div class="arow"><div style="flex:1"><label>Kurs: 1$ = so\'m</label><input id="c2Rate" type="number" value="'+c.rate+'"></div><div style="flex:1"><label>Ustama, %</label><input id="c2Mk" type="number" value="'+c.markup+'"></div></div>'
       +'<div class="arow"><div style="flex:1"><label>Eng arzon, $</label><input id="c2Min" type="number" step="0.1" value="'+c.minUsd+'"></div><div style="flex:1"><label>Eng qimmat, $</label><input id="c2Max" type="number" value="'+c.maxUsd+'"></div></div>'
       +sw("c2Unl","Faqat darhol yuboriladigan skinlar (trade-lock yo'q)",c.onlyUnlocked)
-      +'<label>Narxlar ro\'yxati havolasi (JSON, ixtiyoriy)</label><input id="c2Pu" value="'+esc(c.pricesUrl||"")+'" placeholder="lis-skins hujjatidagi «JSON Price Lists» havolasi">'
-      +'<div class="paynote" style="margin:8px 0">📦 Katalog: '+c.skins+' ta skin ('+c.catalog+' variant), yangilangan: '+esc(when(c.catalogTs))+'<br>💲 Narxlar ro\'yxati: '+(c.prices?c.prices+' ta, '+esc(when(c.pricesTs)):"yo'q — narxlar qidiruv orqali olinadi")
-      +((c.pricesDiag||[]).length?'<br><span style="font-size:11.5px;word-break:break-all">'+c.pricesDiag.map(esc).join("<br>")+'</span>':'')+'</div>'
-      +'<div class="arow"><button class="btn gray" id="c2Test" style="flex:1">'+ic("check",14)+' Ulanishni sinash</button><button class="btn gray" id="c2Cat" style="flex:1">↻ Katalogni yangilash</button></div>'
+      +SK_GK.map(function(g){var x=Gs[g]||{},G=SK_G[g];
+        return '<div style="margin-top:14px;padding:12px;border-radius:14px;border:1px solid var(--line)">'
+          +sw("skOn_"+g,'<b style="color:'+G.c+'">'+G.n+'</b> — mijozlarga ochiq',x.on)
+          +'<div class="paynote" style="margin:8px 0" id="skSt_'+g+'">'+stat(g)+'</div>'
+          +'<label>Narxlar ro\'yxati havolasi (JSON, ixtiyoriy)</label><input id="skPu_'+g+'" value="'+esc(x.pricesUrl||"")+'" placeholder="lis-skins hujjatidagi «JSON Price Lists» havolasi">'
+          +'<button class="btn gray" data-skcat2="'+g+'" style="margin-top:8px">↻ '+G.n+' katalogini yangilash</button></div>';}).join("")
+      +'<div style="height:12px"></div><button class="btn gray" id="c2Test">'+ic("check",14)+' Ulanishni sinash</button>'
       +'<div class="d" id="c2Res" style="margin-top:6px;white-space:pre-wrap;word-break:break-word"></div>'
       +'<div style="height:12px"></div><button class="btn" id="c2Save">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
     var sh=openSheet(html,openAdmin);
-    ["c2On","c2Unl"].forEach(function(id){sh.querySelector("#"+id).addEventListener("click",function(){this.classList.toggle("on");});});
+    ["c2On","c2Unl"].concat(SK_GK.map(function(g){return "skOn_"+g;})).forEach(function(id){sh.querySelector("#"+id).addEventListener("click",function(){this.classList.toggle("on");});});
     var out=sh.querySelector("#c2Res");
     sh.querySelector("#c2Test").addEventListener("click",function(){
       out.textContent="⏳ …";
@@ -5090,15 +5497,31 @@ function openAdminCs2(){
         out.textContent=r.message?("❌ "+r.message):((r.ok?"✅ ":"⚠️ ")+r.balance+"\nNamuna: "+r.parsed+(r.ok?"":"\n\nJavob (HTTP "+r.search+"): "+r.sample));
       }).catch(function(){out.textContent="❌ "+t("srv_off");});
     });
-    sh.querySelector("#c2Cat").addEventListener("click",function(){
-      out.textContent="⏳ Katalog yuklanmoqda (~30 MB)…";
-      api("/api/admin/cs2/catalog-refresh","POST",{}).then(function(r){out.textContent=r.ok?"✅ "+r.count+" ta skin yuklandi":"❌ "+r.error;}).catch(function(){out.textContent="❌ "+t("srv_off");});
-    });
+    // Katalog yangilash: CS2 — javobni kutadi; Dota 2 / Rust Steam'dan sekin yuklanadi — holati shu yerda yangilanib turadi
+    var poll=function(g,n){
+      setTimeout(function(){
+        if(!document.body.contains(sh))return;
+        api("/api/admin/cs2").then(function(v){Gs=v.games||Gs;var el=sh.querySelector("#skSt_"+g);if(el)el.innerHTML=stat(g);
+          if(Gs[g]&&Gs[g].loading&&n<120)poll(g,n+1);else out.textContent=Gs[g]&&Gs[g].error?"❌ "+Gs[g].error:"✅ "+SK_G[g].n+": "+((Gs[g]||{}).skins||0)+" ta skin";}).catch(function(){});
+      },3000);
+    };
+    sh.querySelectorAll("[data-skcat2]").forEach(function(b){b.addEventListener("click",function(){
+      var g=this.getAttribute("data-skcat2");
+      out.textContent="⏳ "+SK_G[g].n+" katalogi yuklanmoqda…";
+      api("/api/admin/cs2/catalog-refresh","POST",{game:g}).then(function(r){
+        if(r.started){var el=sh.querySelector("#skSt_"+g);if(el)el.innerHTML="📦 Katalog: ⏳ yuklanmoqda…";poll(g,0);}
+        else out.textContent=r.ok?"✅ "+r.count+" ta skin yuklandi":"❌ "+r.error;
+      }).catch(function(){out.textContent="❌ "+t("srv_off");});
+    });});
     sh.querySelector("#c2Save").addEventListener("click",function(){
       var b=this,v=function(id){return sh.querySelector("#"+id).value;},on=function(id){return sh.querySelector("#"+id).classList.contains("on");};
+      var games={},urls={};SK_GK.forEach(function(g){games[g]=on("skOn_"+g);urls[g]=v("skPu_"+g).trim();});
       b.disabled=true;
-      api("/api/admin/cs2","POST",{enabled:on("c2On"),onlyUnlocked:on("c2Unl"),apiKey:v("c2Key")||undefined,pricesUrl:v("c2Pu").trim(),rate:Number(v("c2Rate")),markup:v("c2Mk")===""?undefined:Number(v("c2Mk")),minUsd:Number(v("c2Min")),maxUsd:Number(v("c2Max"))})
-        .then(function(r){b.disabled=false;haptic("ok");toast(t("a_saved"));ME.cs2=!!(r.enabled&&r.apiKeySet);sh.querySelector("#c2Key").value="";})
+      api("/api/admin/cs2","POST",{enabled:on("c2On"),onlyUnlocked:on("c2Unl"),apiKey:v("c2Key")||undefined,games:games,pricesUrls:urls,rate:Number(v("c2Rate")),markup:v("c2Mk")===""?undefined:Number(v("c2Mk")),minUsd:Number(v("c2Min")),maxUsd:Number(v("c2Max"))})
+        .then(function(r){b.disabled=false;haptic("ok");toast(t("a_saved"));Gs=r.games||Gs;
+          ME.cs2=!!(r.enabled&&r.apiKeySet&&SK_GK.some(function(g){return Gs[g]&&Gs[g].on;}));
+          ME.skins={};SK_GK.forEach(function(g){ME.skins[g]=!!(r.enabled&&r.apiKeySet&&Gs[g]&&Gs[g].on);});
+          sh.querySelector("#c2Key").value="";SK_GK.forEach(function(g){var el=sh.querySelector("#skSt_"+g);if(el)el.innerHTML=stat(g);if(Gs[g]&&Gs[g].loading)poll(g,0);});})
         .catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
     });
   }).catch(function(){toast(t("srv_off"),true);});

@@ -12,7 +12,7 @@ Verion Shop (verionshop.uz) is a Telegram Mini App store for Uzbekistan. It sell
 - Steam wallet top-ups;
 - virtual numbers;
 - digital goods;
-- CS2 skins.
+- Skins store: CS2, Dota 2 and Rust.
 
 Prices are in so'm. Customers pay into an in-app balance with Humo or Uzcard card transfers, matched automatically from bank SMS.
 
@@ -53,7 +53,7 @@ Node 22 with no framework and almost no dependencies. Railway runs `node server.
 | `smm.js` | SMM panels (JAP and others) for nakrutka. |
 | `ai.js` | AI support assistant (Claude or Gemini). Has operator hours and a queue. |
 | `adminbot.js` | Separate Telegram admin bot: alerts, finance, actions. |
-| `cs2.js` | CS2 skins store through the lis-skins.com API (details below). |
+| `cs2.js` | Skins store (CS2, Dota 2, Rust) through the lis-skins.com API (details below). |
 | `userbot/userbot_sms.py` | Reads bank SMS so card top-ups are confirmed automatically. |
 
 Modules receive a `ctx` from `server.js` and expose `handle(req, res, url, m, q)`, which returns `true` when it handled the request. See the `GAMES`, `EXTRA` and `CS2` setup in `server.js`.
@@ -69,14 +69,14 @@ On every user-visible release, bump both `BUILD` (in `server.js`) and `CLIENT_BU
 5. **Credit bonuses once.** When an order completes, call `creditReferralOnOrder` and `creditLoyaltyOnOrder` once, then `notifyOrderChannel`.
 6. **Add new products to readiness.** Each new product type gets an item in `computeReadiness()` (levels: `must` = 3, `test` = 2, `should` = 1). It also gets a "test purchase" (`t_*`) item, and its supplier balance goes into `allLineBalances()` so the 20-minute line watcher can alert.
 
-## CS2 store (`cs2.js` and the `.c2` / `c2*` code in `verion-shop.html`)
+## Skins store (`cs2.js` and the `.sk` / `sk*` code in `verion-shop.html`)
 
 ### lis-skins API
-Base `https://api.lis-skins.com/v1/` with header `Authorization: Bearer <key>`. The key is set in Admin → «CS2 skinlar». The lis-skins account needed a $100 deposit to unlock the API, and it is funded.
+Base `https://api.lis-skins.com/v1/` with header `Authorization: Bearer <key>`. The key is set in Admin → «Skinlar do'koni». The lis-skins account needed a $100 deposit to unlock the API, and it is funded.
 
 | Endpoint | Used for | Notes |
 |---|---|---|
-| `GET market/search` | Search | Params: `game=csgo`, `names[]`, `price_from`/`price_to`, `only_unlocked`, `sort_by` (`lowest_price`, `highest_price`, `newest`, `oldest`), `cursor` (paging via `meta.next_cursor`) |
+| `GET market/search` | Search | Params: `game` (`csgo`, `dota2`, `rust`), `names[]`, `price_from`/`price_to`, `only_unlocked`, `sort_by` (`lowest_price`, `highest_price`, `newest`, `oldest`), `cursor` (paging via `meta.next_cursor`) |
 | `POST market/buy` | Purchase | Body: `{ids, partner, token, max_price, custom_id}` |
 | `GET market/info` | Purchase status | Params: `custom_ids[]`, `purchase_ids[]` |
 | `GET user/balance` | Balance check | |
@@ -93,9 +93,17 @@ Real `market/search` item fields:
 
 The purchase status words are not documented. `stateWord()` matches them broadly. An unrecognised word keeps the order pending and alerts the admin once. When that alert arrives, add the new word to `stateWord()`.
 
+### Games
+- `GAMES` in `cs2.js`: `cs2` (lis `csgo`, appid 730), `dota2` (570), `rust` (252490). Every `/api/cs2/*` endpoint takes `game` (default `cs2`).
+- `ready(g)` = master `enabled` + API key + `games[g]`. Settings: `settings.cs2.games` (default only `cs2`) and `settings.cs2.pricesUrls[g]`.
+- `/api/me` returns `skins: {cs2, dota2, rust}` (and legacy `cs2` = any open). Orders keep `cs2.game`; `itemId` is `cs2:` or `g:`.
+- Favorites `acc.cs2Fav`: CS2 keys are plain names, others `game|name`.
+
 ### Catalog and prices
-- **Catalog:** comes from ByMykel CSGO-API `skins_not_grouped.json` (about 21k variants, grouped into about 1,974 skins). It is cached in `DATA_DIR/cs2-catalog.json`, refreshed weekly, with format version `CAT_V`. Only `*.steamstatic.com` image URLs are accepted.
-- **"From" prices:** come from a lis-skins JSON price list. Admin field: «Narxlar ro'yxati havolasi». The real URL is still unknown; it is in the lis-skins docs section "JSON Price Lists" (lis-skins.stoplight.io).
+- **CS2 catalog:** ByMykel CSGO-API `skins_not_grouped.json` (about 21k variants, grouped into about 1,974 skins). Cached in `DATA_DIR/cs2-catalog.json`, refreshed weekly, format version `CAT_V`.
+- **Dota 2 / Rust catalog:** crawled from the Steam market (`/market/search/render/?appid=&norender=1&count=100&start=&sort_column=popular`), slow on purpose (`STEAM_DELAY_MS`, default 4 s; 40 / 30 pages). `dotaMeta(type)` reads rarity and category from the Steam `type`; `rustMeta(name, type)` guesses the category by keyword. Files `skins-dota2.json` / `skins-rust.json`; refreshed weekly only while that game is enabled. A failed crawl keeps the old catalog and shows the error in admin.
+- Only `*.steamstatic.com` image URLs are accepted.
+- **"From" prices:** a lis-skins JSON price list per game. Admin field per game: «Narxlar ro'yxati havolasi». The real URL is still unknown; it is in the lis-skins docs section "JSON Price Lists" (lis-skins.stoplight.io).
 - **Fallback without a price list:** prices come from search. The UI then hides the price, wear and type filters and the sort list.
 
 ### Pricing and safeguards
@@ -104,17 +112,11 @@ The purchase status words are not documented. `stateWord()` matches them broadly
 - **Shown offers only:** offers the customer was shown are remembered in `OFFERS` (15 minutes), and a purchase is allowed only for those offers. `max_price` is set to the price the customer saw.
 
 ### Client
-- **Overlay:** `#c2`, a dark theme with accent `#f0a030`. The Oxanium display font is loaded lazily. Sheets use the `.sheet.c2s` class.
-- **State and functions:** state lives in the `C2` object. Main functions: `openCs2`, `c2Load`, `c2Paint`, `c2Card`, `c2OpenItem`, `c2Confirm`, `c2FilterSheet`, `c2HelpSheet`, `c2TradeSheet`.
-- **Entry point:** `[data-cs2open]`, shown only when `/api/me` returns `cs2: true`.
-- **Features:**
-  - hero block;
-  - filters: favorites, price, wear, rarity, type, ★;
-  - favorites stored as `acc.cs2Fav`;
-  - "Yaqinda sotib olindi" feed;
-  - quick buy;
-  - inspect link;
-  - help FAQ.
+- **Separate in-app store** `#sk` (class `.sk`, z-index 92), always dark; fonts Unbounded + Inter Tight loaded lazily; accent `#ffb81c`, prices green. Sheets use `.sheet.sks`.
+- **Entry:** `[data-cs2open="cs2|dota2|rust"]` product cards, shown per `ME.skins`. `openCs2(el, game)` expands a `.sk-fx` layer from the tapped card's rect, then shows the store (skipped under reduced motion).
+- **Tabs:** `skTab("home"|"market"|"orders"|"profile")` with bottom nav. Item page `.sk-page` slides in; confirm / done are centered `.sk-modal` dialogs inside `#sk`.
+- **State and functions:** state in `SK`. Main functions: `skHome`, `skMarket`, `skLoad`, `skPaint`, `skCard`, `skOfferCard`, `skOpenItem`, `skItemPaint`, `skConfirm`, `skModalAct`, `skDone`, `skOrders`, `skProfile`, `skFilterSheet`, `skHelpSheet`, `skTradeSheet`. One delegated click handler: `skClick`.
+- **Admin:** `openAdminCs2` — per-game toggles `#skOn_<g>`, catalog status `#skSt_<g>`, price URL `#skPu_<g>`, refresh `[data-skcat2]`.
 
 ### Design reference
 The user likes skinsavdo.uz (an Uzbek CS2 skins market). Take ideas only, not their branding, yellow `#fbd506`, logo or text.
@@ -133,7 +135,8 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 - **Start the server:** run it with `BOT_TOKEN=123456:TEST_DUMMY_TOKEN`, `PORT=…` and `DATA_DIR=<temp dir>`. Stub Telegram by monkey-patching `https.request` for `api.telegram.org`.
 - **Authenticate:** sign `initData` exactly like Telegram does. The secret is HMAC-SHA256 with key `"WebAppData"` over the bot token; the hash is HMAC of the sorted `k=v\n` data. Send it in the `X-Init-Data` header. The default `ADMIN_IDS` in `server.js` are the admins.
 - **Fake suppliers:** run local HTTP servers and point the env base URLs at them:
-  - `LIS_BASE`, `CS2_DATA_URL`, `LIS_PRICES_URL` (CS2);
+  - `LIS_BASE`, `CS2_DATA_URL`, `LIS_PRICES_URL` (CS2), `LIS_PRICES_URL_DOTA2`, `LIS_PRICES_URL_RUST`;
+  - `STEAM_MARKET_URL`, `STEAM_DELAY_MS`, `STEAM_PAGES_DOTA2`, `STEAM_PAGES_RUST` (Dota 2 / Rust catalog crawl);
   - `LUDOVEX_BASE`, `FIVESIM_BASE`.
 - **Speed up polling:** set `CS2_POLL_MS`, `CS2_UNKNOWN_MS`, `CS2_BUY_TIMEOUT`, `EXTRA_POLL_MS`, `GAMES_POLL_MS` and `LINE_WATCH_MS`.
 - **Money-flow tests to write:** success; sold out; insufficient funds; bad key; 5xx (unknown result, then refund); timeout (unknown, then found by `custom_id`); two buys at the same moment; refund only once after an admin cancel; IDOR checks; unauthenticated requests.
@@ -148,7 +151,7 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 
 - Many hosts are blocked by the environment allowlist, which the user edits under Environment → «Доступ к сети».
 - Allowed now: `skinsavdo.uz`, `www.skinsavdo.uz`, `api.skinsavdo.uz`.
-- Blocked: `lis-skins.com`, `lis-skins.stoplight.io`, Steam CDN.
+- Blocked: `lis-skins.com`, `lis-skins.stoplight.io`, Steam CDN (`community.akamai.steamstatic.com`, `community.cloudflare.steamstatic.com`) and `steamcommunity.com`. Ask the user to allow them if real skin images are needed in screenshots.
 - Reachable: PyPI, `raw.githubusercontent.com`, `api.github.com` (public).
 
 ## Open decisions and next steps (as of 2026-10-31)
@@ -163,4 +166,4 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 - **Steam login:** agreed to do later.
   - Phase 1: Steam OpenID login, which links a SteamID and verifies that the trade URL partner matches it.
   - Phase 2 (separate decision): customers sell skins to us. This needs a Steam bot account and an 8-day hold because of Steam's 7-day trade reversal.
-- **Later ideas:** Dota 2 and Rust skins, Click/Payme, onboarding, a proof channel.
+- **Later ideas:** Click/Payme, onboarding, a proof channel.

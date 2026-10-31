@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-31.5";
+const BUILD = "2026-10-31.6";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2106,7 +2106,7 @@ function pubOrder(o) {
     account: o.game.account, accountText: o.game.accountText, fields: o.game.fields };
   if (o.vnum) out.vnum = { country: o.vnum.country, phone: o.vnum.phone, code: o.vnum.code, until: o.vnum.until };
   if (o.steam) out.steam = { login: o.steam.login, usd: o.steam.usd };
-  if (o.cs2) out.cs2 = { name: o.cs2.name, float: o.cs2.float, img: o.cs2.img, state: o.cs2.state };
+  if (o.cs2) out.cs2 = { game: o.cs2.game || "cs2", name: o.cs2.name, float: o.cs2.float, img: o.cs2.img, state: o.cs2.state };
   return out;
 }
 const PAY_PUB = ["id", "uid", "type", "amount", "pay", "method", "status", "ts", "doneTs", "paidTs"];
@@ -2138,6 +2138,7 @@ function myView(uid) {
     },
     balance: acc.balance,
     cs2: CS2.ready(),
+    skins: CS2.games(),
     favorites: Array.isArray(acc.favorites) ? acc.favorites : [],
     notifEnabled: acc.notifEnabled !== false, // TZ band 6: standart holatda yoqilgan
     payments: byUid("payments", uid).slice(-50).reverse().map(pubPayment),
