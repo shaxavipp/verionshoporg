@@ -970,7 +970,7 @@ module.exports = function (ctx) {
   function steamPage(res, ok, title, text) {
     const bot = ctx.botUsername && ctx.botUsername();
     res.writeHead(ok ? 200 : 400, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src https:" });
-    res.end('<!doctype html><html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verion Skins — Steam</title>'
+    res.end('<!doctype html><html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verion Shop — Steam</title>'
       + '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f1013;color:#fff;font:16px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;padding:24px;box-sizing:border-box}'
       + '.c{max-width:380px;text-align:center}.i{font-size:56px}.t{font-size:22px;font-weight:800;margin:12px 0 8px}.p{color:#a3adbb}'
       + 'a{display:inline-block;margin-top:22px;padding:14px 26px;border-radius:14px;background:#ffb81c;color:#141414;font-weight:800;text-decoration:none}</style></head><body><div class="c">'
@@ -1124,12 +1124,20 @@ module.exports = function (ctx) {
       const nm = G ? G.v : (C.BY_NAME.has(b) ? [b] : []);
       if (!nm.length) { send(res, 404, { error: "not_found" }); return true; }
       const head = G ? { game: g, b: G.b, w: G.w, s: G.s, img: G.i, rc: G.r, rn: G.rn, st: G.st, sv: G.sv, cat: G.c, mn: G.mn, mx: G.mx } : null;
-      if (!ready(g)) { send(res, 200, { item: head, offers: [] }); return true; }
+      // Shu skinning bizda so'nggi sotuvlari (kim olgani ko'rsatilmaydi)
+      const sales = [], os = DBx().orders;
+      for (let i = os.length - 1; i >= 0 && i >= os.length - 5000 && sales.length < 8; i--) {
+        const o = os[i];
+        if (!o.cs2 || o.status !== "done" || (o.cs2.game || "cs2") !== g || baseOf(o.cs2.name, g) !== (head ? head.b : b)) continue;
+        const e = C.BY_NAME.get(o.cs2.name) || {};
+        sales.push({ wear: e.wr || "", st: /StatTrak/.test(o.cs2.name), float: o.cs2.float == null ? null : o.cs2.float, price: o.price, ago: Math.max(0, Math.round((Date.now() - (o.doneTs || o.ts)) / 60000)) });
+      }
+      if (!ready(g)) { send(res, 200, { item: head, offers: [], sales }); return true; }
       cached("i|" + g + "|" + nm.join("|"), 60000, () => search({ names: nm, sort_by: "lowest_price" }, g), u.id)
         .then(r => {
           const per = new Map(), offers = [];
           for (const o of r.items) { if (!OFFERS.has(o.id) || GONE.has(o.id)) continue; const k = per.get(o.name) || 0; if (k >= 10) continue; per.set(o.name, k + 1); offers.push(o); }
-          send(res, 200, { item: head, offers: offers.slice(0, 80).map(o => pubOffer(o, g)) });
+          send(res, 200, { item: head, offers: offers.slice(0, 80).map(o => pubOffer(o, g)), sales });
         })
         .catch(e => busy(res, e));
       return true;

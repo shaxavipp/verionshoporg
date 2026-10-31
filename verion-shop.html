@@ -841,6 +841,7 @@ body.sk-open{overflow:hidden}
 .sk-ib{flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#dfe4ec;display:flex;align-items:center;justify-content:center;padding:0}
 .sk-ib:active{transform:scale(.94)}
 .sk-logo{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-family:var(--skd);font-weight:800;font-size:15px;letter-spacing:-.2px;line-height:.95;text-transform:uppercase}
+.sk-logo img{display:block;height:34px;width:auto;max-width:100%}
 .sk-logo .mk{flex:0 0 32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#ffcf4a,#ff9d00);color:#141414;box-shadow:0 6px 18px rgba(255,170,0,.35)}
 .sk-logo b{display:block;color:var(--ska);font-weight:800}
 .sk-bal{flex:0 0 auto;display:flex;align-items:center;gap:7px;height:40px;padding:0 5px 0 11px;border-radius:12px;border:1.5px solid rgba(255,184,28,.55);background:rgba(255,184,28,.08);color:var(--ska);font-weight:800;font-size:14px;white-space:nowrap}
@@ -865,6 +866,8 @@ body.sk-open{overflow:hidden}
 .sk-fx.go .lg{transform:translate(-50%,-50%) scale(1);opacity:1}
 .sk-fx .lg .mk{width:76px;height:76px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#ffcf4a,#ff9d00);color:#141414;box-shadow:0 0 60px rgba(255,170,0,.55);animation:skPulse 1s ease-in-out infinite}
 .sk-fx .lg span{font-family:var(--skd,"Unbounded",sans-serif);font-weight:800;font-size:22px;letter-spacing:-.3px;color:#fff;text-transform:uppercase}
+.sk-fx .lg img{display:block;width:240px;height:auto;filter:drop-shadow(0 0 30px rgba(47,143,255,.45));animation:skPulse 1s ease-in-out infinite}
+.sk-fx .lg b{font-family:var(--skd,"Unbounded",sans-serif);font-size:22px;color:#fff}
 .sk-fx .lg span b{color:#ffb81c}
 @keyframes skPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 .sk-in{animation:skIn .5s cubic-bezier(.2,.8,.2,1) both}
@@ -909,7 +912,12 @@ body.sk-open{overflow:hidden}
 .sk-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
 .sk-gt{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:118px;padding:14px 12px;border-radius:20px;border:1px solid var(--skl);overflow:hidden;color:#fff;text-align:left;background:var(--skp)}
 .sk-gt:before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:var(--gc);opacity:.22;filter:blur(18px)}
-.sk-gt .gi{position:relative;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--gc);color:#fff;font-family:var(--skd);font-weight:800;font-size:13px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+/* o'yin rasmi (Steam sarlavha rasmi); yuklanmasa — harfli belgi */
+.gimg{position:relative;display:block;width:100%;aspect-ratio:460/215;border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.gimg i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-family:var(--skd);font-weight:800;font-size:14px}
+.gimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gimg.sm{flex:0 0 58px;width:58px;border-radius:9px;box-shadow:none}
+.gimg.sm i{font-size:10px}
 .sk-gt b{position:relative;font-family:var(--skd);font-size:15px;font-weight:800}
 .sk-gt small{position:relative;font-size:12px;color:var(--skm);font-weight:600}
 .sk-gt.off{opacity:.5}
@@ -955,7 +963,11 @@ body.sk-open{overflow:hidden}
 .sk-gtabs{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
 .sk-gtabs::-webkit-scrollbar{display:none}
 .sk-gtab{flex:0 0 auto;display:flex;align-items:center;gap:9px;height:48px;padding:0 16px 0 7px;border-radius:14px;border:1.5px solid var(--skl);background:var(--skp);color:#cfd5df;font-weight:700;font-size:15px}
-.sk-gtab .gi{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--gc);color:#fff;font-family:var(--skd);font-weight:800;font-size:11px}
+.sk-gtile{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sk-gtile .mk{width:58%;height:58%;border-radius:22%;display:flex;align-items:center;justify-content:center;color:#fff;font:800 clamp(15px,5vw,24px)/1 Unbounded,Inter,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.sk-gtile img{position:absolute;inset:0;width:100%;height:100%}
+.sk-gtile img.bg{object-fit:cover;filter:blur(10px) brightness(.55);transform:scale(1.25)}
+.sk-gtile img.fg{object-fit:contain}
 .sk-gtab.on{border-color:#4fc3f7;background:rgba(79,195,247,.08);color:#fff;box-shadow:0 0 0 3px rgba(79,195,247,.12)}
 .sk-gtab.off{opacity:.45}
 .sk-tool{margin:14px 16px 0;padding:12px;border-radius:22px;border:1px solid var(--skl);background:rgba(24,25,30,.92)}
@@ -978,10 +990,23 @@ body.sk-open{overflow:hidden}
 .sk-cat svg{color:#8a93a3}
 .sk-cat.on{background:var(--ska);color:#141414}
 .sk-cat.on svg{color:#141414}
-.sk-wpn{display:flex;gap:8px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none}
-.sk-wpn::-webkit-scrollbar{display:none}
-.sk-wpn button{flex:0 0 auto;height:38px;padding:0 14px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#c8ced8;font-weight:700;font-size:13px}
-.sk-wpn button.on{border-color:var(--ska);color:var(--ska);background:rgba(255,184,28,.08)}
+/* toifa ostida ochiluvchi qurollar menyusi */
+.sk-wpn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 16px 0;padding:8px;border-radius:18px;border:1px solid var(--skl2);background:#16171c;box-shadow:0 18px 40px rgba(0,0,0,.45);animation:skPop .22s cubic-bezier(.2,1.2,.4,1) both}
+.sk-wpn button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;height:42px;padding:0 12px;border-radius:12px;border:none;background:transparent;color:#d8dde5;font-weight:700;font-size:14px;text-align:left}
+.sk-wpn button span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-wpn button small{flex:0 0 auto;font-size:12px;color:var(--skm);font-weight:700}
+.sk-wpn button:active{background:rgba(255,255,255,.05)}
+.sk-wpn button.on{background:rgba(255,184,28,.12);color:var(--ska)}
+.sk-wpn button.on small{color:var(--ska)}
+.sk-cat .dn{display:inline-flex;transition:transform .2s;opacity:.8}
+.sk-cat.open .dn{transform:rotate(180deg)}
+.sk-sales{margin:16px 16px 0;padding:16px;border-radius:24px;border:1px solid var(--skl);background:rgba(24,25,30,.92)}
+.sk-sales h3{margin:0 0 10px;font-family:var(--skd);font-weight:800;font-size:18px;letter-spacing:-.3px}
+.sk-sales div{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--skl);font-size:14px}
+.sk-sales div:first-of-type{border-top:none}
+.sk-sales b{flex:0 0 auto;min-width:34px;font-weight:800}
+.sk-sales span{flex:1;min-width:0;color:var(--skm)}
+.sk-sales em{flex:0 0 auto;font-style:normal;font-weight:800;color:var(--skg)}
 .sk-act{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px 0}
 .sk-act button{height:34px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,184,28,.5);background:rgba(255,184,28,.1);color:var(--ska);font-weight:800;font-size:13px}
 .sk-bar{display:flex;align-items:baseline;justify-content:space-between;padding:22px 16px 12px}
@@ -993,8 +1018,7 @@ body.sk-open{overflow:hidden}
 .sk-card:focus-visible,.sk-card:hover{border-color:rgba(255,184,28,.55);background-image:radial-gradient(rgba(255,184,28,.16) 1.2px,transparent 1.3px);background-size:14px 14px}
 .sk-cim{position:relative;height:150px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side at 50% 55%,var(--rg,rgba(176,195,217,.18)),transparent 100%)}
 /* xira Verion belgisi — har rasm orqasida (rasm yuklanmasa ham kartochka bo'sh ko'rinmaydi) */
-.sk .wm{position:absolute;left:50%;top:50%;width:80%;max-width:180px;transform:translate(-50%,-50%);color:#fff;opacity:.11;pointer-events:none;line-height:0}
-.sk .wm svg{width:100%;height:auto;display:block}
+.sk .wm{position:absolute;left:50%;top:50%;width:80%;max-width:190px;aspect-ratio:300/69;transform:translate(-50%,-50%);background:var(--sklogo) center/contain no-repeat;opacity:.13;pointer-events:none}
 .sk-stage .im .wm{width:72%;max-width:290px;opacity:.09}
 .sk-rc .im{position:relative}.sk-rc .im .wm{width:84%}
 .sk-cim img,.sk-oc .im img,.sk-stage .im img,.sk-rc .im img{position:relative}
@@ -1002,7 +1026,7 @@ body.sk-open{overflow:hidden}
 .sk-lots svg{width:13px;height:13px}
 .sk-cim img{position:relative;max-width:84%;max-height:118px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));transition:transform .25s}
 .sk-card:active .sk-cim img{transform:scale(1.05)}
-.sk-cim:after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:2px;border-radius:2px;background:var(--rc,#b0c3d9);opacity:.9}
+.sk-cim:after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:3px;border-radius:3px;background:var(--rc,#b0c3d9);box-shadow:0 0 14px var(--rc,#b0c3d9)}
 .sk-ct{position:absolute;top:12px;left:12px;display:flex;gap:5px}
 .sk-ct span{padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);font-size:11px;font-weight:800;color:#d5dae2}
 .sk-ct .st{color:#ff8a4c}.sk-ct .sv{color:#f3d36a}.sk-ct .st2{color:#ffc94d}
@@ -1012,7 +1036,7 @@ body.sk-open{overflow:hidden}
 .sk-fav:active{transform:scale(.85)}
 .sk-cb{padding:12px 14px 14px}
 .sk-cp{font-weight:800;font-size:17px;letter-spacing:-.2px;white-space:nowrap}
-.sk-cp small{font-size:12px;color:var(--skm);font-weight:600;margin-left:4px}
+.sk-cp small{font-size:12px;color:var(--skm);font-weight:600;margin-left:4px}.sk-cp small.pre{margin:0 4px 0 0}
 .sk-cp.na{font-size:13.5px;color:var(--skm);font-weight:600}
 .sk-cn{font-size:13.5px;color:var(--skm);font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-cg{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;margin-top:12px;border-radius:13px;background:var(--skp3);color:#fff;font-weight:700;font-size:14.5px;transition:background .15s,color .15s}
@@ -1521,7 +1545,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.10";
+var CLIENT_BUILD="2026-10-31.11";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2630,12 +2654,14 @@ function stockOf(it){
 }
 function stockBadgeText(n){return n===null?"":(n<=0?t("out_stock"):n+" "+t("in_stock"));}
 // Skin o'yinining belgisi (mahsulot kartochkasi va katalog plitkasi uchun)
-function skTile(g,cls){var G=SK_G[g];return '<div class="'+cls+'" style="background:radial-gradient(circle at 50% 38%,'+G.c+'55,#0d0e12 70%)">'
-  +(g==="cs2"?CS2_SVG:'<span style="width:58%;height:58%;border-radius:22%;display:flex;align-items:center;justify-content:center;background:'+G.bg+';color:#fff;font:800 clamp(15px,5vw,24px)/1 Unbounded,Inter,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.45)">'+G.mk+'</span>')+'</div>';}
+function skTile(g,cls){var G=SK_G[g],u="https://cdn.cloudflare.steamstatic.com/steam/apps/"+G.app+"/header.jpg";
+  return '<div class="'+cls+' sk-gtile" style="background:radial-gradient(circle at 50% 38%,'+G.c+'55,#0d0e12 70%)">'
+  +'<span class="mk" style="background:'+G.bg+'">'+G.mk+'</span>'
+  +'<img class="bg" src="'+u+'" alt="" loading="lazy" onerror="this.remove()"><img class="fg" src="'+u+'" alt="'+esc(G.full)+'" loading="lazy" onerror="this.remove()"></div>';}
 function skGamesOn(){var o=ME.skins;if(!o)return ME.cs2?["cs2"]:[];return SK_GK.filter(function(g){return o[g];});}
 function xProductCard(k){
   if(SK_G[k])return '<button class="pcard" data-cs2open="'+k+'">'+skTile(k,"ptile")
-    +'<div class="pbody"><div class="nm">'+SK_G[k].n+' skinlar</div><div class="ct">Steam\'ga darhol</div></div></button>';
+    +'<div class="pbody"><div class="nm">'+esc(_t(SK_G[k].n+" skinlar"))+'</div><div class="ct">'+esc(_t("Steam'ga darhol"))+'</div></div></button>';
   if(k==="steam")return '<button class="pcard" data-xopen="steam"><div class="ptile" style="background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547)">'+STEAM_SVG+'</div>'
     +'<div class="pbody"><div class="nm">Steam hamyon</div><div class="ct">Istalgan summa</div></div></button>';
   return '<button class="pcard" data-xopen="vnum"><div class="ptile" style="background:linear-gradient(135deg,#3b2a05,#0b1020)"><span class="emj">📱</span></div>'
@@ -4859,6 +4885,213 @@ var SK_G={
   rust:{n:"Rust",full:"Rust",mk:"R",c:"#d9773f",bg:"linear-gradient(145deg,#e0844a,#6b2c10)",app:252490,ph:"AK-47, Hoodie, eshik…"}
 };
 var SK_GK=["cs2","dota2","rust"];
+// Do'kon tili: o'zbekcha matnlar kodda; rus/ingliz — shu lug'atdan. Faqat do'kon oynalari (#sk, do'kon pastki oynalari, toast) tarjima qilinadi.
+var SK_L=[
+// sarlavha, menyu
+["Bosh sahifa","Главная","Home"],["Bozor","Маркет","Market"],["Buyurtmalar","Заказы","Orders"],["Profil","Профиль","Profile"],
+["Asosiy do'konga qaytish","Вернуться в основной магазин","Back to main shop"],["Balansni to'ldirish","Пополнить баланс","Top up balance"],["Skinlar do'koni","Магазин скинов","Skin shop"],
+["Orqaga","Назад","Back"],["Yopish","Закрыть","Close"],["close","закрыть","close"],["back","назад","back"],
+// bosh sahifa
+["Steam'ga ~1 daqiqada","В Steam за ~1 минуту","To Steam in ~1 minute"],["Skinlar","Скины","Skins"],["so'mda —","в сумах —","in so'm —"],
+["Skin to'g'ridan-to'g'ri","Скин приходит прямо","The skin goes straight"],["Steam hisobingizga","на ваш аккаунт Steam","to your Steam account"],
+["keladi. Parol so'ralmaydi, yetkazilmasa — pul balansga qaytadi.",". Пароль не нужен; если не доставим — деньги вернутся на баланс.",". No password needed; if it isn't delivered, the money returns to your balance."],
+["Bozorga o'tish","Перейти в маркет","Go to market"],["Trade havolani kiritish","Ввести трейд-ссылку","Add trade link"],
+["Akkauntingizga kirmaymiz — faqat trade havola","Не входим в ваш аккаунт — только трейд-ссылка","We never log into your account — trade link only"],
+["Avtomatik yetkazish, 24/7","Автоматическая доставка, 24/7","Automatic delivery, 24/7"],["Humo va Uzcard bilan to'lov","Оплата через Humo и Uzcard","Pay with Humo and Uzcard"],
+["~1 daq","~1 мин","~1 min"],["yetkazish vaqti","время доставки","delivery time"],["avtomatik","автоматически","automatic"],["skin turlari","видов скинов","skin types"],
+["o'yin","игры","games"],["yetkazildi","доставлено","delivered"],["pul kafolati","гарантия возврата","money-back"],
+["O'yinlar","Игры","Games"],["O'yiningizni tanlang","Выберите игру","Choose your game"],["Bozorga →","В маркет →","To market →"],["Tez orada","Скоро","Soon"],
+["Top skinlar","Топ скины","Top skins"],["Ommabop","Популярное","Popular"],["Hammasi","Все","All"],["Jonli","Live","Live"],["Yaqinda sotib olindi","Недавно куплено","Recently bought"],
+["Qanday ishlaydi","Как это работает","How it works"],["Qanday ishlaydi?","Как это работает?","How does it work?"],["3 qadamda skin Steam'da","Скин в Steam за 3 шага","Skin in Steam in 3 steps"],
+["Trade havolangizni bir marta kiriting, skinni tanlang va balansdan to'lang. Skin Steam'ga savdo taklifi bo'lib keladi.","Один раз введите трейд-ссылку, выберите скин и оплатите с баланса. Скин придёт в Steam как предложение обмена.","Enter your trade link once, pick a skin and pay from your balance. The skin arrives in Steam as a trade offer."],
+["Trade havola","Трейд-ссылка","Trade link"],["To'lov","Оплата","Payment"],["Qabul qilish","Принять","Accept"],["Batafsil","Подробнее","Learn more"],
+["Steam hamyon","Кошелёк Steam","Steam wallet"],["Steam balansni so'mda to'ldiring","Пополните баланс Steam в сумах","Top up your Steam balance in so'm"],
+["Login orqali, karta kerak emas. Summani tanlang:","По логину, карта не нужна. Выберите сумму:","By login, no card needed. Choose an amount:"],
+["To'lov usullari","Способы оплаты","Payment methods"],["Ko'p so'raladigan","Частые","Frequently asked"],["savollar","вопросы","questions"],["Ko'p so'raladigan savollar","Частые вопросы","Frequently asked questions"],
+["Birinchi skiningiz —","Ваш первый скин —","Your first skin —"],["bir daqiqada","за минуту","in a minute"],["Narxlar so'mda, yetkazish avtomatik.","Цены в сумах, доставка автоматическая.","Prices in so'm, delivery is automatic."],
+["hozirgina","только что","just now"],
+// FAQ
+["Trade havolani qayerdan olaman?","Где взять трейд-ссылку?","Where do I get my trade link?"],
+["Steam ilovasi yoki saytida: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?». «Savdo havolasi» ostidagi havolani nusxalab, do'kondagi «Trade URL» tugmasiga qo'ying. Bu bir marta qilinadi.","В приложении или на сайте Steam: Инвентарь → Предложения обмена → «Кто может отправлять мне предложения обмена?». Скопируйте ссылку под «Ссылка на обмен» и вставьте её в кнопку «Trade URL» в магазине. Это делается один раз.","In the Steam app or website: Inventory → Trade Offers → \"Who can send me Trade Offers?\". Copy the link under \"Trade URL\" and paste it into the \"Trade URL\" button in the shop. You only do this once."],
+["Skin qancha vaqtda keladi?","Как быстро придёт скин?","How fast does the skin arrive?"],
+["Odatda 1–5 daqiqada Steam'ga savdo taklifi bo'lib keladi. Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.","Обычно за 1–5 минут в Steam приходит предложение обмена. Откройте «Предложения обмена» в приложении Steam и примите его.","Usually a trade offer arrives in Steam within 1–5 minutes. Open \"Trade Offers\" in the Steam app and accept it."],
+["Steam Guard nega kerak?","Зачем нужен Steam Guard?","Why do I need Steam Guard?"],
+["Steam mobil autentifikatori 7 kundan kam yoqilgan bo'lsa, Steam savdoni bir necha kunga ushlab turadi. Shuning uchun uni oldindan yoqib qo'ying.","Если мобильный аутентификатор Steam включён меньше 7 дней, Steam задерживает обмен на несколько дней. Поэтому включите его заранее.","If the Steam Mobile Authenticator has been on for less than 7 days, Steam holds trades for several days. Turn it on in advance."],
+["Skin kelmasa yoki taklifni qabul qilmasam?","А если скин не придёт или я не приму предложение?","What if the skin doesn't arrive or I don't accept the offer?"],
+["Xarid amalga oshmasa yoki savdo bekor bo'lsa, pul balansingizga avtomatik qaytadi. Holati «Buyurtmalar» bo'limida ko'rinadi.","Если покупка не прошла или обмен отменён, деньги автоматически вернутся на баланс. Статус виден в разделе «Заказы».","If the purchase fails or the trade is cancelled, the money returns to your balance automatically. The status is shown in \"Orders\"."],
+["Steam akkauntim bloklanmaydimi?","Мой аккаунт Steam не заблокируют?","Will my Steam account get banned?"],
+["Yo'q. Biz parolingizni so'ramaymiz va akkauntingizga kirmaymiz — skin oddiy Steam savdo taklifi orqali keladi. Faqat trade havolangiz kerak.","Нет. Мы не спрашиваем пароль и не входим в аккаунт — скин приходит обычным предложением обмена Steam. Нужна только трейд-ссылка.","No. We never ask for your password or log into your account — the skin comes as a normal Steam trade offer. Only your trade link is needed."],
+["Float va holat (FN, MW…) nima?","Что такое float и качество (FN, MW…)?","What are float and wear (FN, MW…)?"],
+["Float — CS2 skinining qanchalik eskirganligi (0 — yangi, 1 — juda eskirgan). FN — Factory New, MW — Minimal Wear, FT — Field-Tested, WW — Well-Worn, BS — Battle-Scarred. Float qancha kichik bo'lsa, skin shuncha toza ko'rinadi.","Float — степень износа скина CS2 (0 — новый, 1 — сильно изношен). FN — Factory New, MW — Minimal Wear, FT — Field-Tested, WW — Well-Worn, BS — Battle-Scarred. Чем меньше float, тем чище выглядит скин.","Float is how worn a CS2 skin is (0 — new, 1 — heavily worn). FN — Factory New, MW — Minimal Wear, FT — Field-Tested, WW — Well-Worn, BS — Battle-Scarred. The lower the float, the cleaner the skin looks."],
+["StatTrak™ nima?","Что такое StatTrak™?","What is StatTrak™?"],
+["Shu qurol bilan qilgan o'ldirishlaringizni sanaydigan hisoblagichli variant. Odatda oddiysidan qimmatroq.","Версия со счётчиком убийств, сделанных этим оружием. Обычно дороже обычной.","A version with a counter of kills made with this weapon. Usually pricier than the regular one."],
+// bozor
+["Filtrlar","Фильтры","Filters"],["Tartib","Сортировка","Sort"],["Ommabop avval","Популярные","Popular"],["Arzon avval","Дешевле","Cheapest"],["Qimmat avval","Дороже","Priciest"],["Noyob avval","Редкие","Rarest"],
+["Trade URL kiriting","Trade URL","Add Trade URL"],["Pichoqlar","Ножи","Knives"],["Qo'lqoplar","Перчатки","Gloves"],["Avtomatlar","Винтовки","Rifles"],["Snayperlar","Снайперские","Snipers"],["To'pponchalar","Пистолеты","Pistols"],["PP","ПП","SMGs"],["Og'ir","Тяжёлое","Heavy"],
+["Kiyimlar","Одежда","Clothing"],["Kuryerlar","Курьеры","Couriers"],["Wardlar","Варды","Wards"],["Sandiqlar","Сундуки","Treasures"],["To'plamlar","Наборы","Bundles"],["Boshqa","Другое","Other"],
+["Qurollar","Оружие","Weapons"],["Asboblar","Инструменты","Tools"],["Jihozlar","Постройки","Deployables"],["Real vaqt","Реальное время","Real time"],
+["Pudge, Arcana, kuryer…","Pudge, Arcana, курьер…","Pudge, Arcana, courier…"],["AK-47, Hoodie, eshik…","AK-47, Hoodie, дверь…","AK-47, Hoodie, door…"],
+["Jonli bozor","Живой маркет","Live market"],["Sevimlilar","Избранное","Favourites"],["Qidiruv","Поиск","Search"],["yangi qo'shilganlar","новые поступления","just added"],
+["Bozor javob bermadi","Маркет не ответил","Market didn't respond"],["Qayta urinish","Повторить","Try again"],["Sevimlilar hali bo'sh","В избранном пока пусто","No favourites yet"],["Hech narsa topilmadi","Ничего не найдено","Nothing found"],
+["Skin kartochkasidagi ❤ belgisini bosing — shu yerda saqlanadi.","Нажмите ❤ на карточке скина — он сохранится здесь.","Tap ❤ on a skin card — it will be saved here."],
+["Filtrlarni yumshatib ko'ring.","Попробуйте ослабить фильтры.","Try loosening the filters."],["Boshqa nom yoki toifani sinab ko'ring.","Попробуйте другое название или категорию.","Try another name or category."],
+["Ko'proq ko'rsatish","Показать ещё","Show more"],["Steam hamyonni ham to'ldiring","Пополните и кошелёк Steam","Top up your Steam wallet too"],["Istalgan summa, so'mda","Любая сумма, в сумах","Any amount, in so'm"],
+["Skinlar to'g'ridan-to'g'ri Steam hisobingizga yetkaziladi. Hozircha boshqa o'yinni tanlang.","Скины доставляются прямо на ваш аккаунт Steam. Пока выберите другую игру.","Skins are delivered straight to your Steam account. For now, choose another game."],
+["❤ Sevimlilar","❤ Избранное","❤ Favourites"],["★ Pichoq va qo'lqoplar","★ Ножи и перчатки","★ Knives and gloves"],["🔒 Trade-lock","🔒 Трейд-лок","🔒 Trade-lock"],["⚡ Darhol","⚡ Сразу","⚡ Instant"],
+["Sevimli","Избранное","Favourite"],["Savatga","В корзину","Add to cart"],["O'yinda ko'rish","Посмотреть в игре","Inspect in game"],["Olib tashlash","Убрать","Remove"],
+["so'mdan","сум от","so'm from"],["Oddiy","Обычный","Regular"],["Sotuvda yo'q","Нет в продаже","Not on sale"],["Narxi ichkarida","Цена внутри","See price inside"],["Yangi","Новое","New"],["Hozir sotuvda yo'q","Сейчас нет в продаже","Not on sale now"],
+["Hozir sotuvda yo'q — birozdan keyin qarang","Сейчас нет в продаже — загляните позже","Not on sale now — check back later"],
+// filtr oynasi
+["Faqat sevimlilar","Только избранное","Favourites only"],["Narx, so'm","Цена, сум","Price, so'm"],["Narx, dan","Цена, от","Price, from"],["Narx, gacha","Цена, до","Price, to"],["dan","от","from"],["gacha","до","to"],
+["Holati","Качество","Wear"],["Noyoblik","Редкость","Rarity"],["Turi","Тип","Type"],["Yetkazish","Доставка","Delivery"],["Float oralig'i","Диапазон float","Float range"],["Float · «Jonli» takliflar","Float · предложения «Live»","Float · \"Live\" offers"],
+["Yetkazish · «Jonli» takliflar","Доставка · предложения «Live»","Delivery · \"Live\" offers"],["Tozalash","Сбросить","Reset"],["Ko'rsatish","Показать","Show"],["🔒 Trade-lock (arzonroq)","🔒 Трейд-лок (дешевле)","🔒 Trade-lock (cheaper)"],
+["Hammasi Steam'ga savdo taklifi bo'lib keladi.","Всё приходит в Steam как предложение обмена.","Everything arrives in Steam as a trade offer."],["Bor","Есть","Yes"],["Yo'q","Нет","No"],
+// skin sahifasi
+["Barcha takliflar","Все предложения","All offers"],["Sotib olish","Купить","Buy"],["Olish","Купить","Buy"],["O'yin","Игра","Game"],["Qurol","Оружие","Weapon"],["Kafolat","Гарантия","Guarantee"],["Balansga qaytadi","Вернётся на баланс","Refunded to balance"],
+["Trade-lock","Трейд-лок","Trade-lock"],["Steam'da ochish","Открыть в Steam","Open in Steam"],["So'nggi sotuvlar","Последние продажи","Recent sales"],
+["Bu skin bozorda tugagan — birozdan keyin qarang yoki boshqasini tanlang.","Этот скин закончился на маркете — загляните позже или выберите другой.","This skin is sold out — check back later or pick another one."],
+["Skin Steam'ga savdo taklifi bo'lib keladi. Steam Guard 7 kundan beri yoqilgan bo'lishi kerak. Yetkazilmasa — pul balansingizga avtomatik qaytadi.","Скин придёт в Steam как предложение обмена. Steam Guard должен быть включён не меньше 7 дней. Если не доставим — деньги автоматически вернутся на баланс.","The skin arrives in Steam as a trade offer. Steam Guard must have been on for at least 7 days. If it isn't delivered, the money returns to your balance automatically."],
+["Skin ochilgach avtomatik Steam'ga yuboriladi. Ungacha «Buyurtmalar»da bekor qilsangiz, 3% ushlab qolinadi.","Когда лок закончится, скин автоматически отправится в Steam. Если отмените раньше в «Заказах», удержим 3%.","Once unlocked, the skin is sent to Steam automatically. If you cancel before that in \"Orders\", 3% is withheld."],
+["Narx o'zgardi","Цена изменилась","Price changed"],["Nusxalandi","Скопировано","Copied"],["~1–5 daqiqa","~1–5 минут","~1–5 minutes"],["Steam'ga darhol","Сразу в Steam","Instant to Steam"],["Skinni tanlang va balansdan to'lang","Выберите скин и оплатите с баланса","Pick a skin and pay from your balance"],["Steam Guard mobil autentifikatori 7 kundan beri yoqilgan bo'lishi kerak. Yetkazilmasa pul balansga avtomatik qaytadi.","Мобильный аутентификатор Steam Guard должен быть включён не меньше 7 дней. Если не доставим — деньги автоматически вернутся на баланс.","The Steam Guard Mobile Authenticator must have been on for at least 7 days. If it isn't delivered, the money returns to your balance automatically."],["Steam'ga savdo taklifi bo'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.","придёт в Steam как предложение обмена (обычно 1–5 минут). Откройте «Предложения обмена» в приложении Steam и примите его.","arrives in Steam as a trade offer (usually 1–5 minutes). Open \"Trade Offers\" in the Steam app and accept it."],["🛒 Savatga qo'shildi","🛒 Добавлено в корзину","🛒 Added to cart"],["Savatdan olindi","Убрано из корзины","Removed from cart"],["❤ Sevimlilarga qo'shildi","❤ Добавлено в избранное","❤ Added to favourites"],
+// xarid oynasi
+["Xaridni tasdiqlang","Подтвердите покупку","Confirm purchase"],["Steam trade havolangiz","Ваша трейд-ссылка Steam","Your Steam trade link"],["Jami","Итого","Total"],["Tasdiqlash","Подтвердить","Confirm"],["Bekor","Отмена","Cancel"],
+["Shu yerga qo'ying va saqlang","Вставьте сюда и сохраните","Paste it here and save"],["Steam trade havolangizga yuboriladi","Отправим на вашу трейд-ссылку Steam","Sent to your Steam trade link"],["Steam trade havolangizni bir marta kiriting","Один раз введите трейд-ссылку Steam","Enter your Steam trade link once"],
+["Havolani qayerdan olaman?","Где взять ссылку?","Where do I get the link?"],["Havolani olish →","Получить ссылку →","Get the link →"],["Saqlash","Сохранить","Save"],["Saqlandi ✓","Сохранено ✓","Saved ✓"],["Saqlangan ✓","Сохранено ✓","Saved ✓"],["✅ Saqlandi","✅ Сохранено","✅ Saved"],
+["Steam → Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?» bo'limidagi havola.","Ссылка в Steam → Инвентарь → Предложения обмена → «Кто может отправлять мне предложения обмена?».","The link in Steam → Inventory → Trade Offers → \"Who can send me Trade Offers?\"."],
+["Steam'da: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?»","В Steam: Инвентарь → Предложения обмена → «Кто может отправлять мне предложения обмена?»","In Steam: Inventory → Trade Offers → \"Who can send me Trade Offers?\""],
+["«Savdo havolasi» ostidagi havolani nusxalang","Скопируйте ссылку под «Ссылка на обмен»","Copy the link under \"Trade URL\""],
+["Sotib olgan skinlaringiz shu havola orqali Steam hisobingizga savdo taklifi bo'lib keladi. Havola bir marta saqlanadi.","Купленные скины придут на ваш аккаунт Steam предложением обмена по этой ссылке. Ссылка сохраняется один раз.","Skins you buy arrive in your Steam account as trade offers via this link. The link is saved once."],
+["Trade havola sizniki ekani tekshiriladi — skin boshqa odamga ketib qolmaydi","Проверяем, что ссылка ваша — скин не уйдёт другому человеку","We check that the link is yours — the skin won't go to someone else"],
+["Kiritilmagan — xariddan oldin kerak","Не указана — нужна до покупки","Not set — needed before buying"],["Steam trade havola","Трейд-ссылка Steam","Steam trade link"],["Trade URL","Trade URL","Trade URL"],
+["Xarid qilindi!","Покупка оформлена!","Purchased!"],["Xarid tasdiqlanmoqda","Покупка подтверждается","Confirming purchase"],["Steam'da qabul qilish","Принять в Steam","Accept in Steam"],["Buyurtmalarim","Мои заказы","My orders"],
+["Steam'ga trade taklifi tayyorlanmoqda…","Готовим предложение обмена в Steam…","Preparing a Steam trade offer…"],["Steam'dagi savdo takliflarim","Мои предложения обмена в Steam","My Steam trade offers"],
+["Steam'ga savdo taklifi bo'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.","Придёт в Steam как предложение обмена (обычно 1–5 минут). Откройте «Предложения обмена» в приложении Steam и примите его.","Arrives in Steam as a trade offer (usually 1–5 minutes). Open \"Trade Offers\" in the Steam app and accept it."],
+["Sotib olindi — trade-lock","Куплено — трейд-лок","Bought — trade-lock"],
+// savat
+["Savat","Корзина","Cart"],["Savat bo'sh","Корзина пуста","Cart is empty"],["Savatni tozalash","Очистить корзину","Clear cart"],["Hammasini sotib olish","Купить всё","Buy all"],["Rasmiylashtirish","Оформить","Checkout"],
+["Savatga 10 tagacha skin sig'adi","В корзину помещается до 10 скинов","The cart holds up to 10 skins"],["Takliflardagi savat tugmasini bosing.","Нажмите кнопку корзины у предложений.","Tap the cart button on offers."],
+["Har skin alohida buyurtma bo'ladi. Sotilib ketgani yoki narxi o'zgargani olinmaydi — uning puli yechilmaydi.","Каждый скин — отдельный заказ. Проданные или подорожавшие не покупаются — деньги за них не списываются.","Each skin is a separate order. Sold-out or repriced ones are skipped — you aren't charged for them."],
+["Xaridni davom ettirish","Продолжить покупки","Continue shopping"],
+// buyurtmalar
+["Skin xaridlaringiz va ularning holati","Ваши покупки скинов и их статус","Your skin purchases and their status"],["Jarayonda","В процессе","In progress"],["Bekor qilish","Отменить","Cancel"],["Bekor qilish (3%)","Отменить (3%)","Cancel (3%)"],
+["Yetkazildi","Доставлено","Delivered"],["Yuborilmoqda","Отправляется","Sending"],["Tekshirilmoqda","Проверяется","Checking"],["Sotib olinmoqda","Покупается","Buying"],["Bekor qilinmoqda","Отменяется","Cancelling"],["Steam'da qabul qiling","Примите в Steam","Accept in Steam"],
+["Bekor · pul qaytdi","Отменён · деньги возвращены","Cancelled · refunded"],["Taklifni ochish","Открыть предложение","Open offer"],["Kelgan skinni qabul qilish","Принять пришедший скин","Accept the incoming skin"],["Steam'da kelgan taklifni qabul qiling","Примите пришедшее предложение в Steam","Accept the incoming offer in Steam"],
+["Steam'dagi trade taklifini qabul qiling","Примите предложение обмена в Steam","Accept the trade offer in Steam"],["Trade-lock'da","На трейд-локе","On trade-lock"],["trade-lock'da","на трейд-локе","on trade-lock"],
+["Xaridni bekor qilish","Отменить покупку","Cancel purchase"],["Ha, bekor qilish","Да, отменить","Yes, cancel"],["Yo'q, kutaman","Нет, подожду","No, I'll wait"],["Pul qaytadi","Деньги вернутся","Money is refunded"],
+["Trade-lock'dagi xarid bekor qilindi (3% komissiya ushlab qolindi).","Покупка на трейд-локе отменена (удержана комиссия 3%).","The trade-locked purchase was cancelled (3% fee withheld)."],
+["Bu bo'limda buyurtma yo'q","В этом разделе заказов нет","No orders in this section"],["Boshqa filtrni tanlang.","Выберите другой фильтр.","Choose another filter."],["Hali skin sotib olmagansiz","Вы ещё не покупали скины","You haven't bought any skins yet"],
+["Bozordan birinchi skiningizni tanlang — u Steam'ga ~1 daqiqada keladi.","Выберите первый скин в маркете — он придёт в Steam за ~1 минуту.","Pick your first skin in the market — it reaches Steam in ~1 minute."],["Hali bo'sh","Пока пусто","Empty for now"],
+["So'rov yuborildi","Запрос отправлен","Request sent"],
+// profil
+["Balans","Баланс","Balance"],["Sevimli skinlar","Избранные скины","Favourite skins"],["sevimli","избранное","favourites"],["xarid","покупки","purchases"],["Trade havola","Трейд-ссылка","Trade link"],
+["Qo'llab-quvvatlash","Поддержка","Support"],["Operator bilan yozishish","Написать оператору","Chat with support"],["Savollar va javoblar","Вопросы и ответы","Questions and answers"],
+["Steam akkaunt ulangan","Аккаунт Steam привязан","Steam account linked"],["Steam akkauntni ulang","Привяжите аккаунт Steam","Link your Steam account"],["Steam akkauntni uzish","Отвязать аккаунт Steam","Unlink Steam account"],["Ulash","Привязать","Link"],["Profil ochiq","Профиль открыт","Profile is public"],
+["Ulangan akkaunt:","Привязанный аккаунт:","Linked account:"],[". Havola faqat shu akkauntniki bo'lishi mumkin.",". Ссылка должна быть от этого аккаунта.",". The link must belong to this account."],
+["Steam ochildi — kirgach Telegram'ga qayting","Steam открыт — после входа вернитесь в Telegram","Steam opened — come back to Telegram after signing in"],["Ha, uzish","Да, отвязать","Yes, unlink"],
+["Steam akkaunt uziladi. Keyin istalgan trade havolani kiritish mumkin bo'ladi — tekshiruv o'chadi.","Аккаунт Steam будет отвязан. После этого можно ввести любую трейд-ссылку — проверка отключится.","The Steam account will be unlinked. Any trade link can then be entered — the check is turned off."],
+["Skinlar do'koni bo'yicha savol:","Вопрос по магазину скинов:","Question about the skin shop:"],["Ko'rish","Смотреть","View"],
+// server xabarlari (toast)
+["Avval Steam trade havolangizni kiriting","Сначала введите трейд-ссылку Steam","Add your Steam trade link first"],["Skinlar do'koni hozircha yopiq","Магазин скинов пока закрыт","The skin shop is closed for now"],
+["Trade havola ulangan Steam akkauntiga tegishli emas — yangisini kiriting","Трейд-ссылка не от привязанного аккаунта Steam — введите новую","The trade link isn't from the linked Steam account — enter a new one"],
+["Bekor qilinmadi — skin holati o'zgargan","Не отменено — статус скина изменился","Not cancelled — the skin's status changed"],["Bozor band — birozdan keyin urinib ko'ring","Маркет занят — попробуйте чуть позже","The market is busy — try again shortly"],
+["Bozor hozir javob bermadi, birozdan keyin urinib ko'ring","Маркет сейчас не ответил, попробуйте чуть позже","The market didn't respond, try again shortly"],["Bu skin hozir sotilmaydi — boshqasini tanlang","Этот скин сейчас не продаётся — выберите другой","This skin isn't for sale now — pick another one"],
+["Bu skin sotilib ketdi — boshqasini tanlang","Этот скин уже продан — выберите другой","This skin was just sold — pick another one"],["Bu skinni hozir boshqa xaridor olmoqda","Этот скин сейчас покупает другой покупатель","Another buyer is purchasing this skin right now"],
+["Bu xaridni hozir bekor qilib bo'lmaydi","Эту покупку сейчас нельзя отменить","This purchase can't be cancelled right now"],["Hozircha ishlamayapti — keyinroq urinib ko'ring","Пока не работает — попробуйте позже","Not working right now — try again later"],["Hozircha ishlamayapti, keyinroq urinib ko'ring","Пока не работает, попробуйте позже","Not working right now, try again later"],
+["Juda ko'p so'rov — birozdan keyin urinib ko'ring","Слишком много запросов — попробуйте чуть позже","Too many requests — try again shortly"],["Narx o'zgardi — skinni qaytadan oching","Цена изменилась — откройте скин заново","The price changed — open the skin again"],
+["Narxlar yangilandi — skinni qaytadan oching","Цены обновились — откройте скин заново","Prices were updated — open the skin again"],["Savatda 1 dan 10 tagacha skin bo'lishi kerak","В корзине должно быть от 1 до 10 скинов","The cart must hold 1 to 10 skins"],
+["So'rov yuborildi — natija bir necha daqiqada","Запрос отправлен — результат через несколько минут","Request sent — result in a few minutes"],["So'rov yuborilgan — natijani kuting","Запрос уже отправлен — ждите результата","Request already sent — please wait for the result"],
+["Havola noto'g'ri. U shunday ko'rinishda bo'ladi: https://steamcommunity.com/tradeoffer/new/?partner=…&token=…","Неверная ссылка. Она выглядит так: https://steamcommunity.com/tradeoffer/new/?partner=…&token=…","Invalid link. It looks like this: https://steamcommunity.com/tradeoffer/new/?partner=…&token=…"],
+["Steam trade havolangiz eskirgan yoki noto'g'ri — yangisini kiriting.","Ваша трейд-ссылка Steam устарела или неверна — введите новую.","Your Steam trade link is outdated or invalid — enter a new one."],
+["Steam akkauntingiz hozir savdo qila olmaydi (Steam Guard 7 kundan kam yoqilgan yoki Steam cheklovi).","Ваш аккаунт Steam сейчас не может обмениваться (Steam Guard включён меньше 7 дней или ограничение Steam).","Your Steam account can't trade right now (Steam Guard on for under 7 days, or a Steam restriction)."],
+["Steam inventaringiz yopiq — Steam → Profil → Maxfiylik sozlamalarida «Inventar: Ochiq» qiling.","Ваш инвентарь Steam скрыт — в Steam → Профиль → Настройки приватности поставьте «Инвентарь: Открытый».","Your Steam inventory is private — set \"Inventory: Public\" in Steam → Profile → Privacy settings."],
+["Steam akkauntingizda savdo taqiqi bor.","На вашем аккаунте Steam запрет на обмен.","Your Steam account has a trade ban."],["Steam inventaringiz to'lib qolgan — joy bo'shating.","Ваш инвентарь Steam заполнен — освободите место.","Your Steam inventory is full — free up space."],
+["Bu Steam akkaunt uchun urinishlar ko'p bo'ldi — birozdan keyin urinib ko'ring.","Слишком много попыток для этого аккаунта Steam — попробуйте чуть позже.","Too many attempts for this Steam account — try again shortly."],["Steam xatosi — birozdan keyin urinib ko'ring.","Ошибка Steam — попробуйте чуть позже.","Steam error — try again shortly."],
+["Steam'dagi trade taklifi muddatida qabul qilinmadi.","Предложение обмена в Steam не принято вовремя.","The Steam trade offer wasn't accepted in time."],["Steam'dagi trade taklifi bekor qilindi.","Предложение обмена в Steam отменено.","The Steam trade offer was cancelled."],
+["Steam'da trade taklifini yaratib bo'lmadi.","Не удалось создать предложение обмена в Steam.","Couldn't create the Steam trade offer."],["Xarid bekor qilindi.","Покупка отменена.","The purchase was cancelled."],
+["Skin trade-lock'dan chiqqach o'z vaqtida yuborilmadi.","Скин не был отправлен вовремя после трейд-лока.","The skin wasn't sent in time after the trade-lock."],["Steam'dagi trade qaytarildi.","Обмен в Steam был отменён.","The Steam trade was rolled back."],["Sotuvchi tomonidan trade qaytarildi.","Продавец отменил обмен.","The seller rolled back the trade."]
+];
+// O'zgaruvchan matnlar (son, sana, ism bor): [qolip, ru, en] — ru/en funksiya yoki qator ($1…)
+function skPl(n,a,b,c){n=Math.abs(parseInt(String(n).replace(/\s/g,""),10))||0;var d=n%10,h=n%100;return d===1&&h!==11?a:d>=2&&d<=4&&(h<12||h>14)?b:c;}
+function skAmt(s,L){return s.replace(/(\d[\d,.]*)\s?mln/g,function(_,n){return L==="ru"?n+" млн":n.replace(",",".")+"M";}).replace(/(\d[\d,.]*)\s?ming/g,function(_,n){return L==="ru"?n+" тыс.":n+"K";});}
+var SK_TRX=[
+[/^Bekor · (.+)$/,function(m,x){return (/^\d+$/.test(x)?"Отменённые · "+x:"Отменён · "+skTrTxt(x,"ru"));},function(m,x){return "Cancelled · "+(/^\d+$/.test(x)?x:skTrTxt(x,"en"));}],
+[/^(\d+) uslub ochilgan$/,function(m,n){return n+" "+skPl(n,"стиль открыт","стиля открыто","стилей открыто");},function(m,n){return n+(n==="1"?" style unlocked":" styles unlocked");}],
+[/^(\d+) stiker$/,function(m,n){return n+" "+skPl(n,"стикер","стикера","стикеров");},function(m,n){return n+(n==="1"?" sticker":" stickers");}],
+[/^(\d[\d\s]*) ta taklif$/,function(m,n){return n+" "+skPl(n,"предложение","предложения","предложений");},function(m,n){return n+(n.trim()==="1"?" offer":" offers");}],
+[/^(\d[\d\s]*) ta skin$/,function(m,n){return n+" "+skPl(n,"скин","скина","скинов");},function(m,n){return n+(n.trim()==="1"?" skin":" skins");}],
+[/^(\d[\d\s]*) ta skin sotib olindi$/,function(m,n){return "Куплено скинов: "+n;},function(m,n){return n+(n.trim()==="1"?" skin":" skins")+" bought";}],
+[/^(\d[\d\s]*) ta$/,"$1 шт.","$1 pcs"],
+[/^(\d[\d\s]*) kun$/,function(m,n){return n+" "+skPl(n,"день","дня","дней");},function(m,n){return n+(n.trim()==="1"?" day":" days");}],
+[/^(\d+) soatgacha$/,"до $1 ч","up to $1 h"],
+[/^(\d+) daq\. oldin$/,"$1 мин. назад","$1 min ago"],[/^(\d+) soat oldin$/,"$1 ч. назад","$1 h ago"],[/^(\d+) kun oldin$/,"$1 дн. назад","$1 d ago"],
+[/^(\S.*) dan$/,function(m,x){return "от "+skAmt(x,"ru");},function(m,x){return "from "+skAmt(x,"en");}],
+[/^(.+?) ?mingacha$/,"до $1 тыс.","up to $1K"],
+[/^[\d,.–\- ]+(mln|ming)( – [\d,.]+ (mln|ming))?$/,function(m){return skAmt(m,"ru");},function(m){return skAmt(m,"en");}],
+[/^Balansingiz:(.*)$/,"Ваш баланс:$1","Your balance:$1"],
+[/^yetishmaydi (.+)$/,"не хватает $1","$1 short"],
+[/^Mavjud: (.+)$/,"В наличии: $1","Available: $1"],
+[/^Trade-lock: (\d+) kun\.$/,function(m,n){return "Трейд-лок: "+n+" "+skPl(n,"день","дня","дней")+".";},function(m,n){return "Trade-lock: "+n+(n==="1"?" day.":" days.");}],
+[/^([\d.,: ]+) da ochiladi$/,"откроется $1","unlocks $1"],
+[/^🔒 (.+) da ochiladi — keyin avtomatik Steam'ga yuboriladi$/,"🔒 Откроется $1 — затем автоматически отправится в Steam","🔒 Unlocks $1 — then it's sent to Steam automatically"],
+[/^⏱ (.+) gacha qabul qiling — keyin taklif bekor bo'ladi va pul qaytadi$/,"⏱ Примите до $1 — потом предложение отменится и деньги вернутся","⏱ Accept by $1 — after that the offer is cancelled and the money is refunded"],
+[/^trade-lock'da(?: — (.+) da ochiladi)?\. Ochilishi bilan avtomatik Steam'ga yuboriladi, holati «Buyurtmalar»da\.$/,function(m,d){return "на трейд-локе"+(d?" — откроется "+d:"")+". Как только откроется, автоматически отправится в Steam, статус — в «Заказах».";},function(m,d){return "is on trade-lock"+(d?" — unlocks "+d:"")+". Once unlocked it's sent to Steam automatically; the status is in \"Orders\".";}],
+[/^Trade-lock'dagi skinni qaytarishda lis-skins 3% oladi:(.*)$/,"При отмене скина на трейд-локе удерживается 3%:$1","Cancelling a trade-locked skin withholds 3%:$1"],
+[/^✅ Bekor qilindi — (.+) qaytdi$/,"✅ Отменено — возвращено $1","✅ Cancelled — $1 refunded"],
+[/^(.+) qaytdi$/,function(m,x){return "возвращено "+skAmt(x,"ru");},function(m,x){return skAmt(x,"en")+" refunded";}],
+[/^✅ Steam ulandi: (.*)$/,"✅ Steam привязан: $1","✅ Steam linked: $1"],
+[/^Bu trade havola boshqa Steam akkauntiniki\. Ulangan akkaunt: (.*) — o'sha akkauntning havolasini kiriting\.$/,"Эта трейд-ссылка от другого аккаунта Steam. Привязан: $1 — введите ссылку этого аккаунта.","This trade link belongs to another Steam account. Linked account: $1 — enter that account's link."],
+[/^Narx o'zgardi: (.+) — qayta tasdiqlang$/,"Цена изменилась: $1 — подтвердите заново","Price changed: $1 — confirm again"],
+[/^⏳ (.+) bozori tez orada ochiladi$/,"⏳ Маркет $1 скоро откроется","⏳ The $1 market opens soon"],
+[/^(.+) bozori tez orada$/,"Маркет $1 скоро","$1 market coming soon"],
+[/^(.+) bozori hozircha yopiq$/,"Маркет $1 пока закрыт","The $1 market is closed for now"],
+[/^(.+) skinlari$/,"Скины $1","$1 skins"],
+[/^Savatga qaytish \((\d+)\)$/,"Вернуться в корзину ($1)","Back to cart ($1)"],
+[/^Pattern (\d+)$/,"Паттерн $1","Pattern $1"],
+[/^(.+) skinlar$/,"Скины $1","$1 skins"]
+];
+// Tarjima: avval aniq lug'at, keyin qoliplar, keyin « · » bo'laklari alohida
+var SK_TR={ru:{},en:{}};
+SK_L.forEach(function(r){SK_TR.ru[r[0]]=r[1];SK_TR.en[r[0]]=r[2];});
+function skTrTxt(s,L){
+  var d=SK_TR[L];if(!d)return s;if(d[s]!=null)return d[s];
+  if(/^[\d\s,.–\-∞]*\d[\d\s,.]*\s?(mln|ming)[\d\s,.–\-∞]*((mln|ming)[\s]*)?$/.test(s))return skAmt(s,L);
+  for(var i=0;i<SK_TRX.length;i++){var r=SK_TRX[i],m=s.match(r[0]);if(m){var f=r[L==="ru"?1:2];return typeof f==="function"?f.apply(null,m):s.replace(r[0],f);}}
+  if(/ ✕$/.test(s)){var c=s.slice(0,-2),y=skTrTxt(c,L);if(y!==c)return y+" ✕";}
+  if(s.indexOf(" · ")>0){var ch=false,p=s.split(" · ").map(function(x){var y=skTrTxt(x,L);if(y!==x)ch=true;return y;});if(ch)return p.join(" · ");}
+  return s;
+}
+function _t(s){var L=S.lang;return L==="ru"||L==="en"?skTrTxt(s,L):s;}
+function skAgo(m){var L=S.lang,r=L==="ru",e=L==="en";return m<1?(r?"только что":e?"just now":"hozirgina"):m<60?m+(r?" мин. назад":e?" min ago":" daq. oldin"):m<1440?Math.round(m/60)+(r?" ч. назад":e?" h ago":" soat oldin"):Math.round(m/1440)+(r?" дн. назад":e?" d ago":" kun oldin");}
+// «X so'mdan» — rus/inglizda «от X so'm» / «from X so'm» tartibida
+function skFromH(n,a,b){var L=S.lang,v=esc(skNum(n)),num=a?'<'+a+'>'+v+'</'+a+'>':v;
+  return L==="ru"||L==="en"?'<'+b+' class="pre">'+(L==="ru"?"от":"from")+'</'+b+'>'+num+'<'+b+'>so\'m</'+b+'>':num+'<'+b+'>so\'mdan</'+b+'>';}
+// Tayyor sahifadagi matnlar (#sk, do'kon pastki oynalari, kirish animatsiyasi, toast) — rus/ingliz tilida avtomatik tarjima
+var SK_TRA=["placeholder","aria-label","title"],SK_MO=null;
+function skTrScope(n){var e=n&&(n.nodeType===1?n:n.parentElement);if(!e||!e.closest)return false;
+  if(e.closest("#toast"))return document.body.classList.contains("sk-open");return !!e.closest(".sk,.sheet.sks,.sk-fx");}
+function skTrNode(n,L){var v=n.nodeValue;if(!v||!/[a-z]/i.test(v))return;var t=v.trim(),r=skTrTxt(t,L);if(r!==t)n.nodeValue=(/^[.,;:!?]/.test(r)?v.replace(/^\s+/,""):v).replace(t,function(){return r;});}
+function skTrAttr(e,L){for(var i=0;i<SK_TRA.length;i++){var a=e.getAttribute(SK_TRA[i]);if(a){var r=skTrTxt(a.trim(),L);if(r!==a.trim())e.setAttribute(SK_TRA[i],r);}}}
+function skTrEl(n,L){
+  if(n.nodeType===3){skTrNode(n,L);return;}
+  if(n.nodeType!==1||n.tagName==="SCRIPT"||n.tagName==="STYLE")return;
+  var w=document.createTreeWalker(n,4,null),x;while((x=w.nextNode()))skTrNode(x,L);
+  skTrAttr(n,L);var A=n.querySelectorAll("[placeholder],[aria-label],[title]");for(var i=0;i<A.length;i++)skTrAttr(A[i],L);
+}
+function skTrOn(on){
+  var L=S.lang;
+  if(!on||L!=="ru"&&L!=="en"||!window.MutationObserver){if(SK_MO){SK_MO.disconnect();SK_MO=null;}return;}
+  if(!SK_MO){SK_MO=new MutationObserver(function(ms){var L=S.lang;if(L!=="ru"&&L!=="en")return;
+    for(var i=0;i<ms.length;i++){var m=ms[i];
+      if(m.type==="childList"){for(var j=0;j<m.addedNodes.length;j++){var n=m.addedNodes[j];if(skTrScope(n))skTrEl(n,L);}}
+      else if(m.type==="characterData"){if(skTrScope(m.target))skTrNode(m.target,L);}
+      else if(skTrScope(m.target))skTrAttr(m.target,L);}});
+    SK_MO.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:SK_TRA});}
+  var r=document.getElementById("sk");if(r)skTrEl(r,L);
+}
+// Ilovaning haqiqiy logotipi (ochilish sahifasidagi rasm) — do'kon sarlavhasi, kirish animatsiyasi va kartochka orqasi uchun
+var SK_LOGO=(function(){try{var i=document.querySelector("#splash .spw img");return i&&/^data:image\//.test(i.getAttribute("src")||"")?i.getAttribute("src"):"";}catch(e){return "";}})();
+// O'yinning rasmiy rasmi (Steam do'konidagi sarlavha rasmi); yuklanmasa harfli belgi qoladi
+function skGimg(g,cls){var G=SK_G[g];return '<span class="'+(cls||"gimg")+'" style="--gc:'+G.c+';background:'+G.bg+'"><i>'+G.mk+'</i><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/'+G.app+'/header.jpg" alt="'+esc(G.full)+'" loading="lazy" onerror="this.remove()"></span>';}
 var SK_CATS={
   cs2:[["knife","Pichoqlar"],["gloves","Qo'lqoplar"],["rifle","Avtomatlar"],["sniper","Snayperlar"],["pistol","To'pponchalar"],["smg","PP"],["heavy","Og'ir"]],
   dota2:[["wearable","Kiyimlar"],["courier","Kuryerlar"],["ward","Wardlar"],["treasure","Sandiqlar"],["bundle","To'plamlar"],["taunt","Taunt"],["other","Boshqa"]],
@@ -4919,11 +5152,7 @@ var SK_I={
   arr:SK_SV('<path d="M9 6l6 6-6 6"/>',18),
   lock:SK_SV('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',14,' stroke-width="2.4"'),
   cart:SK_SV('<path d="M3 4h2.5l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.3"/><circle cx="10" cy="20.5" r="1.3"/><circle cx="17" cy="20.5" r="1.3"/>',20),
-  cross:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="7"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>',
-  // Kartochka orqasidagi xira Verion belgisi (chaqmoq + VERION SKINS)
-  wm:'<svg viewBox="0 0 230 70" aria-hidden="true" fill="currentColor"><path transform="translate(4 4) scale(2.6)" d="M13 2 4 14h6l-1 8 9-12h-6z"/>'
-    +'<text x="64" y="34" font-family="Unbounded,\'Inter Tight\',sans-serif" font-weight="800" font-size="27" letter-spacing="-.5">VERION</text>'
-    +'<text x="65" y="60" font-family="Unbounded,\'Inter Tight\',sans-serif" font-weight="800" font-size="19" letter-spacing="3.5">SKINS</text></svg>'
+  cross:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="7"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>'
 };
 // Toifa belgilari (o'zimiz chizgan, hammasi bitta uslubda)
 var SK_CI={
@@ -4984,13 +5213,14 @@ function openCs2(src,game){
   var el=document.createElement("div");el.id="sk";el.className="sk";
   el.innerHTML='<div class="sk-bg" aria-hidden="true">'+SK_SPARKS+'</div>'
     +'<header class="sk-top"><button class="sk-ib" id="skExit" aria-label="Asosiy do\'konga qaytish">'+SK_I.back+'</button>'
-    +'<div class="sk-logo"><span class="mk">'+SK_I.mark+'</span><div>Verion<b>Skins</b></div></div>'
+    +'<div class="sk-logo">'+(SK_LOGO?'<img src="'+SK_LOGO+'" alt="Verion Shop">':'<b>Verion Shop</b>')+'</div>'
     +'<button class="sk-bal" id="skBal" aria-label="Balansni to\'ldirish"></button>'
     +'<button class="sk-av" id="skAv" aria-label="Profil">'+skAvatar()+'</button></header>'
     +'<main class="sk-main" id="skMain"></main>'
     +'<nav class="sk-nav" aria-label="Skinlar do\'koni">'+[["home","Bosh sahifa","home"],["market","Bozor","market"],["orders","Buyurtmalar","orders"],["profile","Profil","user"]].map(function(t){
       return '<button data-sktab="'+t[0]+'"'+(t[0]==="home"?' class="on"':'')+'>'+SK_I[t[2]]+'<span>'+t[1]+'</span></button>';}).join("")+'</nav>';
-  document.body.appendChild(el);document.body.classList.add("sk-open");
+  if(SK_LOGO)el.style.setProperty("--sklogo",'url("'+SK_LOGO+'")');
+  document.body.classList.add("sk-open");skTrOn(true);document.body.appendChild(el);
   el.addEventListener("click",skClick);
   skBackOn(true);
   skBal();
@@ -5000,7 +5230,7 @@ function openCs2(src,game){
   if(!reduce&&r&&r.width>0){
     var fx=document.createElement("div");fx.className="sk-fx";
     fx.style.cssText="top:"+r.top+"px;left:"+r.left+"px;width:"+r.width+"px;height:"+r.height+"px";
-    fx.innerHTML='<div class="lg"><span class="mk">'+SK_I.markBig+'</span><span>Verion <b>Skins</b></span></div>';
+    fx.innerHTML='<div class="lg">'+(SK_LOGO?'<img src="'+SK_LOGO+'" alt="">':'<b>Verion Shop</b>')+'</div>';
     document.body.appendChild(fx);fx.getBoundingClientRect();
     requestAnimationFrame(function(){fx.style.cssText="top:0;left:0;width:100%;height:100%;border-radius:0";fx.classList.add("go");});
     setTimeout(show,560);
@@ -5023,7 +5253,7 @@ function skBack(){
 }
 function skBackOn(on){try{var bb=TG&&TG.BackButton;if(!bb)return;bb.offClick(skBack);if(on){bb.onClick(skBack);bb.show();}else bb.hide();}catch(e){}}
 function closeCs2(){
-  closeSheet();skStopRot();skStopOrd();skBackOn(false);skSteamWait(false);
+  closeSheet();skStopRot();skStopOrd();skBackOn(false);skSteamWait(false);skTrOn(false);
   var el=document.getElementById("sk");document.body.classList.remove("sk-open");document.body.classList.remove("sk-cart");
   if(!el)return;el.id="";el.classList.remove("on");el.classList.add("out");
   setTimeout(function(){el.remove();},300);
@@ -5071,8 +5301,11 @@ function skClick(e){
   if(t.hasAttribute("data-skgo"))return skTab(a("data-skgo"));
   if(t.hasAttribute("data-skgame")){var g=a("data-skgame");if(!skOn(g))return toast("⏳ "+SK_G[g].n+" bozori tez orada ochiladi");return skSetGame(g,true);}
   if(t.hasAttribute("data-skb"))return skOpenItem(a("data-skb"),a("data-skg")||SK.game);
-  if(t.hasAttribute("data-skcat")){SK.cat=a("data-skcat");SK.w="";skCats();return skLoad(true);}
-  if(t.hasAttribute("data-skw")){var w=a("data-skw");SK.w=SK.w===w?"":w;return skLoad(true);}
+  if(t.hasAttribute("data-skcat")){var nc=a("data-skcat");
+    // O'sha toifa yana bosilsa — qurollar menyusi ochiladi/yopiladi
+    if(nc===SK.cat&&nc&&nc!=="new"&&SK.game==="cs2"){SK.wOpen=!SK.wOpen;skCats();return skPaint();}
+    SK.cat=nc;SK.w="";SK.wOpen=SK.game==="cs2"&&!!nc&&nc!=="new";skCats();return skLoad(true);}
+  if(t.hasAttribute("data-skw")){SK.w=a("data-skw");SK.wOpen=false;skCats();return skLoad(true);}
   if(t.hasAttribute("data-skrm")){var k=a("data-skrm").split(":"),f=SK.f;
     if(k[0]==="price"){f.pmin=0;f.pmax=0;}else if(k[0]==="w")SK.w="";else if(k[0]==="fav"||k[0]==="star")f[k[0]]=false;else if(k[0]==="unlock"||k[0]==="fl")f[k[0]]="";
     else if(f[k[0]]){var i=f[k[0]].indexOf(k[1]);if(i!==-1)f[k[0]].splice(i,1);}
@@ -5169,7 +5402,7 @@ function skHome(){
     +'<div><b>'+(cat>=1000?skNum(Math.floor(cat/1000)*1000)+'+':(on.length||1)+' ta')+'</b><span>'+(cat>=1000?'skin turlari':'o\'yin')+'</span></div>'
     +'<div><b>'+(d>=20?skNum(d):'100%')+'</b><span>'+(d>=20?'yetkazildi':'pul kafolati')+'</span></div></div>'
     +'<section class="sk-sec sk-in"><div class="sk-lbl">O\'yinlar</div><h2 class="sk-h2">O\'yiningizni tanlang</h2><div class="sk-games">'
-    +SK_GK.map(function(g){var G=SK_G[g],o=skOn(g);return '<button class="sk-gt'+(o?'':' off')+'" data-skgame="'+g+'" style="--gc:'+G.c+'"><span class="gi" style="background:'+G.bg+'">'+G.mk+'</span><b>'+G.n+'</b><small>'+(o?'Bozorga →':'Tez orada')+'</small></button>';}).join("")+'</div></section>'
+    +SK_GK.map(function(g){var G=SK_G[g],o=skOn(g);return '<button class="sk-gt'+(o?'':' off')+'" data-skgame="'+g+'" style="--gc:'+G.c+'">'+skGimg(g)+'<b>'+G.n+'</b><small>'+(o?'Bozorga →':'Tez orada')+'</small></button>';}).join("")+'</div></section>'
     +'<section class="sk-sec sk-in"><div class="sk-hd"><div><div class="sk-lbl">Ommabop · '+esc(SK_G[SK.game].n)+'</div><h2 class="sk-h2">Top skinlar</h2></div><button class="sk-all" data-skgo="market">Hammasi '+SK_I.arr+'</button></div>'
     +'<div class="sk-rail" id="skPop">'+'<div class="sk-sk" style="flex:0 0 164px;height:250px"></div>'.repeat(3)+'</div></section>'
     +'<div id="skRecBox"></div>'
@@ -5211,19 +5444,18 @@ function skHomePop(){
 function skHomeRec(){
   var box=skEl("skRecBox");if(!box)return;
   var L=SK.recent||[];if(!L.length){box.innerHTML="";return;}
-  var ago=function(m){return m<1?"hozirgina":m<60?m+" daq. oldin":m<1440?Math.round(m/60)+" soat oldin":Math.round(m/1440)+" kun oldin";};
   box.innerHTML='<section class="sk-sec"><div class="sk-hd"><div><div class="sk-lbl">Jonli</div><h2 class="sk-h2">Yaqinda sotib olindi</h2></div></div></section>'
     +'<div class="sk-rec">'+L.map(function(x){var rc=skRc(x);
       return '<button class="sk-rc" data-skb="'+esc(x.b)+'" data-skg="'+esc(x.game||"cs2")+'"><div class="pr">'+esc(skNum(x.price))+' <small>so\'m</small></div>'+(x.wear?'<span class="wr" style="color:'+(C2_WCOL[x.wear]||rc)+'">'+esc(x.wear)+'</span>':'')
-        +'<div class="im" style="background:radial-gradient(closest-side,'+skRg(rc,.3)+',transparent)"><span class="wm">'+SK_I.wm+'</span>'+skImg(x.img)+'</div><div class="nm">'+esc(x.s||x.b)+'</div><div class="ag">'+esc((SK_G[x.game]||SK_G.cs2).n+" · "+ago(x.ago))+'</div></button>';}).join("")+'</div>';
+        +'<div class="im" style="background:radial-gradient(closest-side,'+skRg(rc,.3)+',transparent)"><span class="wm"></span>'+skImg(x.img)+'</div><div class="nm">'+esc(x.s||x.b)+'</div><div class="ag">'+esc((SK_G[x.game]||SK_G.cs2).n+" · "+skAgo(x.ago))+'</div></button>';}).join("")+'</div>';
 }
 /* ---- kartochkalar ---- */
 function skCard(x){
   var g=x.game||SK.game,rc=skRc(x),fav=skIsFav(g,x.b),star=x.cat==="knife"||x.cat==="gloves";
-  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+'"><span class="wm">'+SK_I.wm+'</span>'+skImg(x.img)+(x.cnt>1?'<span class="sk-lots">'+SK_I.cart+Number(x.cnt)+'</span>':'')
+  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+'"><span class="wm"></span>'+skImg(x.img)+(x.cnt>1?'<span class="sk-lots">'+SK_I.cart+Number(x.cnt)+'</span>':'')
     +'<div class="sk-ct">'+(star?'<span class="st2">★</span>':'')+(x.st?'<span class="st">ST™</span>':x.sv?'<span class="sv">SV</span>':'')+'</div>'
     +'<span class="sk-fav'+(fav?' on':'')+'" data-skfav="'+esc(x.b)+'" data-skg="'+esc(g)+'" role="button" aria-label="Sevimli">'+SK_I.heart+'</span></div>'
-    +'<div class="sk-cb">'+(x.from?'<div class="sk-cp">'+esc(skNum(x.from))+'<small>so\'mdan</small></div>':'<div class="sk-cp na">Narxi ichkarida</div>')
+    +'<div class="sk-cb">'+(x.from?'<div class="sk-cp">'+skFromH(x.from,"","small")+'</div>':'<div class="sk-cp na">Narxi ichkarida</div>')
     +'<div class="sk-cn">'+esc(skTitle(x))+'</div><div class="sk-cg">'+(x.cnt?Number(x.cnt)+' ta taklif':'Ko\'rish')+' '+SK_I.arr+'</div></div></button>';
 }
 // src: "m" — bozor ro'yxati (SK.items), "i" — skin sahifasi (SK.cur.offs); savat tugmasi shu orqali taklifni topadi
@@ -5237,7 +5469,7 @@ function skOfferCard(o,i,attr,src){
   var gm=(o.gems||[]).slice(0,3).map(function(x){var c=/^#[0-9a-f]{6}$/i.test(String(x.c||""))?x.c:"#9aa3b2";return '<span class="gm" title="'+esc(x.d||"")+'">'+(x.img?'<img src="'+esc(x.img)+'" alt="" onerror="this.remove()">':'<i style="background:'+c+'"></i>')+esc(x.n)+'</span>';}).join("");
   var bd=(o.fresh?'<span class="nw">Yangi</span>':'')+(o.lockDays?'<span class="lk">'+SK_I.lock+o.lockDays+' kun</span>':'')+(o.slow?'<span class="sl">12 soatgacha</span>':'');
   return '<div class="sk-oc" style="--rg:'+skRg(rc,.24)+'"><div class="t">'+top+'<span>'+(o.float!=null?Number(o.float).toFixed(4):o.st?'StatTrak™':'')+'</span></div>'
-    +'<div class="im"><span class="wm">'+SK_I.wm+'</span>'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+(bd?'<div class="bdg">'+bd+'</div>':'')+'</div>'
+    +'<div class="im"><span class="wm"></span>'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+(bd?'<div class="bdg">'+bd+'</div>':'')+'</div>'
     +'<div class="n">'+esc(skTitle(o))+'</div>'+(si?'<div class="stks">'+si+'</div>':'')+(gm?'<div class="gms">'+gm+'</div>':'')+(ex.length?'<div class="x">'+esc(ex.join(" · "))+'</div>':'')
     +'<div class="p">'+esc(skNum(o.price))+' so\'m</div><div class="acts"><button class="sk-btn" '+attr+'="'+i+'">Olish</button>'
     +'<button class="ct'+(skInCart(o.id)?' on':'')+'" data-skcart="'+(src||"m")+':'+i+'" aria-label="Savatga">'+SK_I.cart+'</button></div></div>';
@@ -5264,12 +5496,16 @@ function skMarket(){
 }
 function skGtabs(){
   var b=skEl("skGt");if(!b)return;
-  b.innerHTML=SK_GK.map(function(g){var G=SK_G[g];return '<button class="sk-gtab'+(g===SK.game?' on':'')+(SK.games&&!skOn(g)?' off':'')+'" data-skgame="'+g+'"><span class="gi" style="background:'+G.bg+'">'+G.mk+'</span>'+G.n+'</button>';}).join("");
+  b.innerHTML=SK_GK.map(function(g){var G=SK_G[g];return '<button class="sk-gtab'+(g===SK.game?' on':'')+(SK.games&&!skOn(g)?' off':'')+'" data-skgame="'+g+'">'+skGimg(g,"gimg sm")+G.n+'</button>';}).join("");
 }
 function skCats(){
   var b=skEl("skCats");if(!b)return;
   var L=[["","Hammasi"],["new","Jonli"]].concat(SK_CATS[SK.game]||[]);
-  b.innerHTML=L.map(function(c){return '<button class="sk-cat'+(SK.cat===c[0]?' on':'')+'" data-skcat="'+c[0]+'">'+skCi(c[0])+esc(c[1])+(c[0]==="new"&&SK.info&&SK.info.live?'<i class="lv" title="Real vaqt"></i>':'')+'</button>';}).join("");
+  // CS2 toifalarida ▾ — bosilsa qurol turlari menyusi ochiladi; tanlangan qurol nomi tugmada ko'rinadi
+  var dd=SK.game==="cs2";
+  b.innerHTML=L.map(function(c){var on=SK.cat===c[0],hasDd=dd&&c[0]&&c[0]!=="new";
+    return '<button class="sk-cat'+(on?' on':'')+(on&&SK.wOpen?' open':'')+'" data-skcat="'+c[0]+'">'+skCi(c[0])+esc(c[1])+(on&&SK.w?' · '+esc(SK.w):'')
+      +(hasDd?'<span class="dn">'+SK_I.down+'</span>':'')+(c[0]==="new"&&SK.info&&SK.info.live?'<i class="lv" title="Real vaqt"></i>':'')+'</button>';}).join("");
 }
 function skTuBtn(){
   var b=skEl("skTu");if(!b)return;
@@ -5308,8 +5544,10 @@ function skPaint(){
   var isNew=SK.cat==="new",nf=skFiltN();
   if(fn){fn.hidden=!nf;fn.textContent=nf;}
   if(sb)sb.hidden=isNew||!SK.priced;
-  if(wp){var W=!isNew&&SK.game==="cs2"&&SK.cat&&SK.weapons&&SK.weapons.length>1?SK.weapons:[];wp.hidden=!W.length;
-    wp.innerHTML=W.map(function(x){return '<button class="'+(SK.w===x.w?"on":"")+'" data-skw="'+esc(x.w)+'">'+esc(x.w)+'</button>';}).join("");}
+  if(wp){var W=!isNew&&SK.game==="cs2"&&SK.cat&&SK.wOpen&&SK.weapons&&SK.weapons.length>1?SK.weapons:[];wp.hidden=!W.length;
+    var tot=W.reduce(function(a,x){return a+x.n;},0);
+    wp.innerHTML=W.length?'<button class="'+(!SK.w?"on":"")+'" data-skw=""><span>'+esc(_t("Hammasi"))+'</span><small>'+tot+'</small></button>'
+      +W.map(function(x){return '<button class="'+(SK.w===x.w?"on":"")+'" data-skw="'+esc(x.w)+'"><span>'+esc(x.w)+'</span><small>'+Number(x.n)+'</small></button>';}).join(""):"";}
   if(act){var A=[],f=SK.f;
     if(f.pmin||f.pmax)A.push(["price",(f.pmin?skShort(f.pmin):"0")+" – "+(f.pmax?skShort(f.pmax):"∞")]);
     if(isNew){
@@ -5361,7 +5599,7 @@ function skOpenItem(b,g){
   SK.cur={b:b,g:g,item:null,offs:[],sel:""};
   api("/api/cs2/item?game="+g+"&b="+encodeURIComponent(b)).then(function(r){
     if(!SK.cur||SK.cur.b!==b||!document.body.contains(p))return;
-    SK.cur.item=r.item||{b:b,game:g};SK.cur.offs=r.offers||[];
+    SK.cur.item=r.item||{b:b,game:g};SK.cur.offs=r.offers||[];SK.cur.sales=Array.isArray(r.sales)?r.sales:[];
     skItemPaint(p);
   }).catch(function(e){var m=p.querySelector("#skPm");if(m)m.innerHTML='<div class="sk-empty"><b>Bozor javob bermadi</b>'+esc((e&&e.resp&&e.resp.message)||t("srv_off"))+'</div>';});
 }
@@ -5390,18 +5628,20 @@ function skItemPaint(p){
   Object.keys(C2_WEAR).forEach(function(k){var L=offs.filter(function(o){return o.wear===k;});if(L.length)wt.push([k,L.length,Math.min.apply(null,L.map(function(o){return o.price;}))]);});
   m.innerHTML='<div class="sk-stage sk-in" style="--rg:'+skRg(rc,.42)+'"><div class="glow"></div>'
     +'<div class="bd"><span class="sk-badge bolt">'+SK_I.bolt+'</span>'+(offs.length?'<span class="sk-badge av">'+SK_I.check+' Mavjud: '+offs.length+'</span>':'<span class="sk-badge av" style="border-color:#4a505c;color:#9aa3b2;background:none">Sotuvda yo\'q</span>')+'</div>'
-    +'<div class="im"><span class="wm">'+SK_I.wm+'</span>'+skImg(it.img)+stk+'</div>'
+    +'<div class="im"><span class="wm"></span>'+skImg(it.img)+stk+'</div>'
     +'<div class="ft">'+(insp?'<a href="#" class="sk-insp" data-insp="'+esc(insp.id)+'">'+SK_I.eye+' O\'yinda ko\'rish</a>':'')+(it.st&&g==="cs2"?'<span class="sk-badge" style="height:50px;border:1px solid rgba(255,138,76,.45);color:#ff8a4c;background:rgba(255,138,76,.08)">StatTrak™</span>':'')+'</div>'+fl+'</div>'
     +'<h1 class="sk-title sk-in">'+esc(title)+'</h1>'
     +(it.rn?'<span class="sk-rch sk-in" style="background:'+skRg(rc,.14)+';color:'+rc+';border:1px solid '+skRg(rc,.4)+'">'+esc(it.rn)+'</span>':'')
     +'<button class="sk-copy" data-skpg="copy">'+esc(it.b||C.b)+' '+SK_I.copy+'</button>'
     +'<dl class="sk-dt">'+dt.map(function(r){return '<div><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';}).join("")+'</dl>'
-    +(cheap?'<div class="sk-pz"><b>'+esc(skNum(cheap.price))+'</b><span>so\'mdan</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>'
+    +(cheap?'<div class="sk-pz">'+skFromH(cheap.price,"b","span")+'<a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>'
       +'<button class="sk-btn sk-buyb" data-skpg="cheap">'+SK_I.bolt+' Sotib olish</button>'
       :'<div class="sk-pz"><span style="font-size:16px">Hozir sotuvda yo\'q — birozdan keyin qarang</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>')
     +'<section class="sk-offs"><h3>Barcha takliflar <span>('+offs.length+')</span></h3>'+lt
     +(wt.length>1?'<div class="sk-wt">'+wt.map(function(w){return '<button data-skwt="'+w[0]+'" style="--wc:'+C2_WCOL[w[0]]+'"><b>'+w[0]+'</b><small>'+C2_WEAR[w[0]]+'</small><em>'+esc(skNum(w[2]))+' dan</em><i>'+w[1]+'</i></button>';}).join("")+'</div>':'')
     +'<div class="sk-og" id="skOg"></div></section>'
+    +(C.sales&&C.sales.length?'<section class="sk-sales"><h3>'+esc(_t("So'nggi sotuvlar"))+'</h3>'+C.sales.map(function(x){var wc=C2_WCOL[x.wear]||"#8b93a1";
+      return '<div><b style="color:'+wc+'">'+esc(x.wear||"—")+'</b><span>'+(x.st?'StatTrak™ · ':'')+(x.float!=null?Number(x.float).toFixed(4)+' · ':'')+esc(skAgo(x.ago))+'</span><em>'+esc(skNum(x.price))+' '+esc(_t("so'm"))+'</em></div>';}).join("")+'</section>':'')
     +'<div class="sk-guar">'+SK_I.shield+'<div>Skin Steam\'ga savdo taklifi bo\'lib keladi. Steam Guard 7 kundan beri yoqilgan bo\'lishi kerak. Yetkazilmasa — pul balansingizga avtomatik qaytadi.</div></div>';
   skOffPaint(p);
 }
@@ -5491,7 +5731,7 @@ function skDone(o,r){
   var oc=r&&r.order&&r.order.cs2||{},lk=oc.state==="locked";
   d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true"><div class="sk-ok"><div class="ic'+(wait||lk?' w':'')+'">'+(wait||lk?SK_I.clockBig:SK_I.checkBig)+'</div>'
     +'<h3>'+(wait?"Xarid tasdiqlanmoqda":lk?"Sotib olindi — trade-lock":"Xarid qilindi!")+'</h3>'
-    +'<p>'+esc(skTitle(o))+(lk?' trade-lock\'da'+(oc.unlockAt?' — '+esc(skDt(oc.unlockAt))+' da ochiladi':'')+'. Ochilishi bilan avtomatik Steam\'ga yuboriladi, holati «Buyurtmalar»da.'
+    +'<p><span>'+esc(skTitle(o))+'</span>'+(lk?' trade-lock\'da'+(oc.unlockAt?' — '+esc(skDt(oc.unlockAt))+' da ochiladi':'')+'. Ochilishi bilan avtomatik Steam\'ga yuboriladi, holati «Buyurtmalar»da.'
       :' Steam\'ga savdo taklifi bo\'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.')+'</p></div>'
     +'<div class="sk-mf"><button class="sk-btn" data-skm="steam">Steam\'da qabul qilish '+SK_I.ext+'</button>'
     +'<button class="sk-btn gh" data-skm="orders">Buyurtmalarim</button><button class="sk-btn gh" data-skm="more">Xaridni davom ettirish</button></div></div>';
@@ -5654,7 +5894,7 @@ function skProfile(){
       +'<button class="sk-ib" data-skact="steamOff" aria-label="Steam akkauntni uzish">'+SK_I.exit+'</button></div>'
     :'<div class="sk-steam off sk-in"><div class="av">'+stIco+'</div><div class="tx"><b>Steam akkauntni ulang</b><small>Trade havola sizniki ekani tekshiriladi — skin boshqa odamga ketib qolmaydi</small></div>'
       +(SK.steamLogin?'<button class="sk-btn sm" data-skact="steamOn">Ulash</button>':'')+'</div>';
-  m.innerHTML='<div class="sk-me sk-in"><div class="av">'+skAvatar()+'</div><div style="min-width:0"><b>'+esc(nm)+'</b><small>'+(u.username?'@'+esc(u.username):'Verion Skins')+'</small></div></div>'
+  m.innerHTML='<div class="sk-me sk-in"><div class="av">'+skAvatar()+'</div><div style="min-width:0"><b>'+esc(nm)+'</b><small>'+(u.username?'@'+esc(u.username):'Verion Shop')+'</small></div></div>'
     +stc
     +'<div class="sk-wal sk-in"><small>Balans</small><b>'+esc(money(ME.balance||0))+'</b><button class="sk-btn wd" data-skact="pay">'+SK_I.plus+' Balansni to\'ldirish</button></div>'
     +'<div class="sk-tiles sk-in"><div><b>'+all.length+'</b><span>xarid</span></div><div><b>'+done+'</b><span>yetkazildi</span></div><div><b>'+SK.favs.length+'</b><span>sevimli</span></div></div>'
