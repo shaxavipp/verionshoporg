@@ -412,9 +412,13 @@ Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, 
 
 **Ma'lumot manbalari:**
 - CS2 nomlari, rasmlari va toifalari ochiq CS2 bazasidan olinadi (ByMykel/CSGO-API, ~21 ming variant).
-- Dota 2 va Rust katalogi Steam bozoridan olinadi (eng ommabop narsalar, sahifalab, Steam cheklovi uchun sekin). Dota 2 noyobligi va toifasi Steam'dagi «type» maydonidan, Rust toifasi nomidan aniqlanadi. Rasmlar faqat `*.steamstatic.com` dan.
+- Dota 2 va Rust katalogi ikki manbadan yig'iladi:
+  - Steam bozori — eng ommabop narsalar (rasm, turi, noyoblik). Steam so'rovga 10 tadan beradi va tez so'ralsa 429 qaytaradi, shuning uchun sekin, sahifalab olinadi (429 da kutadi); natija diskda saqlanadi, har 20 sahifada katalog yangilanadi.
+  - lis-skins narxlar ro'yxati — sotuvdagi qolgan barcha narsalar; rasmi to'liq ro'yxatdagi `item_class_id` orqali Steam'dan (`economy/image/class/<appid>/<id>`). Toifa nomidan taxmin qilinadi.
+  - Steam ishlamasa ham katalog lis-skins'dagilardan tuziladi (admin panelda ogohlantirish).
+- Dota 2 noyobligi va toifasi Steam'dagi «type» maydonidan, Rust toifasi nomidan aniqlanadi. Rasmlar faqat `*.steamstatic.com` dan.
 - Kataloglar diskda saqlanadi va haftada bir yangilanadi (Dota 2 / Rust — faqat yoqilgan bo'lsa). Yangilash xato bo'lsa, eski katalog qoladi va xato admin panelda ko'rinadi.
-- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (har o'yinga alohida, 10 daqiqada yangilanadi).
+- Eng arzon narxlar ro'yxati lis-skins JSON eksportidan olinadi (har o'yinga alohida, 10 daqiqada; 20 MB dan katta ro'yxat — 30 daqiqada yangilanadi). Ro'yxat oqim bilan o'qiladi: 86 MB ro'yxatda xotira ~+46 MB (butunicha o'qilganda ~+450 MB edi).
   - Havola admin paneldan kiritiladi: «Narxlar ro'yxati havolasi» — lis-skins hujjatidagi «JSON Price Lists» bo'limidan olinadi.
   - Kiritilmagan bo'lsa, `LIS_PRICES_URL` va bir nechta ma'lum manzil sinab ko'riladi. Har urinish natijasi (HTTP kodi, hajmi, nechta nom o'qilgani) admin panelda ko'rinadi.
   - Ro'yxat bo'lmasa, narxlar API qidiruvi orqali olinadi. Bu holatda filtrlar va «Arzon / Qimmat» tartibi yashiriladi.

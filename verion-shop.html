@@ -1514,7 +1514,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.8";
+var CLIENT_BUILD="2026-10-31.9";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5743,8 +5743,10 @@ function openAdminCs2(){
       return st+(w.state==="connected"?"<br>Bozor xabarlari: "+(w.pub||0)+" · xaridlar: "+(w.priv||0)+(w.privOk?" · xaridlar kanali ✅":" · xaridlar kanali: User ID kiriting"):"")
         +(w.err?'<br>⚠️ '+esc(w.err):'')+(cool?'<br>⏳ lis-skins limiti: '+cool+' soniya kutilmoqda':'');};
     var stat=function(g){var x=Gs[g]||{};
-      return '📦 Katalog: '+(x.loading?'⏳ yuklanmoqda…':(x.skins||0)+' ta skin ('+(x.catalog||0)+' variant), '+esc(when(x.catalogTs)))
-        +(x.error?'<br>⚠️ '+esc(x.error):'')
+      return '📦 Katalog: '+(x.loading&&!x.catalog?'⏳ yuklanmoqda…':(x.skins||0)+' ta skin ('+(x.catalog||0)+' variant), '+esc(when(x.catalogTs)))
+        +(g!=="cs2"?'<br>🖼 Steam: '+(x.steam||0)+' ta (rasm, turi)'+(x.loading&&x.crawl?' — ⏳ '+x.crawl.got+(x.crawl.total?'/'+x.crawl.total:'')+' yuklanmoqda':'')
+          +' · lis-skins\'dan qo\'shildi: '+(x.lisN||0)+' ta':'')
+        +(x.error?'<br>⚠️ '+esc(x.error):'')+(x.warn&&!x.error?'<br>ℹ️ '+esc(x.warn):'')
         +'<br>💲 Narxlar: '+(x.prices?x.prices+' ta, '+esc(when(x.pricesTs)):"ro'yxat yo'q — narx qidiruv orqali olinadi")
         +((x.pricesDiag||[]).length?'<br><span style="font-size:11px;word-break:break-all">'+x.pricesDiag.map(esc).join("<br>")+'</span>':'');};
     var html='<h2>'+ic("gamepad",18)+' Skinlar do\'koni (lis-skins)</h2>'

@@ -204,16 +204,30 @@ module.exports = function (ctx) {
       : /Door|\bBox\b|Sleeping Bag|\bRug\b|Furnace|Locker|Garage|Window|Sign|Fridge|Chair|Table|Barricade|\bBed\b|Vending|Storage|Large Wood|Bench|Sofa|Drop Box|Water Purifier/i.test(s) ? "deploy" : "other";
     return { c, r: RUST_COLOR, rn: "", w: str(type || "Rust", 40) };
   }
-  // Steam bozoridan eng ommabop narsalar (sahifada 100 tadan, sekin — Steam cheklovi uchun)
+  // Dota 2: nomidan taxminiy toifa (Steam'dan turi kelmagan narsalar uchun)
+  const dotaGuess = n => ({ c: /Treasure|Chest|Cache|Trove|Crate/i.test(n) ? "treasure" : /\bWard\b/i.test(n) ? "ward" : /Bundle|\bSet\b|Collection|Pack\b/i.test(n) ? "bundle"
+    : /Taunt/i.test(n) ? "taunt" : /Courier|Roshan|Greevil/i.test(n) ? "courier" : "other" });
+  /* ---------- Dota 2 / Rust: Steam bozoridan rasm, turi va ommabopligi ----------
+     Steam search/render so'rovga 10 tagacha natija beradi va tez so'ralsa 429 qaytaradi — shuning uchun
+     sekin, sahifalab (start += kelgan soni) va 429 da kutib olinadi. Natija diskda saqlanadi (haftada bir yangilanadi). */
+  const SC = {};   // o'yin -> { items, ts }
+  const scFile = g => path.join(ctx.DATA_DIR, "steam-" + g + ".json");
+  function loadSteamCache(g) { try { const j = JSON.parse(fs.readFileSync(scFile(g), "utf8")); if (Array.isArray(j.items)) SC[g] = { items: j.items, ts: j.ts || 0 }; } catch (e) {} }
   async function crawlSteam(g) {
-    const appid = GAMES[g].appid, maxPages = Number(process.env["STEAM_PAGES_" + g.toUpperCase()]) || (g === "dota2" ? 40 : 30);
-    const delay = Number(process.env.STEAM_DELAY_MS) || 4000, items = [], seen = new Set();
-    let fails = 0;
-    for (let page = 0; page < maxPages; page++) {
-      const url = STEAM_URL() + "?appid=" + appid + "&norender=1&count=100&start=" + page * 100 + "&sort_column=popular&sort_dir=desc&search_descriptions=0";
+    const appid = GAMES[g].appid, max = Number(process.env["STEAM_MAX_" + g.toUpperCase()]) || (g === "dota2" ? 2500 : 1500);
+    const delay = Number(process.env.STEAM_DELAY_MS) || 4000, wait429 = Number(process.env.STEAM_429_MS) || 90000;
+    const C = cat(g), items = [], seen = new Set();
+    let start = 0, total = Infinity, fails = 0, calls = 0;
+    const keep = () => { if (items.length) { SC[g] = { items: items.slice(), ts: Date.now() }; fs.writeFile(scFile(g), JSON.stringify({ ts: Date.now(), items }), () => {}); } };
+    while (items.length < max && start < total && calls < 800) {
+      calls++;
+      const url = STEAM_URL() + "?appid=" + appid + "&norender=1&count=100&start=" + start + "&sort_column=popular&sort_dir=desc&search_descriptions=0&l=english";
       const r = await getJson(url, { timeout: 30000, limit: 8e6 });
-      const res = r.json && Array.isArray(r.json.results) ? r.json.results : null;
-      if (!res) { if (++fails >= 3) break; await sleep(delay * 3); page--; continue; }
+      const res = r.json && r.json.success !== false && Array.isArray(r.json.results) ? r.json.results : null;
+      if (!res) { if (++fails >= 6) break; await sleep(r.status === 429 ? wait429 : delay * 3); continue; }
+      fails = 0;
+      const tc = Number(r.json.total_count); if (tc >= 0) total = tc;
+      if (!res.length) break;
       for (const x of res) {
         const d = x.asset_description || {}, n = str(x.hash_name || d.market_hash_name || x.name, 200);
         if (!n || seen.has(n) || !d.icon_url) continue;
@@ -223,10 +237,32 @@ module.exports = function (ctx) {
         const meta = g === "dota2" ? dotaMeta(d.type) : rustMeta(n, d.type);
         items.push({ n, s: str(x.name || n, 200), w: meta.w, c: meta.c, r: meta.r, rn: meta.rn, wr: "", st: false, sv: false, i: img, pop: items.length + 1 });
       }
-      if (res.length < 100) break;
+      start += res.length;
+      C.crawl = { got: items.length, total: total === Infinity ? 0 : total };
+      // Har 20 sahifada katalog yangilanadi — ommabop narsalar rasmi va turi bilan darhol ko'rinadi
+      if (calls % 20 === 0) { keep(); buildCatalog(g); }
       await sleep(delay);
     }
-    if (items.length < 20) return { ok: false, error: "Steam bozoridan kam ma'lumot keldi (" + items.length + ")" };
+    keep();
+    return { ok: items.length > 0, count: items.length, error: items.length ? "" : "Steam bozori javob bermadi" };
+  }
+  // Dota 2 / Rust katalogi = Steam'dan olingan narsalar (rasm, turi, noyoblik) + lis-skins'da sotuvdagi qolganlari
+  // (rasmi — Steam sinf raqami item_class_id orqali). Shunda do'konda aynan sotib olish mumkin bo'lganlar ko'rinadi.
+  function buildCatalog(g) {
+    const C = cat(g), S = (SC[g] && SC[g].items) || [], P = pr(g), have = new Set(S.map(x => x.n)), extra = [];
+    if (P.map) {
+      const rows = [...P.map.entries()].filter(([n]) => !have.has(n)).sort((a, b) => b[1].cnt - a[1].cnt);
+      for (const [n, v] of rows) {
+        const ci = P.cls && P.cls.get(n); if (!ci) continue;
+        const meta = g === "dota2" ? dotaGuess(n) : rustMeta(n, "");
+        extra.push({ n, s: n, w: g === "rust" ? meta.w : "", c: meta.c, r: g === "rust" ? RUST_COLOR : "#b0c3d9", rn: "", wr: "", st: false, sv: false,
+          i: "https://community.cloudflare.steamstatic.com/economy/image/class/" + GAMES[g].appid + "/" + ci + "/360fx360f", pop: 100000 + extra.length });
+        if (extra.length >= 30000) break;
+      }
+    }
+    const items = S.concat(extra);
+    C.steamN = S.length; C.lisN = extra.length;
+    if (items.length < 20) return { ok: false, error: "katalog uchun ma'lumot kam (Steam: " + S.length + ", lis-skins: " + extra.length + ")" };
     index(items, g); saveCatalog(g, items);
     return { ok: true, count: items.length };
   }
@@ -234,27 +270,94 @@ module.exports = function (ctx) {
     g = gameOf(g);
     const C = cat(g);
     if (C.loading) return C.loading;
-    C.loading = (g === "cs2" ? downloadCs2() : crawlSteam(g)).catch(e => ({ ok: false, error: e.message }))
-      .then(r => { C.err = r.ok ? "" : r.error; console.log("[skins] " + g + " katalog: " + (r.ok ? r.count + " ta" : r.error)); return r; })
+    const job = g === "cs2" ? downloadCs2() : (async () => {
+      if (!pr(g).map && ready(g)) await loadPrices(g, true);   // lis-skins'da sotuvdagilar (nomi, sinf raqami)
+      if (pr(g).map) buildCatalog(g);                          // darhol — Steam'ni kutmasdan
+      const r1 = await crawlSteam(g);
+      const r2 = buildCatalog(g);
+      C.warn = r1.ok ? "" : r1.error;
+      return r2.ok ? r2 : { ok: false, error: r2.error + (r1.ok ? "" : "; " + r1.error) };
+    })();
+    C.loading = job.catch(e => ({ ok: false, error: e.message }))
+      .then(r => { C.err = r.ok ? "" : r.error; C.crawl = null; console.log("[skins] " + g + " katalog: " + (r.ok ? r.count + " ta" : r.error)); return r; })
       .finally(() => { C.loading = null; });
     return C.loading;
   }
+  // Katalog eskirganmi: CS2 — katalog sanasi, Dota 2 / Rust — Steam ma'lumoti sanasi (haftada bir)
+  const catStale = g => Date.now() - (g === "cs2" ? cat(g).TS : (SC[g] ? SC[g].ts : 0)) > 7 * 86400e3;
   // Ishga tushganda: diskdagisi yuklanadi; eski yoki yo'q bo'lsa — yangilanadi (Dota/Rust faqat yoqilgan bo'lsa)
   setTimeout(() => {
-    for (const g of GAME_KEYS) {
-      const ok = cat(g).list.length > 0, stale = Date.now() - cat(g).TS > 7 * 86400e3;
-      if ((!ok || stale) && (g === "cs2" || cfg().games[g])) downloadCatalog(g);
-    }
+    for (const g of GAME_KEYS) if ((!cat(g).list.length || catStale(g)) && (g === "cs2" || cfg().games[g])) downloadCatalog(g);
   }, 5000).unref();
-  { const t = setInterval(() => { for (const g of GAME_KEYS) if (Date.now() - cat(g).TS > 7 * 86400e3 && (g === "cs2" || cfg().games[g])) downloadCatalog(g); }, 6 * 3600e3); if (t.unref) t.unref(); }
-  for (const g of GAME_KEYS) loadCatalogFromDisk(g);
+  { const t = setInterval(() => { for (const g of GAME_KEYS) if (catStale(g) && (g === "cs2" || cfg().games[g])) downloadCatalog(g); }, 6 * 3600e3); if (t.unref) t.unref(); }
+  for (const g of GAME_KEYS) { loadCatalogFromDisk(g); if (g !== "cs2") loadSteamCache(g); }
+
+  /* ---------- oqim bilan JSON ro'yxat o'qish ----------
+     lis-skins to'liq ro'yxatlari katta (Dota 2 ~75 MB, CS2 undan ham katta). Butunicha JSON.parse qilinsa xotira
+     bir necha yuz MB ga sakraydi — shuning uchun massivdagi har obyekt alohida o'qiladi (xotira deyarli o'smaydi).
+     Massiv topilmasa (masalan nom → narx obyekti) va fayl kichik bo'lsa — odatdagidek butunicha o'qiladi. */
+  const { StringDecoder } = require("string_decoder");
+  function streamList(url, onItem, opts) {
+    opts = opts || {};
+    const keepMax = opts.keep || 30e6, limit = opts.limit || 800e6;
+    return new Promise(resolve => {
+      let n = 0, bytes = 0, done = false, kept = [], keepOk = true;
+      let inStr = false, esc = false, cap = null, capStart = 0, capLevel = -1;
+      const st = [];
+      const fin = o => { if (!done) { done = true; resolve(Object.assign({ url, n, bytes }, o)); } };
+      const scan = s => {
+        if (cap) capStart = 0;
+        for (let i = 0; i < s.length; i++) {
+          const c = s.charCodeAt(i);
+          if (inStr) { if (esc) esc = false; else if (c === 92) esc = true; else if (c === 34) inStr = false; continue; }
+          if (c === 34) { inStr = true; continue; }
+          if (c === 123 || c === 91) {   // { [
+            if (c === 123 && !cap && st.length && st[st.length - 1] === 91) { cap = []; capStart = i; capLevel = st.length; }
+            st.push(c);
+          } else if (c === 125 || c === 93) {   // } ]
+            st.pop();
+            if (cap && c === 125 && st.length === capLevel) {
+              cap.push(s.slice(capStart, i + 1));
+              const txt = cap.join(""); cap = null;
+              let o = null; try { o = JSON.parse(txt); } catch (e) {}
+              if (o && typeof o === "object") { n++; try { onItem(o); } catch (e) {} }
+            }
+          }
+        }
+        if (cap) cap.push(s.slice(capStart));
+      };
+      const get = (u, depth) => lib(u).get(u, { timeout: opts.timeout || 120000, headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0 (VerionShop)" } }, r => {
+        if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location && depth < 3) { r.resume(); return get(new URL(r.headers.location, u).toString(), depth + 1); }
+        if (r.statusCode !== 200) { r.resume(); return fin({ error: "HTTP " + r.statusCode, status: r.statusCode }); }
+        const dec = new StringDecoder("utf8");
+        r.on("data", ch => {
+          if (done) return;
+          bytes += ch.length;
+          if (bytes > limit) { r.destroy(); return fin({ error: "juda katta" }); }
+          const s = dec.write(ch);
+          if (keepOk) { if (bytes <= keepMax) kept.push(s); else { keepOk = false; kept = []; } }
+          scan(s);
+        });
+        r.on("end", () => {
+          if (done) return;
+          const s = dec.end(); if (s) { scan(s); if (keepOk) kept.push(s); }
+          if (n) return fin({});
+          if (keepOk) { try { return fin({ json: JSON.parse(kept.join("")) }); } catch (e) { return fin({ error: "JSON emas (" + Math.round(bytes / 1024) + " KB)" }); } }
+          fin({ error: "ro'yxat topilmadi (" + Math.round(bytes / 1024) + " KB)" });
+        });
+        r.on("error", e => fin({ error: e.message }));
+      }).on("timeout", function () { this.destroy(new Error("timeout")); }).on("error", e => fin({ error: e.message }));
+      try { get(url, 0); } catch (e) { fin({ error: e.message }); }
+    });
+  }
 
   /* ---------- eng arzon narxlar ro'yxati (lis-skins JSON Price Lists, har o'yin uchun) ----------
-     lis-skins butun bozorning eng arzon narxlarini bitta JSON qilib beradi (nom → narx, soni).
-     Bo'lsa — katalogda har skinning "...dan" narxi va "sotuvda bor" belgisi shundan olinadi
-     (10 daqiqada yangilanadi). Bo'lmasa yoki o'qib bo'lmasa — narxlar API qidiruvidan olinadi. */
-  const PR = {};   // o'yin -> { map, ts, src, diag, busy }
-  const pr = g => PR[g] || (PR[g] = { map: null, ts: 0, src: "", diag: [], busy: false });
+     lis-skins butun bozorning narxlarini JSON qilib beradi. Bo'lsa — katalogda har skinning "...dan" narxi va
+     "sotuvda bor" belgisi shundan olinadi (10 daqiqada; katta ro'yxat — 30 daqiqada yangilanadi).
+     To'liq ro'yxatdagi item_class_id — Dota 2 / Rust katalogidagi rasm uchun. Bo'lmasa — narxlar API qidiruvidan. */
+  const PR = {};   // o'yin -> { map, cls, ts, src, diag, busy, bytes }
+  const pr = g => PR[g] || (PR[g] = { map: null, cls: null, ts: 0, src: "", diag: [], busy: false, bytes: 0 });
+  const BIG = () => Number(process.env.LIS_BIG_BYTES) || 20e6;
   // Admin o'zi havola kiritsa — o'sha; aks holda ma'lum manzillar ketma-ket sinaladi (birinchi ishlagani eslab qolinadi).
   const PRICE_URLS = g => {
     const c = cfg(), l = GAMES[g].lis, env = process.env[g === "cs2" ? "LIS_PRICES_URL" : "LIS_PRICES_URL_" + g.toUpperCase()];
@@ -263,34 +366,41 @@ module.exports = function (ctx) {
       "https://lis-skins.com/market_export_json/api_" + l + "_full.json"]
       .filter((u, i, a) => u && a.indexOf(u) === i);
   };
-  async function loadPrices(g) {
-    if (!g) { for (const k of GAME_KEYS) if (ready(k)) await loadPrices(k); return; }
+  async function loadPrices(g, force) {
+    if (!g) { for (const k of GAME_KEYS) if (ready(k)) await loadPrices(k, force); return; }
     const P = pr(g);
     if (P.busy || !ready(g)) return;
+    // Katta ro'yxat (o'nlab MB) har 10 daqiqada emas, 30 daqiqada bir yuklanadi
+    if (!force && P.map && P.bytes > BIG() && Date.now() - P.ts < 30 * 60e3) return;
     P.busy = true;
     const diag = [];
     try {
       const urls = PRICE_URLS(g);
       if (P.src && urls.indexOf(P.src) > 0) { urls.splice(urls.indexOf(P.src), 1); urls.unshift(P.src); }
       for (const url of urls) {
-        const r = await getJson(url);
+        const m = new Map(), cls = new Map(), onlyU = cfg().onlyUnlocked;
+        const add = x => {
+          const name = pick(x, ["name", "market_hash_name"]), usd = Number(pick(x, ["price", "min_price", "price_usd"]));
+          if (!name || typeof name !== "string" || !(usd > 0)) return;
+          // To'liq ro'yxatda har taklif alohida qator: trade-lock'dagilari (sozlamaga ko'ra) hisobga olinmaydi
+          const ul = x.unlock_at; if (ul && onlyU && Date.parse(ul) > Date.now()) return;
+          const cnt = Number(pick(x, ["count", "quantity", "amount"])) || 1;
+          const h = m.get(name);
+          if (!h || usd < h.usd) m.set(name, { usd, cnt: (h ? h.cnt : 0) + cnt }); else h.cnt += cnt;
+          const ci = x.item_class_id; if (ci != null && !cls.has(name) && /^\d{1,20}$/.test(String(ci))) cls.set(name, String(ci));
+        };
+        const r = await streamList(url, add);
         if (r.error) { diag.push({ url, error: r.error }); continue; }
-        const j = r.json;
-        try {
-          const arr = listOf(j).length ? listOf(j) : (j && typeof j === "object" && !Array.isArray(j) ? Object.keys(j).map(k => Object.assign({ name: k }, typeof j[k] === "object" ? j[k] : { price: j[k] })) : []);
-          const m = new Map();
-          for (const x of arr) {
-            const name = pick(x, ["name", "market_hash_name"]), usd = Number(pick(x, ["price", "min_price", "price_usd"]));
-            if (!name || !(usd > 0)) continue;
-            // To'liq ro'yxatda har taklif alohida qator: trade-lock'dagilari (sozlamaga ko'ra) hisobga olinmaydi
-            const ul = x.unlock_at; if (ul && cfg().onlyUnlocked && Date.parse(ul) > Date.now()) continue;
-            const cnt = Number(pick(x, ["count", "quantity", "amount"])) || 1;
-            const h = m.get(name);
-            if (!h || usd < h.usd) m.set(name, { usd, cnt: (h ? h.cnt : 0) + cnt }); else h.cnt += cnt;
-          }
-          diag.push({ url, rows: m.size, kb: Math.round(r.bytes / 1024) });
-          if (m.size > (g === "cs2" ? 500 : 50)) { P.map = m; P.ts = Date.now(); P.src = url; break; }
-        } catch (e) { diag.push({ url, error: e.message }); }
+        if (!r.n && r.json) {
+          const j = r.json;
+          (listOf(j).length ? listOf(j) : (j && typeof j === "object" && !Array.isArray(j) ? Object.keys(j).map(k => Object.assign({ name: k }, typeof j[k] === "object" ? j[k] : { price: j[k] })) : [])).forEach(add);
+        }
+        diag.push({ url, rows: m.size, kb: Math.round(r.bytes / 1024) });
+        if (m.size > (g === "cs2" ? 500 : 50)) {
+          P.map = m; P.cls = cls.size ? cls : (P.src === url ? P.cls : null); P.ts = Date.now(); P.src = url; P.bytes = r.bytes;
+          if (g !== "cs2" && !cat(g).loading) buildCatalog(g);   // yangi sotuvdagilar katalogga qo'shiladi
+          break;
+        }
       }
     } finally { P.diag = diag; P.busy = false; }
   }
@@ -1128,6 +1238,7 @@ module.exports = function (ctx) {
         const c = cfg(), P = pr("cs2"), per = {};
         for (const g of GAME_KEYS) { const C = cat(g), Q = pr(g);
           per[g] = { on: !!c.games[g], catalog: C.list.length, skins: C.GROUPS.length, catalogTs: C.TS, loading: !!C.loading, error: C.err || "",
+            steam: SC[g] ? SC[g].items.length : 0, steamTs: SC[g] ? SC[g].ts : 0, lisN: C.lisN || 0, warn: C.warn || "", crawl: C.crawl || null,
             prices: Q.map ? Q.map.size : 0, pricesTs: Q.ts, pricesUrl: c.pricesUrls[g] || (g === "cs2" ? c.pricesUrl || "" : ""),
             pricesDiag: Q.diag.map(d => d.url.replace(/^https?:\/\//, "") + " → " + (d.error || d.rows + " ta nom, " + d.kb + " KB")) }; }
         return { enabled: c.enabled, rate: c.rate, markup: c.markup, minUsd: c.minUsd, maxUsd: c.maxUsd, onlyUnlocked: c.onlyUnlocked, apiKeySet: !!c.apiKey, games: per,
@@ -1164,7 +1275,7 @@ module.exports = function (ctx) {
         if (b.games && typeof b.games === "object") for (const g of GAME_KEYS) if (g in b.games) { if (b.games[g] && !c.games[g]) turnedOn.push(g); c.games[g] = !!b.games[g]; }
         // Yangi yoqilgan o'yinning katalogi bo'lmasa — darhol yuklab olinadi
         for (const g of turnedOn) if (!cat(g).list.length) downloadCatalog(g);
-        setTimeout(() => loadPrices().catch(() => {}), 300);
+        setTimeout(() => loadPrices(undefined, true).catch(() => {}), 300);
         // Sozlama o'zgardi (kalit, User ID, yoqish) — WebSocket qayta ulanadi
         wsClose("off"); setTimeout(() => wsConnect().catch(() => {}), 200);
         CACHE.clear(); ctx.save();
@@ -1227,5 +1338,5 @@ module.exports = function (ctx) {
     }
     return false;
   }
-  return { handle, ready, games: gamesPublic, balance, cfg, poll, parseTrade, _internal: { normOffer, stateWord, stateOf, index, OFFERS, GONE, LIVE, WS, dotaMeta, rustMeta } };
+  return { handle, ready, games: gamesPublic, balance, cfg, poll, parseTrade, _internal: { normOffer, stateWord, stateOf, index, OFFERS, GONE, LIVE, WS, dotaMeta, rustMeta, streamList } };
 };
