@@ -997,13 +997,19 @@ body.sk-open{overflow:hidden}
 .sk-cat.on{background:var(--ska);color:#141414}
 .sk-cat.on svg{color:#141414}
 /* toifa ostida ochiluvchi qurollar menyusi */
-.sk-wpn{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 16px 0;padding:8px;border-radius:18px;border:1px solid var(--skl2);background:#16171c;box-shadow:0 18px 40px rgba(0,0,0,.45);animation:skPop .22s cubic-bezier(.2,1.2,.4,1) both}
-.sk-wpn button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;height:42px;padding:0 12px;border-radius:12px;border:none;background:transparent;color:#d8dde5;font-weight:700;font-size:14px;text-align:left}
+.sk-wpn{display:flex;flex-direction:column;gap:2px;margin:8px 16px 0;padding:8px;border-radius:18px;border:1px solid var(--skl2);background:#16171c;box-shadow:0 18px 40px rgba(0,0,0,.45);max-height:min(62vh,560px);overflow-y:auto;animation:skPop .22s cubic-bezier(.2,1.2,.4,1) both}
+.sk-wpn button{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px;min-width:0;min-height:54px;padding:4px 14px 4px 8px;border-radius:12px;border:none;background:transparent;color:#d8dde5;font-weight:700;font-size:15px;text-align:left}
+.sk-wpn button i{display:flex;align-items:center;justify-content:center;width:72px;height:46px}
+.sk-wpn button i img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
 .sk-wpn button span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-wpn button small{flex:0 0 auto;font-size:12px;color:var(--skm);font-weight:700}
+.sk-wpn button.all{display:flex;justify-content:center;gap:8px;min-height:46px;margin-bottom:4px;background:rgba(255,184,28,.1);color:var(--ska)}
 .sk-wpn button:active{background:rgba(255,255,255,.05)}
-.sk-wpn button.on{background:rgba(255,184,28,.12);color:var(--ska)}
+.sk-wpn button.on{background:rgba(255,184,28,.14);color:var(--ska)}
 .sk-wpn button.on small{color:var(--ska)}
+.sk-cat .ci{display:inline-flex;align-items:center;justify-content:center;width:40px;height:26px;flex:0 0 auto}
+.sk-cat .ci img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.sk-cat.on .ci img{filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))}
 .sk-cat .dn{display:inline-flex;transition:transform .2s;opacity:.8}
 .sk-cat.open .dn{transform:rotate(180deg)}
 .sk-sales{margin:16px 16px 0;padding:16px;border-radius:24px;border:1px solid var(--skl);background:rgba(24,25,30,.92)}
@@ -1551,7 +1557,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.12";
+var CLIENT_BUILD="2026-10-31.13";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4948,7 +4954,6 @@ function promoErrText(e){
    Mahsulot kartochkasi bosilganda shu kartochkadan butun ekranga ochiladi. Ichida o'z bo'limlari bor:
    Bosh sahifa / Bozor / Buyurtmalar / Profil. Narx va takliflar — jonli bozordan (lis-skins);
    skin mijozning Steam trade havolasiga to'g'ridan-to'g'ri yuboriladi. */
-var CS2_SVG='<svg viewBox="0 0 48 48" width="56%" height="56%" fill="none" stroke="#f0a030" stroke-width="2.6" stroke-linecap="round"><circle cx="24" cy="24" r="12.5"/><path d="M24 4.5v9M24 34.5v9M4.5 24h9M34.5 24h9"/><circle cx="24" cy="24" r="2.3" fill="#f0a030" stroke="none"/></svg>';
 var SK_G={
   cs2:{n:"CS2",full:"Counter-Strike 2",mk:"CS",c:"#f0a030",bg:"linear-gradient(145deg,#f7b53c,#c25e0c)",app:730,ph:"AK-47, Karambit, AWP…"},
   dota2:{n:"Dota 2",full:"Dota 2",mk:"D2",c:"#e2483a",bg:"linear-gradient(145deg,#ec5a43,#7a160e)",app:570,ph:"Pudge, Arcana, kuryer…"},
@@ -5342,7 +5347,7 @@ function skRepaint(){
   // Ma'lumot kelgach qayta chiziladi — kirish animatsiyasi ikkinchi marta o'ynamasin
   var m=skEl("skMain");if(m)m.classList.add("na");
   if(SK.tab==="home")skHome();
-  else if(SK.tab==="market"){skGtabs();skTuBtn();skPaint();}
+  else if(SK.tab==="market"){skGtabs();skCats();skTuBtn();skPaint();}
   else if(SK.tab==="profile")skProfile();
 }
 function skBal(){
@@ -5573,8 +5578,11 @@ function skCats(){
   var L=[["","Hammasi"],["new","Jonli"]].concat(SK_CATS[SK.game]||[]);
   // CS2 toifalarida ▾ — bosilsa qurol turlari menyusi ochiladi; tanlangan qurol nomi tugmada ko'rinadi
   var dd=SK.game==="cs2";
+  var CI=(SK.info&&SK.info.game===SK.game&&SK.info.catImg)||{};
   b.innerHTML=L.map(function(c){var on=SK.cat===c[0],hasDd=dd&&c[0]&&c[0]!=="new";
-    return '<button class="sk-cat'+(on?' on':'')+(on&&SK.wOpen?' open':'')+'" data-skcat="'+c[0]+'">'+skCi(c[0])+esc(c[1])+(on&&SK.w?' · '+esc(SK.w):'')
+    // o'yindagi haqiqiy rasm (qurol yoki predmet); yuklanmasa — faqat nom qoladi (qo'lda chizilgan belgi yo'q)
+    var ico=!c[0]||c[0]==="new"?skCi(c[0]):CI[c[0]]&&/^https:\/\//.test(CI[c[0]])?'<span class="ci"><img src="'+esc(CI[c[0]])+'" alt="" loading="lazy" onerror="this.parentNode.remove()"></span>':'';
+    return '<button class="sk-cat'+(on?' on':'')+(on&&SK.wOpen?' open':'')+'" data-skcat="'+c[0]+'">'+ico+esc(c[1])+(on&&SK.w?' · '+esc(SK.w):'')
       +(hasDd?'<span class="dn">'+SK_I.down+'</span>':'')+(c[0]==="new"&&SK.info&&SK.info.live?'<i class="lv" title="Real vaqt"></i>':'')+'</button>';}).join("");
 }
 function skTuBtn(){
@@ -5616,8 +5624,10 @@ function skPaint(){
   if(sb)sb.hidden=isNew||!SK.priced;
   if(wp){var W=!isNew&&SK.game==="cs2"&&SK.cat&&SK.wOpen&&SK.weapons&&SK.weapons.length>1?SK.weapons:[];wp.hidden=!W.length;
     var tot=W.reduce(function(a,x){return a+x.n;},0);
-    wp.innerHTML=W.length?'<button class="'+(!SK.w?"on":"")+'" data-skw=""><span>'+esc(_t("Hammasi"))+'</span><small>'+tot+'</small></button>'
-      +W.map(function(x){return '<button class="'+(SK.w===x.w?"on":"")+'" data-skw="'+esc(x.w)+'"><span>'+esc(x.w)+'</span><small>'+Number(x.n)+'</small></button>';}).join(""):"";}
+    var cl0=(SK_CATS[SK.game]||[]).filter(function(c){return c[0]===SK.cat;})[0];
+    wp.innerHTML=W.length?'<button class="all'+(!SK.w?" on":"")+'" data-skw=""><span>'+esc(_t("Hammasi")+(cl0?" · "+_t(cl0[1]):""))+'</span><small>'+tot+'</small></button>'
+      +W.map(function(x){var im=/^https:\/\//.test(String(x.img||""))?'<img src="'+esc(x.img)+'" alt="" loading="lazy" onerror="this.remove()">':'';
+        return '<button class="'+(SK.w===x.w?"on":"")+'" data-skw="'+esc(x.w)+'"><i>'+im+'</i><span>'+esc(x.w)+'</span><small>'+Number(x.n)+'</small></button>';}).join(""):"";}
   if(act){var A=[],f=SK.f;
     if(f.pmin||f.pmax)A.push(["price",(f.pmin?skShort(f.pmin):"0")+" – "+(f.pmax?skShort(f.pmax):"∞")]);
     if(isNew){
@@ -6066,7 +6076,9 @@ function openAdminCs2(){
     // Steam orqali kirishda mijoz ko'radigan sayt: verionshop.uz shu serverga ulangan bo'lsa — o'sha
     var siteLine=function(x){var host=function(u){return String(u||"").replace(/^https?:\/\//,"");};
       return '🔐 Steam kirish sahifasida: <b>'+esc(host(x.steam)||"—")+'</b>'
-        +(x.url?(x.ok?' ✅':'<br>⚠️ '+esc(host(x.url))+' hali bu serverga ulanmagan'+(x.err?' ('+esc(x.err)+')':'')+' — Railway → Settings → Networking → Custom Domain\'da '+esc(host(x.url))+' qo\'shilganini va DNS yozuvini tekshiring. Server har 10 daqiqada qayta tekshiradi.'):'');};
+        +(x.url?(x.ok?' ✅':'<br>⚠️ '+esc(host(x.url))+(x.ip?' ('+esc(x.ip)+')':'')+' Verion Shop serveriga olib bormadi'+(x.err?': '+esc(x.err):'')
+          +'. Railway → Settings → Networking → Custom Domain\'da '+esc(host(x.url))+' shu servisga qo\'shilganini va domen DNS\'ida Railway ko\'rsatgan CNAME yozuvi turganini tekshiring.')
+          +' <button class="btn gray sm" id="skSiteRe" style="width:auto;margin-top:6px">Qayta tekshirish</button>':'');};
     var stat=function(g){var x=Gs[g]||{};
       return '📦 Katalog: '+(x.loading&&!x.catalog?'⏳ yuklanmoqda…':(x.skins||0)+' ta skin ('+(x.catalog||0)+' variant), '+esc(when(x.catalogTs)))
         +(g!=="cs2"?'<br>🖼 Steam: '+(x.steam||0)+' ta (rasm, turi)'+(x.loading&&x.crawl?' — ⏳ '+x.crawl.got+(x.crawl.total?'/'+x.crawl.total:'')+' yuklanmoqda':'')
@@ -6098,6 +6110,11 @@ function openAdminCs2(){
       +'<div class="d" id="c2Res" style="margin-top:6px;white-space:pre-wrap;word-break:break-word"></div>'
       +'<div style="height:12px"></div><button class="btn" id="c2Save">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
     var sh=openSheet(html,openAdmin);
+    // verionshop.uz (Steam kirish sahifasi) — hozir qayta tekshirish
+    var bindSite=function(){var b=sh.querySelector("#skSiteRe");if(b)b.addEventListener("click",function(){b.disabled=true;b.textContent="Tekshirilmoqda…";
+      api("/api/admin/cs2?site=1").then(function(v){var el=sh.querySelector("#skSite");if(el&&v.site){el.innerHTML=siteLine(v.site);bindSite();}toast(v.site&&v.site.ok?"✅ verionshop.uz ulandi":"⚠️ Hali ulanmagan",!(v.site&&v.site.ok));})
+        .catch(function(){b.disabled=false;b.textContent="Qayta tekshirish";toast(t("srv_off"),true);});});};
+    bindSite();
     ["c2On","c2Unl","skWs"].concat(SK_GK.map(function(g){return "skOn_"+g;})).forEach(function(id){sh.querySelector("#"+id).addEventListener("click",function(){this.classList.toggle("on");});});
     var out=sh.querySelector("#c2Res");
     sh.querySelector("#c2Test").addEventListener("click",function(){

@@ -20,6 +20,9 @@ const crypto = require("crypto");
 
 const LIS = () => String(process.env.LIS_BASE || "https://api.lis-skins.com/v1/").replace(/\/?$/, "/");
 const DATA_URL = () => process.env.CS2_DATA_URL || "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/skins_not_grouped.json";
+// Qurollarning o'yindagi standart (skinsiz) rasmlari — o'sha bazadan; toifa tugmalari uchun
+const BASE_URL = () => process.env.CS2_BASE_URL != null ? process.env.CS2_BASE_URL
+  : (/skins_not_grouped\.json$/.test(DATA_URL()) ? DATA_URL().replace(/skins_not_grouped\.json$/, "base_weapons.json") : "");
 const STEAM_URL = () => process.env.STEAM_MARKET_URL || "https://steamcommunity.com/market/search/render/";
 // O'yinlar: lis — lis-skins API'dagi nomi, appid — Steam ilova raqami, label — mijozga ko'rinadigan nomi
 const GAMES = {
@@ -282,6 +285,35 @@ module.exports = function (ctx) {
       .then(r => { C.err = r.ok ? "" : r.error; C.crawl = null; console.log("[skins] " + g + " katalog: " + (r.ok ? r.count + " ta" : r.error)); return r; })
       .finally(() => { C.loading = null; });
     return C.loading;
+  }
+  /* ---------- toifa va qurol rasmlari (qo'lda chizilgan belgi emas — o'yindagi haqiqiy rasmlar) ----------
+     CS2: har toifa uchun o'yindagi standart qurol rasmi (AK-47, AWP, Desert Eagle, Karambit, Sport Gloves…);
+     Dota 2 / Rust (va CS2 zaxira): shu toifadagi eng noyob predmetning rasmi. */
+  const BASE = { img: new Map(), ts: 0, file: path.join(ctx.DATA_DIR, "cs2-base.json"), loading: null };
+  try { const j = JSON.parse(fs.readFileSync(BASE.file, "utf8")); for (const [k, v] of j.items || []) if (IMG_OK(v)) BASE.img.set(k, v); BASE.ts = j.ts || 0; } catch (e) {}
+  function loadBase() {
+    const u = BASE_URL(); if (!u || BASE.loading) return BASE.loading;
+    BASE.loading = getJson(u, { timeout: 60000, limit: 5e6 }).then(r => {
+      if (r.error || !Array.isArray(r.json)) { console.log("[skins] qurol rasmlari yuklanmadi: " + (r.error || "format")); return; }
+      const mm = new Map(); for (const x of r.json) if (x && typeof x.name === "string" && IMG_OK(x.image)) mm.set(x.name.slice(0, 60), x.image);
+      if (mm.size < 10) return;
+      BASE.img = mm; BASE.ts = Date.now(); fs.writeFile(BASE.file, JSON.stringify({ ts: BASE.ts, items: [...mm] }), () => {});
+    }).finally(() => { BASE.loading = null; });
+    return BASE.loading;
+  }
+  setTimeout(() => { if (Date.now() - BASE.ts > 7 * 86400e3) loadBase(); }, 6000).unref();
+  { const t = setInterval(() => { if (Date.now() - BASE.ts > 7 * 86400e3) loadBase(); }, 12 * 3600e3); if (t.unref) t.unref(); }
+  const CAT_REP = { knife: "Karambit", gloves: "Sport Gloves", rifle: "AK-47", sniper: "AWP", pistol: "Desert Eagle", smg: "P90", heavy: "Nova" };
+  const CI_C = {};
+  function catImgs(g) {
+    const C = cat(g), k = C.TS + "|" + BASE.ts + "|" + C.GROUPS.length;
+    if (CI_C[g] && CI_C[g].k === k) return CI_C[g].map;
+    const best = {};
+    for (const G of C.GROUPS) { if (!G.i || !G.c) continue; const sc = RARITY_RANK[G.r] ?? 9; if (!best[G.c] || sc < best[G.c].sc) best[G.c] = { sc, i: G.i }; }
+    const map = {}; for (const c of Object.keys(best)) map[c] = best[c].i;
+    if (g === "cs2") for (const c of Object.keys(CAT_REP)) { const b = BASE.img.get(CAT_REP[c]); if (b) map[c] = b; }
+    CI_C[g] = { k, map };
+    return map;
   }
   // Katalog eskirganmi: CS2 — katalog sanasi, Dota 2 / Rust — Steam ma'lumoti sanasi (haftada bir)
   const catStale = g => Date.now() - (g === "cs2" ? cat(g).TS : (SC[g] ? SC[g].ts : 0)) > 7 * 86400e3;
@@ -1017,7 +1049,7 @@ module.exports = function (ctx) {
       send(res, 200, { enabled: ready(g), any: ready(), games: gamesPublic(), game: g, cats: CATS[g].map(([k, label]) => ({ k, label })), catalog: cat(g).list.length,
         tradeUrl: (acc && acc.cs2Trade) || "", steamOffers: STEAM_OFFERS,
         favs: acc && Array.isArray(acc.cs2Fav) ? acc.cs2Fav : [], inStock: ready(g) && pricesFresh(g) ? pr(g).map.size : null,
-        delivered: DONE_N(), locks: !cfg().onlyUnlocked, cancelFee: 3, live: WS.state === "connected", steam: steamPub(acc), steamLogin: !!appOrigin() });
+        delivered: DONE_N(), locks: !cfg().onlyUnlocked, cancelFee: 3, live: WS.state === "connected", steam: steamPub(acc), steamLogin: !!appOrigin(), catImg: catImgs(g) });
       return true;
     }
     // Sevimli skinlar (mijoz hisobida, 200 tagacha). CS2 — nomi, boshqalar — "o'yin|nomi"
@@ -1086,8 +1118,11 @@ module.exports = function (ctx) {
       const out = (G, f) => ({ game: g, b: G.b, w: G.w, s: G.s, img: G.i, rc: G.r, rn: G.rn, st: G.st, sv: G.sv, cat: G.c,
         from: f && f.usd ? uzs(f.usd) : null, cnt: f ? f.cnt : null });
       // Toifa tanlanganda — undagi qurollar (ko'p skinlilari oldin), qurol bo'yicha tez tanlash uchun (faqat CS2)
-      const weaponsOf = l => { if (!ct || g !== "cs2") return undefined; const mm = new Map(); for (const G of l) mm.set(G.w, (mm.get(G.w) || 0) + 1);
-        return [...mm.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 30).map(([w, n]) => ({ w, n })); };
+      // har qurol yonida — uning eng ommabop (narxlar bo'lsa: ko'p sotiladigan va noyob) skinining rasmi
+      const weaponsOf = (l, score) => { if (!ct || g !== "cs2") return undefined; const mm = new Map();
+        l.forEach((G, i) => { const e = mm.get(G.w) || { n: 0, img: "", best: -Infinity }; e.n++;
+          const sc = score ? score(i) : 7 - (RARITY_RANK[G.r] ?? 6); if (G.i && sc > e.best) { e.best = sc; e.img = G.i; } mm.set(G.w, e); });
+        return [...mm.entries()].sort((a, b) => b[1].n - a[1].n || a[0].localeCompare(b[0])).slice(0, 30).map(([w, e]) => ({ w, n: e.n, img: e.img })); };
       if (ready(g) && pricesFresh(g)) {
         // Narxlar ro'yxati bor: faqat sotuvdagilari (filtrlarga mos variant bilan), kerakli tartibda
         const priced = inCat.map(G => ({ G, f: fromOf(G, flt, g) })).filter(x => x.f.usd);
@@ -1099,7 +1134,7 @@ module.exports = function (ctx) {
         else rows.sort((a, b) => b.f.cnt * (7 - (RARITY_RANK[b.G.r] ?? 6)) - a.f.cnt * (7 - (RARITY_RANK[a.G.r] ?? 6)) || a.G.b.localeCompare(b.G.b));
         const slice = rows.slice(page * PER, page * PER + PER);
         send(res, 200, { items: slice.map(x => out(x.G, x.f)), total: rows.length, page, more: rows.length > (page + 1) * PER, priced: true,
-          weapons: page ? undefined : weaponsOf(priced.map(x => x.G)) });
+          weapons: page ? undefined : weaponsOf(priced.map(x => x.G), i => (priced[i].f.cnt || 1) * (7 - (RARITY_RANK[priced[i].G.r] ?? 6))) });
         return true;
       }
       const slice = all.slice(page * PER, page * PER + PER);
@@ -1254,11 +1289,13 @@ module.exports = function (ctx) {
           lisUserId: c.lisUserId || "", ws: { on: c.ws !== false, state: WS.state, since: WS.since, err: WS.err, pub: WS.pub, priv: WS.priv, privOk: WS.privOk, live: Object.keys(LIVE).reduce((a, k) => a + LIVE[k].length, 0) },
           cool: coolUntil > Date.now() ? Math.ceil((coolUntil - Date.now()) / 1000) : 0,
           // Steam orqali kirishda mijoz ko'radigan sayt (verionshop.uz tekshiruvi)
-          site: ctx.siteInfo ? Object.assign(ctx.siteInfo(m === "GET" && q && q.get && q.get("site") === "1"), { steam: appOrigin() }) : null,
+          site: ctx.siteInfo ? Object.assign(ctx.siteInfo(), { steam: appOrigin() }) : null,
           // eski maydonlar (CS2) — mavjud admin oynalari uchun
           catalog: cat("cs2").list.length, skins: cat("cs2").GROUPS.length, catalogTs: cat("cs2").TS, prices: P.map ? P.map.size : 0, pricesTs: P.ts,
           pricesUrl: per.cs2.pricesUrl, pricesSrc: P.src, pricesDiag: per.cs2.pricesDiag };
       };
+      // ?site=1 — brend domenini (verionshop.uz) hozir qayta tekshirib, natija bilan javob beradi
+      if (m === "GET" && q.get("site") === "1" && ctx.siteRecheck) { ctx.siteRecheck().catch(() => {}).then(() => send(res, 200, view())); return true; }
       if (m === "GET") { send(res, 200, view()); return true; }
       ctx.readBody(req, res, b => {
         const c = cfg(), num = (x, lo, hi) => { const n = Number(x); return n >= lo && n <= hi ? n : null; };

@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-31.12";
+const BUILD = "2026-10-31.13";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -936,19 +936,26 @@ function publicBase() {
    borishi /api/health orqali tekshiriladi; ochilmasa — oddiy ilova manzili ishlatiladi (admin panelda sababi
    ko'rinadi). SITE_URL o'zgaruvchisi bilan boshqa domen berish mumkin, bo'sh qiymat — o'chirish. */
 const SITE_URL = normalizeAppUrl(process.env.SITE_URL != null ? process.env.SITE_URL : "https://verionshop.uz");
-let SITE = { ok: false, ts: 0, err: "", busy: false };
+let SITE = { ok: false, ts: 0, err: "", busy: false, fails: 0, ip: "", job: null };
+/* Tekshiruv: domen Verion Shop serveriga (shu ilovaga) olib boradimi. Instance bir xilligi talab qilinmaydi —
+   deploy paytida domen bir necha soniya eski konteynerga qarab turadi, bu xato emas.
+   Ishga tushgandan keyin muvaffaqiyatsiz bo'lsa — 30 soniyadan qayta (10 marta), keyin har 5 daqiqada; o'tgan bo'lsa — 6 soatda bir. */
 function siteCheck(force) {
-  if (!SITE_URL || SITE.busy) return;
-  if (!force && Date.now() - SITE.ts < (SITE.ok ? 6 * 3600e3 : 10 * 60e3)) return;
-  SITE.busy = true;
-  probeAppUrl(SITE_URL).then(p => {
-    const ok = !!(p.ok && p.same);
-    if (ok !== SITE.ok || !SITE.ts) console.log("[sayt] " + SITE_URL + (ok ? " — shu serverga olib boradi, Steam kirishda ishlatiladi" : " — ishlatilmaydi: " + (p.ok ? "boshqa server javob berdi" : p.error)));
-    SITE = { ok, ts: Date.now(), err: ok ? "" : (p.ok ? "boshqa server javob berdi" : String(p.error || "")), busy: false };
-  }).catch(e => { SITE = { ok: false, ts: Date.now(), err: e.message, busy: false }; });
+  if (!SITE_URL) return Promise.resolve(SITE);
+  if (SITE.job) return SITE.job;
+  if (!force && Date.now() - SITE.ts < (SITE.ok ? 6 * 3600e3 : SITE.fails < 10 ? 30e3 : 5 * 60e3)) return Promise.resolve(SITE);
+  const host = new URL(SITE_URL).hostname;
+  const ipJob = new Promise(r => { try { require("dns").lookup(host, (e, a) => r(e ? "" : String(a || ""))); } catch (e) { r(""); } });
+  SITE.job = Promise.all([probeAppUrl(SITE_URL), ipJob]).then(([p, ip]) => {
+    const ok = !!p.ok, err = ok ? "" : String(p.error || "");
+    if (ok !== SITE.ok || !SITE.ts || (!ok && SITE.fails % 10 === 0)) console.log("[sayt] " + SITE_URL + (ip ? " (" + ip + ")" : "") + (ok ? " — Verion Shop serveriga olib boradi, Steam kirishda ishlatiladi" : " — ishlatilmaydi: " + err));
+    SITE = { ok, ts: Date.now(), err, fails: ok ? 0 : SITE.fails + 1, ip, job: null, busy: false };
+    return SITE;
+  }).catch(e => { SITE = Object.assign(SITE, { ok: false, ts: Date.now(), err: e.message, fails: SITE.fails + 1, job: null }); return SITE; });
+  return SITE.job;
 }
 function siteBase() { siteCheck(false); return SITE.ok ? SITE_URL : publicBase(); }
-function siteInfo() { return { url: SITE_URL, ok: SITE.ok, err: SITE.err, checked: SITE.ts, used: siteBase() }; }
+function siteInfo() { return { url: SITE_URL, ok: SITE.ok, err: SITE.err, ip: SITE.ip, checked: SITE.ts, used: SITE.ok ? SITE_URL : publicBase() }; }
 // Ilovani OCHISH uchun to'liq manzil (web_app tugmalari). Ko'k tugma manzilida
 // yo'l yoki parametr bo'lsa — aynan o'zini ishlatamiz, ishlayotgani shu.
 function appOpenUrl() {
@@ -2192,7 +2199,7 @@ const EXTRA = require("./extra.js")({
 const CS2 = require("./cs2.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
   notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder, pubOrder, DATA_DIR,
-  appUrl: () => publicBase(), siteUrl: () => siteBase(), siteInfo: (force) => { if (force) siteCheck(true); return siteInfo(); }, botUsername: () => BOT_USERNAME
+  appUrl: () => publicBase(), siteUrl: () => siteBase(), siteInfo: () => siteInfo(), siteRecheck: () => siteCheck(true).then(() => siteInfo()), botUsername: () => BOT_USERNAME
 });
 // Nakrutka liniyalari (smm.js): JAP + boshqa SMM panellar.
 const SMM = require("./smm.js")({
@@ -4124,7 +4131,7 @@ function scheduleBackup() {
 if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
-  setTimeout(() => siteCheck(true), 3000);   // verionshop.uz shu serverga olib boradimi (Steam kirish sahifasi uchun)
+  setTimeout(() => siteCheck(true), 15000);   // verionshop.uz shu serverga olib boradimi (Steam kirish sahifasi uchun); o'tmasa 30 soniyadan qayta
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
   // Oxirgi himoya chizig'i (faqat server muvaffaqiyatli ishga tushgandan keyin — ishga tushishdagi
   // xato yashirinib qolmasin): kutilmagan xato butun do'konni o'chirib qo'ymaydi, logga yoziladi.
