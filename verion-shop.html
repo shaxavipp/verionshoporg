@@ -992,7 +992,14 @@ body.sk-open{overflow:hidden}
 .sk-card:active{transform:scale(.97)}
 .sk-card:focus-visible,.sk-card:hover{border-color:rgba(255,184,28,.55);background-image:radial-gradient(rgba(255,184,28,.16) 1.2px,transparent 1.3px);background-size:14px 14px}
 .sk-cim{position:relative;height:150px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side at 50% 55%,var(--rg,rgba(176,195,217,.18)),transparent 100%)}
-.sk-cim .wm{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;opacity:.06;color:#fff}
+/* xira Verion belgisi — har rasm orqasida (rasm yuklanmasa ham kartochka bo'sh ko'rinmaydi) */
+.sk .wm{position:absolute;left:50%;top:50%;width:80%;max-width:180px;transform:translate(-50%,-50%);color:#fff;opacity:.11;pointer-events:none;line-height:0}
+.sk .wm svg{width:100%;height:auto;display:block}
+.sk-stage .im .wm{width:72%;max-width:290px;opacity:.09}
+.sk-rc .im{position:relative}.sk-rc .im .wm{width:84%}
+.sk-cim img,.sk-oc .im img,.sk-stage .im img,.sk-rc .im img{position:relative}
+.sk-lots{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);color:#cfd5df;font-size:11.5px;font-weight:800}
+.sk-lots svg{width:13px;height:13px}
 .sk-cim img{position:relative;max-width:84%;max-height:118px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));transition:transform .25s}
 .sk-card:active .sk-cim img{transform:scale(1.05)}
 .sk-cim:after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:2px;border-radius:2px;background:var(--rc,#b0c3d9);opacity:.9}
@@ -1514,7 +1521,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.9";
+var CLIENT_BUILD="2026-10-31.10";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4912,7 +4919,11 @@ var SK_I={
   arr:SK_SV('<path d="M9 6l6 6-6 6"/>',18),
   lock:SK_SV('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',14,' stroke-width="2.4"'),
   cart:SK_SV('<path d="M3 4h2.5l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.3"/><circle cx="10" cy="20.5" r="1.3"/><circle cx="17" cy="20.5" r="1.3"/>',20),
-  cross:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="7"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>'
+  cross:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="7"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>',
+  // Kartochka orqasidagi xira Verion belgisi (chaqmoq + VERION SKINS)
+  wm:'<svg viewBox="0 0 230 70" aria-hidden="true" fill="currentColor"><path transform="translate(4 4) scale(2.6)" d="M13 2 4 14h6l-1 8 9-12h-6z"/>'
+    +'<text x="64" y="34" font-family="Unbounded,\'Inter Tight\',sans-serif" font-weight="800" font-size="27" letter-spacing="-.5">VERION</text>'
+    +'<text x="65" y="60" font-family="Unbounded,\'Inter Tight\',sans-serif" font-weight="800" font-size="19" letter-spacing="3.5">SKINS</text></svg>'
 };
 // Toifa belgilari (o'zimiz chizgan, hammasi bitta uslubda)
 var SK_CI={
@@ -5204,12 +5215,12 @@ function skHomeRec(){
   box.innerHTML='<section class="sk-sec"><div class="sk-hd"><div><div class="sk-lbl">Jonli</div><h2 class="sk-h2">Yaqinda sotib olindi</h2></div></div></section>'
     +'<div class="sk-rec">'+L.map(function(x){var rc=skRc(x);
       return '<button class="sk-rc" data-skb="'+esc(x.b)+'" data-skg="'+esc(x.game||"cs2")+'"><div class="pr">'+esc(skNum(x.price))+' <small>so\'m</small></div>'+(x.wear?'<span class="wr" style="color:'+(C2_WCOL[x.wear]||rc)+'">'+esc(x.wear)+'</span>':'')
-        +'<div class="im" style="background:radial-gradient(closest-side,'+skRg(rc,.3)+',transparent)">'+skImg(x.img)+'</div><div class="nm">'+esc(x.s||x.b)+'</div><div class="ag">'+esc((SK_G[x.game]||SK_G.cs2).n+" · "+ago(x.ago))+'</div></button>';}).join("")+'</div>';
+        +'<div class="im" style="background:radial-gradient(closest-side,'+skRg(rc,.3)+',transparent)"><span class="wm">'+SK_I.wm+'</span>'+skImg(x.img)+'</div><div class="nm">'+esc(x.s||x.b)+'</div><div class="ag">'+esc((SK_G[x.game]||SK_G.cs2).n+" · "+ago(x.ago))+'</div></button>';}).join("")+'</div>';
 }
 /* ---- kartochkalar ---- */
 function skCard(x){
   var g=x.game||SK.game,rc=skRc(x),fav=skIsFav(g,x.b),star=x.cat==="knife"||x.cat==="gloves";
-  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+'"><span class="wm">'+SK_I.cross+'</span>'+skImg(x.img)
+  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+'"><span class="wm">'+SK_I.wm+'</span>'+skImg(x.img)+(x.cnt>1?'<span class="sk-lots">'+SK_I.cart+Number(x.cnt)+'</span>':'')
     +'<div class="sk-ct">'+(star?'<span class="st2">★</span>':'')+(x.st?'<span class="st">ST™</span>':x.sv?'<span class="sv">SV</span>':'')+'</div>'
     +'<span class="sk-fav'+(fav?' on':'')+'" data-skfav="'+esc(x.b)+'" data-skg="'+esc(g)+'" role="button" aria-label="Sevimli">'+SK_I.heart+'</span></div>'
     +'<div class="sk-cb">'+(x.from?'<div class="sk-cp">'+esc(skNum(x.from))+'<small>so\'mdan</small></div>':'<div class="sk-cp na">Narxi ichkarida</div>')
@@ -5226,7 +5237,7 @@ function skOfferCard(o,i,attr,src){
   var gm=(o.gems||[]).slice(0,3).map(function(x){var c=/^#[0-9a-f]{6}$/i.test(String(x.c||""))?x.c:"#9aa3b2";return '<span class="gm" title="'+esc(x.d||"")+'">'+(x.img?'<img src="'+esc(x.img)+'" alt="" onerror="this.remove()">':'<i style="background:'+c+'"></i>')+esc(x.n)+'</span>';}).join("");
   var bd=(o.fresh?'<span class="nw">Yangi</span>':'')+(o.lockDays?'<span class="lk">'+SK_I.lock+o.lockDays+' kun</span>':'')+(o.slow?'<span class="sl">12 soatgacha</span>':'');
   return '<div class="sk-oc" style="--rg:'+skRg(rc,.24)+'"><div class="t">'+top+'<span>'+(o.float!=null?Number(o.float).toFixed(4):o.st?'StatTrak™':'')+'</span></div>'
-    +'<div class="im">'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+(bd?'<div class="bdg">'+bd+'</div>':'')+'</div>'
+    +'<div class="im"><span class="wm">'+SK_I.wm+'</span>'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+(bd?'<div class="bdg">'+bd+'</div>':'')+'</div>'
     +'<div class="n">'+esc(skTitle(o))+'</div>'+(si?'<div class="stks">'+si+'</div>':'')+(gm?'<div class="gms">'+gm+'</div>':'')+(ex.length?'<div class="x">'+esc(ex.join(" · "))+'</div>':'')
     +'<div class="p">'+esc(skNum(o.price))+' so\'m</div><div class="acts"><button class="sk-btn" '+attr+'="'+i+'">Olish</button>'
     +'<button class="ct'+(skInCart(o.id)?' on':'')+'" data-skcart="'+(src||"m")+':'+i+'" aria-label="Savatga">'+SK_I.cart+'</button></div></div>';
@@ -5379,7 +5390,7 @@ function skItemPaint(p){
   Object.keys(C2_WEAR).forEach(function(k){var L=offs.filter(function(o){return o.wear===k;});if(L.length)wt.push([k,L.length,Math.min.apply(null,L.map(function(o){return o.price;}))]);});
   m.innerHTML='<div class="sk-stage sk-in" style="--rg:'+skRg(rc,.42)+'"><div class="glow"></div>'
     +'<div class="bd"><span class="sk-badge bolt">'+SK_I.bolt+'</span>'+(offs.length?'<span class="sk-badge av">'+SK_I.check+' Mavjud: '+offs.length+'</span>':'<span class="sk-badge av" style="border-color:#4a505c;color:#9aa3b2;background:none">Sotuvda yo\'q</span>')+'</div>'
-    +'<div class="im">'+skImg(it.img)+stk+'</div>'
+    +'<div class="im"><span class="wm">'+SK_I.wm+'</span>'+skImg(it.img)+stk+'</div>'
     +'<div class="ft">'+(insp?'<a href="#" class="sk-insp" data-insp="'+esc(insp.id)+'">'+SK_I.eye+' O\'yinda ko\'rish</a>':'')+(it.st&&g==="cs2"?'<span class="sk-badge" style="height:50px;border:1px solid rgba(255,138,76,.45);color:#ff8a4c;background:rgba(255,138,76,.08)">StatTrak™</span>':'')+'</div>'+fl+'</div>'
     +'<h1 class="sk-title sk-in">'+esc(title)+'</h1>'
     +(it.rn?'<span class="sk-rch sk-in" style="background:'+skRg(rc,.14)+';color:'+rc+';border:1px solid '+skRg(rc,.4)+'">'+esc(it.rn)+'</span>':'')
