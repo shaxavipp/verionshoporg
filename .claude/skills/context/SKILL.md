@@ -123,9 +123,10 @@ Full docs are public at `lis-skins.stoplight.io` (Stoplight project id 288247; n
 - **Entry:** `[data-cs2open="cs2|dota2|rust"]` product cards, shown per `ME.skins`. `openCs2(el, game)` expands a `.sk-fx` layer from the tapped card's rect, then shows the store (skipped under reduced motion).
 - **Tabs:** `skTab("home"|"market"|"orders"|"profile")` with bottom nav. Item page `.sk-page` slides in; confirm / done are centered `.sk-modal` dialogs inside `#sk`.
 - **State and functions:** state in `SK`. Main functions: `skHome`, `skMarket`, `skLoad`, `skPaint`, `skCard`, `skOfferCard`, `skOpenItem`, `skItemPaint`, `skConfirm`, `skModalAct`, `skDone`, `skOrders`, `skProfile`, `skFilterSheet`, `skHelpSheet`, `skTradeSheet`. One delegated click handler: `skClick`.
-- **Branding:** `SK_LOGO` = the splash logo image (`#splash .spw img` data URI) in the header, the entry fx and the faded card watermark (`.wm`, CSS var `--sklogo`). No "Verion Skins" text, no bolt mark. Game art: `skGimg(g)` / `skTile(g)` use `cdn.cloudflare.steamstatic.com/steam/apps/<appid>/header.jpg` with a monogram fallback.
+- **Branding:** `SK_LOGO` = a fixed webp data URI: the splash logo's VER⚡ON top with «SKINS» underneath, drawn in the original «SHOP» style (Orbitron 900, stretched to the same letter width, same blue gradient). Used in the header, the entry fx and the faded card watermark (`.wm`, CSS var `--sklogo`). No bolt icon or text mark besides it. Game art: `skGimg(g)` / `skTile(g)` use `cdn.cloudflare.steamstatic.com/steam/apps/<appid>/header.jpg` with a monogram fallback.
 - **Market extras:** CS2 category buttons carry ▾; tapping the active one toggles the weapon dropdown `#skWpn` (`SK.wOpen`). Item page shows «So'nggi sotuvlar» from `/api/cs2/item` → `sales` (last 8 of our done orders for that skin; no buyer data).
 - **Languages:** store follows `S.lang`. Uzbek text stays in the code; RU/EN come from `SK_L` (exact strings) and `SK_TRX` (patterns with numbers/dates/amounts, Russian plurals via `skPl`, amounts via `skAmt`), split on « · » and trailing « ✕ ». `skTrOn(true)` in `openCs2` starts a `MutationObserver` that translates text nodes and placeholder / aria-label / title inside `.sk`, `.sheet.sks`, `.sk-fx` and `#toast` (only while `body.sk-open`); `closeCs2` stops it. In code use `_t(s)`; "from" prices use `skFromH`. When adding a new Uzbek string to the store, add its RU/EN line to `SK_L`. Admin stays Uzbek.
+- **Steam login domain:** `siteBase()` in server.js returns `SITE_URL` (default `https://verionshop.uz`) only after `probeAppUrl` confirms it reaches THIS instance (`same` instance id); otherwise `publicBase()`. Rechecked every 10 min while failing, 6 h when OK. cs2.js `appOrigin()` uses `STEAM_RETURN_BASE` → `ctx.siteUrl()` → `ctx.appUrl()`; the base is stored per nonce in `LINKS` so the return check uses the same origin. Admin view field `site` (`?site=1` forces a recheck).
 - **Admin:** `openAdminCs2` — per-game toggles `#skOn_<g>`, catalog status `#skSt_<g>`, price URL `#skPu_<g>`, refresh `[data-skcat2]`.
 
 ### Design reference
@@ -179,3 +180,10 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
   - Phase 1: done (see «Steam login» above).
   - Phase 2 (separate decision): customers sell skins to us. This needs a Steam bot account and an 8-day hold because of Steam's 7-day trade reversal.
 - **Later ideas:** Click/Payme, onboarding, a proof channel.
+
+## Admin edit pens (✏️ inside product pages)
+- `admPen(act, arg, cls)` renders a small pencil only when `ME.isAdmin === true`; one capture-phase document listener (`[data-admpen]`) stops propagation (so the back row / store click handlers don't fire) and calls `admPenGo`.
+- Acts: `item` (catalog product → `openAdminForm(id)`), `group` (`openGroupForm`), `cat`, `games`, `ai`, `nk`, `steam`, `vnum`, `skins` (menus via `admMenu`). `ADM_PAGE` is captured by `openAdminForm` / `openGroupForm`; when set, saving calls `publishCatalog()` so the change goes live immediately.
+- Special cards (steam, vnum, cs2, dota2, rust): `CARD_DEF` defaults, `cardArt/cardImg/cardTxt/cardTile`, editor `openCardArt(k)`; stored in `extras.cards` (server `CARD_KEYS`, POST `/api/admin/extras {cards:{k: {...}|null}}` merges per key, `/gimg/` or https images only).
+- Tests: `admin-pen-test.js` (scratchpad) — client sees no pens and gets 403; admin edits card art, a catalog product (published) and skins cards inside the store.
+

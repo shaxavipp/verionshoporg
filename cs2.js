@@ -924,14 +924,15 @@ module.exports = function (ctx) {
   const SID_BASE = 76561197960265728n;
   const LINKS = new Map();   // bir martalik kalit -> { uid, ts }
   const accountIdOf = sid => { try { return String(BigInt(sid) - SID_BASE); } catch (e) { return ""; } };
-  const appOrigin = () => { try { return new URL(String(process.env.STEAM_RETURN_BASE || (ctx.appUrl && ctx.appUrl()) || "")).origin; } catch (e) { return ""; } };
+  // Steam sahifasida ko'rinadigan sayt: brend domeni (verionshop.uz, server tekshirgan bo'lsa), bo'lmasa ilova manzili
+  const appOrigin = () => { try { return new URL(String(process.env.STEAM_RETURN_BASE || (ctx.siteUrl && ctx.siteUrl()) || (ctx.appUrl && ctx.appUrl()) || "")).origin; } catch (e) { return ""; } };
   const escH = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   function steamLinkUrl(uid) {
     const base = appOrigin(); if (!base) return "";
     for (const [k, v] of LINKS) if (Date.now() - v.ts > 15 * 60e3) LINKS.delete(k);
     if (LINKS.size > 5000) LINKS.clear();
     const n = crypto.randomBytes(16).toString("hex");
-    LINKS.set(n, { uid: String(uid), ts: Date.now() });
+    LINKS.set(n, { uid: String(uid), ts: Date.now(), base });   // qaysi domen bilan boshlangan bo'lsa, javob ham o'shanga qaytadi
     const ret = base + "/api/steam/return?n=" + n;
     const q = { "openid.ns": "http://specs.openid.net/auth/2.0", "openid.mode": "checkid_setup", "openid.return_to": ret, "openid.realm": base,
       "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select", "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select" };
@@ -982,7 +983,7 @@ module.exports = function (ctx) {
     if (!L || Date.now() - L.ts > 15 * 60e3) return steamPage(res, false, "Havola eskirgan", "Ilovada «Steam orqali ulash» tugmasini qaytadan bosing.");
     const P = {}; for (const [k, v] of q) if (k.indexOf("openid.") === 0) P[k] = String(v).slice(0, 2000);
     const m = /^https:\/\/steamcommunity\.com\/openid\/id\/(7656119\d{10})$/.exec(P["openid.claimed_id"] || "");
-    const okReq = P["openid.mode"] === "id_res" && P["openid.op_endpoint"] === STEAM_OPENID() && P["openid.return_to"] === appOrigin() + "/api/steam/return?n=" + n
+    const okReq = P["openid.mode"] === "id_res" && P["openid.op_endpoint"] === STEAM_OPENID() && P["openid.return_to"] === L.base + "/api/steam/return?n=" + n
       && m && P["openid.identity"] === P["openid.claimed_id"] && P["openid.sig"] && P["openid.signed"];
     if (!okReq) return steamPage(res, false, "Ulanmadi", "Steam javobi noto'g'ri. Qaytadan urinib ko'ring.");
     LINKS.delete(n);   // bir martalik
@@ -1252,6 +1253,8 @@ module.exports = function (ctx) {
         return { enabled: c.enabled, rate: c.rate, markup: c.markup, minUsd: c.minUsd, maxUsd: c.maxUsd, onlyUnlocked: c.onlyUnlocked, apiKeySet: !!c.apiKey, games: per,
           lisUserId: c.lisUserId || "", ws: { on: c.ws !== false, state: WS.state, since: WS.since, err: WS.err, pub: WS.pub, priv: WS.priv, privOk: WS.privOk, live: Object.keys(LIVE).reduce((a, k) => a + LIVE[k].length, 0) },
           cool: coolUntil > Date.now() ? Math.ceil((coolUntil - Date.now()) / 1000) : 0,
+          // Steam orqali kirishda mijoz ko'radigan sayt (verionshop.uz tekshiruvi)
+          site: ctx.siteInfo ? Object.assign(ctx.siteInfo(m === "GET" && q && q.get && q.get("site") === "1"), { steam: appOrigin() }) : null,
           // eski maydonlar (CS2) — mavjud admin oynalari uchun
           catalog: cat("cs2").list.length, skins: cat("cs2").GROUPS.length, catalogTs: cat("cs2").TS, prices: P.map ? P.map.size : 0, pricesTs: P.ts,
           pricesUrl: per.cs2.pricesUrl, pricesSrc: P.src, pricesDiag: per.cs2.pricesDiag };

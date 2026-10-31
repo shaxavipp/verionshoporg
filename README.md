@@ -338,7 +338,7 @@ Ilova ichidagi alohida do'kon. Mahsulotlar → O'yinlar bo'limidagi «CS2 skinla
 
 Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, iliq nur va uchqunlar, Unbounded (sarlavhalar) + Inter Tight (matn) shriftlari, o'zimizning sariq-amber urg'u rangi va yashil narxlar. skinsavdo.uz faqat namuna sifatida o'rganilgan — ularning nomi, logotipi, rangi va matnlari olinmagan.
 
-**Logo va rasmlar:** sarlavhada, kirish animatsiyasida va kartochkalar orqasidagi xira belgida ilovaning haqiqiy logotipi (ochilish sahifasidagi rasm) — boshqa qo'shimcha belgisiz. O'yin plitkalari, tablar va asosiy ilovadagi kartochkalarda o'yinning rasmiy Steam sarlavha rasmi (`steam/apps/<appid>/header.jpg`); yuklanmasa harfli belgi qoladi.
+**Logo va rasmlar:** sarlavhada, kirish animatsiyasida va kartochkalar orqasidagi xira belgida ilovaning haqiqiy logotipi (VER⚡ON), pastki yozuvi «SKINS» — asl «SHOP» bilan bir xil uslubda (ko'k gradient, keng harflar); boshqa qo'shimcha belgisiz. O'yin plitkalari, tablar va asosiy ilovadagi kartochkalarda o'yinning rasmiy Steam sarlavha rasmi (`steam/apps/<appid>/header.jpg`); yuklanmasa harfli belgi qoladi.
 
 **Til:** do'kon ilovadagi tanlangan tilga (O'zbek / Русский / English) moslashadi. O'zbekcha matnlar kodda; rus va ingliz tarjimalari `SK_L` lug'ati va `SK_TRX` qoliplarida (son, sana, summa bo'lgan matnlar uchun). Tayyor sahifa matnlari `MutationObserver` orqali do'kon ochiq turganda tarjima qilinadi (do'kon oynasi, uning pastki oynalari va xabarlar). Skin nomlari va holatlari (Factory New, Covert…) — asl inglizcha. Admin paneli o'zbekcha qoladi.
 
@@ -386,6 +386,7 @@ Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, 
 
 **Steam akkauntini ulash (OpenID):**
 - Profil → «Steam akkauntni ulang» → «Ulash»: Steam kirish sahifasi tashqi brauzerda ochiladi. Kirgach Steam bizga qaytaradi; javob Steam'ning o'zida tekshiriladi (`check_authentication`). Kalit bir martalik, 15 daqiqa amal qiladi.
+- Steam kirish sahifasida mijozga **verionshop.uz** ko'rinadi (railway.app emas). Server ishga tushganda va keyin davriy ravishda verionshop.uz rostdan SHU serverga olib borishini `/api/health` orqali tekshiradi; olib bormasa (domen Railway'ga ulanmagan, DNS xato yoki boshqa server) — oddiy ilova manzili ishlatiladi va Admin → «Skinlar do'koni»da sababi ko'rinadi («🔐 Steam kirish sahifasida: …»). Boshqa domen: `SITE_URL` o'zgaruvchisi.
 - Ulangandan keyin trade havola faqat shu akkauntniki bo'lishi mumkin (havoladagi `partner` = SteamID'dan hisoblangan raqam). Eski boshqa akkaunt havolasi o'chiriladi. Skin adashib boshqa odamga ketmaydi.
 - Profilda Steam nomi, rasmi, «Profil ochiq/yopiq», savdo taqiqi va VAC ko'rinadi (ochiq profil XML'idan, Steam API kalitisiz). «Uzish» tugmasi bor.
 - Kerak: ilovaning tashqi manzili ma'lum bo'lsin (bot sozlamasi yoki `PUBLIC_URL` / Railway domeni).
@@ -428,3 +429,14 @@ Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, 
   - Ro'yxat bo'lmasa, narxlar API qidiruvi orqali olinadi. Bu holatda filtrlar va «Arzon / Qimmat» tartibi yashiriladi.
 
 lis-skins balansi «🚀 Tayyorlik» va 20 daqiqalik liniya kuzatuviga ulangan.
+
+## Admin: mahsulot ichidan tahrirlash (✏️)
+
+Admin (server tasdiqlagan `isAdmin`) har bir mahsulot sahifasida kichik ✏️ tugmani ko'radi; oddiy mijozga ko'rinmaydi, saqlash so'rovlarini server baribir admin imzosi bilan tekshiradi.
+- **Katalog mahsuloti** (oyna ochilganda rasm burchagida; Stars, Telegram sovg'a, sovg'alar sahifasi ham): o'sha mahsulotning to'liq tahrirlash oynasi — rasm, emoji/video, nom, narx, soni, tavsif, bajarilish turi. Shu yerdan saqlansa **darhol hammaga nashr qilinadi**.
+- **Guruh sahifasi:** guruh nomi va rasmi (saqlansa darhol nashr).
+- **Bo'lim sahifalari** (Obuna, Telegram, O'yinlar…): mahsulotlar, yangi mahsulot, bo'limlar, guruhlar; O'yinlar bo'limida o'yinlar ro'yxati va maxsus kartochkalar.
+- **O'yin / AI xizmat sahifasi:** avvalgidek 🔧 (o'yin, paketlar, narxlar).
+- **Steam, Virtual raqam, Skinlar do'koni (CS2 / Dota 2 / Rust):** kartochka rasmi (avatar), nomi va qisqa matni + tegishli sozlamalar. Bu kartochkalar avval kodda qattiq yozilgan edi; endi admin o'z rasmini qo'ya oladi («Asl holiga qaytarish» ham bor). Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi. Saqlanadi: `DB.settings.extras.cards`, mijozlarga `/api/extras` → `cards`.
+- **Nakrutka:** ilovalar rasmlari, xizmatlar, sozlamalar.
+

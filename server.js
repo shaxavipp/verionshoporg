@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-31.11";
+const BUILD = "2026-10-31.12";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -931,6 +931,24 @@ function publicBase() {
   if (PUBLIC_URL) return PUBLIC_URL;
   return String(c.publicUrl || "");
 }
+/* Brend domeni (verionshop.uz) — mijoz tashqi brauzerda ko'radigan sahifalar uchun (Steam orqali kirish:
+   Steam sahifasida «qaysi saytga kiryapsiz» deb shu domen yoziladi). Domen rostdan SHU serverga olib
+   borishi /api/health orqali tekshiriladi; ochilmasa — oddiy ilova manzili ishlatiladi (admin panelda sababi
+   ko'rinadi). SITE_URL o'zgaruvchisi bilan boshqa domen berish mumkin, bo'sh qiymat — o'chirish. */
+const SITE_URL = normalizeAppUrl(process.env.SITE_URL != null ? process.env.SITE_URL : "https://verionshop.uz");
+let SITE = { ok: false, ts: 0, err: "", busy: false };
+function siteCheck(force) {
+  if (!SITE_URL || SITE.busy) return;
+  if (!force && Date.now() - SITE.ts < (SITE.ok ? 6 * 3600e3 : 10 * 60e3)) return;
+  SITE.busy = true;
+  probeAppUrl(SITE_URL).then(p => {
+    const ok = !!(p.ok && p.same);
+    if (ok !== SITE.ok || !SITE.ts) console.log("[sayt] " + SITE_URL + (ok ? " — shu serverga olib boradi, Steam kirishda ishlatiladi" : " — ishlatilmaydi: " + (p.ok ? "boshqa server javob berdi" : p.error)));
+    SITE = { ok, ts: Date.now(), err: ok ? "" : (p.ok ? "boshqa server javob berdi" : String(p.error || "")), busy: false };
+  }).catch(e => { SITE = { ok: false, ts: Date.now(), err: e.message, busy: false }; });
+}
+function siteBase() { siteCheck(false); return SITE.ok ? SITE_URL : publicBase(); }
+function siteInfo() { return { url: SITE_URL, ok: SITE.ok, err: SITE.err, checked: SITE.ts, used: siteBase() }; }
 // Ilovani OCHISH uchun to'liq manzil (web_app tugmalari). Ko'k tugma manzilida
 // yo'l yoki parametr bo'lsa — aynan o'zini ishlatamiz, ishlayotgani shu.
 function appOpenUrl() {
@@ -1915,15 +1933,17 @@ function extrasCfg() {
   if (!Array.isArray(c.social)) c.social = [];
   if (!Array.isArray(c.banners)) c.banners = [];
   if (!c.payImgs || typeof c.payImgs !== "object") c.payImgs = {};
+  if (!c.cards || typeof c.cards !== "object") c.cards = {};   // maxsus kartochkalar (Steam, raqam, skinlar): admin qo'ygan rasm va nom
   return c;
 }
+const CARD_KEYS = ["steam", "vnum", "cs2", "dota2", "rust"];
 function publicExtras() {
   const c = extrasCfg(), now = Date.now();
   const promos = !c.blocks.promos ? [] : Object.values(DB.promoCodes || {})
     .filter(p => p.public && p.active && (!p.expiresAt || p.expiresAt > now) && (!p.maxUses || (p.usedCount || 0) < p.maxUses))
     .map(p => ({ code: p.code, desc: p.desc || p.note || "", type: p.type, value: p.value, minOrder: p.minOrder || 0, only: (p.targetNames || []).slice(0, 5) }));
   return { promos, faq: c.blocks.faq ? c.faq : [], social: c.blocks.social ? c.social : [],
-    banners: c.blocks.banners ? c.banners : [], payImgs: c.payImgs };
+    banners: c.blocks.banners ? c.banners : [], payImgs: c.payImgs, cards: c.cards };
 }
 function isAdm(u) { return !!u && ADMIN_IDS.indexOf(u.id) !== -1; }
 
@@ -2172,7 +2192,7 @@ const EXTRA = require("./extra.js")({
 const CS2 = require("./cs2.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
   notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder, pubOrder, DATA_DIR,
-  appUrl: () => publicBase(), botUsername: () => BOT_USERNAME
+  appUrl: () => publicBase(), siteUrl: () => siteBase(), siteInfo: (force) => { if (force) siteCheck(true); return siteInfo(); }, botUsername: () => BOT_USERNAME
 });
 // Nakrutka liniyalari (smm.js): JAP + boshqa SMM panellar.
 const SMM = require("./smm.js")({
@@ -2479,6 +2499,14 @@ function handleRequest(req, res) {
       if (Array.isArray(b.social)) c.social = b.social.slice(0, 10).map(x => ({ name: str(x && x.name, 40), url: okUrl(x && x.url) })).filter(x => x.name && x.url);
       if (Array.isArray(b.banners)) c.banners = b.banners.slice(0, 10).map(x => ({ img: okUrl(x && x.img), link: okUrl(x && x.link) })).filter(x => x.img);
       if (b.payImgs && typeof b.payImgs === "object") { c.payImgs = {}; for (const k of Object.keys(b.payImgs).slice(0, 20)) { const u = okUrl(b.payImgs[k]); if (u) c.payImgs[str(k, 40)] = u; } }
+      // Maxsus kartochkalar: faqat yuborilgan kalitlar o'zgaradi; null — asl holiga qaytarish
+      if (b.cards && typeof b.cards === "object") for (const k of CARD_KEYS) if (k in b.cards) {
+        const x = b.cards[k];
+        if (!x || typeof x !== "object") { delete c.cards[k]; continue; }
+        const L = v => { const o = {}; for (const l of ["uz", "ru", "en"]) { const t = str(v && typeof v === "object" ? v[l] : (l === "uz" ? v : ""), 60); if (t) o[l] = t; } return o; };
+        const e = { img: okUrl(x.img), name: L(x.name), sub: L(x.sub) };
+        if (!e.img && !e.name.uz && !e.sub.uz) delete c.cards[k]; else c.cards[k] = e;
+      }
       save();
       send(res, 200, Object.assign({ ok: true }, c));
     });
@@ -4096,6 +4124,7 @@ function scheduleBackup() {
 if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
+  setTimeout(() => siteCheck(true), 3000);   // verionshop.uz shu serverga olib boradimi (Steam kirish sahifasi uchun)
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
   // Oxirgi himoya chizig'i (faqat server muvaffaqiyatli ishga tushgandan keyin — ishga tushishdagi
   // xato yashirinib qolmasin): kutilmagan xato butun do'konni o'chirib qo'ymaydi, logga yoziladi.
