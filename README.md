@@ -440,3 +440,10 @@ Admin (server tasdiqlagan `isAdmin`) har bir mahsulot sahifasida kichik ✏️ t
 - **Steam, Virtual raqam, Skinlar do'koni (CS2 / Dota 2 / Rust):** kartochka rasmi (avatar), nomi va qisqa matni + tegishli sozlamalar. Bu kartochkalar avval kodda qattiq yozilgan edi; endi admin o'z rasmini qo'ya oladi («Asl holiga qaytarish» ham bor). Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi. Saqlanadi: `DB.settings.extras.cards`, mijozlarga `/api/extras` → `cards`.
 - **Nakrutka:** ilovalar rasmlari, xizmatlar, sozlamalar.
 
+## Mahsulot rasmlari: shaffof fon va yengil yuklanish
+
+- **Fayl sifatida saqlanadi.** Admin yuklagan mahsulot, guruh, bo'lim, nakrutka va maxsus kartochka rasmlari endi katalog ichida matn (data URL) bo'lib yurmaydi — server ularni `/gimg/<sha1>.webp|png|jpg` faylga aylantiradi (saqlashda va ishga tushganda eski ma'lumot uchun ham, bir marta). Fayl bir yil keshlanadi. Avval katalog megabaytlab matn edi: mijoz telefoni uni har harakatda xotiraga qayta yozar va har chizishda rasmlarni qayta ochar edi — ilovaning qotishi va rasmlarning «yangilanib qolishi» shundan edi.
+- **Shaffoflik saqlanadi.** Rasmlar JPEG emas, WebP (bo'lmasa PNG) bo'lib saqlanadi — shaffof PNG logo yuklansa orqasi oq/qora bo'lib qolmaydi.
+- **Logo fonini avtomatik olib tashlash.** Mahsulot oynasida «🪄 Logo fonini avtomatik olib tashlash» (standart yoqilgan): rasm chetlari bir xil rangda bo'lsa (oq/rangli fonli logo), o'sha fon chetdan boshlab olinadi va chetlar yumshatiladi; logo kartochkaning o'z dizayni ustida markazda turadi (`tile.fit = "contain"`). Fotosurat yoki to'liq fonli rasm (chetlari har xil) — tegilmaydi. Guruh, nakrutka va Steam/raqam/skin kartochka rasmlarida ham shunday. O'yin avatarlari (ilova belgilari) va bo'lim kartochkalari — o'zgarmaydi.
+- **Eski rasmlar:** Admin → «Mahsulotlar va katalog» → «🪄 Hamma mahsulot rasmlari fonini olib tashlash» (bo'lim ✏️ menyusida ham bor): katalog mahsulotlari, guruhlar, nakrutka ilovalari va maxsus kartochkalar bir yo'la; tugagach darhol nashr qilinadi. Asl rasm `tile.img0` da saqlanadi — mahsulot oynasida «↩ Asl rasmga qaytarish».
+

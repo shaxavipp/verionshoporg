@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-31.13";
+const BUILD = "2026-10-31.14";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2092,6 +2092,30 @@ function catalogArr() {
 }
 // Kategoriya kartochkalari (Obuna/Promokod/Telegram/O'yinlar) uchun admin belgilagan
 // nom va rasm — { obuna: {label:{uz,ru,en}, img:"data:..."}, telegram: {...}, ... }
+/* Matn ichidagi rasmlar (data:image base64) → /gimg/ fayllar. Admin yuklagan mahsulot, guruh, bo'lim va nakrutka
+   rasmlari avval katalog ichida megabaytlab matn bo'lib yurardi: mijoz telefoni har harakatda uni xotiraga qayta
+   yozar va har chizishda qayta o'qir edi (qotish, rasmlarning "yangilanib qolishi"). Endi — alohida, uzoq keshlanadigan fayl. */
+function extractImages(v, depth) {
+  depth = depth || 0;
+  if (v == null || depth > 8) return { v, n: 0 };
+  if (typeof v === "string") {
+    if (v.length > 200 && /^data:image\/(png|jpe?g|webp);base64,/.test(v)) { const u = GAMES.saveDataImage(v); if (u) return { v: u, n: 1 }; }
+    return { v, n: 0 };
+  }
+  if (Array.isArray(v)) { let n = 0; const out = v.map(x => { const r = extractImages(x, depth + 1); n += r.n; return r.v; }); return { v: out, n }; }
+  if (typeof v === "object") { let n = 0; const out = {}; for (const k of Object.keys(v)) { const r = extractImages(v[k], depth + 1); n += r.n; out[k] = r.v; } return { v: out, n }; }
+  return { v, n: 0 };
+}
+// Ishga tushganda: avval saqlangan katalog / bo'lim / nakrutka rasmlari ham fayllarga ko'chiriladi (bir marta)
+function migrateInlineImages() {
+  let total = 0;
+  try { const a = catalogArr(); if (Array.isArray(a)) { const r = extractImages(a); if (r.n) { sdb.saveCatalog(SQLITE_DB, r.v); dropPublic("catalog"); total += r.n; } } } catch (e) { console.log("[rasm] katalog: " + e.message); }
+  for (const key of ["catmeta", "nkcatmeta"]) {
+    try { const o = sdb.kvGet(SQLITE_DB, key, null); if (o && typeof o === "object") { const r = extractImages(o); if (r.n) { sdb.kvSet(SQLITE_DB, key, r.v); dropPublic(key); total += r.n; } } } catch (e) { console.log("[rasm] " + key + ": " + e.message); }
+  }
+  if (total) console.log("[rasm] matn ichidagi " + total + " ta rasm fayllarga ko'chirildi");
+  return total;
+}
 function catMetaObj() {
   try { return sdb.kvGet(SQLITE_DB, "catmeta", {}); } catch (e) { return {}; }
 }
@@ -2383,6 +2407,7 @@ function handleRequest(req, res) {
     return readBody(req, res, arr => {
       if (!Array.isArray(arr) || !arr.length) return send(res, 400, { error: "invalid json" });
       const prevArr = catalogArr() || [];
+      arr = extractImages(arr).v;   // rasmlar — /gimg/ fayllarga
       try {
         sdb.saveCatalog(SQLITE_DB, arr);
         dropPublic("catalog");
@@ -2400,6 +2425,7 @@ function handleRequest(req, res) {
     if (!isAdm(u)) return send(res, 403, { error: "not admin" });
     return readBody(req, res, obj => {
       if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
+      obj = extractImages(obj).v;
       try { sdb.kvSet(SQLITE_DB, "catmeta", obj); dropPublic("catmeta"); send(res, 200, { ok: true }); }
       catch (e) { send(res, 500, { error: "write failed" }); }
     });
@@ -2511,7 +2537,8 @@ function handleRequest(req, res) {
         const x = b.cards[k];
         if (!x || typeof x !== "object") { delete c.cards[k]; continue; }
         const L = v => { const o = {}; for (const l of ["uz", "ru", "en"]) { const t = str(v && typeof v === "object" ? v[l] : (l === "uz" ? v : ""), 60); if (t) o[l] = t; } return o; };
-        const e = { img: okUrl(x.img), name: L(x.name), sub: L(x.sub) };
+        const im = /^data:image\//.test(String(x.img || "")) ? GAMES.saveDataImage(x.img) : x.img;   // fonsiz qilingan rasm — faylga
+        const e = { img: okUrl(im), name: L(x.name), sub: L(x.sub) };
         if (!e.img && !e.name.uz && !e.sub.uz) delete c.cards[k]; else c.cards[k] = e;
       }
       save();
@@ -3832,6 +3859,7 @@ function handleRequest(req, res) {
     if (url === "/api/admin/nakrutka/catmeta" && m === "POST") {
       return readBody(req, res, obj => {
         if (!obj || typeof obj !== "object") return send(res, 400, { error: "invalid json" });
+        obj = extractImages(obj).v;
         try { sdb.kvSet(SQLITE_DB, "nkcatmeta", obj); send(res, 200, { ok: true }); }
         catch (e) { send(res, 500, { error: "write failed" }); }
       });
@@ -4131,6 +4159,7 @@ function scheduleBackup() {
 if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
+  setTimeout(() => { try { migrateInlineImages(); } catch (e) {} }, 2000);
   setTimeout(() => siteCheck(true), 15000);   // verionshop.uz shu serverga olib boradimi (Steam kirish sahifasi uchun); o'tmasa 30 soniyadan qayta
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
   // Oxirgi himoya chizig'i (faqat server muvaffaqiyatli ishga tushgandan keyin — ishga tushishdagi

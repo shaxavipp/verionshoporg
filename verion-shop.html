@@ -175,6 +175,10 @@ header .hun{font-size:11.5px;color:var(--mut);line-height:1.2}
 .ptile{height:auto;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;padding:6px;position:relative;overflow:hidden;}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.08) contrast(1.04)}
+.ptile img.fit{inset:9%;width:82%;height:82%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+/* maxsus kartochka rasmi (Steam, raqam, skinlar): shaffof logo kartochka fonida markazda */
+.cardart{background:radial-gradient(circle at 50% 35%,#2a3550,#0d0e12 72%)!important;position:relative}
+.cardart img{object-fit:contain!important;padding:10%;box-sizing:border-box}
 .ptile.emoji-only{background:none!important}
 .ptile .emj{font-size:44px;line-height:1;position:relative;z-index:1}
 .groupgrid .ptile .emj{font-size:56px}
@@ -1557,7 +1561,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.13";
+var CLIENT_BUILD="2026-10-31.14";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2654,7 +2658,7 @@ function tileHTML(it,big){
       +(glow?'<span class="giftSpark s1"></span><span class="giftSpark s2"></span><span class="giftSpark s3"></span>':"")
       +'</div>';
   }
-  var img=st.img?'<img src="'+esc(st.img)+'" alt="" onerror="this.remove()">':"";
+  var img=st.img?'<img'+(st.fit==="contain"?' class="fit"':'')+' src="'+esc(st.img)+'" alt="" onerror="this.remove()">':"";
   var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
 }
@@ -2677,7 +2681,7 @@ var CARD_DEF={steam:["Steam hamyon","Istalgan summa"],vnum:["Virtual raqam","Tel
 function cardArt(k){var c=EXTRAS&&EXTRAS.cards&&EXTRAS.cards[k];return c&&typeof c==="object"?c:null;}
 function cardImg(k){var c=cardArt(k);return c&&/^(https:\/\/|\/gimg\/)/.test(String(c.img||""))?c.img:"";}
 function cardTxt(k,f){var c=cardArt(k),v=c&&c[f],x=v&&(v[S.lang]||v.uz)||"";return x||_t(CARD_DEF[k][f==="name"?0:1]);}
-function cardTile(k,cls,fallback){var im=cardImg(k);return im?'<div class="'+cls+'" style="background:#0d0e12"><img src="'+esc(im)+'" alt="" loading="lazy"></div>':fallback;}
+function cardTile(k,cls,fallback){var im=cardImg(k);return im?'<div class="'+cls+' cardart"><img src="'+esc(im)+'" alt="" loading="lazy"></div>':fallback;}
 function xProductCard(k){
   var body=function(){return '<div class="pbody"><div class="nm">'+esc(cardTxt(k,"name"))+'</div><div class="ct">'+esc(cardTxt(k,"sub"))+'</div></div></button>';};
   if(SK_G[k])return '<button class="pcard" data-cs2open="'+k+'">'+cardTile(k,"ptile",skTile(k,"ptile"))+body();
@@ -2713,7 +2717,7 @@ function admPenGo(a,arg){
   if(a==="ai")return admMenu(categoryLabel("ai"),[["✨ AI xizmatlar (nomi, rasmi, paketlari)",games("ai")],["➕ Yangi AI xizmat",function(){gAdmLoad(function(){openAdminGameForm(null,"ai");});}]]);
   if(a==="games")return admMenu(categoryLabel("games"),[["🎮 O'yinlar (nomi, rasmi, paketlari)",games("games")],["➕ Yangi o'yin",function(){gAdmLoad(function(){openAdminGameForm(null,"games");});}],card("steam"),card("cs2"),card("dota2"),card("rust")]);
   if(a==="cat")return admMenu(categoryLabel(arg)||"Bo'lim",(arg==="games"?[["🎮 O'yinlar (nomi, rasmi, paketlari)",games("games")]]:arg==="ai"?[["✨ AI xizmatlar (nomi, rasmi, paketlari)",games("ai")]]:[])
-    .concat([["📦 Mahsulotlar (rasm, nom, narx, tavsif)",openAdminCatalog],["➕ Yangi mahsulot",function(){ADM_PAGE=true;openAdminForm(null);}],["🗂 Bo'limlar (nomi, rasmi, tartibi)",openAdminCategories],["📁 Guruhlar",openAdminGroups]])
+    .concat([["📦 Mahsulotlar (rasm, nom, narx, tavsif)",openAdminCatalog],["🪄 Hamma mahsulot rasmlari fonini olib tashlash",function(){openAdminCatalog();var b=document.getElementById("aCutAll");if(b)admCutAll(b);}],["➕ Yangi mahsulot",function(){ADM_PAGE=true;openAdminForm(null);}],["🗂 Bo'limlar (nomi, rasmi, tartibi)",openAdminCategories],["📁 Guruhlar",openAdminGroups]])
     .concat(arg==="telegram"?[card("vnum")]:arg==="games"?[card("steam"),card("cs2"),card("dota2"),card("rust")]:[]));
 }
 // Maxsus kartochka (Steam, raqam, skinlar): avatar, nomi, qisqa matn — rus/inglizga avtomatik tarjima
@@ -2727,7 +2731,7 @@ function openCardArt(k){
     +'<div style="height:12px"></div><button class="btn big" id="caSave">'+esc(t("a_save"))+'</button>'
     +(cardArt(k)?'<div style="height:8px"></div><button class="btn red" id="caReset">Asl holiga qaytarish</button>':'')+'<div style="height:20px"></div>';
   var sh=openSheet(html);
-  gBindImg(sh,"ca_img",512,function(u){F.img=u;});
+  gBindImg(sh,"ca_img",512,function(u){F.img=u;},true);
   var post=function(v,btn){var o={};o[k]=v;btn.disabled=true;
     api("/api/admin/extras","POST",{cards:o}).then(function(r){
       EXTRAS=EXTRAS||{};EXTRAS.cards=r.cards||{};loadExtras._sig="";haptic("ok");toast(t("a_saved"));closeSheet();render();
@@ -4888,6 +4892,8 @@ function openAdminCatalog(){
     +'<button class="btn green" id="aPub">'+ic("globe",15)+' '+esc(t("a_publish"))+'</button>'
     +'<div class="paynote" style="margin-top:8px">'+esc(t("a_publish_hint"))+'</div>'
     +'<button class="btn" id="aNew">'+esc(t("a_new"))+'</button>'
+    +'<div style="height:8px"></div><button class="btn gray" id="aCutAll">🪄 Hamma mahsulot rasmlari fonini olib tashlash</button>'
+    +'<div class="paynote" style="margin-top:6px">Logolarning bir xil rangli foni olinadi — kartochka dizayni ustida toza turadi. Fotosuratlar o\'zgarmaydi; asl rasmni mahsulot oynasida qaytarish mumkin.</div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_current"))+'</div><div id="aList"></div>'
     +'<div class="sect" style="margin:16px 0 8px">'+esc(t("a_export"))+'</div>'
     +'<div class="paynote" style="margin-top:0">'+esc(t("a_export_hint"))+'</div>'
@@ -4902,6 +4908,7 @@ function openAdminCatalog(){
   var sh=openSheet(html,openAdmin);
   sh.querySelector("#aPub").addEventListener("click",publishCatalog);
   sh.querySelector("#aNew").addEventListener("click",function(){openAdminForm(null);});
+  sh.querySelector("#aCutAll").addEventListener("click",function(){admCutAll(this);});
   sh.querySelector("#aExp").value=JSON.stringify(catalog());
   sh.querySelector("#aCopy").addEventListener("click",function(){copyText(sh.querySelector("#aExp").value);});
   sh.querySelector("#aImpBtn").addEventListener("click",function(){
@@ -6480,7 +6487,82 @@ function gAdmLoad(cb){
   api("/api/admin/games").then(function(r){GADM=r;if(cb)cb();}).catch(function(){toast(t("srv_off"),true);});
 }
 // Rasmni kichraytirib (shaffoflik saqlanadi) serverga yuklaydi → "/gimg/..." manzil.
-function gUploadImage(file,maxSide,cb){
+/* ---- Mahsulot rasmlari: shaffof fon ----
+   imgCutBg — logoning bir xil rangli fonini (chetlardan boshlab) olib tashlaydi va chetlarni yumshatadi.
+   Chetlari bir xil rangda bo'lmagan rasm (fotosurat, to'liq fonli rasm) — tegilmaydi. Natija: "cut" | "already" | "photo" | ...
+   imgPrep — o'lchamni kichraytiradi, kerak bo'lsa fonni oladi va WebP qiladi (shaffoflik saqlanadi; JPEG emas). */
+function imgCutBg(cv){
+  var x=cv.getContext("2d"),w=cv.width,h=cv.height;if(w<12||h<12)return "small";
+  var d=x.getImageData(0,0,w,h),p=d.data,B=[],i,j,k,q;
+  for(i=0;i<w;i++){B.push(i);B.push((h-1)*w+i);}
+  for(j=1;j<h-1;j++){B.push(j*w);B.push(j*w+w-1);}
+  var tr=0;for(i=0;i<B.length;i++)if(p[B[i]*4+3]<24)tr++;
+  if(tr>B.length*.5)return "already";
+  var r=0,g=0,b=0,n=0;for(i=0;i<B.length;i++){k=B[i]*4;if(p[k+3]>200){r+=p[k];g+=p[k+1];b+=p[k+2];n++;}}
+  if(!n)return "none";r/=n;g/=n;b/=n;
+  var T=42,T2=T*T,dist=function(z){var a=p[z*4]-r,c=p[z*4+1]-g,e=p[z*4+2]-b;return a*a+c*c+e*e;};
+  var same=0;for(i=0;i<B.length;i++)if(dist(B[i])<=T2)same++;
+  if(same<B.length*.86)return "photo";
+  var N=w*h,seen=new Uint8Array(N),st=[],cnt=0;
+  for(i=0;i<B.length;i++){k=B[i];if(!seen[k]&&dist(k)<=T2){seen[k]=1;st.push(k);}}
+  while(st.length){k=st.pop();cnt++;var cx=k%w;
+    if(cx>0&&!seen[q=k-1]&&dist(q)<=T2){seen[q]=1;st.push(q);}
+    if(cx<w-1&&!seen[q=k+1]&&dist(q)<=T2){seen[q]=1;st.push(q);}
+    if(k>=w&&!seen[q=k-w]&&dist(q)<=T2){seen[q]=1;st.push(q);}
+    if(k<N-w&&!seen[q=k+w]&&dist(q)<=T2){seen[q]=1;st.push(q);}}
+  if(cnt>N*.94||cnt<N*.04)return "photo";
+  for(k=0;k<N;k++)if(seen[k])p[k*4+3]=0;
+  for(k=0;k<N;k++){if(seen[k])continue;var c2=k%w;
+    if((c2>0&&seen[k-1])||(c2<w-1&&seen[k+1])||(k>=w&&seen[k-w])||(k<N-w&&seen[k+w])){var dd=Math.sqrt(dist(k));if(dd<T*2.2)p[k*4+3]=Math.min(p[k*4+3],Math.round(255*Math.max(0,(dd-T)/(T*1.2))));}}
+  x.putImageData(d,0,0);return "cut";
+}
+function imgEncode(cv){var u=cv.toDataURL("image/webp",0.9);return u.indexOf("data:image/webp")===0?u:cv.toDataURL("image/png");}
+function imgPrep(src,maxSide,cut,cb){
+  var go=function(url){var im=new Image();
+    im.onload=function(){try{
+      var w=im.naturalWidth||im.width,h=im.naturalHeight||im.height,kk=Math.min(1,maxSide/Math.max(w,h));w=Math.max(1,Math.round(w*kk));h=Math.max(1,Math.round(h*kk));
+      var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(im,0,0,w,h);
+      var res=cut?imgCutBg(cv):"off";cb(null,{url:imgEncode(cv),cut:res==="cut",res:res});
+    }catch(e){cb(e);}};
+    im.onerror=function(){cb(new Error("load"));};im.src=url;};
+  if(typeof src==="string")return go(src);
+  var rd=new FileReader();rd.onload=function(){go(rd.result);};rd.onerror=function(){cb(new Error("read"));};rd.readAsDataURL(src);
+}
+function imgCutToast(r){toast(r.cut?"✅ Rasm foni olib tashlandi (shaffof)":r.res==="already"?"✅ Rasm allaqachon shaffof":r.res==="photo"?"Rasm fonli qoldi (fotosurat yoki to'liq rasm)":"✅ Rasm tanlandi");}
+/* Admin: mavjud mahsulot rasmlarining fonini bir yo'la olib tashlash — katalog mahsulotlari, guruhlar, nakrutka ilovalari,
+   maxsus kartochkalar (Steam, raqam, skinlar). Faqat bir xil rangli fonli logolar o'zgaradi; asl rasm img0 da saqlanadi. */
+function admCutAll(btn){
+  var jobs=[],seenG={};
+  catalog().forEach(function(it){var s=it.tile||{};
+    if(s.img&&!s.emoji&&!s.video&&!s.lottie&&s.fit!=="contain")jobs.push({src:s.img,done:function(u){patchItem(it.id,{tile:Object.assign({},it.tile,{img:u,fit:"contain",img0:s.img})});}});
+    if(it.group&&it.groupImg&&!seenG[it.kind+"::"+it.group]){seenG[it.kind+"::"+it.group]=1;
+      jobs.push({src:it.groupImg,done:function(u){renameGroupEverywhere(it.kind,it.group,it.groupLabel||it.group,u);}});}
+  });
+  var cards=(EXTRAS&&EXTRAS.cards)||{},cardOut={};
+  Object.keys(cards).forEach(function(k){if(cards[k]&&cards[k].img&&!cards[k].cut)jobs.push({src:cards[k].img,done:function(u){cardOut[k]=Object.assign({},cards[k],{img:u,cut:true});}});});
+  var nkMeta=null,nkOut=null;
+  btn.disabled=true;var i=0,cut=0,skip=0,old=btn.textContent;
+  var finish=function(){
+    var tasks=[];
+    if(Object.keys(cardOut).length)tasks.push(api("/api/admin/extras","POST",{cards:cardOut}).then(function(r){if(EXTRAS)EXTRAS.cards=r.cards||{};}));
+    if(nkOut)tasks.push(api("/api/admin/nakrutka/catmeta","POST",nkOut));
+    Promise.all(tasks).catch(function(){}).then(function(){
+      btn.disabled=false;btn.textContent=old;
+      toast("✅ "+cut+" ta rasm shaffof qilindi"+(skip?", "+skip+" tasi o'zgarmadi (fotosurat yoki allaqachon shaffof)":""));haptic("ok");
+      if(cut)publishCatalog();
+    });
+  };
+  var next=function(){
+    if(i>=jobs.length)return finish();
+    var j=jobs[i++];btn.textContent="⏳ "+i+"/"+jobs.length+"…";
+    imgPrep(j.src,600,true,function(e,r){if(!e&&r.cut){j.done(r.url);cut++;}else skip++;setTimeout(next,20);});
+  };
+  // nakrutka ilovalari rasmlari ham
+  api("/api/admin/nakrutka/catmeta").then(function(m){nkMeta=m&&typeof m==="object"?m:null;
+    if(nkMeta)Object.keys(nkMeta).forEach(function(k){var x=nkMeta[k];if(x&&x.img&&!x.cut)jobs.push({src:x.img,done:function(u){nkOut=nkOut||Object.assign({},nkMeta);nkOut[k]=Object.assign({},x,{img:u,cut:true});}});});
+  }).catch(function(){}).then(function(){if(!jobs.length){btn.disabled=false;toast("Fonini olib tashlash kerak bo'lgan rasm yo'q");return;}next();});
+}
+function gUploadImage(file,maxSide,cb,cut){
   try{
     var rd=new FileReader();
     rd.onload=function(){
@@ -6490,6 +6572,7 @@ function gUploadImage(file,maxSide,cb){
         w=Math.round(w*k);h=Math.round(h*k);
         var cv=document.createElement("canvas");cv.width=w;cv.height=h;
         cv.getContext("2d").drawImage(im,0,0,w,h);
+        if(cut)imgCutBg(cv);
         var url=cv.toDataURL("image/webp",0.9);
         if(url.indexOf("data:image/webp")!==0)url=cv.toDataURL("image/png");
         api("/api/admin/games/image","POST",{dataUrl:url}).then(function(r){cb(r.url);})
@@ -6508,16 +6591,16 @@ function gImgPick(id,label,cur){
     +'<input type="file" accept="image/*" id="'+id+'" style="flex:1;min-width:0">'
     +(cur?'<button class="btn gray sm" id="'+id+'Clr" style="width:auto">✕</button>':'')+'</div>';
 }
-function gBindImg(sh,id,maxSide,onUrl){
+function gBindImg(sh,id,maxSide,onUrl,cut){
   var inp=sh.querySelector("#"+id);
   if(inp)inp.addEventListener("change",function(){
     var f=this.files&&this.files[0];if(!f)return;
     toast("⏳ Yuklanmoqda…");
     gUploadImage(f,maxSide,function(url){
       onUrl(url);
-      sh.querySelector("#"+id+"Prev").innerHTML='<img src="'+esc(url)+'" style="width:100%;height:100%;object-fit:cover">';
+      sh.querySelector("#"+id+"Prev").innerHTML='<img src="'+esc(url)+'" style="width:100%;height:100%;object-fit:'+(cut?"contain":"cover")+'">';
       toast("✅ Rasm yuklandi");
-    });
+    },cut);
   });
   var c=sh.querySelector("#"+id+"Clr");
   if(c)c.addEventListener("click",function(){onUrl("");sh.querySelector("#"+id+"Prev").innerHTML='<span style="opacity:.5;font-size:11px">—</span>';});
@@ -8104,7 +8187,7 @@ function openAdminNakrutkaImages(){
             if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
             var cv=document.createElement("canvas");cv.width=w;cv.height=h;
             cv.getContext("2d").drawImage(im,0,0,w,h);
-            pendingCardImg=cv.toDataURL("image/jpeg",0.85);
+            pendingCardImg=imgEncode(cv);
             persistCardImg();
           }catch(e){toast(t("srv_off"),true);}
         };
@@ -8181,7 +8264,7 @@ function openAdminNakrutkaImages(){
             if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
             var cv=document.createElement("canvas");cv.width=w;cv.height=h;
             cv.getContext("2d").drawImage(im,0,0,w,h);
-            var dataUrl=cv.toDataURL("image/jpeg",0.85);
+            imgCutBg(cv);var dataUrl=imgEncode(cv);
             var key=nkAppKey(appKey);
             var out=Object.assign({},curMeta);
             out[key]=Object.assign({},out[key]||{},{img:dataUrl});
@@ -8237,7 +8320,7 @@ function openAdminNakrutkaImages(){
             if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
             var cv=document.createElement("canvas");cv.width=w;cv.height=h;
             cv.getContext("2d").drawImage(im,0,0,w,h);
-            pendingImg[key]=cv.toDataURL("image/jpeg",0.85);
+            imgCutBg(cv);pendingImg[key]=imgEncode(cv);
             renderList();toast(t("a_img_selected"));
           }catch(e){toast(t("srv_off"),true);}
         };
@@ -8862,6 +8945,7 @@ function publishCatalog(){
   .then(function(){
     S.serverCat=arr;S.custom=[];S.over={};S.removed=[];S.imported=null;
     persist();haptic("ok");toast(t("a_publish_ok"));closeSheet();S.screen="home";render();
+    try{loadServerCatalog();}catch(e){}   // server rasmlarni fayllarga aylantirdi — yengil nusxasini olamiz
   })
   .catch(function(){toast(t("a_publish_err"),true);});
 }
@@ -9290,7 +9374,7 @@ function openGroupForm(kind,key,parentSh){
             if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
             var cv=document.createElement("canvas");cv.width=w;cv.height=h;
             cv.getContext("2d").drawImage(im,0,0,w,h);
-            F.img=cv.toDataURL("image/jpeg",0.85);gp();
+            imgCutBg(cv);F.img=imgEncode(cv);gp();   // shaffof fon, WebP
           }catch(e){toast("Rasm xatosi");}
         };
         im.src=rd.result;
@@ -9317,7 +9401,7 @@ function openAdminForm(editId){
     id:it?it.id:null, kind:it?it.kind:"obuna",
     title:it?((it.title&&(typeof it.title==="string"?it.title:it.title.uz))||""):"", cat:it?(it.cat||""):"",
     price:it?it.price:"", stock:it?it.stock:10,
-    img:it?(it.tile&&it.tile.img||""):"",
+    img:it?(it.tile&&it.tile.img||""):"",fit:it?(it.tile&&it.tile.fit||""):"",img0:it?(it.tile&&it.tile.img0||""):"",cut:true,
     emoji:it?(it.tile&&it.tile.emoji||""):"",
     video:it?(it.tile&&it.tile.video||""):"",
     lottie:it?(it.tile&&it.tile.lottie||""):"",
@@ -9379,6 +9463,8 @@ function openAdminForm(editId){
     +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
     +'<div class="minnote">'+esc(t("a_video_hint"))+'</div>'
     +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
+    +'<div class="switch"><span style="font-size:13.5px">🪄 Logo fonini avtomatik olib tashlash (shaffof)</span><button class="swbtn on" id="f_cut" type="button"><i></i></button></div>'
+    +(F.img0?'<button class="btn gray sm" id="f_img0" type="button" style="width:auto;margin-bottom:6px">↩ Asl rasmga qaytarish (fon bilan)</button>':'')
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
     +'<label>'+esc(t("a_desc_uz"))+'</label><textarea id="f_duz" rows="4">'+esc(F.duz)+'</textarea>'
     +'<div class="minnote">'+ic("wand",12)+' '+esc(t("a_desc_autotr"))+'</div>'
@@ -9415,7 +9501,7 @@ function openAdminForm(editId){
   function preview(){
     readForm();
     var hideStock=(F.kind==="telegram"||F.kind==="games"||F.kind==="nakrutka");
-    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video,lottie:F.lottie},
+    var fake={tile:{label:F.title||"NEW",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,fit:F.fit,emoji:F.emoji,video:F.video,lottie:F.lottie},
       title:F.title||"…",price:Number(F.price)||0,stock:hideStock?999:(Number(F.stock)||0)};
     var out=fake.stock<=0;
     g("#prevBox").innerHTML='<div class="pcard">'+tileHTML(fake)
@@ -9466,7 +9552,7 @@ function openAdminForm(editId){
             if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
             var cv=document.createElement("canvas");cv.width=w;cv.height=h;
             cv.getContext("2d").drawImage(im,0,0,w,h);
-            F.groupImg=cv.toDataURL("image/jpeg",0.85);
+            imgCutBg(cv);F.groupImg=imgEncode(cv);
             toast("OK");
           }catch(e){toast("Rasm xatosi");}
         };
@@ -9489,29 +9575,13 @@ function openAdminForm(editId){
     for(var gkj=0;gkj<all.length;gkj++)all[gkj].classList.toggle("on",all[gkj]===this);
   });
   g("#f_active").addEventListener("click",function(){F.active=!F.active;this.classList.toggle("on",F.active);});
-  var file=g("#f_file");
-  if(file)file.addEventListener("change",function(){
-    try{
-      var f=this.files&&this.files[0];if(!f)return;
-      var rd=new FileReader();
-      rd.onload=function(){
-        var im=new Image();
-        im.onload=function(){
-          try{
-            var MAX=600,w=im.width,h=im.height;
-            if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
-            if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
-            var cv=document.createElement("canvas");cv.width=w;cv.height=h;
-            cv.getContext("2d").drawImage(im,0,0,w,h);
-            F.img=cv.toDataURL("image/jpeg",0.8);
-            preview();toast("OK");
-          }catch(e){toast("Rasm xatosi");}
-        };
-        im.src=rd.result;
-      };
-      rd.readAsDataURL(f);
-    }catch(e){toast("Rasm xatosi");}
-  });
+  // Rasm: WebP (shaffoflik saqlanadi), logoning bir xil rangli foni avtomatik olib tashlanadi; serverda faylga aylanadi
+  var file=g("#f_file"),lastSrc=null;
+  var applyImg=function(){if(!lastSrc)return;
+    imgPrep(lastSrc,600,F.cut!==false,function(e,r){if(e){toast("Rasm xatosi");return;}F.img=r.url;F.fit=r.cut?"contain":"";F.img0="";preview();imgCutToast(r);});};
+  if(file)file.addEventListener("change",function(){var f=this.files&&this.files[0];if(!f)return;lastSrc=f;applyImg();});
+  var cutBtn=g("#f_cut");if(cutBtn)cutBtn.addEventListener("click",function(){F.cut=F.cut===false;this.classList.toggle("on",F.cut!==false);applyImg();});
+  var i0=g("#f_img0");if(i0)i0.addEventListener("click",function(){F.img=F.img0;F.img0="";F.fit="";preview();this.remove();toast("↩ Asl rasm qaytarildi");});
   var premBtn=g("#f_premEmojiFetch");
   if(premBtn)premBtn.addEventListener("click",function(){
     var idw=g("#f_premEmojiId");
@@ -9571,7 +9641,7 @@ function openAdminForm(editId){
       if(groupKey&&groupKey!=="__new__")upsertGroupDef(F.kind,groupKey,groupLabel,groupImg);
       var data={
         kind:F.kind,cat:"",price:Number(F.price),stock:Number(F.stock)||0,active:F.active,
-        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,emoji:F.emoji,video:F.video||"",lottie:F.lottie||""},
+        tile:{label:F.title,sub:"",bg:"#2b1a5e",fg:"#ffffff",img:F.img,fit:F.img?F.fit||"":"",img0:F.img?F.img0||"":"",emoji:F.emoji,video:F.video||"",lottie:F.lottie||""},
         title:titleObj,
         desc:descObj,
         note:F.note||"",

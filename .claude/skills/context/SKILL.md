@@ -188,3 +188,8 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 - Special cards (steam, vnum, cs2, dota2, rust): `CARD_DEF` defaults, `cardArt/cardImg/cardTxt/cardTile`, editor `openCardArt(k)`; stored in `extras.cards` (server `CARD_KEYS`, POST `/api/admin/extras {cards:{k: {...}|null}}` merges per key, `/gimg/` or https images only).
 - Tests: `admin-pen-test.js` (scratchpad) — client sees no pens and gets 403; admin edits card art, a catalog product (published) and skins cards inside the store.
 
+## Product images (transparent, file-backed)
+- Server `extractImages()` (server.js) turns any `data:image/(png|jpeg|webp);base64` string (>200 chars) inside the catalog (`POST /api/catalog`), `catmeta`, `nkcatmeta` and extras `cards[].img` into `/gimg/<sha1>.<ext>` via `GAMES.saveDataImage()`; `migrateInlineImages()` runs once 2 s after listen for old data. Never store images inline again.
+- Client: `imgCutBg(canvas)` removes a uniform border-connected background (border ≥86% within ΔE 42, flood fill, feathered edges; returns cut/already/photo), `imgEncode` → WebP (PNG fallback), `imgPrep(fileOrUrl, maxSide, cut, cb)`. Product form toggle `#f_cut` (default on), `tile.fit="contain"` renders `.ptile img.fit`, `tile.img0` keeps the original («↩ Asl rasm»). Batch: `admCutAll(btn)` (catalog items, groups, nakrutka meta, extras cards) then `publishCatalog()`; `publishCatalog` re-fetches the server catalog so the device keeps the light `/gimg/` copy.
+- Test: `img-cut-test.js` (spawns its own server with a pre-seeded sqlite).
+

@@ -597,6 +597,17 @@ module.exports = function createGames(ctx) {
     return { id: l.id, name: l.name, type: l.type, enabled: !!l.enabled, priority: l.priority || 0, note: l.note || "", config: cfg };
   }
 
+  // data:image (base64) → /gimg/<sha1>.<ext> fayl (sinxron). Katalog, bo'lim va nakrutka rasmlari matn ichida
+  // saqlanmasin — fayl bo'lib uzoq keshlanadi, telefon har chizishda megabaytlab matnni qayta o'qimaydi.
+  function saveDataImage(d) {
+    const mm = /^data:image\/(png|jpe?g|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(d || ""));
+    if (!mm) return "";
+    const buf = Buffer.from(mm[2], "base64");
+    if (!buf.length || buf.length > MAX_IMG) return "";
+    const file = crypto.createHash("sha1").update(buf).digest("hex") + "." + (mm[1] === "jpeg" ? "jpg" : mm[1]);
+    try { const p = path.join(IMG_DIR, file); if (!fs.existsSync(p)) fs.writeFileSync(p, buf); return "/gimg/" + file; } catch (e) { return ""; }
+  }
+
   /* ---------- so'rovlar ---------- */
   function handle(req, res, url, m) {
     if (url.indexOf("/gimg/") === 0 && m === "GET") {
@@ -1273,5 +1284,5 @@ module.exports = function createGames(ctx) {
   }
   // Tashqaridan (masalan AI orqali narx) o'zgartirilganda ochiq katalog darhol yangilansin.
   function touch() { pubAt = 0; }
-  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog, touch };
+  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog, touch, saveDataImage };
 };
