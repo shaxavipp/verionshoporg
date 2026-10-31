@@ -98,6 +98,13 @@ Full docs are public at `lis-skins.stoplight.io` (Stoplight project id 288247; n
 - `/api/me` returns `skins: {cs2, dota2, rust}` (and legacy `cs2` = any open). Orders keep `cs2.game`; `itemId` is `cs2:` or `g:`.
 - Favorites `acc.cs2Fav`: CS2 keys are plain names, others `game|name`.
 
+### Steam login (OpenID 2.0)
+- `POST /api/steam/link-start` → Steam `checkid_setup` URL with `return_to = <appOrigin>/api/steam/return?n=<one-time key>` (15 min, single use; `LINKS` map). `appOrigin` = `STEAM_RETURN_BASE` env or `ctx.appUrl()` (= `publicBase()`).
+- `GET /api/steam/return` checks mode, op_endpoint, exact return_to, claimed_id `https://steamcommunity.com/openid/id/7656119…`, then POSTs `check_authentication` to Steam (`is_valid:true`). Saves `acc.steam = {id, name, avatar, privacy, tradeBan, vac}` (profile from `https://steamcommunity.com/profiles/<id>/?xml=1`). Answers a small HTML page (CSP, escaped).
+- Trade URL ownership: `partner` must equal `steamid64 − 76561197960265728` (`accountIdOf`) when `acc.steam` exists; checked on save and in `buy()`. `POST /api/steam/unlink`, `POST /api/steam/refresh` (once a minute).
+- Test env: `STEAM_OPENID_URL`, `STEAM_PROFILE_URL`, `STEAM_RETURN_BASE`.
+- Client: Steam card in the store profile (`skSteamLink`, `skSteamWait` polls `/api/cs2` and listens to `visibilitychange`). Telegram BackButton: `skBack` / `skBackOn` (sheet → modal → item page → home tab → close).
+
 ### Catalog and prices
 - **CS2 catalog:** ByMykel CSGO-API `skins_not_grouped.json` (about 21k variants, grouped into about 1,974 skins). Cached in `DATA_DIR/cs2-catalog.json`, refreshed weekly, format version `CAT_V`.
 - **Dota 2 / Rust catalog:** crawled from the Steam market (`/market/search/render/?appid=&norender=1&count=100&start=&sort_column=popular`), slow on purpose (`STEAM_DELAY_MS`, default 4 s; 40 / 30 pages). `dotaMeta(type)` reads rarity and category from the Steam `type`; `rustMeta(name, type)` guesses the category by keyword. Files `skins-dota2.json` / `skins-rust.json`; refreshed weekly only while that game is enabled. A failed crawl keeps the old catalog and shows the error in admin.
@@ -165,6 +172,6 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
   The MarketApp rent API returns a TON transaction that our wallet must sign.
 - **lis-skins price list URL:** known now (see above) and tried automatically; check the admin diagnostics after deploy.
 - **Steam login:** agreed to do later.
-  - Phase 1: Steam OpenID login, which links a SteamID and verifies that the trade URL partner matches it.
+  - Phase 1: done (see «Steam login» above).
   - Phase 2 (separate decision): customers sell skins to us. This needs a Steam bot account and an 8-day hold because of Steam's 7-day trade reversal.
 - **Later ideas:** Click/Payme, onboarding, a proof channel.

@@ -380,6 +380,14 @@ Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, 
 - Savat: takliflardagi savat tugmasi → pastda savat paneli → «Hammasini sotib olish» (10 tagacha; har biri alohida buyurtma; sotilib ketgani olinmaydi, puli yechilmaydi).
 - «Buyurtmalar» ochiq turganda holat har 15 soniyada yangilanadi.
 
+**Steam akkauntini ulash (OpenID):**
+- Profil → «Steam akkauntni ulang» → «Ulash»: Steam kirish sahifasi tashqi brauzerda ochiladi. Kirgach Steam bizga qaytaradi; javob Steam'ning o'zida tekshiriladi (`check_authentication`). Kalit bir martalik, 15 daqiqa amal qiladi.
+- Ulangandan keyin trade havola faqat shu akkauntniki bo'lishi mumkin (havoladagi `partner` = SteamID'dan hisoblangan raqam). Eski boshqa akkaunt havolasi o'chiriladi. Skin adashib boshqa odamga ketmaydi.
+- Profilda Steam nomi, rasmi, «Profil ochiq/yopiq», savdo taqiqi va VAC ko'rinadi (ochiq profil XML'idan, Steam API kalitisiz). «Uzish» tugmasi bor.
+- Kerak: ilovaning tashqi manzili ma'lum bo'lsin (bot sozlamasi yoki `PUBLIC_URL` / Railway domeni).
+
+**Telegram «Orqaga» tugmasi:** do'kon ochiq turganda ko'rinadi va qatlamma-qatlam yopadi: pastki oyna → markaziy oyna → skin sahifasi → Bosh sahifa → do'kondan chiqish. Android'dagi orqaga tugmasi ham shunday ishlaydi (ilova birdan yopilib qolmaydi).
+
 **Pul xavfsizligi:**
 - Xarid mijoz ko'rgan narx bilan qilinadi: `max_price`. Narx shu orada oshsa, lis-skins sotmaydi va pul qaytadi.
 - `custom_id` = buyurtma ID. Bir buyurtma ikki marta sotib olinmaydi.

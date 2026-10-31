@@ -1248,6 +1248,17 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-or .nt.c{color:#ff9d9a}
 .sk-or .ac.gh{border-color:var(--skl2);color:#cfd5df}
 @media (prefers-reduced-motion:reduce){.sk-cat .lv,.sk-cartbar{animation:none}}
+.sk-steam{display:flex;align-items:center;gap:14px;margin:12px 16px 0;padding:14px;border-radius:22px;border:1px solid rgba(86,150,220,.35);background:radial-gradient(240px 140px at 100% 0%,rgba(70,130,210,.22),transparent 70%),#151a22}
+.sk-steam .av{position:relative;flex:0 0 52px;height:52px;border-radius:14px;overflow:hidden;background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547);display:flex;align-items:center;justify-content:center}
+.sk-steam .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sk-steam .tx{flex:1;min-width:0}
+.sk-steam .tx b{display:block;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-steam .tx small{display:block;font-size:12.5px;color:var(--skm);margin-top:2px;line-height:1.4}
+.sk-steam .tx small.lb{color:#78b8f2;font-weight:700;margin:0 0 2px}
+.sk-steam .ch{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sk-steam .ch span{padding:2px 8px;border-radius:7px;font-size:11px;font-weight:800}
+.sk-steam .ch .g{background:rgba(48,209,88,.12);color:#4fe07a}.sk-steam .ch .w{background:rgba(255,184,28,.12);color:var(--ska)}.sk-steam .ch .r{background:rgba(239,83,80,.14);color:#ff7b78}
+.sk-steam .sk-btn.sm{flex:0 0 auto}
 /* admin boshqaruv paneli (to'liq ekran) */
 .adm{position:fixed;inset:0;z-index:90;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(env(safe-area-inset-top) + 0px) 0 env(safe-area-inset-bottom)}
@@ -1503,7 +1514,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.7";
+var CLIENT_BUILD="2026-10-31.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4970,6 +4981,7 @@ function openCs2(src,game){
       return '<button data-sktab="'+t[0]+'"'+(t[0]==="home"?' class="on"':'')+'>'+SK_I[t[2]]+'<span>'+t[1]+'</span></button>';}).join("")+'</nav>';
   document.body.appendChild(el);document.body.classList.add("sk-open");
   el.addEventListener("click",skClick);
+  skBackOn(true);
   skBal();
   var shown=false,show=function(){if(shown)return;shown=true;el.classList.add("on");skTab(SK.tab);skCartBar();};
   var reduce=false;try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
@@ -4988,8 +5000,19 @@ function openCs2(src,game){
   SK.recent=null;
   api("/api/cs2/recent").then(function(r){SK.recent=r.items||[];if(SK.tab==="home")skHomeRec();}).catch(function(){});
 }
+// Telegram «Orqaga» tugmasi (Android'da telefonning orqaga tugmasi ham): eng ustki qatlamni yopadi —
+// pastki oyna → markaziy oyna → skin sahifasi → bosh sahifa → do'kondan chiqish. Bo'lmasa ilova butunlay yopilib qolardi.
+function skBack(){
+  if(document.getElementById("sheetEl")){closeSheet();return;}
+  var el=skEl();if(!el){skBackOn(false);return;}
+  var md=el.querySelector(".sk-modal");if(md){md.remove();return;}
+  if(el.querySelector(".sk-page")){skItemAct("back");return;}
+  if(SK.tab!=="home"){skTab("home");return;}
+  closeCs2();
+}
+function skBackOn(on){try{var bb=TG&&TG.BackButton;if(!bb)return;bb.offClick(skBack);if(on){bb.onClick(skBack);bb.show();}else bb.hide();}catch(e){}}
 function closeCs2(){
-  closeSheet();skStopRot();skStopOrd();
+  closeSheet();skStopRot();skStopOrd();skBackOn(false);skSteamWait(false);
   var el=document.getElementById("sk");document.body.classList.remove("sk-open");document.body.classList.remove("sk-cart");
   if(!el)return;el.id="";el.classList.remove("on");el.classList.add("out");
   setTimeout(function(){el.remove();},300);
@@ -4998,6 +5021,7 @@ function skInfo(g,cb){
   api("/api/cs2?game="+encodeURIComponent(g)).then(function(r){
     if(r.game&&r.game!==SK.game)return;
     SK.info=r;SK.games=r.games||null;SK.favs=Array.isArray(r.favs)?r.favs:[];SK.tradeUrl=r.tradeUrl||"";SK.delivered=Number(r.delivered)||0;
+    SK.steam=r.steam||null;SK.steamLogin=!!r.steamLogin;
     if(cb)cb();
     skBal();skRepaint();
   }).catch(function(){});
@@ -5071,7 +5095,40 @@ function skAct(k){
   else if(k==="steam"){closeCs2();S.screen="home";S.steamPage=true;STEAM=null;render();window.scrollTo(0,0);}
   else if(k==="favs"){SK.f=skF0();SK.f.fav=true;SK.cat="";SK.w="";SK.q="";SK.items=[];skTab("market");}
   else if(k==="market")skTab("market");
+  else if(k==="steamOn")skSteamLink();
+  else if(k==="steamOff")skAsk("Steam akkauntni uzish","Steam akkaunt uziladi. Keyin istalgan trade havolani kiritish mumkin bo'ladi — tekshiruv o'chadi.","Ha, uzish",function(){
+    api("/api/steam/unlink","POST",{}).then(function(){SK.steam=null;toast("Steam akkaunt uzildi");if(SK.tab==="profile")skProfile();}).catch(function(){toast(t("srv_off"),true);});});
 }
+// Kichik tasdiqlash oynasi (do'kon uslubida)
+function skAsk(title,text,okLabel,fn){
+  var el=skEl();if(!el)return;var old=el.querySelector(".sk-modal");if(old)old.remove();
+  var d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="sk-mh"><b>'+esc(title)+'</b><button data-skm="x" aria-label="Yopish">'+SK_I.close+'</button></div>'
+    +'<div class="sk-note" style="margin:0;padding:0 20px">'+esc(text)+'</div><div class="sk-mf"><button class="sk-btn" id="skAskOk">'+esc(okLabel)+'</button><button class="sk-btn gh" data-skm="x">Bekor qilish</button></div></div>';
+  d.addEventListener("click",function(e){if(e.target===d){haptic();d.remove();}});
+  d.querySelector("#skAskOk").addEventListener("click",function(){haptic();d.remove();fn();});
+  el.appendChild(d);
+}
+// Steam orqali ulash: Steam sahifasi tashqi brauzerda ochiladi; mijoz qaytguncha holat tekshirib turiladi
+function skSteamLink(){
+  api("/api/steam/link-start","POST",{}).then(function(r){
+    c2Ext(r.url);toast("Steam ochildi — kirgach Telegram'ga qayting");skSteamWait(true);
+  }).catch(function(e){toast((e&&e.resp&&e.resp.message)||t("srv_off"),true);});
+}
+function skSteamCheck(){
+  if(!skEl())return skSteamWait(false);
+  api("/api/cs2?game="+encodeURIComponent(SK.game)).then(function(r){
+    if(r.steam){SK.steam=r.steam;SK.tradeUrl=r.tradeUrl||"";skSteamWait(false);haptic("ok");toast("✅ Steam ulandi"+(r.steam.name?": "+r.steam.name:""));skTuBtn();if(SK.tab==="profile")skProfile();}
+  }).catch(function(){});
+}
+function skSteamWait(on){
+  if(SK.stT){clearInterval(SK.stT);SK.stT=0;}
+  document.removeEventListener("visibilitychange",skSteamVis);
+  if(!on)return;
+  var n=0;SK.stT=setInterval(function(){if(++n>60)return skSteamWait(false);skSteamCheck();},3000);
+  document.addEventListener("visibilitychange",skSteamVis);
+}
+function skSteamVis(){if(document.visibilityState==="visible")skSteamCheck();}
 // O'yin almashganda oldingi o'yinning toifa, qidiruv va filtrlari tozalanadi
 function skResetGame(g){
   if(g===SK.game)return;
@@ -5579,7 +5636,15 @@ function skProfile(){
   var all=(ME.orders||[]).filter(function(o){return o.cs2;}),done=all.filter(function(o){return o.status==="done";}).length;
   var has=!!SK.tradeUrl;
   var row=function(act,icon,title,sub){return '<button data-skact="'+act+'"><span class="ic">'+icon+'</span><span class="tx">'+esc(title)+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><span class="ar">'+SK_I.arr+'</span></button>';};
+  var st=SK.steam,stIco=STEAM_SVG.replace(/width="[^"]*"/,'width="26"').replace(/height="[^"]*"/,'height="26"');
+  var stc=st?'<div class="sk-steam sk-in"><div class="av">'+(st.avatar?'<img src="'+esc(st.avatar)+'" alt="" onerror="this.remove()">':'')+stIco+'</div>'
+      +'<div class="tx"><small class="lb">Steam akkaunt ulangan</small><b>'+esc(st.name||("SteamID "+st.id))+'</b>'
+      +'<div class="ch">'+(st.privacy?(st.privacy==="public"?'<span class="g">Profil ochiq</span>':'<span class="w">Profil yopiq</span>'):'')+(st.tradeBan?'<span class="r">Savdo taqiqi</span>':'')+(st.vac?'<span class="r">VAC</span>':'')+'</div></div>'
+      +'<button class="sk-ib" data-skact="steamOff" aria-label="Steam akkauntni uzish">'+SK_I.exit+'</button></div>'
+    :'<div class="sk-steam off sk-in"><div class="av">'+stIco+'</div><div class="tx"><b>Steam akkauntni ulang</b><small>Trade havola sizniki ekani tekshiriladi — skin boshqa odamga ketib qolmaydi</small></div>'
+      +(SK.steamLogin?'<button class="sk-btn sm" data-skact="steamOn">Ulash</button>':'')+'</div>';
   m.innerHTML='<div class="sk-me sk-in"><div class="av">'+skAvatar()+'</div><div style="min-width:0"><b>'+esc(nm)+'</b><small>'+(u.username?'@'+esc(u.username):'Verion Skins')+'</small></div></div>'
+    +stc
     +'<div class="sk-wal sk-in"><small>Balans</small><b>'+esc(money(ME.balance||0))+'</b><button class="sk-btn wd" data-skact="pay">'+SK_I.plus+' Balansni to\'ldirish</button></div>'
     +'<div class="sk-tiles sk-in"><div><b>'+all.length+'</b><span>xarid</span></div><div><b>'+done+'</b><span>yetkazildi</span></div><div><b>'+SK.favs.length+'</b><span>sevimli</span></div></div>'
     +'<div class="sk-list sk-in">'+row("trade",SK_I.link,"Steam trade havola",has?"Saqlangan ✓":"Kiritilmagan — xariddan oldin kerak")
@@ -5651,15 +5716,16 @@ function skHelpSheet(){
   sh.querySelector("#skHelpTu").addEventListener("click",function(){haptic();skTradeSheet(null);});
 }
 function skTradeSheet(after){
-  var tu=SK.tradeUrl||"";
+  var tu=SK.tradeUrl||"",st=SK.steam;
   var sh=skSheet('<h3 class="t">Steam trade havola</h3>'
     +'<div class="sk-note" style="margin:8px 0 14px">Sotib olgan skinlaringiz shu havola orqali Steam hisobingizga savdo taklifi bo\'lib keladi. Havola bir marta saqlanadi.</div>'
+    +(st?'<div class="sk-warn" style="margin-bottom:12px">'+SK_I.shield+'<span>Ulangan akkaunt: <b>'+esc(st.name||st.id)+'</b>. Havola faqat shu akkauntniki bo\'lishi mumkin.</span></div>':'')
     +'<input class="sk-inp" id="skTuIn" value="'+esc(tu)+'" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…&token=…" autocomplete="off">'
     +'<div class="sec">Havolani qayerdan olaman?</div>'
     +'<div class="stp" style="margin-top:0"><div><b>1</b><span>Steam\'da: Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?»</span></div><div><b>2</b><span>«Savdo havolasi» ostidagi havolani nusxalang</span></div><div><b>3</b><span>Shu yerga qo\'ying va saqlang</span></div></div>'
     +'<div style="height:14px"></div><button class="sk-btn wd gh" id="skTuHelp">Steam\'da ochish '+SK_I.ext+'</button>'
     +'<div style="height:10px"></div><button class="sk-btn wd" id="skTuSave">Saqlash</button><div style="height:12px"></div>',null);
-  sh.querySelector("#skTuHelp").addEventListener("click",function(){c2Ext("https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url");});
+  sh.querySelector("#skTuHelp").addEventListener("click",function(){c2Ext(st&&/^\d{17}$/.test(st.id)?"https://steamcommunity.com/profiles/"+st.id+"/tradeoffers/privacy#trade_offer_access_url":"https://steamcommunity.com/my/tradeoffers/privacy#trade_offer_access_url");});
   sh.querySelector("#skTuSave").addEventListener("click",function(){
     var b=this;b.disabled=true;
     skSaveTrade(sh.querySelector("#skTuIn").value).then(function(){haptic("ok");toast("✅ Saqlandi");closeSheet();if(SK.tab==="profile")skProfile();else if(SK.tab==="home")skHome();if(after)after();})

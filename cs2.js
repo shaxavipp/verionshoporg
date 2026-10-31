@@ -16,6 +16,7 @@ const http = require("http");
 const lib = u => (String(u).indexOf("http:") === 0 ? http : https);   // sinov uchun http ham
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const LIS = () => String(process.env.LIS_BASE || "https://api.lis-skins.com/v1/").replace(/\/?$/, "/");
 const DATA_URL = () => process.env.CS2_DATA_URL || "https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/skins_not_grouped.json";
@@ -461,6 +462,7 @@ module.exports = function (ctx) {
     if (!ready(g)) return ok2(503, { error: "off", message: "Skinlar do'koni hozircha yopiq" });
     const acc = ctx.user(u), tu = parseTrade(acc.cs2Trade);
     if (!tu) return ok2(400, { error: "trade_url", message: "Avval Steam trade havolangizni kiriting" });
+    if (acc.steam && tu.partner !== accountIdOf(acc.steam.id)) return ok2(400, { error: "trade_url", message: "Trade havola ulangan Steam akkauntiga tegishli emas — yangisini kiriting" });
     if (of && GONE.has(id)) { OFFERS.delete(id); return ok2(409, { error: "gone", message: "Bu skin sotilib ketdi — boshqasini tanlang" }); }
     if (!of || Date.now() - of.ts > 15 * 60e3) return ok2(409, { error: "stale", message: "Narxlar yangilandi — skinni qaytadan oching" });
     if (of.unlockAt && c.onlyUnlocked) return ok2(409, { error: "gone", message: "Bu skin hozir sotilmaydi — boshqasini tanlang" });
@@ -803,6 +805,93 @@ module.exports = function (ctx) {
     return { id: "cs2", name: "Skinlar · lis-skins", ok: false, message: errOf(r.json) || r.error || ("HTTP " + r.status) };
   }
 
+  /* ---------- Steam akkauntini ulash (OpenID 2.0) ----------
+     Mijoz «Steam orqali ulash»ni bosadi → tashqi brauzerda Steam'ga kiradi → Steam bizga qaytaradi;
+     javob Steam'ning o'zida tekshiriladi (check_authentication). Ulangandan keyin trade havola faqat shu
+     akkauntniki bo'lishi mumkin — skin adashib boshqa odamga ketmaydi. */
+  const STEAM_OPENID = () => process.env.STEAM_OPENID_URL || "https://steamcommunity.com/openid/login";
+  const STEAM_PROFILE = () => process.env.STEAM_PROFILE_URL || "https://steamcommunity.com/profiles/";
+  const SID_BASE = 76561197960265728n;
+  const LINKS = new Map();   // bir martalik kalit -> { uid, ts }
+  const accountIdOf = sid => { try { return String(BigInt(sid) - SID_BASE); } catch (e) { return ""; } };
+  const appOrigin = () => { try { return new URL(String(process.env.STEAM_RETURN_BASE || (ctx.appUrl && ctx.appUrl()) || "")).origin; } catch (e) { return ""; } };
+  const escH = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function steamLinkUrl(uid) {
+    const base = appOrigin(); if (!base) return "";
+    for (const [k, v] of LINKS) if (Date.now() - v.ts > 15 * 60e3) LINKS.delete(k);
+    if (LINKS.size > 5000) LINKS.clear();
+    const n = crypto.randomBytes(16).toString("hex");
+    LINKS.set(n, { uid: String(uid), ts: Date.now() });
+    const ret = base + "/api/steam/return?n=" + n;
+    const q = { "openid.ns": "http://specs.openid.net/auth/2.0", "openid.mode": "checkid_setup", "openid.return_to": ret, "openid.realm": base,
+      "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select", "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select" };
+    return STEAM_OPENID() + "?" + Object.keys(q).map(k => encodeURIComponent(k) + "=" + encodeURIComponent(q[k])).join("&");
+  }
+  // Steam javobini Steam'ning o'zida tekshirish: imzo to'g'ri bo'lsa "is_valid:true"
+  function steamVerify(params) {
+    return new Promise(resolve => {
+      const body = Object.keys(params).map(k => encodeURIComponent(k) + "=" + encodeURIComponent(k === "openid.mode" ? "check_authentication" : params[k])).join("&");
+      let u; try { u = new URL(STEAM_OPENID()); } catch (e) { return resolve(false); }
+      const rq = lib(u.protocol).request({ hostname: u.hostname, port: u.port || (u.protocol === "http:" ? 80 : 443), path: u.pathname + u.search, method: "POST", timeout: 15000,
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(body), "User-Agent": "Mozilla/5.0 (VerionShop)" } }, r => {
+        let t = ""; r.on("data", c => { if (t.length < 4000) t += c; }); r.on("end", () => resolve(r.statusCode === 200 && /(^|\n)is_valid:true(\n|$)/.test(t)));
+      });
+      rq.on("timeout", () => rq.destroy(new Error("timeout"))); rq.on("error", () => resolve(false));
+      rq.end(body);
+    });
+  }
+  // Ochiq profil ma'lumoti (nomi, rasmi, maxfiylik, savdo taqiqi) — Steam API kalitisiz, XML orqali
+  function steamProfile(sid) {
+    return new Promise(resolve => {
+      const url = STEAM_PROFILE() + sid + "/?xml=1";
+      try {
+        lib(url).get(url, { timeout: 15000, headers: { "User-Agent": "Mozilla/5.0 (VerionShop)" } }, r => {
+          if (r.statusCode !== 200) { r.resume(); return resolve(null); }
+          let t = ""; r.on("data", c => { if (t.length < 200000) t += c; });
+          r.on("end", () => {
+            const tag = n => { const m = new RegExp("<" + n + ">(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</" + n + ">").exec(t); return m ? m[1].trim() : ""; };
+            const av = tag("avatarFull");
+            resolve({ name: str(tag("steamID"), 64), avatar: IMG_OK(av) ? av : "", privacy: str(tag("privacyState"), 20), tradeBan: str(tag("tradeBanState"), 30), vac: tag("vacBanned") === "1" });
+          });
+        }).on("timeout", function () { this.destroy(new Error("timeout")); }).on("error", () => resolve(null));
+      } catch (e) { resolve(null); }
+    });
+  }
+  function steamPage(res, ok, title, text) {
+    const bot = ctx.botUsername && ctx.botUsername();
+    res.writeHead(ok ? 200 : 400, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "DENY", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src https:" });
+    res.end('<!doctype html><html lang="uz"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verion Skins — Steam</title>'
+      + '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f1013;color:#fff;font:16px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;padding:24px;box-sizing:border-box}'
+      + '.c{max-width:380px;text-align:center}.i{font-size:56px}.t{font-size:22px;font-weight:800;margin:12px 0 8px}.p{color:#a3adbb}'
+      + 'a{display:inline-block;margin-top:22px;padding:14px 26px;border-radius:14px;background:#ffb81c;color:#141414;font-weight:800;text-decoration:none}</style></head><body><div class="c">'
+      + '<div class="i">' + (ok ? "✅" : "⚠️") + '</div><div class="t">' + escH(title) + '</div><div class="p">' + escH(text) + '</div>'
+      + (bot ? '<a href="https://t.me/' + escH(bot) + '">Telegram\'ga qaytish</a>' : '') + '</div></body></html>');
+  }
+  async function steamReturn(res, q) {
+    const n = str(q.get("n"), 64), L = LINKS.get(n);
+    if (!L || Date.now() - L.ts > 15 * 60e3) return steamPage(res, false, "Havola eskirgan", "Ilovada «Steam orqali ulash» tugmasini qaytadan bosing.");
+    const P = {}; for (const [k, v] of q) if (k.indexOf("openid.") === 0) P[k] = String(v).slice(0, 2000);
+    const m = /^https:\/\/steamcommunity\.com\/openid\/id\/(7656119\d{10})$/.exec(P["openid.claimed_id"] || "");
+    const okReq = P["openid.mode"] === "id_res" && P["openid.op_endpoint"] === STEAM_OPENID() && P["openid.return_to"] === appOrigin() + "/api/steam/return?n=" + n
+      && m && P["openid.identity"] === P["openid.claimed_id"] && P["openid.sig"] && P["openid.signed"];
+    if (!okReq) return steamPage(res, false, "Ulanmadi", "Steam javobi noto'g'ri. Qaytadan urinib ko'ring.");
+    LINKS.delete(n);   // bir martalik
+    if (!(await steamVerify(P))) return steamPage(res, false, "Ulanmadi", "Steam kirishni tasdiqlamadi. Qaytadan urinib ko'ring.");
+    const sid = m[1], acc = DBx().users[L.uid];
+    if (!acc) return steamPage(res, false, "Ulanmadi", "Hisob topilmadi.");
+    acc.steam = { id: sid, ts: Date.now(), name: "", avatar: "", privacy: "", tradeBan: "" };
+    // Saqlangan trade havola boshqa akkauntniki bo'lsa — o'chiriladi (yangisini kiritadi)
+    const tu = parseTrade(acc.cs2Trade);
+    let note = "";
+    if (tu && tu.partner !== accountIdOf(sid)) { acc.cs2Trade = ""; note = " Saqlangan trade havola boshqa akkauntniki edi — yangisini kiriting."; }
+    ctx.save();
+    const pf = await steamProfile(sid);
+    if (pf && acc.steam && acc.steam.id === sid) { Object.assign(acc.steam, pf); ctx.save(); }
+    steamPage(res, true, "Steam ulandi" + (pf && pf.name ? ": " + pf.name : ""), "Endi Telegram'ga qayting — skinlar shu akkauntga yuboriladi." + note);
+  }
+  const steamPub = acc => acc && acc.steam ? { id: acc.steam.id, name: acc.steam.name || "", avatar: acc.steam.avatar || "", privacy: acc.steam.privacy || "",
+    tradeBan: acc.steam.tradeBan && acc.steam.tradeBan !== "None" ? acc.steam.tradeBan : "", vac: !!acc.steam.vac } : null;
+
   /* ---------- HTTP ---------- */
   const WEAR_KEYS = ["FN", "MW", "FT", "WW", "BS"];
   let RECENT = {}, DONE_C = { ts: 0, n: 0 };
@@ -817,7 +906,7 @@ module.exports = function (ctx) {
       send(res, 200, { enabled: ready(g), any: ready(), games: gamesPublic(), game: g, cats: CATS[g].map(([k, label]) => ({ k, label })), catalog: cat(g).list.length,
         tradeUrl: (acc && acc.cs2Trade) || "", steamOffers: STEAM_OFFERS,
         favs: acc && Array.isArray(acc.cs2Fav) ? acc.cs2Fav : [], inStock: ready(g) && pricesFresh(g) ? pr(g).map.size : null,
-        delivered: DONE_N(), locks: !cfg().onlyUnlocked, cancelFee: 3, live: WS.state === "connected" });
+        delivered: DONE_N(), locks: !cfg().onlyUnlocked, cancelFee: 3, live: WS.state === "connected", steam: steamPub(acc), steamLogin: !!appOrigin() });
       return true;
     }
     // Sevimli skinlar (mijoz hisobida, 200 tagacha). CS2 — nomi, boshqalar — "o'yin|nomi"
@@ -962,6 +1051,30 @@ module.exports = function (ctx) {
       send(res, 200, { items: RECENT[k].list });
       return true;
     }
+    if (url === "/api/steam/link-start" && m === "POST") {
+      const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
+      const link = steamLinkUrl(u.id);
+      if (!link) { send(res, 503, { error: "no_url", message: "Hozircha ishlamayapti — keyinroq urinib ko'ring" }); return true; }
+      send(res, 200, { ok: true, url: link });
+      return true;
+    }
+    if (url === "/api/steam/return" && m === "GET") { steamReturn(res, q).catch(() => steamPage(res, false, "Xatolik", "Qaytadan urinib ko'ring.")); return true; }
+    if (url === "/api/steam/unlink" && m === "POST") {
+      const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
+      const acc = ctx.user(u); delete acc.steam; ctx.save();
+      send(res, 200, { ok: true });
+      return true;
+    }
+    // Ulangan akkaunt ma'lumotini yangilash (nomi, rasmi, maxfiylik) — daqiqasiga bir marta
+    if (url === "/api/steam/refresh" && m === "POST") {
+      const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
+      const acc = ctx.user(u);
+      if (!acc.steam) { send(res, 404, { error: "not_linked" }); return true; }
+      if (Date.now() - (acc.steam.pts || 0) < 60e3) { send(res, 200, { ok: true, steam: steamPub(acc) }); return true; }
+      acc.steam.pts = Date.now();
+      steamProfile(acc.steam.id).then(pf => { if (pf && acc.steam) { Object.assign(acc.steam, pf); ctx.save(); } send(res, 200, { ok: true, steam: steamPub(acc) }); });
+      return true;
+    }
     if (url === "/api/cs2/trade-url" && m === "POST") {
       const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
       ctx.readBody(req, res, b => {
@@ -969,7 +1082,11 @@ module.exports = function (ctx) {
         if (!raw) { const acc = ctx.user(u); acc.cs2Trade = ""; ctx.save(); return send(res, 200, { ok: true, tradeUrl: "" }); }
         const t = parseTrade(raw);
         if (!t) return send(res, 400, { error: "trade_url", message: "Havola noto'g'ri. U shunday ko'rinishda bo'ladi: https://steamcommunity.com/tradeoffer/new/?partner=…&token=…" });
-        const acc = ctx.user(u); acc.cs2Trade = t.url; ctx.save();
+        const acc = ctx.user(u);
+        // Steam ulangan bo'lsa — havola aynan shu akkauntniki bo'lishi shart
+        if (acc.steam && t.partner !== accountIdOf(acc.steam.id))
+          return send(res, 400, { error: "trade_url", message: "Bu trade havola boshqa Steam akkauntiniki. Ulangan akkaunt: " + (acc.steam.name || acc.steam.id) + " — o'sha akkauntning havolasini kiriting." });
+        acc.cs2Trade = t.url; ctx.save();
         send(res, 200, { ok: true, tradeUrl: t.url });
         // Trade-lock'dan chiqib, yuborilishini kutayotgan skinlar — yangi havolaga darhol yuboriladi
         for (const o of DBx().orders) if (o.cs2 && o.status === "pending" && String(o.uid) === String(u.id) && o.cs2.state === "withdraw") { o.cs2.wdTs = 0; withdraw(o).catch(() => {}); }
