@@ -72,26 +72,25 @@ On every user-visible release, bump both `BUILD` (in `server.js`) and `CLIENT_BU
 ## Skins store (`cs2.js` and the `.sk` / `sk*` code in `verion-shop.html`)
 
 ### lis-skins API
-Base `https://api.lis-skins.com/v1/` with header `Authorization: Bearer <key>`. The key is set in Admin → «Skinlar do'koni». The lis-skins account needed a $100 deposit to unlock the API, and it is funded.
+Full docs are public at `lis-skins.stoplight.io` (Stoplight project id 288247; node JSON via `https://lis-skins.stoplight.io/api/v1/projects/cHJqOjI4ODI0Nw/nodes/<slug>`). Base `https://api.lis-skins.com/v1/`, header `Authorization: Bearer <key>`. Key and lis-skins User ID are set in Admin → «Skinlar do'koni». The account is funded.
 
-| Endpoint | Used for | Notes |
-|---|---|---|
-| `GET market/search` | Search | Params: `game` (`csgo`, `dota2`, `rust`), `names[]`, `price_from`/`price_to`, `only_unlocked`, `sort_by` (`lowest_price`, `highest_price`, `newest`, `oldest`), `cursor` (paging via `meta.next_cursor`) |
-| `POST market/buy` | Purchase | Body: `{ids, partner, token, max_price, custom_id}` |
-| `GET market/info` | Purchase status | Params: `custom_ids[]`, `purchase_ids[]` |
-| `GET user/balance` | Balance check | |
+| Endpoint | Used for |
+|---|---|
+| `GET market/search` | `game` (csgo/dota2/rust), `names[]`, `price_from/to` (admin min/max always sent), `float_from/to`, `only_unlocked`, `unlock_days[]` (0–8), `sort_by` (oldest/newest/lowest_price/highest_price), `cursor` |
+| `GET market/check-availability` | `ids[]` → `{available_skins:{id:price}, unavailable_skin_ids}`; called in `buy()` before money is reserved |
+| `POST market/buy` | `{ids, partner, token, max_price, custom_id, skip_unavailable}`; 400 errors: custom_id_already_exists, skins_unavailable, skins_price_higher_than_max_price, insufficient_funds, invalid_trade_url, user_trade_ban, user_cant_trade, private_inventory, too_many_failed_attempts_for_user; 422 invalid_*_value |
+| `GET market/info` | `custom_ids[]`, `purchase_ids[]` (max 200) |
+| `GET market/history` | `page`, `start_unix_time`, `end_unix_time`; admin «Xaridlar tarixi» |
+| `POST market/withdraw` / `withdraw-all` | send unlocked (wait_withdraw) skins, optional new `partner/token`; must happen within 12 h |
+| `POST market/return` | return a `wait_unlock` purchase; lis charges 3% (we keep 3% from the customer refund) |
+| `GET user/balance`, `GET user/get-ws-token` | balance; Centrifugo token |
 
-Real `market/search` item fields:
-- `id`;
-- `name` (the market hash name);
-- `price` — USD as a number; it can be `0`, and such items are skipped;
-- `unlock_at`;
-- `item_float` — a string;
-- `item_link` — `steam://run/730//+csgo_econ_action_preview…`;
-- `name_tag`, `item_paint_seed`, `stickers[]`;
-- `created_at`, `item_asset_id`, `delivery_type`, `is_internal`.
-
-The purchase status words are not documented. `stateWord()` matches them broadly. An unrecognised word keeps the order pending and alerts the admin once. When that alert arrives, add the new word to `stateWord()`.
+- Skin statuses: `processing`, `wait_accept`, `accepted`, `return`, `wait_unlock`, `wait_withdraw` → our `o.cs2.state`: sent, accept, done, (refund), locked, withdraw (`ST_MAP`, `stateOf`, `settle`). Unknown words fall back to `stateWord()` and alert the admin once.
+- Skin fields stored by `applySkin`: `st`, `tradeId` (steam_trade_offer_id), `expiry`, `unlockAt`, `err` (error enum), `rr` (return_reason enum), `fee`. `pubOrder` exposes these (never partner/token/purchaseId/usd).
+- Search item extras: `item_class_id` (image fallback `economy/image/class/<appid>/<id>/360fx360f`), `delivery_type` (2 = up to 12 h), `stickers[].image`, Dota `gems[]` and `styles{}`. Image hosts allowed: `*.steamstatic.com`, `steamcdn-a.akamaihd.net`, `lis-skins.com`.
+- Rate limit 200/min (buy 500/min); 429 + `retry-after` sets `coolUntil` and pauses searches.
+- WebSocket: Centrifugo JSON protocol over Node 22 global `WebSocket` (`wss://ws.lis-skins.com/connection/websocket`): connect with token, subscribe `public:obtained-skins` (events obtained_skin_added / _deleted / _price_changed → `LIVE`, `GONE`, `of.live`) and `private:purchase-skins#<userId>` (purchase_skin_info_updated, matched by skin id = `o.cs2.offerId`). Ping `{}` → pong `{}`; reconnect with backoff; polling stays as fallback.
+- JSON price lists: `https://lis-skins.com/market_export_json/{csgo|dota2|rust}.json` (short) and `api_{game}_full.json`.
 
 ### Games
 - `GAMES` in `cs2.js`: `cs2` (lis `csgo`, appid 730), `dota2` (570), `rust` (252490). Every `/api/cs2/*` endpoint takes `game` (default `cs2`).
@@ -137,6 +136,7 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 - **Fake suppliers:** run local HTTP servers and point the env base URLs at them:
   - `LIS_BASE`, `CS2_DATA_URL`, `LIS_PRICES_URL` (CS2), `LIS_PRICES_URL_DOTA2`, `LIS_PRICES_URL_RUST`;
   - `STEAM_MARKET_URL`, `STEAM_DELAY_MS`, `STEAM_PAGES_DOTA2`, `STEAM_PAGES_RUST` (Dota 2 / Rust catalog crawl);
+  - `LIS_WS_URL`, `LIS_WS_RETRY_MS`, `LIS_WS_DELAY_MS`, `LIS_WS_CHECK_MS` (fake Centrifugo; the `ws` npm package works for a test server);
   - `LUDOVEX_BASE`, `FIVESIM_BASE`.
 - **Speed up polling:** set `CS2_POLL_MS`, `CS2_UNKNOWN_MS`, `CS2_BUY_TIMEOUT`, `EXTRA_POLL_MS`, `GAMES_POLL_MS` and `LINE_WATCH_MS`.
 - **Money-flow tests to write:** success; sold out; insufficient funds; bad key; 5xx (unknown result, then refund); timeout (unknown, then found by `custom_id`); two buys at the same moment; refund only once after an admin cancel; IDOR checks; unauthenticated requests.
@@ -151,7 +151,8 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 
 - Many hosts are blocked by the environment allowlist, which the user edits under Environment → «Доступ к сети».
 - Allowed now: `skinsavdo.uz`, `www.skinsavdo.uz`, `api.skinsavdo.uz`.
-- Blocked: `lis-skins.com`, `lis-skins.stoplight.io`, Steam CDN (`community.akamai.steamstatic.com`, `community.cloudflare.steamstatic.com`) and `steamcommunity.com`. Ask the user to allow them if real skin images are needed in screenshots.
+- Allowed too: `lis-skins.stoplight.io` (docs).
+- Blocked: `lis-skins.com`, `api.lis-skins.com`, Steam CDN (`community.akamai.steamstatic.com`, `community.cloudflare.steamstatic.com`) and `steamcommunity.com`. Ask the user to allow them if real skin images are needed in screenshots.
 - Reachable: PyPI, `raw.githubusercontent.com`, `api.github.com` (public).
 
 ## Open decisions and next steps (as of 2026-10-31)
@@ -162,7 +163,7 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
   - C — postpone.
 
   The MarketApp rent API returns a TON transaction that our wallet must sign.
-- **lis-skins price list URL:** the user should paste the "JSON Price Lists" link into the admin panel.
+- **lis-skins price list URL:** known now (see above) and tried automatically; check the admin diagnostics after deploy.
 - **Steam login:** agreed to do later.
   - Phase 1: Steam OpenID login, which links a SteamID and verifies that the trade URL partner matches it.
   - Phase 2 (separate decision): customers sell skins to us. This needs a Steam bot account and an 8-day hold because of Steam's 7-day trade reversal.

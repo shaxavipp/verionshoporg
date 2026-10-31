@@ -1201,6 +1201,53 @@ body.sk-open{overflow:hidden}
 .sk-bal svg{flex:0 0 auto}
 .sk-list .ic svg{width:20px;height:20px}
 .sk-x>svg{color:var(--skm)}
+/* to'liq API: belgilar, stikerlar, savat, holatlar */
+.sk-oc .bdg{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.sk-oc .bdg span{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.6);font-size:10.5px;font-weight:800}
+.sk-oc .bdg svg{width:11px;height:11px}
+.sk-oc .bdg .lk{color:var(--ska)}.sk-oc .bdg .sl{color:#9cc7f0}.sk-oc .bdg .nw{color:#4fe07a}
+.sk-oc .stks{display:flex;gap:4px;margin-top:6px}
+.sk-oc .stks img{width:26px;height:26px;object-fit:contain;border-radius:7px;background:rgba(0,0,0,.3)}
+.sk-oc .gms{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sk-oc .gm{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;background:rgba(0,0,0,.35);font-size:11px;font-weight:700;color:#cfd5df}
+.sk-oc .gm img{width:14px;height:14px;object-fit:contain}.sk-oc .gm i{width:8px;height:8px;border-radius:50%}
+.sk-oc .acts{display:flex;gap:8px;margin-top:10px}
+.sk-oc .acts .sk-btn{flex:1;margin:0}
+.sk-oc .acts .ct{flex:0 0 46px;height:46px;border-radius:13px;border:1px solid var(--skl2);background:var(--skp3);color:#cfd5df;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-oc .acts .ct.on{border-color:var(--ska);color:var(--ska);background:rgba(255,184,28,.12)}
+.sk-stk span img{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:4px}
+.sk-lt{display:flex;gap:8px;margin:0 0 14px;overflow-x:auto;scrollbar-width:none}
+.sk-lt button{flex:0 0 auto;height:38px;padding:0 13px;border-radius:12px;border:1px solid var(--skl);background:#141519;color:#c8ced8;font-weight:700;font-size:13px}
+.sk-lt button.on{border-color:var(--ska);color:var(--ska);background:rgba(255,184,28,.1)}
+.sk-cat .lv{width:8px;height:8px;border-radius:50%;background:#30d158;box-shadow:0 0 0 3px rgba(48,209,88,.2);animation:skBlink 1.4s ease-in-out infinite}
+.sk-cat.on .lv{background:#141414;box-shadow:none}
+@keyframes skBlink{50%{opacity:.35}}
+.sk-warn{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;border:1px solid rgba(255,184,28,.3);background:rgba(255,184,28,.07);font-size:13px;line-height:1.5;color:#e7dcc0}
+.sk-warn svg{flex:0 0 16px;width:16px;height:16px;margin-top:2px;color:var(--ska)}
+.sk-cartbar{position:absolute;left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:7;display:flex;align-items:center;gap:12px;height:62px;padding:0 12px;border:none;border-radius:18px;
+  background:linear-gradient(135deg,#ffc53d,#ff9f0a);color:#141414;text-align:left;box-shadow:0 14px 40px rgba(255,160,0,.4);animation:skPop .3s cubic-bezier(.2,1.3,.4,1) both}
+.sk-page~.sk-cartbar{bottom:calc(14px + env(safe-area-inset-bottom))}
+.sk-cartbar .ic{position:relative;flex:0 0 40px;height:40px;border-radius:12px;background:rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center}
+.sk-cartbar .ic i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#141414;color:#ffc53d;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center}
+.sk-cartbar .tx{flex:1;min-width:0}.sk-cartbar .tx b{display:block;font-size:16px;font-weight:900;white-space:nowrap}.sk-cartbar .tx small{display:block;font-size:12px;font-weight:700;opacity:.72}
+.sk-cartbar .go{display:flex;align-items:center;gap:2px;font-weight:800;font-size:14px;white-space:nowrap}
+.sk.hascart .sk-main{padding-bottom:calc(166px + env(safe-area-inset-bottom))}
+.sk.hascart .sk-page .sk-main{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.sk-cl{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;max-height:42vh;overflow-y:auto;margin:0 16px}
+.sk-ol{grid-template-columns:minmax(0,1fr)}
+.sk-or .rw{flex-wrap:wrap}
+body.sk-open .toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
+.sk-cl .sk-mi{margin:0}
+.sk-mi .rm{flex:0 0 34px;height:34px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:#9aa3b2;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-mi .rm svg{width:16px;height:16px}
+.sk-res{display:grid;gap:6px;margin:4px 20px 0}
+.sk-res div{display:flex;gap:8px;font-size:13.5px;line-height:1.45;color:var(--skm2)}
+.sk-res .y b{color:#4fe07a}.sk-res .n b{color:#ff7b78}
+.sk-or .nt{font-size:12.5px;line-height:1.45;color:var(--skm2);margin-top:8px}
+.sk-or .nt.c{color:#ff9d9a}
+.sk-or .ac.gh{border-color:var(--skl2);color:#cfd5df}
+@media (prefers-reduced-motion:reduce){.sk-cat .lv,.sk-cartbar{animation:none}}
 /* admin boshqaruv paneli (to'liq ekran) */
 .adm{position:fixed;inset:0;z-index:90;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(env(safe-area-inset-top) + 0px) 0 env(safe-area-inset-bottom)}
@@ -1456,7 +1503,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.6";
+var CLIENT_BUILD="2026-10-31.7";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4818,7 +4865,9 @@ var SK_FAQ=[["Trade havolani qayerdan olaman?","Steam ilovasi yoki saytida: Inve
 var SK={tab:"home",game:"cs2",games:null,info:null,favs:[],tradeUrl:"",delivered:0,
   cat:"",q:"",sort:"",page:0,items:[],more:false,loading:false,err:"",seq:0,priced:false,next:"",total:0,w:"",weapons:[],f:null,listGame:"",
   recent:null,pop:null,popGame:"",ordF:"all",rotT:0,cur:null,mo:null};
-function skF0(){return {fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false};}
+function skF0(){return {fav:false,pmin:0,pmax:0,wear:[],rar:[],types:[],star:false,unlock:"",fl:""};}
+// Float oralig'i (faqat «Jonli» takliflar uchun: lis-skins float_from/float_to)
+var SK_FLR={FN:[0,0.07],MW:[0.07,0.15],FT:[0.15,0.38],WW:[0.38,0.45],BS:[0.45,1]};
 SK.f=skF0();
 var SK_SV=function(p,w,extra){return '<svg viewBox="0 0 24 24" width="'+(w||20)+'" height="'+(w||20)+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'+(extra||"")+'>'+p+'</svg>';};
 var SK_I={
@@ -4851,6 +4900,7 @@ var SK_I={
   exit:SK_SV('<path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/>',20),
   arr:SK_SV('<path d="M9 6l6 6-6 6"/>',18),
   lock:SK_SV('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',14,' stroke-width="2.4"'),
+  cart:SK_SV('<path d="M3 4h2.5l2.2 11.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L21 8H6.3"/><circle cx="10" cy="20.5" r="1.3"/><circle cx="17" cy="20.5" r="1.3"/>',20),
   cross:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="7"/><path d="M24 2v12M24 34v12M2 24h12M34 24h12"/></svg>'
 };
 // Toifa belgilari (o'zimiz chizgan, hammasi bitta uslubda)
@@ -4889,7 +4939,7 @@ function skShort(n){n=Number(n)||0;return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).rep
 function skOn(g){return !!(SK.games&&SK.games[g]);}
 function skFavKey(g,b){return g==="cs2"?b:g+"|"+b;}
 function skIsFav(g,b){return SK.favs.indexOf(skFavKey(g,b))!==-1;}
-function skFiltN(){var f=SK.f;return (f.fav?1:0)+(f.pmin||f.pmax?1:0)+f.wear.length+f.rar.length+f.types.length+(f.star?1:0);}
+function skFiltN(){var f=SK.f;return (f.fav?1:0)+(f.pmin||f.pmax?1:0)+f.wear.length+f.rar.length+f.types.length+(f.star?1:0)+(f.unlock?1:0)+(f.fl?1:0);}
 function skEl(id){var r=document.getElementById("sk");return r?(id?r.querySelector("#"+id):r):null;}
 function skImg(src,cls){return src?'<img'+(cls?' class="'+cls+'"':'')+' loading="lazy" src="'+esc(src)+'" alt="" onerror="this.style.visibility=\'hidden\'">':"";}
 function skTitle(x){return x.s&&x.w&&x.w!==x.s&&(x.game||SK.game)==="cs2"?x.w+" | "+x.s:(x.s||x.b||x.name||"");}
@@ -4921,7 +4971,7 @@ function openCs2(src,game){
   document.body.appendChild(el);document.body.classList.add("sk-open");
   el.addEventListener("click",skClick);
   skBal();
-  var shown=false,show=function(){if(shown)return;shown=true;el.classList.add("on");skTab(SK.tab);};
+  var shown=false,show=function(){if(shown)return;shown=true;el.classList.add("on");skTab(SK.tab);skCartBar();};
   var reduce=false;try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
   var r=src&&src.getBoundingClientRect?src.getBoundingClientRect():null;
   if(!reduce&&r&&r.width>0){
@@ -4939,8 +4989,8 @@ function openCs2(src,game){
   api("/api/cs2/recent").then(function(r){SK.recent=r.items||[];if(SK.tab==="home")skHomeRec();}).catch(function(){});
 }
 function closeCs2(){
-  closeSheet();skStopRot();
-  var el=document.getElementById("sk");document.body.classList.remove("sk-open");
+  closeSheet();skStopRot();skStopOrd();
+  var el=document.getElementById("sk");document.body.classList.remove("sk-open");document.body.classList.remove("sk-cart");
   if(!el)return;el.id="";el.classList.remove("on");el.classList.add("out");
   setTimeout(function(){el.remove();},300);
 }
@@ -4965,8 +5015,9 @@ function skBal(){
   b.innerHTML=SK_I.bolt+'<span>'+esc(ME.balance!=null?skShort(ME.balance):"—")+'</span><span class="pl">'+SK_I.plus+'</span>';
 }
 function skStopRot(){if(SK.rotT){clearInterval(SK.rotT);SK.rotT=0;}}
+function skStopOrd(){if(SK.ordT){clearInterval(SK.ordT);SK.ordT=0;}}
 function skTab(tab){
-  SK.tab=tab;skStopRot();
+  SK.tab=tab;skStopRot();skStopOrd();
   var el=skEl();if(!el)return;
   el.querySelectorAll("[data-sktab]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-sktab")===tab);});
   var pg=el.querySelector(".sk-page");if(pg)pg.remove();
@@ -4976,7 +5027,7 @@ function skTab(tab){
 }
 /* ---- umumiy bosishlar ---- */
 function skClick(e){
-  var t=e.target.closest("[data-sktab],[data-skgo],[data-skgame],[data-skfav],[data-skb],[data-skcat],[data-skw],[data-skrm],[data-skact],[data-skamt],[data-skof],[data-skpg],[data-skm],[data-skwt],[data-skbuy],[data-skordf],#skExit,#skBal,#skAv,#skMore,#skRetry,#skFilt,#skTu");
+  var t=e.target.closest("[data-sktab],[data-skgo],[data-skgame],[data-skfav],[data-skb],[data-skcat],[data-skw],[data-skrm],[data-skact],[data-skamt],[data-skof],[data-skpg],[data-skm],[data-skwt],[data-skbuy],[data-skordf],[data-skcart],[data-sklk],[data-skoffer],[data-skocancel],#skExit,#skBal,#skAv,#skMore,#skRetry,#skFilt,#skTu");
   if(!t)return;
   haptic();
   var a=function(n){return t.getAttribute(n);};
@@ -4988,7 +5039,7 @@ function skClick(e){
   if(t.hasAttribute("data-skcat")){SK.cat=a("data-skcat");SK.w="";skCats();return skLoad(true);}
   if(t.hasAttribute("data-skw")){var w=a("data-skw");SK.w=SK.w===w?"":w;return skLoad(true);}
   if(t.hasAttribute("data-skrm")){var k=a("data-skrm").split(":"),f=SK.f;
-    if(k[0]==="price"){f.pmin=0;f.pmax=0;}else if(k[0]==="w")SK.w="";else if(k[0]==="fav"||k[0]==="star")f[k[0]]=false;
+    if(k[0]==="price"){f.pmin=0;f.pmax=0;}else if(k[0]==="w")SK.w="";else if(k[0]==="fav"||k[0]==="star")f[k[0]]=false;else if(k[0]==="unlock"||k[0]==="fl")f[k[0]]="";
     else if(f[k[0]]){var i=f[k[0]].indexOf(k[1]);if(i!==-1)f[k[0]].splice(i,1);}
     return skLoad(true);}
   if(t.hasAttribute("data-skof")){var o=SK.items[Number(a("data-skof"))];if(o)skConfirm(o);return;}
@@ -4997,6 +5048,10 @@ function skClick(e){
   if(t.hasAttribute("data-skwt")||t.hasAttribute("data-skbuy"))return skItemAct(t.hasAttribute("data-skwt")?"wt":"buy",t);
   if(t.hasAttribute("data-skm"))return skModalAct(a("data-skm"),t);
   if(t.hasAttribute("data-skordf")){SK.ordF=a("data-skordf");return skOrders();}
+  if(t.hasAttribute("data-skcart")){var co=skCartSrc(a("data-skcart"));if(co)skCartToggle(co);return;}
+  if(t.hasAttribute("data-sklk"))return skItemAct("lk",t);
+  if(t.hasAttribute("data-skoffer")){var tid=a("data-skoffer");return c2Ext(/^\d{1,20}$/.test(tid)?"https://steamcommunity.com/tradeoffer/"+tid+"/":"https://steamcommunity.com/my/tradeoffers/");}
+  if(t.hasAttribute("data-skocancel"))return skCancelAsk(a("data-skocancel"));
   if(t.hasAttribute("data-skact"))return skAct(a("data-skact"));
   if(t.id==="skExit")return closeCs2();
   if(t.id==="skBal")return skAct("pay");
@@ -5103,14 +5158,21 @@ function skCard(x){
     +'<div class="sk-cb">'+(x.from?'<div class="sk-cp">'+esc(skNum(x.from))+'<small>so\'mdan</small></div>':'<div class="sk-cp na">Narxi ichkarida</div>')
     +'<div class="sk-cn">'+esc(skTitle(x))+'</div><div class="sk-cg">'+(x.cnt?Number(x.cnt)+' ta taklif':'Ko\'rish')+' '+SK_I.arr+'</div></div></button>';
 }
-function skOfferCard(o,i,attr){
+// src: "m" — bozor ro'yxati (SK.items), "i" — skin sahifasi (SK.cur.offs); savat tugmasi shu orqali taklifni topadi
+function skOfferCard(o,i,attr,src){
   var rc=skRc(o),wc=C2_WCOL[o.wear]||rc;
   var top=o.wear?'<b style="color:'+wc+'">'+esc(o.wear)+'</b>':o.rn?'<b style="color:'+rc+'">'+esc(o.rn)+'</b>':'<b>'+esc((SK_G[o.game]||SK_G.cs2).n)+'</b>';
-  var ex=[];if(o.seed!=null)ex.push("Pattern "+Number(o.seed));if(o.stk&&o.stk.length)ex.push(o.stk.length+" stiker");if(o.nt)ex.push("«"+o.nt+"»");if(o.locked)ex.push("Trade-lock");
+  var ex=[];if(o.seed!=null)ex.push("Pattern "+Number(o.seed));if(o.nt)ex.push("«"+o.nt+"»");if(o.styles&&o.styles.length)ex.push(o.styles.length+" uslub ochilgan");
+  // Stikerlar rasmi (bo'lsa), Dota 2 toshlari, belgilar: yangi / trade-lock / sekin yetkazish
+  var si=(o.stki||[]).map(function(u,k){var n=(o.stk||[])[k]||"";return u?'<img src="'+esc(u)+'" alt="'+esc(n)+'" title="'+esc(n)+'" loading="lazy" onerror="this.remove()">':'';}).join("");
+  if(!si&&o.stk&&o.stk.length)ex.push(o.stk.length+" stiker");
+  var gm=(o.gems||[]).slice(0,3).map(function(x){var c=/^#[0-9a-f]{6}$/i.test(String(x.c||""))?x.c:"#9aa3b2";return '<span class="gm" title="'+esc(x.d||"")+'">'+(x.img?'<img src="'+esc(x.img)+'" alt="" onerror="this.remove()">':'<i style="background:'+c+'"></i>')+esc(x.n)+'</span>';}).join("");
+  var bd=(o.fresh?'<span class="nw">Yangi</span>':'')+(o.lockDays?'<span class="lk">'+SK_I.lock+o.lockDays+' kun</span>':'')+(o.slow?'<span class="sl">12 soatgacha</span>':'');
   return '<div class="sk-oc" style="--rg:'+skRg(rc,.24)+'"><div class="t">'+top+'<span>'+(o.float!=null?Number(o.float).toFixed(4):o.st?'StatTrak™':'')+'</span></div>'
-    +'<div class="im">'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+'</div>'
-    +'<div class="n">'+esc(skTitle(o))+'</div>'+(ex.length?'<div class="x">'+esc(ex.join(" · "))+'</div>':'')
-    +'<div class="p">'+esc(skNum(o.price))+' so\'m</div><button class="sk-btn" '+attr+'="'+i+'">Olish</button></div>';
+    +'<div class="im">'+skImg(o.img)+(o.insp?'<a href="#" class="cube" data-insp="'+esc(o.id)+'" aria-label="O\'yinda ko\'rish">'+SK_I.eye+'</a>':'')+(bd?'<div class="bdg">'+bd+'</div>':'')+'</div>'
+    +'<div class="n">'+esc(skTitle(o))+'</div>'+(si?'<div class="stks">'+si+'</div>':'')+(gm?'<div class="gms">'+gm+'</div>':'')+(ex.length?'<div class="x">'+esc(ex.join(" · "))+'</div>':'')
+    +'<div class="p">'+esc(skNum(o.price))+' so\'m</div><div class="acts"><button class="sk-btn" '+attr+'="'+i+'">Olish</button>'
+    +'<button class="ct'+(skInCart(o.id)?' on':'')+'" data-skcart="'+(src||"m")+':'+i+'" aria-label="Savatga">'+SK_I.cart+'</button></div></div>';
 }
 /* ---- Bozor ---- */
 function skMarket(){
@@ -5139,7 +5201,7 @@ function skGtabs(){
 function skCats(){
   var b=skEl("skCats");if(!b)return;
   var L=[["","Hammasi"],["new","Jonli"]].concat(SK_CATS[SK.game]||[]);
-  b.innerHTML=L.map(function(c){return '<button class="sk-cat'+(SK.cat===c[0]?' on':'')+'" data-skcat="'+c[0]+'">'+skCi(c[0])+esc(c[1])+'</button>';}).join("");
+  b.innerHTML=L.map(function(c){return '<button class="sk-cat'+(SK.cat===c[0]?' on':'')+'" data-skcat="'+c[0]+'">'+skCi(c[0])+esc(c[1])+(c[0]==="new"&&SK.info&&SK.info.live?'<i class="lv" title="Real vaqt"></i>':'')+'</button>';}).join("");
 }
 function skTuBtn(){
   var b=skEl("skTu");if(!b)return;
@@ -5150,7 +5212,9 @@ function skLoad(reset){
   SK.listGame=SK.game;
   var my=++SK.seq,g=SK.game;SK.loading=true;SK.err="";skPaint();
   var e=encodeURIComponent,f=SK.f;
-  var url=SK.cat==="new"?"/api/cs2/market?game="+g+"&sort=newest"+(SK.next?"&cursor="+e(SK.next):"")
+  var fr=SK_FLR[f.fl];
+  var url=SK.cat==="new"?"/api/cs2/market?game="+g+"&sort=newest"+(SK.next?"&cursor="+e(SK.next):"")+(f.pmin?"&pmin="+f.pmin:"")+(f.pmax?"&pmax="+f.pmax:"")
+      +(f.unlock?"&unlock="+f.unlock:"")+(fr&&g==="cs2"?"&ffrom="+fr[0]+"&fto="+fr[1]:"")
     :"/api/cs2/catalog?game="+g+"&cat="+e(SK.cat)+"&q="+e(SK.q)+"&sort="+e(SK.sort)+"&page="+SK.page+(SK.w?"&w="+e(SK.w):"")
       +(f.wear.length?"&wear="+f.wear.join(","):"")+(f.types.length?"&type="+f.types.join(","):"")+(f.rar.length?"&rar="+f.rar.join(","):"")
       +(f.star?"&star=1":"")+(f.fav?"&fav=1":"")+(f.pmin?"&pmin="+f.pmin:"")+(f.pmax?"&pmax="+f.pmax:"");
@@ -5179,9 +5243,13 @@ function skPaint(){
   if(wp){var W=!isNew&&SK.game==="cs2"&&SK.cat&&SK.weapons&&SK.weapons.length>1?SK.weapons:[];wp.hidden=!W.length;
     wp.innerHTML=W.map(function(x){return '<button class="'+(SK.w===x.w?"on":"")+'" data-skw="'+esc(x.w)+'">'+esc(x.w)+'</button>';}).join("");}
   if(act){var A=[],f=SK.f;
+    if(f.pmin||f.pmax)A.push(["price",(f.pmin?skShort(f.pmin):"0")+" – "+(f.pmax?skShort(f.pmax):"∞")]);
+    if(isNew){
+      if(f.unlock)A.push(["unlock",f.unlock==="lock"?"🔒 Trade-lock":"⚡ Darhol"]);
+      if(f.fl&&SK_FLR[f.fl])A.push(["fl","Float "+SK_FLR[f.fl][0]+"–"+SK_FLR[f.fl][1]]);
+    }
     if(!isNew){
       if(f.fav)A.push(["fav","❤ Sevimlilar"]);
-      if(f.pmin||f.pmax)A.push(["price",(f.pmin?skShort(f.pmin):"0")+" – "+(f.pmax?skShort(f.pmax):"∞")]);
       f.wear.forEach(function(w){A.push(["wear:"+w,C2_WEAR[w]]);});
       f.rar.forEach(function(r){var x=(SK_RAR[SK.game]||[]).filter(function(y){return y[0]===r;})[0];if(x)A.push(["rar:"+r,x[1]]);});
       f.types.forEach(function(ty){var x=SK_TYPES.filter(function(y){return y[0]===ty;})[0];if(x)A.push(["types:"+ty,x[1]]);});
@@ -5192,7 +5260,7 @@ function skPaint(){
   if(bt)bt.textContent=isNew?"Jonli bozor":SK.f.fav?"Sevimlilar":SK.w?SK.w:SK.cat&&cl?cl[1]:SK.q?"Qidiruv":G.n+" skinlari";
   if(cnt)cnt.textContent=isNew?"yangi qo'shilganlar":(SK.loading&&!SK.items.length?"":skNum(SK.total)+" ta");
   var html="";
-  if(SK.items.length)html='<div class="sk-grid">'+SK.items.map(function(x,i){return isNew?skOfferCard(x,i,"data-skof"):skCard(x);}).join("")+'</div>';
+  if(SK.items.length)html='<div class="sk-grid">'+SK.items.map(function(x,i){return isNew?skOfferCard(x,i,"data-skof","m"):skCard(x);}).join("")+'</div>';
   if(SK.loading)html+='<div class="sk-grid"'+(SK.items.length?' style="margin-top:12px"':'')+'>'+'<div class="sk-sk" style="height:262px"></div>'.repeat(SK.items.length?2:6)+'</div>';
   else if(SK.err&&!SK.items.length)html='<div class="sk-empty"><b>Bozor javob bermadi</b>'+esc(SK.err)+'<br><br><button class="sk-btn sm gh" id="skRetry">Qayta urinish</button></div>';
   else if(!SK.items.length)html='<div class="sk-empty"><b>'+(SK.f.fav&&!SK.favs.length?"Sevimlilar hali bo'sh":"Hech narsa topilmadi")+'</b>'
@@ -5240,7 +5308,10 @@ function skItemPaint(p){
     var a=Math.max(0,Math.min(100,it.mn*100)),z=Math.max(0,Math.min(100,it.mx*100));
     fl='<div class="sk-fl"><div class="lb"><span>Float oralig\'i</span><b>'+Number(it.mn).toFixed(2)+' – '+Number(it.mx).toFixed(2)+'</b></div><div class="bar"><span class="sk-fd" style="left:0;width:'+a.toFixed(1)+'%"></span><span class="sk-fd" style="left:'+z.toFixed(1)+'%;right:0"></span><i style="left:'+a.toFixed(1)+'%"></i><i style="left:'+z.toFixed(1)+'%"></i></div></div>';
   }
-  var stk=cheap&&cheap.stk&&cheap.stk.length?'<div class="sk-stk">'+cheap.stk.slice(0,4).map(function(s){return '<span>'+esc(s)+'</span>';}).join("")+'</div>':'';
+  var stk=cheap&&cheap.stk&&cheap.stk.length?'<div class="sk-stk">'+cheap.stk.slice(0,4).map(function(s,k){var u=cheap.stki&&cheap.stki[k];return '<span>'+(u?'<img src="'+esc(u)+'" alt="" onerror="this.remove()">':'')+esc(s)+'</span>';}).join("")+'</div>':'';
+  // Trade-lock'dagi takliflar bo'lsa — «Darhol / Trade-lock» tablari
+  var nl=offs.filter(function(o){return o.locked;}).length;
+  var lt=nl&&nl<offs.length?'<div class="sk-lt">'+[["","Hammasi · "+offs.length],["now","⚡ Darhol · "+(offs.length-nl)],["lock","🔒 Trade-lock · "+nl]].map(function(x){return '<button data-sklk="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div>':'';
   var dt=[["O'yin",SK_G[g].full]];
   if(it.w&&it.w!==it.s)dt.push([g==="cs2"?"Qurol":"Turi",it.w]);
   if(it.rn)dt.push(["Noyoblik",it.rn]);
@@ -5260,7 +5331,7 @@ function skItemPaint(p){
     +(cheap?'<div class="sk-pz"><b>'+esc(skNum(cheap.price))+'</b><span>so\'mdan</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>'
       +'<button class="sk-btn sk-buyb" data-skpg="cheap">'+SK_I.bolt+' Sotib olish</button>'
       :'<div class="sk-pz"><span style="font-size:16px">Hozir sotuvda yo\'q — birozdan keyin qarang</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>')
-    +'<section class="sk-offs"><h3>Barcha takliflar <span>('+offs.length+')</span></h3>'
+    +'<section class="sk-offs"><h3>Barcha takliflar <span>('+offs.length+')</span></h3>'+lt
     +(wt.length>1?'<div class="sk-wt">'+wt.map(function(w){return '<button data-skwt="'+w[0]+'" style="--wc:'+C2_WCOL[w[0]]+'"><b>'+w[0]+'</b><small>'+C2_WEAR[w[0]]+'</small><em>'+esc(skNum(w[2]))+' dan</em><i>'+w[1]+'</i></button>';}).join("")+'</div>':'')
     +'<div class="sk-og" id="skOg"></div></section>'
     +'<div class="sk-guar">'+SK_I.shield+'<div>Skin Steam\'ga savdo taklifi bo\'lib keladi. Steam Guard 7 kundan beri yoqilgan bo\'lishi kerak. Yetkazilmasa — pul balansingizga avtomatik qaytadi.</div></div>';
@@ -5268,10 +5339,11 @@ function skItemPaint(p){
 }
 function skOffPaint(p){
   var C=SK.cur,og=p.querySelector("#skOg");if(!og)return;
-  var L=C.offs.map(function(o,i){return [o,i];}).filter(function(x){return !C.sel||x[0].wear===C.sel;});
-  og.innerHTML=L.length?L.map(function(x){return skOfferCard(x[0],x[1],"data-skbuy");}).join("")
+  var L=C.offs.map(function(o,i){return [o,i];}).filter(function(x){return (!C.sel||x[0].wear===C.sel)&&(!C.lk||(C.lk==="lock"?x[0].locked:!x[0].locked));});
+  og.innerHTML=L.length?L.map(function(x){return skOfferCard(x[0],x[1],"data-skbuy","i");}).join("")
     :'<div class="sk-empty" style="grid-column:1/-1;padding:24px 10px"><b>Hozir sotuvda yo\'q</b>Bu skin bozorda tugagan — birozdan keyin qarang yoki boshqasini tanlang.</div>';
   p.querySelectorAll("[data-skwt]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-skwt")===C.sel);});
+  p.querySelectorAll("[data-sklk]").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-sklk")===(C.lk||""));});
 }
 function skItemAct(k,btn){
   var p=skEl()&&skEl().querySelector(".sk-page"),C=SK.cur;
@@ -5280,8 +5352,9 @@ function skItemAct(k,btn){
   var it=C.item;
   if(k==="copy"){var v=it.b||C.b;try{navigator.clipboard.writeText(v).then(function(){toast("Nusxalandi");},function(){toast(v);});}catch(e){toast(v);}}
   else if(k==="steam")c2Ext("https://steamcommunity.com/market/search?appid="+SK_G[C.g].app+"&q="+encodeURIComponent(it.b||C.b));
-  else if(k==="cheap"){var ch=C.offs.slice().sort(function(a,b){return a.price-b.price;})[0];if(ch)skConfirm(ch);}
+  else if(k==="cheap"){var ch=C.offs.filter(function(o){return !o.locked;}).sort(function(a,b){return a.price-b.price;})[0]||C.offs.slice().sort(function(a,b){return a.price-b.price;})[0];if(ch)skConfirm(ch);}
   else if(k==="wt"){var w=btn.getAttribute("data-skwt");C.sel=C.sel===w?"":w;if(p)skOffPaint(p);}
+  else if(k==="lk"){C.lk=btn.getAttribute("data-sklk")||"";if(p)skOffPaint(p);}
   else if(k==="buy"){var o=C.offs[Number(btn.getAttribute("data-skbuy"))];if(o)skConfirm(o);}
 }
 /* ---- Xaridni tasdiqlash (markazdagi oyna) ---- */
@@ -5299,6 +5372,8 @@ function skConfirm(o){
     +(tu?'<div class="sk-mtu"><div class="sk-note" style="margin:0;display:flex;align-items:center;gap:8px;color:#4fe07a">'+SK_I.check+' Steam trade havolangizga yuboriladi</div></div>'
       :'<div class="sk-mtu"><label for="skTuIn">Steam trade havolangiz</label><input class="sk-inp" id="skTuIn" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…" autocomplete="off">'
       +'<div class="sk-note">Steam → Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?» bo\'limidagi havola. <a href="#" data-skm="tuhelp">Havolani olish →</a></div></div>')
+    +(o.lockDays?'<div class="sk-mtu"><div class="sk-warn">'+SK_I.lock+'<span><b>Trade-lock: '+o.lockDays+' kun.</b> Skin ochilgach avtomatik Steam\'ga yuboriladi. Ungacha «Buyurtmalar»da bekor qilsangiz, 3% ushlab qolinadi.</span></div></div>':'')
+    +(o.slow?'<div class="sk-mtu"><div class="sk-warn">⏳<span>Bu sotuvchi skinni <b>12 soatgacha</b> yetkazadi.</span></div></div>':'')
     +'<div class="sk-mt"><small>Jami</small><b>'+esc(money(o.price))+'</b><div class="bl">Balansingiz: '+esc(money(bal))+(need>0?' · <span style="color:#ff7b78">yetishmaydi '+esc(money(need))+'</span>':'')+'</div></div>'
     +'<div class="sk-mf">'+(need>0?'<button class="sk-btn" data-skm="top">'+SK_I.plus+' Balansni to\'ldirish</button>':'<button class="sk-btn" data-skm="go">'+SK_I.bolt+' Tasdiqlash</button>')
     +'<button class="sk-btn gh" data-skm="x">Bekor qilish</button></div>'
@@ -5314,6 +5389,11 @@ function skModalAct(k,btn){
   if(k==="steam")return c2Ext((SK.info&&SK.info.steamOffers)||"https://steamcommunity.com/my/tradeoffers/");
   if(k==="orders"){if(d)d.remove();return skTab("orders");}
   if(k==="more"){if(d)d.remove();if(SK.cur&&SK.cur.item)skOpenItem(SK.cur.b,SK.cur.g);else if(SK.tab==="market"&&SK.cat==="new")skLoad(true);return;}
+  if(k==="cart")return skCartModal(null);
+  if(k==="cartrm"){var rid=btn&&btn.getAttribute("data-id");SK.cart=skCartLoad().filter(function(x){return x.id!==rid;});skCartSave();skCartBar();skCartSync();return skCartModal(null);}
+  if(k==="cartclr"){SK.cart=[];skCartSave();skCartBar();skCartSync();if(d)d.remove();return;}
+  if(k==="cartgo"&&btn)return skCartGo(d,btn);
+  if(k==="ocancel"&&btn)return skCancelGo(d,btn,btn.getAttribute("data-id"));
   if(k!=="go"||!o||!btn)return;
   var inp=d&&d.querySelector("#skTuIn"),label=btn.innerHTML;
   btn.disabled=true;btn.textContent="⏳ …";
@@ -5325,8 +5405,11 @@ function skModalAct(k,btn){
       var j=(e&&e.resp)||{};fail("");
       if(typeof j.balance==="number"){ME.balance=j.balance;skBal();}
       if(j.error==="balance"){toast("Balans yetarli emas",true);return skConfirm(o);}
-      if(j.error==="trade_url"){SK.tradeUrl="";skTuBtn();return skConfirm(o);}
+      if(j.error==="trade_url"){SK.tradeUrl="";skTuBtn();if(j.message)toast(j.message,true);return skConfirm(o);}
+      // Narx o'zgargan (lis-skins check-availability) — yangi narx bilan qayta tasdiqlash
+      if(j.error==="price"&&j.price>0){o.price=j.price;toast(j.message||"Narx o'zgardi",true);return skConfirm(o);}
       toast(j.message||t("srv_off"),true);
+      if(j.error==="steam")return;
       if(j.error==="stale"||j.error==="gone"){if(d)d.remove();if(SK.cur&&SK.cur.item)skOpenItem(SK.cur.b,SK.cur.g);else if(SK.cat==="new")skLoad(true);}
     });
   };
@@ -5337,9 +5420,11 @@ function skDone(o,r){
   var el=skEl();if(!el)return;
   var old=el.querySelector(".sk-modal");if(old)old.remove();
   var wait=!!(r&&r.pending),d=document.createElement("div");d.className="sk-modal";
-  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true"><div class="sk-ok"><div class="ic'+(wait?' w':'')+'">'+(wait?SK_I.clockBig:SK_I.checkBig)+'</div>'
-    +'<h3>'+(wait?"Xarid tasdiqlanmoqda":"Xarid qilindi!")+'</h3>'
-    +'<p>'+esc(skTitle(o))+' Steam\'ga savdo taklifi bo\'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.</p></div>'
+  var oc=r&&r.order&&r.order.cs2||{},lk=oc.state==="locked";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true"><div class="sk-ok"><div class="ic'+(wait||lk?' w':'')+'">'+(wait||lk?SK_I.clockBig:SK_I.checkBig)+'</div>'
+    +'<h3>'+(wait?"Xarid tasdiqlanmoqda":lk?"Sotib olindi — trade-lock":"Xarid qilindi!")+'</h3>'
+    +'<p>'+esc(skTitle(o))+(lk?' trade-lock\'da'+(oc.unlockAt?' — '+esc(skDt(oc.unlockAt))+' da ochiladi':'')+'. Ochilishi bilan avtomatik Steam\'ga yuboriladi, holati «Buyurtmalar»da.'
+      :' Steam\'ga savdo taklifi bo\'lib keladi (odatda 1–5 daqiqa). Steam ilovasida «Savdo takliflari»ni ochib qabul qiling.')+'</p></div>'
     +'<div class="sk-mf"><button class="sk-btn" data-skm="steam">Steam\'da qabul qilish '+SK_I.ext+'</button>'
     +'<button class="sk-btn gh" data-skm="orders">Buyurtmalarim</button><button class="sk-btn gh" data-skm="more">Xaridni davom ettirish</button></div></div>';
   d.addEventListener("click",function(e){if(e.target===d){haptic();skModalAct("more");}});
@@ -5352,11 +5437,14 @@ function skSaveTrade(v){
   });
 }
 /* ---- Buyurtmalar ---- */
+function skDt(ts){try{return new Date(ts).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Asia/Tashkent"});}catch(e){return "";}}
+// lis-skins holatlari: sent (yuborilmoqda), accept (Steam'da qabul qiling), locked (trade-lock), withdraw (lock tugadi, yuborilmoqda)
 function skOrdSt(o){
+  var c=o.cs2||{};
   if(o.status==="done")return ["d","Yetkazildi"];
-  if(o.status==="cancelled")return ["c","Bekor · pul qaytdi"];
-  var s=o.cs2&&o.cs2.state;
-  return ["p",s==="sent"?"Steam'da kutmoqda":s==="unknown"?"Tekshirilmoqda":"Sotib olinmoqda"];
+  if(o.status==="cancelled")return ["c",o.refundAmt!=null&&o.refundAmt<o.price?"Bekor · "+skShort(o.refundAmt)+" qaytdi":"Bekor · pul qaytdi"];
+  var s=c.state;
+  return ["p",s==="accept"?"Steam'da qabul qiling":s==="locked"?(c.cancelReq?"Bekor qilinmoqda":"Trade-lock"):s==="sent"||s==="withdraw"?"Yuborilmoqda":s==="unknown"?"Tekshirilmoqda":"Sotib olinmoqda"];
 }
 function skOrders(paintOnly){
   var m=skEl("skMain");if(!m)return;
@@ -5364,7 +5452,17 @@ function skOrders(paintOnly){
   var F=[["all","Hammasi"],["pending","Jarayonda"],["done","Yetkazildi"],["cancelled","Bekor"]];
   var stOf=function(o){return o.status==="done"?"done":o.status==="cancelled"?"cancelled":"pending";};
   var L=all.filter(function(o){return SK.ordF==="all"||stOf(o)===SK.ordF;});
-  var dt=function(ts){try{return new Date(ts).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",timeZone:"Asia/Tashkent"});}catch(e){return "";}};
+  var dt=skDt;
+  if(paintOnly)m.classList.add("na");
+  var extra=function(o){var c=o.cs2;
+    if(o.status==="pending"){
+      if(c.state==="accept")return '<div class="nt">'+(c.expiry?'⏱ '+esc(dt(c.expiry))+' gacha qabul qiling — keyin taklif bekor bo\'ladi va pul qaytadi':'Steam\'dagi trade taklifini qabul qiling')+'</div><button class="ac" data-skoffer="'+esc(c.tradeId||"")+'">Taklifni ochish '+SK_I.ext+'</button>';
+      if(c.state==="locked")return '<div class="nt">🔒 '+(c.unlockAt?esc(dt(c.unlockAt))+' da ochiladi':'Trade-lock\'da')+' — keyin avtomatik Steam\'ga yuboriladi</div>'+(c.cancelReq?'':'<button class="ac gh" data-skocancel="'+esc(o.id)+'">Bekor qilish (3%)</button>');
+      if(c.state==="sent"||c.state==="withdraw")return '<div class="nt">Steam\'ga trade taklifi tayyorlanmoqda…</div>';
+      return "";
+    }
+    return o.status==="cancelled"&&o.cancelReason?'<div class="nt c">'+esc(o.cancelReason)+'</div>':'';
+  };
   m.innerHTML='<div class="sk-ph sk-in"><h2>Buyurtmalar</h2><p>Skin xaridlaringiz va ularning holati</p></div>'
     +'<div class="sk-chips sk-in">'+F.map(function(f){var n=f[0]==="all"?all.length:all.filter(function(o){return stOf(o)===f[0];}).length;
       return '<button class="'+(SK.ordF===f[0]?"on":"")+'" data-skordf="'+f[0]+'">'+f[1]+(n?' · '+n:'')+'</button>';}).join("")+'</div>'
@@ -5372,10 +5470,107 @@ function skOrders(paintOnly){
       return '<div class="sk-or sk-in"><div class="th">'+skImg(o.cs2.img)+'</div><div class="md"><b>'+esc(o.cs2.name||o.item)+'</b>'
         +'<small>'+esc(g.n)+(o.seq?' · #'+esc(o.seq):'')+' · '+esc(dt(o.ts))+(o.cs2.float!=null?' · '+Number(o.cs2.float).toFixed(4):'')+'</small>'
         +'<div class="rw"><span class="pr">'+esc(money(o.price))+'</span><span class="sk-st '+s[0]+'">'+esc(s[1])+'</span></div>'
-        +(s[0]==="p"&&o.cs2.state==="sent"?'<button class="ac" data-skact="offers">Steam\'da qabul qilish '+SK_I.ext+'</button>':'')+'</div></div>';}).join("")+'</div>'
+        +extra(o)+'</div></div>';}).join("")+'</div>'
       :'<div class="sk-empty sk-in"><b>'+(all.length?"Bu bo'limda buyurtma yo'q":"Hali skin sotib olmagansiz")+'</b>'+(all.length?'Boshqa filtrni tanlang.':'Bozordan birinchi skiningizni tanlang — u Steam\'ga ~1 daqiqada keladi.')
         +'<br><br><button class="sk-btn sm" data-skgo="market">'+SK_I.bolt+' Bozorga o\'tish</button></div>');
-  if(!paintOnly)loadMe(function(){if(SK.tab==="orders"&&skEl())skOrders(true);skBal();});
+  if(!paintOnly){
+    loadMe(function(){if(SK.tab==="orders"&&skEl())skOrders(true);skBal();});
+    // Ochiq turganda holatlar har 15 soniyada yangilanadi (Steam'ga yuborildi, qabul qilindi…)
+    skStopOrd();SK.ordT=setInterval(function(){if(SK.tab!=="orders"||!skEl())return skStopOrd();
+      loadMe(function(){if(SK.tab==="orders"&&skEl()&&!skEl().querySelector(".sk-modal"))skOrders(true);skBal();});},15000);
+  }
+}
+// Trade-lock'dagi xaridni bekor qilish (lis-skins 3% oladi)
+function skCancelAsk(id){
+  var el=skEl(),o=(ME.orders||[]).filter(function(x){return x.id===id;})[0];if(!el||!o||!o.cs2)return;
+  var old=el.querySelector(".sk-modal");if(old)old.remove();
+  var fee=Math.ceil(o.price*0.03/100)*100,d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true" aria-label="Xaridni bekor qilish"><div class="sk-mh"><b>Xaridni bekor qilish</b><button data-skm="x" aria-label="Yopish">'+SK_I.close+'</button></div>'
+    +'<div class="sk-mi"><div class="th">'+skImg(o.cs2.img)+'</div><div class="nm"><b>'+esc(o.cs2.name)+'</b><span>Trade-lock'+(o.cs2.unlockAt?' · '+esc(skDt(o.cs2.unlockAt))+' da ochiladi':'')+'</span></div></div>'
+    +'<div class="sk-mt"><small>Balansga qaytadi</small><b>'+esc(money(o.price-fee))+'</b><div class="bl">Trade-lock\'dagi skinni qaytarishda lis-skins 3% oladi: '+esc(money(fee))+'</div></div>'
+    +'<div class="sk-mf"><button class="sk-btn" data-skm="ocancel" data-id="'+esc(o.id)+'">Ha, bekor qilish</button><button class="sk-btn gh" data-skm="x">Yo\'q, kutaman</button></div></div>';
+  d.addEventListener("click",function(e){if(e.target===d){haptic();d.remove();}});
+  el.appendChild(d);
+}
+function skCancelGo(d,btn,id){
+  btn.disabled=true;btn.textContent="⏳ …";
+  api("/api/cs2/order-cancel","POST",{id:id}).then(function(r){
+    if(typeof r.balance==="number")ME.balance=r.balance;skBal();if(d)d.remove();haptic("ok");
+    toast(r.pending?(r.message||"So'rov yuborildi"):"✅ Bekor qilindi — "+money(r.order&&r.order.refundAmt||0)+" qaytdi");
+    loadMe(function(){if(SK.tab==="orders"&&skEl())skOrders(true);skBal();});
+  }).catch(function(e){btn.disabled=false;btn.textContent="Ha, bekor qilish";toast((e&&e.resp&&e.resp.message)||t("srv_off"),true);});
+}
+/* ---- Savat: bir nechta skinni bir yo'la olish (har biri alohida buyurtma) ---- */
+var SK_CART="sk_cart";
+function skCartLoad(){try{var a=JSON.parse(localStorage.getItem(SK_CART)||"[]");return (Array.isArray(a)?a:[]).filter(function(x){return x&&typeof x.id==="string"&&x.price>0&&Date.now()-x.ts<14*60e3;}).slice(0,10);}catch(e){return [];}}
+function skCartSave(){try{localStorage.setItem(SK_CART,JSON.stringify(SK.cart||[]));}catch(e){}}
+function skInCart(id){return (SK.cart||[]).some(function(x){return x.id===id;});}
+function skCartSrc(v){var p=String(v||"").split(":"),L=p[0]==="i"?(SK.cur&&SK.cur.offs)||[]:SK.items;return L[Number(p[1])]||null;}
+function skCartSync(){document.querySelectorAll("#sk [data-skcart]").forEach(function(b){var it=skCartSrc(b.getAttribute("data-skcart"));if(it)b.classList.toggle("on",skInCart(it.id));});}
+function skCartToggle(o){
+  SK.cart=skCartLoad();
+  var i=-1;SK.cart.forEach(function(x,k){if(x.id===o.id)i=k;});
+  if(i!==-1){SK.cart.splice(i,1);toast("Savatdan olindi");}
+  else{
+    if(SK.cart.length>=10)return toast("Savatga 10 tagacha skin sig'adi",true);
+    SK.cart.push({id:String(o.id),price:o.price,name:skTitle(o),img:o.img||"",game:o.game||SK.game,wear:o.wear||"",lockDays:o.lockDays||0,ts:Date.now()});
+    toast("🛒 Savatga qo'shildi");
+  }
+  skCartSave();skCartBar();skCartSync();
+}
+function skCartBar(){
+  var el=skEl();if(!el)return;SK.cart=skCartLoad();
+  var b=el.querySelector(".sk-cartbar");el.classList.toggle("hascart",SK.cart.length>0);document.body.classList.toggle("sk-cart",SK.cart.length>0);
+  if(!SK.cart.length){if(b)b.remove();return;}
+  if(!b){b=document.createElement("button");b.className="sk-cartbar";b.setAttribute("data-skm","cart");el.appendChild(b);}
+  var sum=SK.cart.reduce(function(a,x){return a+x.price;},0);
+  b.innerHTML='<span class="ic">'+SK_I.cart+'<i>'+SK.cart.length+'</i></span><span class="tx"><b>'+esc(skNum(sum))+' so\'m</b><small>Savat · '+SK.cart.length+' ta skin</small></span><span class="go">Rasmiylashtirish '+SK_I.arr+'</span>';
+}
+function skCartModal(res){
+  var el=skEl();if(!el)return;var old=el.querySelector(".sk-modal");if(old)old.remove();
+  SK.cart=skCartLoad();
+  var L=SK.cart,tu=SK.tradeUrl,bal=ME.balance||0,sum=L.reduce(function(a,x){return a+x.price;},0),need=sum-bal,d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true" aria-label="Savat"><div class="sk-mh"><b>Savat</b><button data-skm="x" aria-label="Yopish">'+SK_I.close+'</button></div>'
+    +(L.length?'<div class="sk-cl">'+L.map(function(x){return '<div class="sk-mi"><div class="th">'+skImg(x.img)+'</div><div class="nm"><b>'+esc(x.name)+'</b><span>'
+      +esc([x.wear,(SK_G[x.game]||SK_G.cs2).n,x.lockDays?x.lockDays+" kun trade-lock":""].filter(Boolean).join(" · "))+'</span></div><div class="pr">'+esc(skNum(x.price))+'</div>'
+      +'<button class="rm" data-skm="cartrm" data-id="'+esc(x.id)+'" aria-label="Olib tashlash">'+SK_I.close+'</button></div>';}).join("")+'</div>'
+      :'<div class="sk-empty" style="padding:18px 20px"><b>Savat bo\'sh</b>Takliflardagi savat tugmasini bosing.</div>')
+    +(L.length&&!tu?'<div class="sk-mtu"><label for="skTuIn">Steam trade havolangiz</label><input class="sk-inp" id="skTuIn" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=…" autocomplete="off"></div>':'')
+    +(L.length?'<div class="sk-mt"><small>Jami · '+L.length+' ta</small><b>'+esc(money(sum))+'</b><div class="bl">Balansingiz: '+esc(money(bal))+(need>0?' · <span style="color:#ff7b78">yetishmaydi '+esc(money(need))+'</span>':'')+'</div></div>':'')
+    +'<div class="sk-mf">'+(L.length?(need>0?'<button class="sk-btn" data-skm="top">'+SK_I.plus+' Balansni to\'ldirish</button>':'<button class="sk-btn" data-skm="cartgo">'+SK_I.bolt+' Hammasini sotib olish</button>'):'')
+    +'<button class="sk-btn gh" data-skm="'+(L.length?'cartclr':'x')+'">'+(L.length?'Savatni tozalash':'Yopish')+'</button></div>'
+    +'<div class="sk-note" style="margin:0;padding:0 20px 20px">Har skin alohida buyurtma bo\'ladi. Sotilib ketgani yoki narxi o\'zgargani olinmaydi — uning puli yechilmaydi.</div></div>';
+  d.addEventListener("click",function(e){if(e.target===d){haptic();d.remove();}});
+  el.appendChild(d);
+}
+function skCartGo(d,btn){
+  var inp=d&&d.querySelector("#skTuIn"),label=btn.innerHTML;
+  btn.disabled=true;btn.textContent="⏳ …";
+  var fail=function(msg){btn.disabled=false;btn.innerHTML=label;if(msg)toast(msg,true);};
+  var go=function(){
+    api("/api/cs2/buy-many","POST",{offerIds:skCartLoad().map(function(x){return x.id;})}).then(function(r){
+      if(typeof r.balance==="number")ME.balance=r.balance;skBal();loadMe(function(){});
+      var res=r.results||[],drop={};
+      res.forEach(function(x){if(x.ok||x.error==="gone"||x.error==="stale")drop[x.offerId]=1;});
+      SK.cart=skCartLoad().filter(function(c){return !drop[c.id];});
+      res.forEach(function(x){if(x.error==="price"&&x.price>0)SK.cart.forEach(function(c){if(c.id===x.offerId)c.price=x.price;});});
+      skCartSave();skCartBar();skCartSync();haptic(res.some(function(x){return x.ok;})?"ok":"err");
+      skCartDone(res);
+    }).catch(function(e){fail((e&&e.resp&&e.resp.message)||t("srv_off"));});
+  };
+  if(!inp)return go();
+  skSaveTrade(inp.value).then(go).catch(fail);
+}
+function skCartDone(res){
+  var el=skEl();if(!el)return;var old=el.querySelector(".sk-modal");if(old)old.remove();
+  var n=res.filter(function(x){return x.ok;}).length,nm=function(x){return x.order&&x.order.cs2?x.order.cs2.name:(skCartLoad().filter(function(c){return c.id===x.offerId;})[0]||{}).name||"Skin";};
+  var d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb" role="dialog" aria-modal="true"><div class="sk-ok"><div class="ic'+(n?'':' w')+'">'+(n?SK_I.checkBig:SK_I.clockBig)+'</div>'
+    +'<h3>'+(n?n+' ta skin sotib olindi':'Hech biri olinmadi')+'</h3><p>'+(n===res.length?'Hammasi Steam\'ga savdo taklifi bo\'lib keladi.':res.length+' tadan '+n+' tasi olindi.')+'</p></div>'
+    +'<div class="sk-res">'+res.map(function(x){return '<div class="'+(x.ok?'y':'n')+'"><b>'+(x.ok?'✓':'✕')+'</b><span>'+esc(nm(x))+(x.ok?'':' — '+esc(x.message||(x.error==="balance"?"balans yetmadi":"olinmadi")))+'</span></div>';}).join("")+'</div>'
+    +'<div class="sk-mf">'+(n?'<button class="sk-btn" data-skm="steam">Steam\'da qabul qilish '+SK_I.ext+'</button><button class="sk-btn gh" data-skm="orders">Buyurtmalarim</button>':'')
+    +(SK.cart.length?'<button class="sk-btn gh" data-skm="cart">Savatga qaytish ('+SK.cart.length+')</button>':'<button class="sk-btn gh" data-skm="x">Yopish</button>')+'</div></div>';
+  el.appendChild(d);
 }
 /* ---- Profil ---- */
 function skProfile(){
@@ -5406,6 +5601,8 @@ function skFilterSheet(){
     +(priced&&g==="cs2"?'<div class="sec">Holati</div>'+Object.keys(C2_WEAR).map(function(k){return ck("wr",k,C2_WEAR[k],C2_WCOL[k]);}).join(""):'')
     +(R.length?'<div class="sec">Noyoblik</div>'+R.map(function(r){return ck("rr",r[0],r[1],r[2]);}).join(""):'')
     +(g==="cs2"?'<div class="sec">Boshqa</div>'+(priced?SK_TYPES.map(function(x){return ck("ty",x[0],x[1],x[0]==="st"?"#ff8a4c":x[0]==="sv"?"#f0d36a":"");}).join(""):'')+ck("st2","1","★ Pichoq va qo'lqoplar","#e4ae39"):'')
+    +(SK.info&&SK.info.locks?'<div class="sec">Yetkazish · «Jonli» takliflar</div><div class="qp">'+[["now","⚡ Darhol"],["lock","🔒 Trade-lock (arzonroq)"]].map(function(x){return '<button data-ul="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div>':'')
+    +(g==="cs2"?'<div class="sec">Float · «Jonli» takliflar</div><div class="qp">'+Object.keys(SK_FLR).map(function(k){return '<button data-fl="'+k+'"><span style="color:'+C2_WCOL[k]+'">'+k+'</span> '+SK_FLR[k][0]+'–'+SK_FLR[k][1]+'</button>';}).join("")+'</div>':'')
     +'<div class="fact"><button class="sk-btn gh" id="skFClr">Tozalash</button><button class="sk-btn" id="skFApply">Ko\'rsatish</button></div>';
   var sh=skSheet(html,null);
   var pmin=sh.querySelector("#skPmin"),pmax=sh.querySelector("#skPmax");
@@ -5419,20 +5616,28 @@ function skFilterSheet(){
     sh.querySelectorAll("[data-rr]").forEach(function(b){b.classList.toggle("on",has(f.rar,b.getAttribute("data-rr")));});
     sh.querySelectorAll("[data-ty]").forEach(function(b){b.classList.toggle("on",has(f.types,b.getAttribute("data-ty")));});
     sh.querySelectorAll("[data-st2]").forEach(function(b){b.classList.toggle("on",!!f.star);});
+    sh.querySelectorAll("[data-ul]").forEach(function(b){b.classList.toggle("on",f.unlock===b.getAttribute("data-ul"));});
+    sh.querySelectorAll("[data-fl]").forEach(function(b){b.classList.toggle("on",f.fl===b.getAttribute("data-fl"));});
   };
   var num=function(v){v=Math.floor(Number(v)||0);return v>0?v:0;};
   if(pmin)pmin.addEventListener("input",function(){f.pmin=num(this.value);paint();});
   if(pmax)pmax.addEventListener("input",function(){f.pmax=num(this.value);paint();});
   sh.addEventListener("click",function(e){
-    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],#skFFav,#skFClr,#skFApply");if(!b)return;haptic();
+    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],[data-ul],[data-fl],#skFFav,#skFClr,#skFApply");if(!b)return;haptic();
     if(b.hasAttribute("data-pq")){var q=Q[Number(b.getAttribute("data-pq"))];if(f.pmin===q[0]&&f.pmax===q[1]){f.pmin=0;f.pmax=0;}else{f.pmin=q[0];f.pmax=q[1];}}
     else if(b.hasAttribute("data-wr"))tog(f.wear,b.getAttribute("data-wr"));
     else if(b.hasAttribute("data-rr"))tog(f.rar,b.getAttribute("data-rr"));
     else if(b.hasAttribute("data-ty"))tog(f.types,b.getAttribute("data-ty"));
     else if(b.hasAttribute("data-st2"))f.star=!f.star;
+    else if(b.hasAttribute("data-ul")){var uv=b.getAttribute("data-ul");f.unlock=f.unlock===uv?"":uv;}
+    else if(b.hasAttribute("data-fl")){var fv=b.getAttribute("data-fl");f.fl=f.fl===fv?"":fv;}
     else if(b.id==="skFFav")f.fav=!f.fav;
     else if(b.id==="skFClr")f=skF0();
-    else if(b.id==="skFApply"){if(f.pmin&&f.pmax&&f.pmin>f.pmax){var x=f.pmin;f.pmin=f.pmax;f.pmax=x;}SK.f=f;if(SK.cat==="new")SK.cat="";closeSheet();skCats();skLoad(true);return;}
+    else if(b.id==="skFApply"){if(f.pmin&&f.pmax&&f.pmin>f.pmax){var x=f.pmin;f.pmin=f.pmax;f.pmax=x;}SK.f=f;
+      // Float va yetkazish filtri jonli takliflarga, holat/noyoblik/turi — katalogga qo'llanadi
+      var liveF=f.unlock||f.fl,catF=f.wear.length||f.rar.length||f.types.length||f.star||f.fav;
+      if(liveF&&!catF)SK.cat="new";else if(SK.cat==="new"&&catF)SK.cat="";
+      closeSheet();skCats();skLoad(true);return;}
     paint();
   });
   paint();
@@ -5467,6 +5672,10 @@ function openAdminCs2(){
     var sw=function(id,label,on){return '<div class="switch"><span style="font-size:13.5px">'+label+'</span><button class="swbtn'+(on?" on":"")+'" id="'+id+'"><i></i></button></div>';};
     var when=function(ts){return ts?new Date(ts).toLocaleString("ru-RU",{timeZone:"Asia/Tashkent"}):"—";};
     var Gs=c.games||{};
+    var wsLine=function(w,cool){
+      var st=w.state==="connected"?"🟢 Ulangan"+(w.since?" ("+esc(when(w.since))+")":""):w.state==="off"?"⚪ O'chiq":"🟡 Ulanmoqda…";
+      return st+(w.state==="connected"?"<br>Bozor xabarlari: "+(w.pub||0)+" · xaridlar: "+(w.priv||0)+(w.privOk?" · xaridlar kanali ✅":" · xaridlar kanali: User ID kiriting"):"")
+        +(w.err?'<br>⚠️ '+esc(w.err):'')+(cool?'<br>⏳ lis-skins limiti: '+cool+' soniya kutilmoqda':'');};
     var stat=function(g){var x=Gs[g]||{};
       return '📦 Katalog: '+(x.loading?'⏳ yuklanmoqda…':(x.skins||0)+' ta skin ('+(x.catalog||0)+' variant), '+esc(when(x.catalogTs)))
         +(x.error?'<br>⚠️ '+esc(x.error):'')
@@ -5478,7 +5687,12 @@ function openAdminCs2(){
       +'<label>lis-skins API kaliti '+(c.apiKeySet?'<span style="color:var(--ok)">(o\'rnatilgan)</span>':'')+'</label><input id="c2Key" type="password" autocomplete="off" placeholder="'+(c.apiKeySet?"o'zgartirmaslik uchun bo'sh qoldiring":"lis-skins.com → Profil → API")+'">'
       +'<div class="arow"><div style="flex:1"><label>Kurs: 1$ = so\'m</label><input id="c2Rate" type="number" value="'+c.rate+'"></div><div style="flex:1"><label>Ustama, %</label><input id="c2Mk" type="number" value="'+c.markup+'"></div></div>'
       +'<div class="arow"><div style="flex:1"><label>Eng arzon, $</label><input id="c2Min" type="number" step="0.1" value="'+c.minUsd+'"></div><div style="flex:1"><label>Eng qimmat, $</label><input id="c2Max" type="number" value="'+c.maxUsd+'"></div></div>'
-      +sw("c2Unl","Faqat darhol yuboriladigan skinlar (trade-lock yo'q)",c.onlyUnlocked)
+      +sw("c2Unl","Faqat darhol yuboriladigan skinlar (o'chirsangiz trade-lock'dagilari ham sotiladi — arzonroq, ochilgach avtomatik yuboriladi)",c.onlyUnlocked)
+      +'<div style="margin-top:14px;padding:12px;border-radius:14px;border:1px solid var(--line)">'
+      +sw("skWs","⚡ Real vaqt (WebSocket): yangi skinlar va xarid holatlari darhol",!(c.ws&&c.ws.on===false))
+      +'<div class="paynote" style="margin:8px 0" id="skWsSt">'+wsLine(c.ws||{},c.cool)+'</div>'
+      +'<label>lis-skins User ID (lis-skins.com → Profil → API)</label><input id="skLisUid" inputmode="numeric" autocomplete="off" value="'+esc(c.lisUserId||"")+'" placeholder="xaridlar holati kanali uchun, masalan 123456">'
+      +'</div>'
       +SK_GK.map(function(g){var x=Gs[g]||{},G=SK_G[g];
         return '<div style="margin-top:14px;padding:12px;border-radius:14px;border:1px solid var(--line)">'
           +sw("skOn_"+g,'<b style="color:'+G.c+'">'+G.n+'</b> — mijozlarga ochiq',x.on)
@@ -5486,10 +5700,11 @@ function openAdminCs2(){
           +'<label>Narxlar ro\'yxati havolasi (JSON, ixtiyoriy)</label><input id="skPu_'+g+'" value="'+esc(x.pricesUrl||"")+'" placeholder="lis-skins hujjatidagi «JSON Price Lists» havolasi">'
           +'<button class="btn gray" data-skcat2="'+g+'" style="margin-top:8px">↻ '+G.n+' katalogini yangilash</button></div>';}).join("")
       +'<div style="height:12px"></div><button class="btn gray" id="c2Test">'+ic("check",14)+' Ulanishni sinash</button>'
+      +'<div class="arow" style="margin-top:8px"><button class="btn gray" id="skHist" style="flex:1">📜 Xaridlar tarixi</button><button class="btn gray" id="skWdAll" style="flex:1">📤 Ochilganlarni yuborish</button></div>'
       +'<div class="d" id="c2Res" style="margin-top:6px;white-space:pre-wrap;word-break:break-word"></div>'
       +'<div style="height:12px"></div><button class="btn" id="c2Save">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
     var sh=openSheet(html,openAdmin);
-    ["c2On","c2Unl"].concat(SK_GK.map(function(g){return "skOn_"+g;})).forEach(function(id){sh.querySelector("#"+id).addEventListener("click",function(){this.classList.toggle("on");});});
+    ["c2On","c2Unl","skWs"].concat(SK_GK.map(function(g){return "skOn_"+g;})).forEach(function(id){sh.querySelector("#"+id).addEventListener("click",function(){this.classList.toggle("on");});});
     var out=sh.querySelector("#c2Res");
     sh.querySelector("#c2Test").addEventListener("click",function(){
       out.textContent="⏳ …";
@@ -5505,6 +5720,24 @@ function openAdminCs2(){
           if(Gs[g]&&Gs[g].loading&&n<120)poll(g,n+1);else out.textContent=Gs[g]&&Gs[g].error?"❌ "+Gs[g].error:"✅ "+SK_G[g].n+": "+((Gs[g]||{}).skins||0)+" ta skin";}).catch(function(){});
       },3000);
     };
+    // lis-skins xaridlar tarixi (market/history) — bizning buyurtma raqami bilan
+    var hist=function(page){
+      api("/api/admin/cs2/history?page="+page).then(function(r){
+        var stc={accepted:"✅",wait_accept:"📩",processing:"⏳",wait_unlock:"🔒",wait_withdraw:"📤","return":"↩️"};
+        openSheet('<h2>📜 lis-skins xaridlar tarixi</h2><div class="paynote" style="margin:4px 0 10px">Jami '+r.total+' ta · '+r.page+'/'+r.last+'-sahifa</div>'
+          +(r.items.length?r.items.map(function(x){return '<div class="paynote" style="margin:0 0 8px">'+(x.order?'<b>#'+esc(x.order.seq)+'</b> · '+esc(x.order.status)+' · '+esc(money(x.order.price))+'<br>':'<b>Bizda yo\'q</b> (lis-skins #'+esc(x.purchaseId)+')<br>')
+            +x.skins.map(function(k){return (stc[k.status]||"•")+' '+esc(k.name)+' — $'+esc(k.usd)+' · '+esc(k.status)+(k.rr?' ('+esc(k.rr)+')':'')+(k.err?' ['+esc(k.err)+']':'')+(k.fee?' · komissiya $'+esc(k.fee):'');}).join("<br>")
+            +'<br><span style="font-size:11px;opacity:.7">'+esc(when(x.ts))+'</span></div>';}).join(""):'<div class="paynote">Hali xarid yo\'q</div>')
+          +'<div class="arow">'+(r.page>1?'<button class="btn gray" id="skHp" style="flex:1">← Oldingi</button>':'')+(r.page<r.last?'<button class="btn gray" id="skHn" style="flex:1">Keyingi →</button>':'')+'</div><div style="height:16px"></div>',openAdminCs2);
+        var hp=document.getElementById("skHp"),hn=document.getElementById("skHn");
+        if(hp)hp.addEventListener("click",function(){hist(r.page-1);});if(hn)hn.addEventListener("click",function(){hist(r.page+1);});
+      }).catch(function(e){toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+    };
+    sh.querySelector("#skHist").addEventListener("click",function(){hist(1);});
+    sh.querySelector("#skWdAll").addEventListener("click",function(){
+      out.textContent="⏳ …";
+      api("/api/admin/cs2/withdraw-all","POST",{}).then(function(r){out.textContent=r.ok?"✅ Yuborildi: "+r.count+" ta skin":"ℹ️ "+(r.error==="no_suitable_skins_for_withdrawal"?"Yuboriladigan ochilgan skin yo'q":r.error);}).catch(function(){out.textContent="❌ "+t("srv_off");});
+    });
     sh.querySelectorAll("[data-skcat2]").forEach(function(b){b.addEventListener("click",function(){
       var g=this.getAttribute("data-skcat2");
       out.textContent="⏳ "+SK_G[g].n+" katalogi yuklanmoqda…";
@@ -5517,11 +5750,12 @@ function openAdminCs2(){
       var b=this,v=function(id){return sh.querySelector("#"+id).value;},on=function(id){return sh.querySelector("#"+id).classList.contains("on");};
       var games={},urls={};SK_GK.forEach(function(g){games[g]=on("skOn_"+g);urls[g]=v("skPu_"+g).trim();});
       b.disabled=true;
-      api("/api/admin/cs2","POST",{enabled:on("c2On"),onlyUnlocked:on("c2Unl"),apiKey:v("c2Key")||undefined,games:games,pricesUrls:urls,rate:Number(v("c2Rate")),markup:v("c2Mk")===""?undefined:Number(v("c2Mk")),minUsd:Number(v("c2Min")),maxUsd:Number(v("c2Max"))})
+      api("/api/admin/cs2","POST",{enabled:on("c2On"),onlyUnlocked:on("c2Unl"),ws:on("skWs"),lisUserId:v("skLisUid").trim(),apiKey:v("c2Key")||undefined,games:games,pricesUrls:urls,rate:Number(v("c2Rate")),markup:v("c2Mk")===""?undefined:Number(v("c2Mk")),minUsd:Number(v("c2Min")),maxUsd:Number(v("c2Max"))})
         .then(function(r){b.disabled=false;haptic("ok");toast(t("a_saved"));Gs=r.games||Gs;
           ME.cs2=!!(r.enabled&&r.apiKeySet&&SK_GK.some(function(g){return Gs[g]&&Gs[g].on;}));
           ME.skins={};SK_GK.forEach(function(g){ME.skins[g]=!!(r.enabled&&r.apiKeySet&&Gs[g]&&Gs[g].on);});
-          sh.querySelector("#c2Key").value="";SK_GK.forEach(function(g){var el=sh.querySelector("#skSt_"+g);if(el)el.innerHTML=stat(g);if(Gs[g]&&Gs[g].loading)poll(g,0);});})
+          sh.querySelector("#c2Key").value="";var wl=sh.querySelector("#skWsSt");if(wl)setTimeout(function(){api("/api/admin/cs2").then(function(v){if(document.body.contains(wl))wl.innerHTML=wsLine(v.ws||{},v.cool);}).catch(function(){});},2500);
+          SK_GK.forEach(function(g){var el=sh.querySelector("#skSt_"+g);if(el)el.innerHTML=stat(g);if(Gs[g]&&Gs[g].loading)poll(g,0);});})
         .catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
     });
   }).catch(function(){toast(t("srv_off"),true);});

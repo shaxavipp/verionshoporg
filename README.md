@@ -359,6 +359,27 @@ Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, 
 - Steam trade havola bir marta saqlanadi va uchala o'yin uchun ishlatiladi.
 - Xariddan keyin skin Steam'ga trade taklifi bo'lib keladi. Holati do'kondagi va ilovadagi «Buyurtmalar»da skin rasmi bilan ko'rinadi.
 
+**lis-skins API — to'liq ishlatiladi** (hujjat: lis-skins.stoplight.io):
+- `market/search` — qidiruv: o'yin, nomlar, narx oralig'i (admin min/max ham beriladi), float oralig'i (CS2), `only_unlocked` / `unlock_days[]` (trade-lock), tartib, sahifalash (`cursor`).
+- `market/check-availability` — pul yechilishidan oldin: sotilib ketgan bo'lsa xarid ochilmaydi; narx oshgan bo'lsa mijoz yangi narxni ko'rib qayta tasdiqlaydi; arzonlashgan bo'lsa arzon narxda olinadi.
+- `market/buy` — `custom_id` = buyurtma ID, `max_price` = mijoz ko'rgan narx. Hujjatdagi xato kodlari mijozga tushunarli matn bilan: `invalid_trade_url` (saqlangan havola o'chiriladi), `private_inventory`, `user_trade_ban`, `user_cant_trade`, `too_many_failed_attempts_for_user`, `skins_unavailable`, `skins_price_higher_than_max_price`, `insufficient_funds` (adminga xabar), `custom_id_already_exists` (sotib olingan deb hisoblanadi, holat tekshiriladi).
+- `market/info` — holatlar: `processing` → «Yuborilmoqda», `wait_accept` → «Steam'da qabul qiling» (Steam trade raqami va muddati bilan, «Taklifni ochish» aynan o'sha taklifni ochadi), `accepted` → bajarildi, `return` → pul qaytadi (sababi: `trade_timeout`, `trade_canceled`, `private_inventory`… mijozga yoziladi), `wait_unlock` → «Trade-lock», `wait_withdraw` → avtomatik yuboriladi.
+- `market/withdraw` — trade-lock tugagach skin mijozning **hozirgi** trade havolasiga avtomatik yuboriladi (12 soat ichida kerak). Mijoz havolani yangilasa — darhol qayta yuboriladi.
+- `market/withdraw-all` — admin tugmasi «Ochilganlarni yuborish».
+- `market/return` — mijoz trade-lock'dagi xaridini «Buyurtmalar»da bekor qila oladi; lis-skins 3% oladi — shuncha ushlab qolinib, qolgani balansga qaytadi.
+- `market/history` — admin panelda «Xaridlar tarixi» (bizning buyurtma raqami bilan).
+- `user/balance` — balans, «Tayyorlik» va liniya kuzatuvida.
+- `user/get-ws-token` + WebSocket (Centrifugo, `wss://ws.lis-skins.com/connection/websocket`): `public:obtained-skins` — yangi skinlar «Jonli» ro'yxat boshiga darhol tushadi («Yangi» belgisi), o'chganlari darhol sotib olinmaydi; `private:purchase-skins#<User ID>` — xarid holatlari darhol. User ID admin panelda kiritiladi (lis-skins.com → Profil → API). Uzilsa qayta ulanadi; holatlar baribir har daqiqada so'rov orqali ham tekshiriladi.
+- JSON Price Lists: `https://lis-skins.com/market_export_json/{csgo|dota2|rust}.json` (qisqa) va `api_{o'yin}_full.json` (to'liq) — avtomatik sinaladi.
+- Limit: 200 so'rov/daqiqa. 429 kelsa `retry-after` tugaguncha qidiruv yuborilmaydi (admin panelda soniyasi ko'rinadi).
+
+**Mijoz uchun (yangi):**
+- Trade-lock'dagi skinlar (admin «Faqat darhol…»ni o'chirsa): kartochkada «🔒 N kun» belgisi, filtr «Yetkazish: Darhol / Trade-lock», skin sahifasida «Darhol / Trade-lock» tablari, tasdiqlashda ogohlantirish.
+- «Jonli» takliflar uchun float oralig'i (FN 0–0.07 … BS 0.45–1).
+- Stikerlar rasmi, Dota 2 toshlari (gems) va ochilgan uslublar, «12 soatgacha» (sekin yetkazish) belgisi.
+- Savat: takliflardagi savat tugmasi → pastda savat paneli → «Hammasini sotib olish» (10 tagacha; har biri alohida buyurtma; sotilib ketgani olinmaydi, puli yechilmaydi).
+- «Buyurtmalar» ochiq turganda holat har 15 soniyada yangilanadi.
+
 **Pul xavfsizligi:**
 - Xarid mijoz ko'rgan narx bilan qilinadi: `max_price`. Narx shu orada oshsa, lis-skins sotmaydi va pul qaytadi.
 - `custom_id` = buyurtma ID. Bir buyurtma ikki marta sotib olinmaydi.

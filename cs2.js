@@ -69,6 +69,8 @@ module.exports = function (ctx) {
   const usdOf = so => so / (cfg().rate * (1 + cfg().markup / 100));
 
   /* ---------- lis-skins HTTP ---------- */
+  // Sayt limiti: 200 so'rov/daqiqa (xarid — 500). 429 kelsa, retry-after tugaguncha qidiruv so'rovlari yuborilmaydi.
+  let coolUntil = 0;
   function qsOf(params) {
     const p = [];
     for (const k of Object.keys(params || {})) {
@@ -88,6 +90,7 @@ module.exports = function (ctx) {
       if (body) { h["Content-Type"] = "application/json"; h["Content-Length"] = Buffer.byteLength(body); }
       let done = false; const fin = r => { if (!done) { done = true; resolve(r); } };
       const req = lib(u.protocol).request({ hostname: u.hostname, port: u.port || (u.protocol === "http:" ? 80 : 443), path: u.pathname + u.search, method, headers: h, timeout: opts.timeout || 20000 }, res => {
+        if (res.statusCode === 429) { const ra = Number(res.headers["retry-after"]); coolUntil = Date.now() + (ra > 0 && ra <= 600 ? ra : 30) * 1000; }
         const ch = []; let n = 0;
         res.on("data", c => { if (n < 4e6) { const x = Buffer.isBuffer(c) ? c : Buffer.from(String(c)); ch.push(x); n += x.length; } });
         res.on("end", () => { const b = Buffer.concat(ch).toString("utf8"); let j = null; try { j = JSON.parse(b); } catch (e) {} fin({ sent: true, status: res.statusCode, json: j, text: b.slice(0, 400) }); });
@@ -245,7 +248,7 @@ module.exports = function (ctx) {
   { const t = setInterval(() => { for (const g of GAME_KEYS) if (Date.now() - cat(g).TS > 7 * 86400e3 && (g === "cs2" || cfg().games[g])) downloadCatalog(g); }, 6 * 3600e3); if (t.unref) t.unref(); }
   for (const g of GAME_KEYS) loadCatalogFromDisk(g);
 
-  /* ---------- eng arzon narxlar ro'yxati (ixtiyoriy, har o'yin uchun) ----------
+  /* ---------- eng arzon narxlar ro'yxati (lis-skins JSON Price Lists, har o'yin uchun) ----------
      lis-skins butun bozorning eng arzon narxlarini bitta JSON qilib beradi (nom → narx, soni).
      Bo'lsa — katalogda har skinning "...dan" narxi va "sotuvda bor" belgisi shundan olinadi
      (10 daqiqada yangilanadi). Bo'lmasa yoki o'qib bo'lmasa — narxlar API qidiruvidan olinadi. */
@@ -254,8 +257,9 @@ module.exports = function (ctx) {
   // Admin o'zi havola kiritsa — o'sha; aks holda ma'lum manzillar ketma-ket sinaladi (birinchi ishlagani eslab qolinadi).
   const PRICE_URLS = g => {
     const c = cfg(), l = GAMES[g].lis, env = process.env[g === "cs2" ? "LIS_PRICES_URL" : "LIS_PRICES_URL_" + g.toUpperCase()];
+    // Hujjatdagi manzillar: qisqa ro'yxat (nom → narx, soni) va to'liq ro'yxat (har taklif alohida)
     return [c.pricesUrls[g], g === "cs2" ? c.pricesUrl : "", env, "https://lis-skins.com/market_export_json/" + l + ".json",
-      "https://lis-skins.com/market_export_json/api_" + l + "_lite.json", "https://lis-skins.com/market_export_json/api_" + l + "_full.json"]
+      "https://lis-skins.com/market_export_json/api_" + l + "_full.json"]
       .filter((u, i, a) => u && a.indexOf(u) === i);
   };
   async function loadPrices(g) {
@@ -311,11 +315,15 @@ module.exports = function (ctx) {
 
   /* ---------- takliflar (lis-skins) ---------- */
   // Mijozga ko'rsatilgan har taklif eslab qolinadi: xarid shu narx bilan (max_price) qilinadi.
-  const OFFERS = new Map();   // id -> { usd, name, float, insp, game, ts }
+  const OFFERS = new Map();   // id -> { usd, name, float, insp, game, ts, unlockAt, live }
+  const GONE = new Map();     // WebSocket: bozordan o'chgan takliflar (id -> vaqt)
+  const BUYING = new Set();   // hozir xarid qilinayotgan takliflar (bir taklifni ikki kishi bir vaqtda ololmaydi)
   function rememberOffer(o, g) {
-    OFFERS.set(o.id, { usd: o.usd, name: o.name, float: o.float, insp: o.insp, game: g || "cs2", ts: Date.now() });
+    OFFERS.set(o.id, { usd: o.usd, name: o.name, float: o.float, insp: o.insp, game: g || "cs2", ts: Date.now(), unlockAt: o.unlockAt || 0 });
     if (OFFERS.size > 20000) { const cut = Date.now() - 20 * 60e3; for (const [k, v] of OFFERS) if (v.ts < cut) OFFERS.delete(k); }
   }
+  // Stiker va Dota 2 toshlari rasmlari faqat shu manzillardan
+  const IMG_EXTRA = u => /^https:\/\/(steamcdn-a\.akamaihd\.net|[a-z0-9.-]+\.steamstatic\.com|lis-skins\.(com|ru))\/[\w%.\/-]+$/i.test(String(u || "")) && String(u).length < 400;
   function normOffer(x) {
     if (!x || typeof x !== "object") return null;
     const id = pick(x, ["id", "item_id", "skin_id"]);
@@ -324,28 +332,40 @@ module.exports = function (ctx) {
     const fl = pick(x, ["item_float", "float", "float_value", "floatvalue"]);
     const unlock = pick(x, ["unlock_at", "unlocked_at", "hold_until", "trade_lock_until"]);
     if (id == null || !name || !(usd > 0)) return null;
+    const ua = unlock ? Date.parse(unlock) : NaN;
     // O'yinda ko'rish havolasi (faqat CS2 inspect), stikerlar, nom yorlig'i, pattern
     const link = String(pick(x, ["item_link", "inspect_link", "inspect"]) || "");
-    const stk = (Array.isArray(x.stickers) ? x.stickers : []).slice(0, 6)
-      .map(t => str(t && typeof t === "object" ? pick(t, ["name", "title", "market_hash_name"]) : t, 80).replace(/^Sticker \| /, "")).filter(Boolean);
-    const sr = pick(x, ["item_paint_seed", "paint_seed", "pattern"]), seed = sr == null ? NaN : Number(sr);   // yo'q bo'lsa 0 emas, null
+    const sr = (Array.isArray(x.stickers) ? x.stickers : []).slice(0, 6);
+    const stk = sr.map(t => str(t && typeof t === "object" ? pick(t, ["name", "title", "market_hash_name"]) : t, 80).replace(/^Sticker \| /, "")).filter(Boolean);
+    const stki = sr.filter(t => t && (typeof t !== "object" || pick(t, ["name", "title", "market_hash_name"]))).map(t => t && typeof t === "object" && IMG_EXTRA(t.image) ? t.image : "");
+    // Dota 2: toshlar (gems) va ochilgan uslublar (styles)
+    const gems = (Array.isArray(x.gems) ? x.gems : []).slice(0, 6).map(m => m && typeof m === "object" ? {
+      n: str(m.name, 60), d: str(m.description, 90), c: /^[0-9a-f]{6}$/i.test(String(m.color || "")) ? "#" + m.color : "",
+      img: Array.isArray(m.image_urls) && IMG_EXTRA(m.image_urls[0]) ? m.image_urls[0] : "" } : null).filter(m => m && m.n);
+    const styles = x.styles && typeof x.styles === "object" && !Array.isArray(x.styles) ? Object.keys(x.styles).filter(k => x.styles[k] === true).slice(0, 8).map(k => str(k, 50)) : [];
+    const cls = String(pick(x, ["item_class_id"]) || "");
+    const seedRaw = pick(x, ["item_paint_seed", "paint_seed", "pattern"]), seed = seedRaw == null ? NaN : Number(seedRaw);   // yo'q bo'lsa 0 emas, null
     return { id: String(id), name: String(name), usd, float: fl != null && isFinite(Number(fl)) ? Number(fl) : null,
-      locked: !!unlock && Date.parse(unlock) > Date.now(),
+      locked: ua > Date.now(), unlockAt: ua > Date.now() ? ua : 0, slow: Number(x.delivery_type) === 2, cls: /^\d{1,20}$/.test(cls) ? cls : "",
       insp: /^steam:\/\/(run|rungame)\/730\/[\w%+\/.-]*$/i.test(link) && link.length < 400 ? link : "",
-      stk, nt: str(pick(x, ["name_tag", "nametag"]) || "", 60), seed: Number.isInteger(seed) && seed >= 0 && seed < 100000 ? seed : null };
+      stk, stki, gems, styles, nt: str(pick(x, ["name_tag", "nametag"]) || "", 60), seed: Number.isInteger(seed) && seed >= 0 && seed < 100000 ? seed : null };
   }
   function pubOffer(o, g) {
     g = g || "cs2";
     const e = cat(g).BY_NAME.get(o.name) || {};
+    // Katalogda rasm bo'lmasa — Steam'ning sinf (class_id) rasmi
+    const img = e.i || (o.cls ? "https://community.cloudflare.steamstatic.com/economy/image/class/" + GAMES[g].appid + "/" + o.cls + "/360fx360f" : "");
     return { id: o.id, game: g, name: o.name, b: baseOf(o.name, g), w: e.w || "", s: e.s || "", price: uzs(o.usd), float: o.float, wear: e.wr || "",
-      img: e.i || "", rc: e.r || (g === "rust" ? RUST_COLOR : "#b0c3d9"), rn: e.rn || "", cat: e.c || "other", st: /StatTrak/.test(o.name), sv: /^Souvenir /.test(o.name), locked: o.locked,
-      insp: !!o.insp, stk: o.stk || [], nt: o.nt || "", seed: o.seed == null ? null : o.seed };
+      img, rc: e.r || (g === "rust" ? RUST_COLOR : "#b0c3d9"), rn: e.rn || "", cat: e.c || "other", st: /StatTrak/.test(o.name), sv: /^Souvenir /.test(o.name),
+      locked: !!o.locked, lockDays: o.unlockAt ? Math.max(1, Math.ceil((o.unlockAt - Date.now()) / 86400e3)) : 0, slow: !!o.slow,
+      insp: !!o.insp, stk: o.stk || [], stki: o.stki || [], gems: o.gems || [], styles: o.styles || [], nt: o.nt || "", seed: o.seed == null ? null : o.seed };
   }
   const CACHE = new Map();   // so'rov -> { ts, val }
-  // lis-skins'ga keshdan tashqari so'rovlar chegarasi: daqiqasiga jami 150, bitta mijozdan 20
+  // lis-skins'ga keshdan tashqari so'rovlar chegarasi: daqiqasiga jami 150 (sayt limiti 200), bitta mijozdan 20
   // (aks holda kimdir qidiruvni ketma-ket bosib kalitimizni sayt limitiga tiqib qo'yishi mumkin).
   const BUDGET = { min: 0, n: 0 }, PER_USER = new Map();
   function allow(uid) {
+    if (Date.now() < coolUntil) return false;   // lis-skins 429 qaytargan — retry-after tugaguncha kutamiz
     const min = Math.floor(Date.now() / 60e3);
     if (BUDGET.min !== min) { BUDGET.min = min; BUDGET.n = 0; PER_USER.clear(); }
     const k = String(uid || "-"), n = (PER_USER.get(k) || 0) + 1;
@@ -361,13 +381,18 @@ module.exports = function (ctx) {
     if (CACHE.size > 500) CACHE.delete(CACHE.keys().next().value);
     return val;
   }
+  // params: lis-skins market/search parametrlari (names, sort_by, cursor, price_from/to, float_from/to, unlock_days, only_unlocked)
   async function search(params, g) {
     g = g || "cs2";
-    const c = cfg();
-    const r = await call("GET", "market/search", { params: Object.assign({ game: GAMES[g].lis, only_unlocked: c.onlyUnlocked ? 1 : 0 }, params) });
+    const c = cfg(), p = Object.assign({ game: GAMES[g].lis, only_unlocked: c.onlyUnlocked ? 1 : 0 }, params);
+    if (c.onlyUnlocked) { p.only_unlocked = 1; delete p.unlock_days; }
+    // Admin narx oralig'i ($) lis-skins'ga ham beriladi — aks holda "arzon avval" sahifasi oraliqdan tashqaridagilar bilan to'lib, bo'sh chiqadi
+    p.price_from = Math.max(Number(p.price_from) || 0, c.minUsd); p.price_to = Math.min(Number(p.price_to) || Infinity, c.maxUsd);
+    if (g !== "cs2") { delete p.float_from; delete p.float_to; }
+    const r = await call("GET", "market/search", { params: p });
     if (!r.json || r.status >= 400) throw new Error(errOf(r.json) || r.error || ("HTTP " + r.status));
     const items = listOf(r.json).map(normOffer).filter(Boolean)
-      .filter(o => o.usd >= c.minUsd && o.usd <= c.maxUsd && (!c.onlyUnlocked || !o.locked));
+      .filter(o => o.usd >= c.minUsd && o.usd <= c.maxUsd && (!c.onlyUnlocked || !o.locked) && !GONE.has(o.id));
     items.forEach(o => rememberOffer(o, g));
     return { items, next: str(pick(r.json, ["meta.next_cursor", "next_cursor", "meta.cursor"]) || "", 200) };
   }
@@ -379,13 +404,15 @@ module.exports = function (ctx) {
     if (Object.keys(ALERT).length > 200) for (const k of Object.keys(ALERT)) delete ALERT[k];
     ALERT[key] = now; ctx.notifyAdmins(text);
   }
-  function refund(o, why) {
+  // amt — qaytariladigan summa (berilmasa to'liq narx). Faqat kutilayotgan buyurtma uchun, bir marta.
+  function refund(o, why, amt) {
     if (o.status !== "pending") return;
+    const sum = amt == null ? o.price : Math.max(0, Math.min(o.price, Math.round(amt)));
     o.status = "cancelled"; o.cancelReason = why || "";
     const acc = DBx().users[String(o.uid)] || (DBx().users[String(o.uid)] = { balance: 0 });
-    acc.balance += o.price; o.refunded = true;
+    acc.balance += sum; o.refunded = true; o.refundAmt = sum;
     ctx.save();
-    ctx.tgSend(o.uid, "❌ " + o.item + " — bekor qilindi, " + money(o.price) + " balansingizga qaytarildi." + (why ? "\n" + why : ""));
+    ctx.tgSend(o.uid, "❌ " + o.item + " — bekor qilindi, " + money(sum) + " balansingizga qaytarildi." + (why ? "\n" + why : ""));
     ctx.notifyOrderChannel(o);
   }
   function markDone(o) {
@@ -406,52 +433,131 @@ module.exports = function (ctx) {
     return { partner, token, url: "https://steamcommunity.com/tradeoffer/new/?partner=" + partner + "&token=" + token };
   }
   const STEAM_OFFERS = "https://steamcommunity.com/my/tradeoffers/";
+  const offerUrl = o => o.cs2 && o.cs2.tradeId ? "https://steamcommunity.com/tradeoffer/" + o.cs2.tradeId + "/" : STEAM_OFFERS;
+  // lis-skins xato kodlari (hujjat) → mijozga tushunarli matn
+  const STEAM_ERR = {
+    invalid_trade_url: "Steam trade havolangiz eskirgan yoki noto'g'ri — yangisini kiriting.",
+    user_cant_trade: "Steam akkauntingiz hozir savdo qila olmaydi (Steam Guard 7 kundan kam yoqilgan yoki Steam cheklovi).",
+    private_inventory: "Steam inventaringiz yopiq — Steam → Profil → Maxfiylik sozlamalarida «Inventar: Ochiq» qiling.",
+    user_trade_ban: "Steam akkauntingizda savdo taqiqi bor.",
+    user_inventory_full: "Steam inventaringiz to'lib qolgan — joy bo'shating.",
+    too_many_failed_attempts_for_user: "Bu Steam akkaunt uchun urinishlar ko'p bo'ldi — birozdan keyin urinib ko'ring.",
+    unknown_error: "Steam xatosi — birozdan keyin urinib ko'ring."
+  };
+  const RETURN_WHY = {
+    trade_timeout: "Steam'dagi trade taklifi muddatida qabul qilinmadi.",
+    trade_canceled: "Steam'dagi trade taklifi bekor qilindi.",
+    trade_create_error: "Steam'da trade taklifini yaratib bo'lmadi.",
+    manual_cancel: "Xarid bekor qilindi.",
+    wait_withdraw_timeout: "Skin trade-lock'dan chiqqach o'z vaqtida yuborilmadi.",
+    rollback_user: "Steam'dagi trade qaytarildi.",
+    rollback_supplier: "Sotuvchi tomonidan trade qaytarildi."
+  };
+  const errCode = j => str(j && (typeof j.error === "string" ? j.error : j.error && (j.error.code || j.error.message)) || (j && j.message) || "", 80).split(/[\s(]/)[0];
+  const ok2 = (code, body) => ({ code, body });
   async function buy(u, offerId) {
-    const c = cfg();
-    const of = OFFERS.get(String(offerId)), g = of ? of.game : "cs2", G = GAMES[g];
-    if (!ready(g)) return { code: 503, body: { error: "off", message: "Skinlar do'koni hozircha yopiq" } };
+    const c = cfg(), id = String(offerId == null || typeof offerId === "object" ? "" : offerId).slice(0, 40);
+    const of = OFFERS.get(id), g = of ? of.game : "cs2", G = GAMES[g];
+    if (!ready(g)) return ok2(503, { error: "off", message: "Skinlar do'koni hozircha yopiq" });
     const acc = ctx.user(u), tu = parseTrade(acc.cs2Trade);
-    if (!tu) return { code: 400, body: { error: "trade_url", message: "Avval Steam trade havolangizni kiriting" } };
-    if (!of || Date.now() - of.ts > 15 * 60e3) return { code: 409, body: { error: "stale", message: "Narxlar yangilandi — skinni qaytadan oching" } };
-    const price = uzs(of.usd);
-    if (!(acc.balance >= price)) return { code: 402, body: { error: "balance", need: price - acc.balance } };
-    acc.balance -= price;
-    const e = cat(g).BY_NAME.get(of.name) || {};
-    const o = { id: ctx.genId("VN"), seq: ctx.nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: (g === "cs2" ? "cs2:" : g + ":") + offerId,
-      item: G.icon + " " + G.label + ": " + of.name, price, status: "pending", ts: Date.now(), delivered: null, doneTs: null, quantity: 1,
-      cs2: { game: g, name: of.name, offerId: String(offerId), usd: of.usd, float: of.float, img: e.i || "", partner: tu.partner, token: tu.token, state: "buying" },
-      costUzs: Math.round(of.usd * c.rate) };
-    DBx().orders.push(o); ctx.save(); ctx.notifyOrder(o);
-    OFFERS.delete(String(offerId));
-    const r = await call("POST", "market/buy", { timeout: Number(process.env.CS2_BUY_TIMEOUT) || 30000, json: { ids: [/^\d+$/.test(String(offerId)) ? Number(offerId) : String(offerId)],
-      partner: tu.partner, token: tu.token, max_price: Math.round(of.usd * 100) / 100, custom_id: o.id } });
-    const j = r.json, msg = errOf(j);
-    if (r.sent && j && r.status >= 200 && r.status < 300 && !(j.error || j.success === false || j.status === false)) {
-      o.cs2.purchaseId = str(pick(j, ["data.purchase_id", "purchase_id", "data.id", "id", "data.0.purchase_id"]) || "", 60);
-      o.cs2.state = "sent"; ctx.save();
-      if (o.status !== "pending") ctx.notifyAdmins("⚠️ #" + o.seq + " " + G.label + ": " + of.name + " — buyurtma admin tomonidan bekor qilingan, lekin lis-skins xaridni bajardi (skin mijozga yuborildi). Tekshiring.", { order: o });
-      return { code: 200, body: { ok: true, order: ctx.pubOrder(o), balance: acc.balance, steamOffers: STEAM_OFFERS } };
-    }
-    if (r.sent && (r.status === 401 || r.status === 403)) {
-      alertOnce("cs2-auth", "⛔ Skinlar (lis-skins): kalit noto'g'ri yoki ruxsat yo'q (HTTP " + r.status + "). Admin panel → CS2 skinlar.");
-      refund(o, "Skinlar do'koni hozircha ishlamayapti, keyinroq urinib ko'ring.");
-      return { code: 503, body: { error: "off", message: "Hozircha ishlamayapti, keyinroq urinib ko'ring", balance: acc.balance } };
-    }
-    // 4xx — so'rov rad etilgan (xarid bo'lmagan) yoki so'rov umuman yetib bormagan: pul qaytadi
-    if (!r.sent || (r.status >= 400 && r.status < 500)) {
-      const funds = /balance|fund|insufficient|not enough|недостаточно|баланс/i.test(msg);
-      if (funds) alertOnce("cs2-bal", "🚨 Skinlar ishlamayapti — lis-skins hamyonida coin yetarli emas. Hamyonni to'ldiring.");
-      else if (r.sent) alertOnce("cs2-rej-" + msg.slice(0, 40), "⚠️ " + G.label + " xaridi rad etildi: " + msg);
-      const userMsg = funds || !r.sent ? "Hozircha ishlamayapti, keyinroq urinib ko'ring" : "Bu skin sotilib ketdi yoki narxi o'zgardi — boshqasini tanlang";
-      refund(o, userMsg + ".");
-      return { code: funds || !r.sent ? 503 : 409, body: { error: funds || !r.sent ? "off" : "gone", message: userMsg, balance: acc.balance } };
-    }
-    // Javob noaniq — sotib olingan bo'lishi mumkin. Pul band, holat custom_id bo'yicha aniqlanadi.
-    o.cs2.state = "unknown"; o.cs2.raw = str(r.error || r.text, 200); ctx.save();
-    ctx.notifyAdmins("❓ #" + o.seq + " " + G.label + ": " + of.name + " — lis-skins javobi noaniq (" + o.cs2.raw + "). Holati avtomatik tekshirilmoqda.", { order: o });
-    return { code: 200, body: { ok: true, pending: true, order: ctx.pubOrder(o), balance: acc.balance, steamOffers: STEAM_OFFERS } };
+    if (!tu) return ok2(400, { error: "trade_url", message: "Avval Steam trade havolangizni kiriting" });
+    if (of && GONE.has(id)) { OFFERS.delete(id); return ok2(409, { error: "gone", message: "Bu skin sotilib ketdi — boshqasini tanlang" }); }
+    if (!of || Date.now() - of.ts > 15 * 60e3) return ok2(409, { error: "stale", message: "Narxlar yangilandi — skinni qaytadan oching" });
+    if (of.unlockAt && c.onlyUnlocked) return ok2(409, { error: "gone", message: "Bu skin hozir sotilmaydi — boshqasini tanlang" });
+    if (BUYING.has(id)) return ok2(409, { error: "gone", message: "Bu skinni hozir boshqa xaridor olmoqda" });
+    if (!(acc.balance >= uzs(of.usd))) return ok2(402, { error: "balance", need: uzs(of.usd) - acc.balance });
+    BUYING.add(id);
+    try {
+      const idParam = /^\d+$/.test(id) ? Number(id) : id;
+      // Pul yechilishidan oldin: hali sotuvdami va narxi o'zgarmadimi (lis-skins check-availability; WebSocket xabari ham hisobga olinadi)
+      let now = of.live > 0 ? of.live : 0;
+      if (allow(u.id)) {
+        const ca = await call("GET", "market/check-availability", { params: { ids: [idParam] }, timeout: 8000 });
+        const d = ca.status === 200 && ca.json && ca.json.data;
+        if (d && typeof d === "object") {
+          const un = (Array.isArray(d.unavailable_skin_ids) ? d.unavailable_skin_ids : []).map(String);
+          const av = d.available_skins && typeof d.available_skins === "object" ? d.available_skins : {};
+          if (un.indexOf(id) !== -1) { OFFERS.delete(id); GONE.set(id, Date.now()); return ok2(409, { error: "gone", message: "Bu skin sotilib ketdi — boshqasini tanlang" }); }
+          if (Number(av[id]) > 0) now = Number(av[id]);
+        }
+      }
+      if (OFFERS.get(id) !== of || GONE.has(id)) return ok2(409, { error: "gone", message: "Bu skin sotilib ketdi — boshqasini tanlang" });
+      if (now > 0) {
+        if (now > c.maxUsd) { OFFERS.delete(id); return ok2(409, { error: "gone", message: "Bu skin hozir sotilmaydi — boshqasini tanlang" }); }
+        if (uzs(now) > uzs(of.usd)) {   // qimmatlashgan — mijoz yangi narxni ko'rib qayta tasdiqlaydi
+          of.usd = now; of.ts = Date.now(); of.live = 0;
+          return ok2(409, { error: "price", price: uzs(now), message: "Narx o'zgardi: " + money(uzs(now)) + " — qayta tasdiqlang" });
+        }
+        if (now < of.usd) of.usd = now;   // arzonlashgan — mijoz kamroq to'laydi
+      }
+      const price = uzs(of.usd);
+      if (!(acc.balance >= price)) return ok2(402, { error: "balance", need: price - acc.balance });
+      acc.balance -= price;
+      const e = cat(g).BY_NAME.get(of.name) || {};
+      const o = { id: ctx.genId("VN"), seq: ctx.nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: (g === "cs2" ? "cs2:" : g + ":") + id,
+        item: G.icon + " " + G.label + ": " + of.name, price, status: "pending", ts: Date.now(), delivered: null, doneTs: null, quantity: 1,
+        cs2: { game: g, name: of.name, offerId: id, usd: of.usd, float: of.float, img: e.i || "", partner: tu.partner, token: tu.token, state: "buying",
+          unlockAt: of.unlockAt || null },
+        costUzs: Math.round(of.usd * c.rate) };
+      DBx().orders.push(o); ctx.save(); ctx.notifyOrder(o);
+      OFFERS.delete(id);
+      const r = await call("POST", "market/buy", { timeout: Number(process.env.CS2_BUY_TIMEOUT) || 30000, json: { ids: [idParam],
+        partner: tu.partner, token: tu.token, max_price: Math.round(of.usd * 100) / 100, custom_id: o.id } });
+      const j = r.json, code = errCode(j), msg = errOf(j);
+      if (r.sent && j && r.status >= 200 && r.status < 300 && !(j.error || j.success === false || j.status === false)) {
+        o.cs2.purchaseId = str(pick(j, ["data.purchase_id", "purchase_id", "data.id", "id", "data.0.purchase_id"]) || "", 60);
+        o.cs2.state = "sent";
+        const sk = j.data && Array.isArray(j.data.skins) ? j.data.skins[0] : null;
+        if (sk) { applySkin(o, sk); if (o.status === "pending") settle(o, sk.status, true); }
+        ctx.save();
+        if (o.status === "cancelled" && !o.cs2.cancelReq) ctx.notifyAdmins("⚠️ #" + o.seq + " " + G.label + ": " + of.name + " — buyurtma admin tomonidan bekor qilingan, lekin lis-skins xaridni bajardi (skin mijozga yuborildi). Tekshiring.", { order: o });
+        return ok2(200, { ok: true, order: ctx.pubOrder(o), balance: acc.balance, steamOffers: STEAM_OFFERS });
+      }
+      // Shu custom_id bilan xarid allaqachon bor — demak sotib olingan: holat tekshiruvda aniqlanadi
+      if (r.sent && code === "custom_id_already_exists") {
+        o.cs2.state = "unknown"; ctx.save();
+        return ok2(200, { ok: true, pending: true, order: ctx.pubOrder(o), balance: acc.balance, steamOffers: STEAM_OFFERS });
+      }
+      if (r.sent && (r.status === 401 || r.status === 403)) {
+        alertOnce("cs2-auth", "⛔ Skinlar (lis-skins): kalit noto'g'ri yoki ruxsat yo'q (HTTP " + r.status + "). Admin panel → Skinlar do'koni.");
+        refund(o, "Skinlar do'koni hozircha ishlamayapti, keyinroq urinib ko'ring.");
+        return ok2(503, { error: "off", message: "Hozircha ishlamayapti, keyinroq urinib ko'ring", balance: acc.balance });
+      }
+      if (r.sent && r.status === 429) {
+        refund(o, "Bozor band — birozdan keyin urinib ko'ring.");
+        return ok2(429, { error: "busy", message: "Bozor band — birozdan keyin urinib ko'ring", balance: acc.balance });
+      }
+      // 4xx — so'rov rad etilgan (xarid bo'lmagan) yoki so'rov umuman yetib bormagan: pul qaytadi
+      if (!r.sent || (r.status >= 400 && r.status < 500)) {
+        const funds = code === "insufficient_funds" || /balance|fund|insufficient|not enough|недостаточно|баланс/i.test(msg);
+        if (r.sent && (code === "invalid_trade_url" || code === "invalid_partner_value" || code === "invalid_token_value")) {
+          acc.cs2Trade = "";
+          refund(o, STEAM_ERR.invalid_trade_url);
+          return ok2(400, { error: "trade_url", message: STEAM_ERR.invalid_trade_url, balance: acc.balance });
+        }
+        if (r.sent && STEAM_ERR[code]) {
+          refund(o, STEAM_ERR[code]);
+          return ok2(400, { error: "steam", code, message: STEAM_ERR[code], balance: acc.balance });
+        }
+        if (r.sent && code === "skins_price_higher_than_max_price") {
+          refund(o, "Narx o'zgardi — skinni qaytadan oching.");
+          return ok2(409, { error: "gone", message: "Narx o'zgardi — skinni qaytadan oching", balance: acc.balance });
+        }
+        if (funds) alertOnce("cs2-bal", "🚨 Skinlar ishlamayapti — lis-skins hamyonida coin yetarli emas. Hamyonni to'ldiring.");
+        else if (r.sent && code !== "skins_unavailable") alertOnce("cs2-rej-" + msg.slice(0, 40), "⚠️ " + G.label + " xaridi rad etildi: " + msg);
+        if (code === "skins_unavailable") GONE.set(id, Date.now());
+        const userMsg = funds || !r.sent ? "Hozircha ishlamayapti, keyinroq urinib ko'ring" : "Bu skin sotilib ketdi yoki narxi o'zgardi — boshqasini tanlang";
+        refund(o, userMsg + ".");
+        return ok2(funds || !r.sent ? 503 : 409, { error: funds || !r.sent ? "off" : "gone", message: userMsg, balance: acc.balance });
+      }
+      // Javob noaniq — sotib olingan bo'lishi mumkin. Pul band, holat custom_id bo'yicha aniqlanadi.
+      o.cs2.state = "unknown"; o.cs2.raw = str(r.error || r.text, 200); ctx.save();
+      ctx.notifyAdmins("❓ #" + o.seq + " " + G.label + ": " + of.name + " — lis-skins javobi noaniq (" + o.cs2.raw + "). Holati avtomatik tekshirilmoqda.", { order: o });
+      return ok2(200, { ok: true, pending: true, order: ctx.pubOrder(o), balance: acc.balance, steamOffers: STEAM_OFFERS });
+    } finally { BUYING.delete(id); }
   }
-  // Holat so'zlari hujjatda aniq emas — keng mos keladi, xom qiymat saqlanadi (admin ko'radi).
+  // Holat so'zlari: avval hujjatdagi aniq nomlar, keyin keng moslik (eski/yangi nomlar uchun)
+  const ST_MAP = { processing: "sent", proccessing: "sent", wait_accept: "accept", accepted: "done", return: "failed", wait_unlock: "locked", wait_withdraw: "withdraw" };
   function stateWord(s) {
     s = String(s || "").toLowerCase();
     if (/not[_ -]|return|refund|cancel|fail|declin|expire|error|reject/.test(s)) return "failed";
@@ -459,14 +565,104 @@ module.exports = function (ctx) {
     if (!s || /process|pend|wait|new|creat|send|sent|queue|hold|lock|progress|trade/.test(s)) return "pending";
     return "other";
   }
+  function stateOf(raw) {
+    const s = String(raw || "").toLowerCase().trim();
+    if (ST_MAP[s]) return ST_MAP[s];
+    const w = stateWord(s);
+    return w === "pending" ? "sent" : w;
+  }
+  // lis-skins'dagi bitta skin ma'lumotini buyurtmaga yozadi (holatni o'zgartirmaydi)
+  function applySkin(o, sk) {
+    if (!sk || typeof sk !== "object") return;
+    const C = o.cs2, raw = str(pick(sk, ["status", "state"]) || "", 60);
+    if (raw) C.st = raw;
+    const tid = String(sk.steam_trade_offer_id || ""); if (/^\d{1,20}$/.test(tid)) C.tradeId = tid;
+    const ex = Date.parse(sk.steam_trade_offer_expiry_at || ""); if (ex) C.expiry = ex;
+    const ua = Date.parse(sk.unlock_at || ""); if (ua) C.unlockAt = ua;
+    if (sk.error && STEAM_ERR[sk.error]) C.err = String(sk.error);
+    if (sk.return_reason && RETURN_WHY[sk.return_reason]) C.rr = String(sk.return_reason);
+    if (C.float == null && sk.item_float != null && isFinite(Number(sk.item_float))) C.float = Number(sk.item_float);
+    if (Number(sk.return_charged_commission) > 0) C.fee = Number(sk.return_charged_commission);
+  }
   const SEEN_STATES = new Set();
+  // Holatga qarab: bajarildi / pul qaytdi / kutish (yuborilmoqda, qabul kutilmoqda, trade-lock, yuborish kerak)
+  function settle(o, raw, quiet) {
+    if (o.status !== "pending") return;
+    const C = o.cs2, w = stateOf(raw);
+    if (raw) C.raw = str(raw, 60);
+    if (w === "done") return markDone(o);
+    if (w === "failed") {
+      if (C.cancelReq && (C.rr === "manual_cancel" || !C.rr)) return refundCancel(o);
+      const why = (C.err && STEAM_ERR[C.err]) || (C.rr && RETURN_WHY[C.rr]) || "Trade qabul qilinmadi yoki bekor bo'ldi.";
+      if (C.err === "invalid_trade_url") { const acc = DBx().users[String(o.uid)]; if (acc && acc.cs2Trade) acc.cs2Trade = ""; }
+      refund(o, why + " Pul balansga qaytdi.");
+      ctx.notifyAdmins("↩️ #" + o.seq + " " + C.name + " — lis-skins holati «" + (C.raw || "return") + "»" + (C.rr ? " (" + C.rr + ")" : "") + (C.err ? " [" + C.err + "]" : "") + ", mijozga pul qaytarildi.");
+      return;
+    }
+    if (w === "other") {
+      // Hujjatda yo'q holat nomi kelsa — adminga bir marta: shu orqali haqiqiy nomlarni bilib olamiz
+      if (!SEEN_STATES.has(C.raw) && SEEN_STATES.size < 50) {
+        SEEN_STATES.add(C.raw);
+        ctx.notifyAdmins("ℹ️ Skinlar: lis-skins'dan yangi holat keldi: «" + C.raw + "» (#" + o.seq + "). Buyurtma kutishda turibdi — bu xabarni dasturchiga yuboring.");
+      }
+      if (C.state === "unknown") C.state = "sent";
+      ctx.save(); return;
+    }
+    const prev = C.state; C.state = w;
+    ctx.save();
+    if (quiet || prev === w) return;
+    if (w === "accept") ctx.tgSend(o.uid, "📩 " + C.name + " — Steam'ga trade taklifi yuborildi. " + (C.expiry ? fmtTime(C.expiry) + " gacha " : "") + "qabul qiling: " + offerUrl(o));
+    else if (w === "locked") ctx.tgSend(o.uid, "🔒 " + C.name + " sotib olindi. Skin trade-lock'da" + (C.unlockAt ? " — " + fmtTime(C.unlockAt) + " da ochiladi" : "") + " va avtomatik Steam'ga yuboriladi.");
+    else if (w === "withdraw" && prev === "locked") ctx.tgSend(o.uid, "🔓 " + C.name + " trade-lock'dan chiqdi — Steam'ga yuborilmoqda.");
+  }
+  const fmtTime = ts => { try { return new Date(ts).toLocaleString("ru-RU", { timeZone: "Asia/Tashkent", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
+  // Mijoz trade-lock'dagi xaridini bekor qildi: lis-skins 3% komissiya oladi — shuncha ushlab qolinadi
+  const cancelFee = o => Math.ceil(o.price * 0.03 / 100) * 100;
+  function refundCancel(o) { refund(o, "Trade-lock'dagi xarid bekor qilindi (3% komissiya ushlab qolindi).", o.price - cancelFee(o)); }
+  async function cancelLocked(u, oid) {
+    const o = DBx().orders.find(x => x.id === oid && String(x.uid) === String(u.id) && x.cs2);
+    if (!o) return ok2(404, { error: "not_found" });
+    if (o.status !== "pending" || o.cs2.state !== "locked") return ok2(409, { error: "cant", message: "Bu xaridni hozir bekor qilib bo'lmaydi" });
+    if (o.cs2.cancelReq && Date.now() - o.cs2.cancelReq < 60e3) return ok2(409, { error: "busy", message: "So'rov yuborilgan — natijani kuting" });
+    o.cs2.cancelReq = Date.now(); ctx.save();
+    const r = await call("POST", "market/return", { json: { custom_id: o.id }, timeout: 20000 });
+    const d = r.status === 200 && r.json ? r.json.data : null, rec = Array.isArray(d) ? d[0] : d;
+    const sk = rec && Array.isArray(rec.skins) ? rec.skins[0] : null;
+    const acc = ctx.user(u);
+    if (sk) {
+      applySkin(o, sk);
+      if (stateOf(sk.status) === "failed") { refundCancel(o); return ok2(200, { ok: true, order: ctx.pubOrder(o), balance: acc.balance }); }
+      o.cs2.cancelReq = 0; settle(o, sk.status, true);
+      return ok2(409, { error: "cant", message: "Bekor qilinmadi — skin holati o'zgargan", order: ctx.pubOrder(o) });
+    }
+    if (r.sent && r.status >= 400 && r.status < 500) { o.cs2.cancelReq = 0; ctx.save(); return ok2(409, { error: "cant", message: "Bu xaridni hozir bekor qilib bo'lmaydi" }); }
+    // Javob noaniq — natija keyingi holat tekshiruvida aniqlanadi (bekor bo'lsa 3% ushlab qaytariladi)
+    return ok2(202, { ok: true, pending: true, message: "So'rov yuborildi — natija bir necha daqiqada" });
+  }
+  // Trade-lock'dan chiqqan skinni mijozning hozirgi trade havolasiga yuborish (12 soat ichida kerak)
+  async function withdraw(o) {
+    o.cs2.wdTs = Date.now(); ctx.save();
+    const acc = DBx().users[String(o.uid)] || {}, tu = parseTrade(acc.cs2Trade);
+    const r = await call("POST", "market/withdraw", { json: Object.assign({ custom_id: o.id }, tu ? { partner: tu.partner, token: tu.token } : {}), timeout: 20000 });
+    if (r.status === 200 && r.json) {
+      const rec = listOf(r.json)[0] || (r.json.data && r.json.data.skins ? r.json.data : null);
+      const sk = rec && Array.isArray(rec.skins) ? rec.skins[0] : null;
+      if (sk) { applySkin(o, sk); settle(o, sk.status); } else if (o.status === "pending") { o.cs2.state = "sent"; ctx.save(); }
+      return { ok: true };
+    }
+    const e = errCode(r.json) || r.error || ("HTTP " + r.status);
+    if (e !== "no_suitable_skins_for_withdrawal") alertOnce("cs2-wd-" + o.id, "⚠️ #" + o.seq + " " + o.cs2.name + " — trade-lock'dan chiqqan skinni yuborib bo'lmadi: " + e + ". 12 soat ichida yuborilmasa lis-skins qaytaradi.");
+    return { ok: false, error: e };
+  }
+  // Bir nechta xaridning holati (custom_id va purchase_id bo'yicha) — WebSocket bo'lmasa ham ishlaydi
   const UNKNOWN_MS = Number(process.env.CS2_UNKNOWN_MS) || 15 * 60e3;
+  const LIVE_STATES = ["sent", "unknown", "accept", "locked", "withdraw"];
   let polling = false;
   async function poll() {
     if (polling || !ready()) return;
     polling = true;
     try {
-      const list = DBx().orders.filter(o => o.status === "pending" && o.cs2 && (o.cs2.state === "sent" || o.cs2.state === "unknown"));
+      const list = DBx().orders.filter(o => o.status === "pending" && o.cs2 && LIVE_STATES.indexOf(o.cs2.state) !== -1);
       for (let i = 0; i < list.length; i += 100) {
         const chunk = list.slice(i, i + 100);
         const pids = chunk.map(o => o.cs2.purchaseId).filter(x => /^\d+$/.test(x || ""));
@@ -481,19 +677,8 @@ module.exports = function (ctx) {
           const skins = Array.isArray(x.skins) ? x.skins : Array.isArray(x.items) ? x.items : [];
           const raw = String(pick(x, ["status", "state"]) || (skins[0] && pick(skins[0], ["status", "state"])) || "");
           if (pid && !o.cs2.purchaseId) o.cs2.purchaseId = pid;
-          if (o.cs2.state === "unknown") o.cs2.state = "sent";
-          o.cs2.raw = str(raw, 60);
-          const w = stateWord(raw);
-          // Hujjatda yo'q holat nomi kelsa — adminga bir marta: shu orqali haqiqiy nomlarni bilib olamiz
-          if (w === "other" && !SEEN_STATES.has(o.cs2.raw) && SEEN_STATES.size < 50) {
-            SEEN_STATES.add(o.cs2.raw);
-            ctx.notifyAdmins("ℹ️ Skinlar: lis-skins'dan yangi holat keldi: «" + o.cs2.raw + "» (#" + o.seq + "). Buyurtma kutishda turibdi — bu xabarni dasturchiga yuboring.");
-          }
-          if (w === "done") markDone(o);
-          else if (w === "failed") {
-            refund(o, "Trade qabul qilinmadi yoki bekor bo'ldi — pul balansga qaytdi.");
-            ctx.notifyAdmins("↩️ #" + o.seq + " " + o.cs2.name + " — lis-skins holati «" + o.cs2.raw + "», mijozga pul qaytarildi. lis-skins balansiga qaytganini tekshiring.");
-          } else ctx.save();
+          if (skins[0]) applySkin(o, skins[0]);
+          settle(o, raw);
         }
         // Javob noaniq bo'lgan xarid lis-skins'da custom_id bo'yicha uzoq vaqt topilmasa — demak sotib olinmagan.
         for (const o of chunk) if (o.status === "pending" && o.cs2.state === "unknown" && !seen.has(o.id) && Date.now() - o.ts > UNKNOWN_MS) {
@@ -501,15 +686,116 @@ module.exports = function (ctx) {
           ctx.notifyAdmins("↩️ #" + o.seq + " " + o.cs2.name + " — lis-skins'da bu xarid topilmadi, mijozga pul qaytarildi.");
         }
       }
+      // Trade-lock'dan chiqqanlar — darhol yuboriladi (5 daqiqada bir urinish)
+      for (const o of list) if (o.status === "pending" && o.cs2.state === "withdraw" && !(Date.now() - (o.cs2.wdTs || 0) < 5 * 60e3)) await withdraw(o);
       // Trade 2 soatdan beri qabul qilinmagan bo'lsa — mijozga bir marta eslatma.
-      for (const o of list) if (o.status === "pending" && o.cs2.state === "sent" && !o.cs2.reminded && Date.now() - o.ts > 2 * 3600e3) {
+      for (const o of list) if (o.status === "pending" && (o.cs2.state === "sent" || o.cs2.state === "accept") && !o.cs2.reminded && Date.now() - o.ts > 2 * 3600e3) {
         o.cs2.reminded = true; ctx.save();
-        ctx.tgSend(o.uid, "⏳ " + o.cs2.name + " — Steam'dagi trade taklifini qabul qiling: " + STEAM_OFFERS);
+        ctx.tgSend(o.uid, "⏳ " + o.cs2.name + " — Steam'dagi trade taklifini qabul qiling" + (o.cs2.expiry ? " (" + fmtTime(o.cs2.expiry) + " gacha)" : "") + ": " + offerUrl(o));
       }
     } catch (e) { console.log("[skins] holat: " + e.message); }
     finally { polling = false; }
   }
   { const t = setInterval(() => { poll(); }, Number(process.env.CS2_POLL_MS) || 60000); if (t.unref) t.unref(); }
+
+  /* ---------- WebSocket (Centrifugo): jonli bozor va xarid holatlari ----------
+     public:obtained-skins — yangi / o'chgan / narxi o'zgargan skinlar (qidiruvdan bir necha daqiqa oldin);
+     private:purchase-skins#<lis-skins User ID> — xaridlar holati darhol. Uzilsa qayta ulanadi; so'rov orqali tekshiruv baribir ishlaydi. */
+  const WS = { state: "off", since: 0, err: "", pub: 0, priv: 0, sock: null, retry: 0, timer: null, ver: 0, last: 0, pong: false, privOk: false };
+  const WS_URL = () => process.env.LIS_WS_URL || "wss://ws.lis-skins.com/connection/websocket";
+  const LIVE = {};   // o'yin -> WebSocket orqali kelgan eng yangi takliflar (eng yangisi oldin)
+  const wsWanted = () => ready() && cfg().ws !== false && typeof WebSocket === "function";
+  function wsClose(st) {
+    WS.ver++; clearTimeout(WS.timer); WS.timer = null; WS.state = st || "off"; WS.privOk = false;
+    const s = WS.sock; WS.sock = null; if (s) try { s.close(); } catch (e) {}
+  }
+  function wsRetry() {
+    if (WS.state === "off") return;
+    WS.state = "retry"; clearTimeout(WS.timer);
+    const d = Number(process.env.LIS_WS_RETRY_MS) || Math.min(300, 5 * Math.pow(2, WS.retry++)) * 1000;
+    WS.timer = setTimeout(() => { WS.timer = null; wsConnect().catch(() => {}); }, d); if (WS.timer.unref) WS.timer.unref();
+  }
+  async function wsConnect() {
+    if (!wsWanted()) { if (WS.sock || WS.state !== "off") wsClose("off"); return; }
+    if (WS.sock || WS.state === "connecting") return;
+    const ver = ++WS.ver; WS.state = "connecting";
+    const t = await call("GET", "user/get-ws-token", { timeout: 15000 });
+    if (ver !== WS.ver) return;
+    const token = t.json && pick(t.json, ["data.token", "token"]);
+    if (!token) { WS.err = "token: " + (errOf(t.json) || t.error || ("HTTP " + t.status)); return wsRetry(); }
+    let s; try { s = new WebSocket(WS_URL()); } catch (e) { WS.err = e.message; return wsRetry(); }
+    WS.sock = s; let n = 0; const wait = new Map();
+    const send = o => { try { s.send(JSON.stringify(o)); } catch (e) {} };
+    const cmd = (o, cb) => { o.id = ++n; if (cb) wait.set(o.id, cb); send(o); };
+    s.addEventListener("open", () => {
+      WS.last = Date.now();
+      cmd({ connect: { token: String(token), name: "verionshop" } }, r => {
+        if (r.error) { WS.err = "connect: " + (r.error.message || r.error.code); try { s.close(); } catch (e) {} return; }
+        const cn = r.connect || {};
+        WS.state = "connected"; WS.since = Date.now(); WS.err = ""; WS.retry = 0; WS.pong = !!cn.pong;
+        // Token muddati tugashidan oldin qayta ulanamiz (yangi token bilan)
+        if (cn.expires && Number(cn.ttl) > 60) { const tt = setTimeout(() => { if (WS.sock === s) try { s.close(); } catch (e) {} }, (Number(cn.ttl) - 30) * 1000); if (tt.unref) tt.unref(); }
+        cmd({ subscribe: { channel: "public:obtained-skins" } }, x => { if (x.error) WS.err = "public: " + (x.error.message || x.error.code); });
+        const uid = cfg().lisUserId;
+        if (uid) cmd({ subscribe: { channel: "private:purchase-skins#" + uid } }, x => { if (x.error) WS.err = "private: " + (x.error.message || x.error.code); else WS.privOk = true; });
+      });
+    });
+    s.addEventListener("message", ev => {
+      WS.last = Date.now();
+      const text = typeof ev.data === "string" ? ev.data : Buffer.from(ev.data).toString("utf8");
+      for (const line of text.split("\n")) {
+        if (!line.trim()) continue;
+        let m; try { m = JSON.parse(line); } catch (e) { continue; }
+        if (!m || typeof m !== "object") continue;
+        if (!Object.keys(m).length) { if (WS.pong) send({}); continue; }   // ping → pong
+        if (m.id && wait.has(m.id)) { const cb = wait.get(m.id); wait.delete(m.id); try { cb(m); } catch (e) {} continue; }
+        if (m.push && m.push.pub) { try { wsPub(String(m.push.channel || ""), m.push.pub.data); } catch (e) { console.log("[skins] ws: " + e.message); } }
+      }
+    });
+    s.addEventListener("error", () => { if (!WS.err) WS.err = "ulanish xatosi"; });
+    s.addEventListener("close", ev => {
+      if (WS.sock !== s) return;
+      WS.sock = null; WS.privOk = false;
+      if (ev && ev.code && ev.code !== 1000 && !WS.err) WS.err = "uzildi (" + ev.code + (ev.reason ? " " + String(ev.reason).slice(0, 60) : "") + ")";
+      wsRetry();
+    });
+  }
+  function gameOfName(n) { for (const g of GAME_KEYS) if (ready(g) && cat(g).BY_NAME.has(n)) return g; return ""; }
+  function wsPub(ch, d) {
+    if (!d || typeof d !== "object") return;
+    if (ch.indexOf("private:purchase-skins") === 0) {
+      WS.priv++;
+      const id = String(d.id || ""), os = DBx().orders;
+      for (let i = os.length - 1; i >= 0 && i >= os.length - 5000; i--) {
+        const o = os[i];
+        if (o.cs2 && o.status === "pending" && o.cs2.offerId === id && o.cs2.state !== "buying") { applySkin(o, d); settle(o, d.status); break; }
+      }
+      return;
+    }
+    if (ch !== "public:obtained-skins") return;
+    WS.pub++;
+    const ev = String(d.event || ""), id = String(d.id || "");
+    if (ev === "obtained_skin_deleted") {
+      GONE.set(id, Date.now());
+      if (GONE.size > 20000) { const cut = Date.now() - 30 * 60e3; for (const [k, v] of GONE) if (v < cut) GONE.delete(k); }
+      return;
+    }
+    if (ev === "obtained_skin_price_changed") { const of = OFFERS.get(id), p = Number(d.price); if (of && p > 0) of.live = p; return; }
+    if (ev === "obtained_skin_added") {
+      const o = normOffer(d); if (!o) return;
+      GONE.delete(o.id);
+      const g = gameOfName(o.name), c = cfg();
+      if (!g || o.usd < c.minUsd || o.usd > c.maxUsd || (c.onlyUnlocked && o.locked)) return;
+      const L = LIVE[g] || (LIVE[g] = []); L.unshift(Object.assign(o, { liveTs: Date.now() })); if (L.length > 60) L.length = 60;
+    }
+  }
+  setTimeout(() => wsConnect().catch(() => {}), Number(process.env.LIS_WS_DELAY_MS) || 6000).unref();
+  { const t = setInterval(() => {
+      if (!wsWanted()) { if (WS.sock || WS.state !== "off") wsClose("off"); return; }
+      if (!WS.sock && !WS.timer && WS.state !== "connecting") wsConnect().catch(() => {});
+      // Server har ~25 soniyada ping yuboradi — uzoq jim tursa ulanish o'lik: qayta ulanamiz
+      if (WS.sock && WS.state === "connected" && Date.now() - WS.last > 90e3) try { WS.sock.close(); } catch (e) {}
+    }, Number(process.env.LIS_WS_CHECK_MS) || 30000); if (t.unref) t.unref(); }
   async function balance() {
     const r = await call("GET", "user/balance", { timeout: 15000 });
     const b = r.json && pick(r.json, ["data.balance", "balance", "data.amount"]);
@@ -531,7 +817,7 @@ module.exports = function (ctx) {
       send(res, 200, { enabled: ready(g), any: ready(), games: gamesPublic(), game: g, cats: CATS[g].map(([k, label]) => ({ k, label })), catalog: cat(g).list.length,
         tradeUrl: (acc && acc.cs2Trade) || "", steamOffers: STEAM_OFFERS,
         favs: acc && Array.isArray(acc.cs2Fav) ? acc.cs2Fav : [], inStock: ready(g) && pricesFresh(g) ? pr(g).map.size : null,
-        delivered: DONE_N() });
+        delivered: DONE_N(), locks: !cfg().onlyUnlocked, cancelFee: 3, live: WS.state === "connected" });
       return true;
     }
     // Sevimli skinlar (mijoz hisobida, 200 tagacha). CS2 — nomi, boshqalar — "o'yin|nomi"
@@ -557,11 +843,25 @@ module.exports = function (ctx) {
       const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
       const g = gameOf(q.get("game"));
       if (!ready(g)) { send(res, 503, { error: "off" }); return true; }
-      const sort = ["lowest_price", "highest_price", "newest"].indexOf(q.get("sort")) !== -1 ? q.get("sort") : "lowest_price";
+      const sort = ["lowest_price", "highest_price", "newest", "oldest"].indexOf(q.get("sort")) !== -1 ? q.get("sort") : "lowest_price";
       const pmin = Math.max(0, Number(q.get("pmin")) || 0), pmax = Math.max(0, Number(q.get("pmax")) || 0), cursor = str(q.get("cursor"), 200);
-      const key = "m|" + g + "|" + sort + "|" + pmin + "|" + pmax + "|" + cursor;
-      cached(key, 60000, () => search({ sort_by: sort, cursor, price_from: pmin ? Math.floor(usdOf(pmin) * 100) / 100 : undefined, price_to: pmax ? Math.ceil(usdOf(pmax) * 100) / 100 : undefined }, g), u.id)
-        .then(r => send(res, 200, { items: r.items.filter(o => (g !== "cs2" || cat(g).BY_NAME.has(o.name)) && OFFERS.has(o.id)).map(o => pubOffer(o, g)), next: r.next }))
+      // float oralig'i (CS2) va trade-lock: now — faqat darhol, lock — faqat trade-lock'dagilar (1–8 kun)
+      const f01 = v => { const n = Number(v); return v !== null && v !== "" && n >= 0 && n <= 1 ? Math.round(n * 1e4) / 1e4 : undefined; };
+      const ff = f01(q.get("ffrom")), ft = f01(q.get("fto")), un = ["now", "lock"].indexOf(q.get("unlock")) !== -1 ? q.get("unlock") : "";
+      const key = "m|" + g + "|" + sort + "|" + pmin + "|" + pmax + "|" + cursor + "|" + ff + "|" + ft + "|" + un;
+      const sp = { sort_by: sort, cursor, price_from: pmin ? Math.floor(usdOf(pmin) * 100) / 100 : undefined, price_to: pmax ? Math.ceil(usdOf(pmax) * 100) / 100 : undefined,
+        float_from: ff, float_to: ft, only_unlocked: un === "now" ? 1 : undefined, unlock_days: un === "lock" ? [1, 2, 3, 4, 5, 6, 7, 8] : undefined };
+      const okF = o => (g !== "cs2" || cat(g).BY_NAME.has(o.name)) && (ff === undefined || (o.float != null && o.float >= ff)) && (ft === undefined || (o.float != null && o.float <= ft))
+        && (!un || (un === "now" ? !o.locked : o.locked)) && (!pmin || uzs(o.usd) >= pmin) && (!pmax || uzs(o.usd) <= pmax);
+      cached(key, 60000, () => search(sp, g), u.id)
+        .then(r => {
+          // WebSocket orqali kelgan eng yangilari (qidiruvda hali ko'rinmaydi) — "yangi" ro'yxat boshida
+          const live = sort === "newest" && !cursor ? (LIVE[g] || []).filter(o => !GONE.has(o.id) && okF(o) && Date.now() - o.liveTs < 30 * 60e3).slice(0, 20) : [];
+          live.forEach(o => rememberOffer(o, g));
+          const ids = new Set(live.map(o => o.id));
+          const items = live.map(o => Object.assign(pubOffer(o, g), { fresh: true })).concat(r.items.filter(o => !ids.has(o.id) && okF(o) && OFFERS.has(o.id) && !GONE.has(o.id)).map(o => pubOffer(o, g)));
+          send(res, 200, { items, next: r.next });
+        })
         .catch(e => busy(res, e));
       return true;
     }
@@ -629,7 +929,7 @@ module.exports = function (ctx) {
       cached("i|" + g + "|" + nm.join("|"), 60000, () => search({ names: nm, sort_by: "lowest_price" }, g), u.id)
         .then(r => {
           const per = new Map(), offers = [];
-          for (const o of r.items) { if (!OFFERS.has(o.id)) continue; const k = per.get(o.name) || 0; if (k >= 10) continue; per.set(o.name, k + 1); offers.push(o); }
+          for (const o of r.items) { if (!OFFERS.has(o.id) || GONE.has(o.id)) continue; const k = per.get(o.name) || 0; if (k >= 10) continue; per.set(o.name, k + 1); offers.push(o); }
           send(res, 200, { item: head, offers: offers.slice(0, 80).map(o => pubOffer(o, g)) });
         })
         .catch(e => busy(res, e));
@@ -671,12 +971,37 @@ module.exports = function (ctx) {
         if (!t) return send(res, 400, { error: "trade_url", message: "Havola noto'g'ri. U shunday ko'rinishda bo'ladi: https://steamcommunity.com/tradeoffer/new/?partner=…&token=…" });
         const acc = ctx.user(u); acc.cs2Trade = t.url; ctx.save();
         send(res, 200, { ok: true, tradeUrl: t.url });
+        // Trade-lock'dan chiqib, yuborilishini kutayotgan skinlar — yangi havolaga darhol yuboriladi
+        for (const o of DBx().orders) if (o.cs2 && o.status === "pending" && String(o.uid) === String(u.id) && o.cs2.state === "withdraw") { o.cs2.wdTs = 0; withdraw(o).catch(() => {}); }
       });
       return true;
     }
     if (url === "/api/cs2/buy" && m === "POST") {
       const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
-      ctx.readBody(req, res, b => buy(u, str(b.offerId, 40)).then(r => send(res, r.code, r.body)));
+      ctx.readBody(req, res, b => buy(u, b && typeof b.offerId !== "object" ? str(b.offerId, 40) : "").then(r => send(res, r.code, r.body)));
+      return true;
+    }
+    // Savat: bir nechta skin ketma-ket (har biri alohida buyurtma, alohida pul hisobi). Balans yoki havola muammosida to'xtaydi.
+    if (url === "/api/cs2/buy-many" && m === "POST") {
+      const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
+      ctx.readBody(req, res, async b => {
+        const ids = (b && Array.isArray(b.offerIds) ? b.offerIds : []).filter(x => typeof x === "string" || typeof x === "number").map(x => str(x, 40)).filter((x, i, a) => x && a.indexOf(x) === i);
+        if (!ids.length || ids.length > 10) return send(res, 400, { error: "count", message: "Savatda 1 dan 10 tagacha skin bo'lishi kerak" });
+        const out = [];
+        for (const id of ids) {
+          const r = await buy(u, id);
+          out.push({ offerId: id, code: r.code, ok: r.code === 200, error: r.body.error || "", message: r.body.message || "", price: r.body.price, order: r.body.order || null });
+          if (r.body.error === "balance" || r.body.error === "trade_url" || r.body.error === "off" || r.body.error === "steam") break;
+        }
+        const acc = ctx.user(u);
+        send(res, 200, { ok: out.some(x => x.ok), results: out, balance: acc.balance, steamOffers: STEAM_OFFERS });
+      });
+      return true;
+    }
+    // Trade-lock'dagi xaridni bekor qilish (lis-skins 3% komissiya oladi — shuncha ushlab qolinadi)
+    if (url === "/api/cs2/order-cancel" && m === "POST") {
+      const u = ctx.auth(req); if (!u) { send(res, 401, { error: "auth" }); return true; }
+      ctx.readBody(req, res, b => cancelLocked(u, b && typeof b.id === "string" ? str(b.id, 40) : "").then(r => send(res, r.code, r.body)));
       return true;
     }
     // --- admin ---
@@ -689,6 +1014,8 @@ module.exports = function (ctx) {
             prices: Q.map ? Q.map.size : 0, pricesTs: Q.ts, pricesUrl: c.pricesUrls[g] || (g === "cs2" ? c.pricesUrl || "" : ""),
             pricesDiag: Q.diag.map(d => d.url.replace(/^https?:\/\//, "") + " → " + (d.error || d.rows + " ta nom, " + d.kb + " KB")) }; }
         return { enabled: c.enabled, rate: c.rate, markup: c.markup, minUsd: c.minUsd, maxUsd: c.maxUsd, onlyUnlocked: c.onlyUnlocked, apiKeySet: !!c.apiKey, games: per,
+          lisUserId: c.lisUserId || "", ws: { on: c.ws !== false, state: WS.state, since: WS.since, err: WS.err, pub: WS.pub, priv: WS.priv, privOk: WS.privOk, live: Object.keys(LIVE).reduce((a, k) => a + LIVE[k].length, 0) },
+          cool: coolUntil > Date.now() ? Math.ceil((coolUntil - Date.now()) / 1000) : 0,
           // eski maydonlar (CS2) — mavjud admin oynalari uchun
           catalog: cat("cs2").list.length, skins: cat("cs2").GROUPS.length, catalogTs: cat("cs2").TS, prices: P.map ? P.map.size : 0, pricesTs: P.ts,
           pricesUrl: per.cs2.pricesUrl, pricesSrc: P.src, pricesDiag: per.cs2.pricesDiag };
@@ -704,6 +1031,8 @@ module.exports = function (ctx) {
         const mn = num(b.minUsd, 0.01, 1000); if (mn) c.minUsd = mn;
         const mx = num(b.maxUsd, 1, 100000); if (mx) c.maxUsd = mx;
         if (b.apiKey) c.apiKey = str(b.apiKey, 500);
+        if ("lisUserId" in b) { const v = str(b.lisUserId, 20); if (v && !/^\d{1,20}$/.test(v)) return send(res, 400, { error: "lis-skins User ID faqat raqam bo'ladi" }); c.lisUserId = v; }
+        if ("ws" in b) c.ws = !!b.ws;
         if ("pricesUrl" in b) {
           const pu = str(b.pricesUrl, 300);
           if (!okUrl(pu)) return send(res, 400, { error: "Narxlar havolasi https:// bilan boshlanishi kerak" });
@@ -719,6 +1048,8 @@ module.exports = function (ctx) {
         // Yangi yoqilgan o'yinning katalogi bo'lmasa — darhol yuklab olinadi
         for (const g of turnedOn) if (!cat(g).list.length) downloadCatalog(g);
         setTimeout(() => loadPrices().catch(() => {}), 300);
+        // Sozlama o'zgardi (kalit, User ID, yoqish) — WebSocket qayta ulanadi
+        wsClose("off"); setTimeout(() => wsConnect().catch(() => {}), 200);
         CACHE.clear(); ctx.save();
         send(res, 200, Object.assign({ ok: true }, view()));
       });
@@ -740,6 +1071,33 @@ module.exports = function (ctx) {
       })().catch(e => send(res, 200, { ok: false, message: e.message }));
       return true;
     }
+    // lis-skins xaridlar tarixi (market/history) — bizning buyurtma raqami bilan
+    if (url === "/api/admin/cs2/history" && m === "GET") {
+      if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
+      const page = Math.max(1, Math.min(1000, Math.floor(Number(q.get("page")) || 1)));
+      call("GET", "market/history", { params: { page }, timeout: 20000 }).then(r => {
+        if (!r.json || r.status >= 400) return send(res, 502, { error: errOf(r.json) || r.error || ("HTTP " + r.status) });
+        const byId = new Map(); const os = DBx().orders; for (let i = os.length - 1; i >= 0 && i >= os.length - 20000; i--) if (os[i].cs2) byId.set(os[i].id, os[i]);
+        const items = listOf(r.json).slice(0, 200).map(x => { const o = byId.get(String(x.custom_id || "")); return {
+          purchaseId: x.purchase_id, ts: Date.parse(x.created_at || "") || null, order: o ? { id: o.id, seq: o.seq, status: o.status, price: o.price } : null,
+          skins: (Array.isArray(x.skins) ? x.skins : []).slice(0, 20).map(k => ({ name: str(k.name, 120), usd: Number(k.price) || 0, status: str(k.status, 30), rr: str(k.return_reason || "", 40),
+            err: str(k.error || "", 40), fee: Number(k.return_charged_commission) || 0, trade: /^\d{1,20}$/.test(String(k.steam_trade_offer_id || "")) ? String(k.steam_trade_offer_id) : "" })) }; });
+        const mt = r.json.meta || {};
+        send(res, 200, { items, page: Number(mt.current_page) || page, last: Number(mt.last_page) || page, total: Number(mt.total) || items.length });
+      });
+      return true;
+    }
+    // Trade-lock'dan chiqqan barcha skinlarni yuborish (market/withdraw-all) — avtomatik yuborish ishlamay qolsa
+    if (url === "/api/admin/cs2/withdraw-all" && m === "POST") {
+      if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
+      call("POST", "market/withdraw-all", { json: {}, timeout: 30000 }).then(r => {
+        if (!r.json || r.status >= 400) return send(res, 200, { ok: false, error: errCode(r.json) || r.error || ("HTTP " + r.status) });
+        let n = 0; const byId = new Map(DBx().orders.filter(o => o.cs2 && o.status === "pending").map(o => [o.id, o]));
+        for (const x of listOf(r.json)) { const o = byId.get(String(x.custom_id || "")); const sk = x && Array.isArray(x.skins) ? x.skins[0] : null; if (o && sk) { applySkin(o, sk); settle(o, sk.status); } n += Array.isArray(x.skins) ? x.skins.length : 0; }
+        send(res, 200, { ok: true, count: n });
+      });
+      return true;
+    }
     if (url === "/api/admin/cs2/catalog-refresh" && m === "POST") {
       if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
       ctx.readBody(req, res, b => {
@@ -752,5 +1110,5 @@ module.exports = function (ctx) {
     }
     return false;
   }
-  return { handle, ready, games: gamesPublic, balance, cfg, poll, parseTrade, _internal: { normOffer, stateWord, index, OFFERS, dotaMeta, rustMeta } };
+  return { handle, ready, games: gamesPublic, balance, cfg, poll, parseTrade, _internal: { normOffer, stateWord, stateOf, index, OFFERS, GONE, LIVE, WS, dotaMeta, rustMeta } };
 };
