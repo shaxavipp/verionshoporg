@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-10-31.14";
+const BUILD = "2026-11-01.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1944,6 +1944,7 @@ function extrasCfg() {
   return c;
 }
 const CARD_KEYS = ["steam", "vnum", "cs2", "dota2", "rust"];
+const IMG_CUT_V = 1;   // oshirilsa — admin qurilmasi mavjud rasmlarni yana bir marta tozalaydi
 function publicExtras() {
   const c = extrasCfg(), now = Date.now();
   const promos = !c.blocks.promos ? [] : Object.values(DB.promoCodes || {})
@@ -2184,6 +2185,8 @@ function myView(uid) {
        o'zi qaror qilardi — server bilan ro'yxat bir-biriga to'g'ri kelmay qolsa
        yoki Telegram eski HTML'ni keshdan bersa, admin panel ochilmay qolardi. */
     isAdmin: ADMIN_IDS.indexOf(Number(uid)) !== -1,
+    // Admin ilovani ochganda mavjud mahsulot rasmlarining fonini bir marta avtomatik olib tashlash kerakmi
+    imgCut: ADMIN_IDS.indexOf(Number(uid)) !== -1 && (Number(DB.settings.imgCutV) || 0) < IMG_CUT_V,
     build: BUILD,
     /* Botni ishga tushirganmi: true — bosgan, false — bosmagan, null — hali aniqlanmadi
        (bunday holatda ilova to'siq ko'rsatmaydi, bir-ikki soniyadan keyin qayta so'raydi). */
@@ -2521,6 +2524,12 @@ function handleRequest(req, res) {
   if (url === "/api/admin/extras" && m === "GET") {
     if (!isAdm(auth(req))) return send(res, 403, { error: "not admin" });
     return send(res, 200, extrasCfg());
+  }
+  // Mahsulot rasmlari fonini avtomatik olib tashlash tugadi (admin qurilmasi bajardi) — qayta ishga tushmaydi
+  if (url === "/api/admin/img-cut-done" && m === "POST") {
+    if (!isAdm(auth(req))) return send(res, 403, { error: "not admin" });
+    DB.settings.imgCutV = IMG_CUT_V; save();
+    return send(res, 200, { ok: true });
   }
   if (url === "/api/admin/extras" && m === "POST") {
     if (!isAdm(auth(req))) return send(res, 403, { error: "not admin" });

@@ -1561,7 +1561,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-10-31.14";
+var CLIENT_BUILD="2026-11-01.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2123,9 +2123,10 @@ function loadMe(cb){
     var sig=JSON.stringify(r);
     var changed=sig!==_meSig;
     _meSig=sig;
-    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null,cs2:r.cs2===true,skins:r.skins&&typeof r.skins==="object"?r.skins:null};
+    ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,imgCut:r.imgCut===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null,cs2:r.cs2===true,skins:r.skins&&typeof r.skins==="object"?r.skins:null};
     ME_ERROR=false;
     if(ME.isAdmin&&!GAMES.admin)loadGames();
+    if(ME.imgCut&&!admAutoCut.ran)setTimeout(function(){admAutoCut();},4000);   // bir martalik: mahsulot rasmlari fonini olib tashlash
     if(!_adminDeepDone){_adminDeepDone=true;setTimeout(handleAdminDeepLink,350);}
     // "Botni ishga tushirganmi" hali aniqlanmagan bo'lsa (server Telegram'dan
     // javob kutyapti) — 20 soniyalik odatiy tekshiruvni kutmay, tezda qayta
@@ -6531,7 +6532,7 @@ function imgPrep(src,maxSide,cut,cb){
 function imgCutToast(r){toast(r.cut?"✅ Rasm foni olib tashlandi (shaffof)":r.res==="already"?"✅ Rasm allaqachon shaffof":r.res==="photo"?"Rasm fonli qoldi (fotosurat yoki to'liq rasm)":"✅ Rasm tanlandi");}
 /* Admin: mavjud mahsulot rasmlarining fonini bir yo'la olib tashlash — katalog mahsulotlari, guruhlar, nakrutka ilovalari,
    maxsus kartochkalar (Steam, raqam, skinlar). Faqat bir xil rangli fonli logolar o'zgaradi; asl rasm img0 da saqlanadi. */
-function admCutAll(btn){
+function admCutAll(btn,onDone){
   var jobs=[],seenG={};
   catalog().forEach(function(it){var s=it.tile||{};
     if(s.img&&!s.emoji&&!s.video&&!s.lottie&&s.fit!=="contain")jobs.push({src:s.img,done:function(u){patchItem(it.id,{tile:Object.assign({},it.tile,{img:u,fit:"contain",img0:s.img})});}});
@@ -6541,26 +6542,30 @@ function admCutAll(btn){
   var cards=(EXTRAS&&EXTRAS.cards)||{},cardOut={};
   Object.keys(cards).forEach(function(k){if(cards[k]&&cards[k].img&&!cards[k].cut)jobs.push({src:cards[k].img,done:function(u){cardOut[k]=Object.assign({},cards[k],{img:u,cut:true});}});});
   var nkMeta=null,nkOut=null;
-  btn.disabled=true;var i=0,cut=0,skip=0,old=btn.textContent;
+  var B=btn||{disabled:false,textContent:""};
+  B.disabled=true;var i=0,cut=0,skip=0,old=B.textContent;
   var finish=function(){
     var tasks=[];
     if(Object.keys(cardOut).length)tasks.push(api("/api/admin/extras","POST",{cards:cardOut}).then(function(r){if(EXTRAS)EXTRAS.cards=r.cards||{};}));
     if(nkOut)tasks.push(api("/api/admin/nakrutka/catmeta","POST",nkOut));
     Promise.all(tasks).catch(function(){}).then(function(){
-      btn.disabled=false;btn.textContent=old;
+      B.disabled=false;B.textContent=old;
       toast("✅ "+cut+" ta rasm shaffof qilindi"+(skip?", "+skip+" tasi o'zgarmadi (fotosurat yoki allaqachon shaffof)":""));haptic("ok");
-      if(cut)publishCatalog();
+      var fin=function(){if(onDone)onDone(cut,skip);};
+      // tugmadan — odatdagi nashr; avtomatik — ekranni almashtirmasdan, jimgina
+      if(!cut)return fin();
+      if(btn){publishCatalog();fin();}else publishCatalogQuiet(fin);
     });
   };
   var next=function(){
     if(i>=jobs.length)return finish();
-    var j=jobs[i++];btn.textContent="⏳ "+i+"/"+jobs.length+"…";
+    var j=jobs[i++];B.textContent="⏳ "+i+"/"+jobs.length+"…";if(!btn&&(i===1||i%10===0))toast("🪄 Mahsulot rasmlari shaffof qilinmoqda… "+i+"/"+jobs.length);
     imgPrep(j.src,600,true,function(e,r){if(!e&&r.cut){j.done(r.url);cut++;}else skip++;setTimeout(next,20);});
   };
   // nakrutka ilovalari rasmlari ham
   api("/api/admin/nakrutka/catmeta").then(function(m){nkMeta=m&&typeof m==="object"?m:null;
     if(nkMeta)Object.keys(nkMeta).forEach(function(k){var x=nkMeta[k];if(x&&x.img&&!x.cut)jobs.push({src:x.img,done:function(u){nkOut=nkOut||Object.assign({},nkMeta);nkOut[k]=Object.assign({},x,{img:u,cut:true});}});});
-  }).catch(function(){}).then(function(){if(!jobs.length){btn.disabled=false;toast("Fonini olib tashlash kerak bo'lgan rasm yo'q");return;}next();});
+  }).catch(function(){}).then(function(){if(!jobs.length){B.disabled=false;if(btn)toast("Fonini olib tashlash kerak bo'lgan rasm yo'q");if(onDone)onDone(0,0);return;}next();});
 }
 function gUploadImage(file,maxSide,cb,cut){
   try{
@@ -8948,6 +8953,26 @@ function publishCatalog(){
     try{loadServerCatalog();}catch(e){}   // server rasmlarni fayllarga aylantirdi — yengil nusxasini olamiz
   })
   .catch(function(){toast(t("a_publish_err"),true);});
+}
+// Ekranni almashtirmasdan nashr (avtomatik tozalash uchun)
+function publishCatalogQuiet(cb){
+  var initData=(TG&&TG.initData)?TG.initData:"";
+  if(!initData||typeof fetch!=="function"){if(cb)cb();return;}
+  var arr=catalog();
+  fetch("/api/catalog",{method:"POST",headers:{"Content-Type":"application/json","X-Init-Data":initData},body:JSON.stringify(arr)})
+    .then(function(r){if(!r.ok)throw 0;S.serverCat=arr;S.custom=[];S.over={};S.removed=[];S.imported=null;persist();try{loadServerCatalog();}catch(e){}})
+    .catch(function(){}).then(function(){if(cb)cb();});
+}
+/* Admin ilovani ochganda (server so'rasa, bir marta): mavjud mahsulot rasmlarining bir xil fonini avtomatik olib tashlash.
+   Faqat serverdagi katalog yuklangan va admin qurilmasida nashr qilinmagan qoralama YO'Q bo'lsa — aks holda tugma orqali. */
+function admAutoCut(tries){
+  tries=tries||0;
+  if(admAutoCut.ran||!ME||ME.isAdmin!==true||!ME.imgCut||!S.lang)return;
+  var srvReady=Array.isArray(S.serverCat)&&S.serverCat.length&&loadServerCatalog._sig;
+  if(!srvReady||typeof EXTRAS==="undefined"||!EXTRAS){if(tries<20)setTimeout(function(){admAutoCut(tries+1);},3000);return;}
+  if(S.imported||S.custom.length||S.removed.length||Object.keys(S.over).length)return;
+  admAutoCut.ran=true;
+  admCutAll(null,function(){api("/api/admin/img-cut-done","POST",{}).then(function(){ME.imgCut=false;}).catch(function(){});});
 }
 function loadServerCatalog(cb){
   try{
