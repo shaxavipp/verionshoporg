@@ -578,6 +578,17 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
   - to'lov sahifasidagi "›" tugmalari, mavzu tugmalari (oy/quyosh) va hamma switch'lar nomlandi;
   - har bir `.swbtn` (admin oynalari ham) `role="switch"` va `aria-checked` oladi (`a11ySwitches()`, MutationObserver orqali).
 
+## Yakuniy sayqal (v3.7)
+
+- **Mahsulot kartalari.** Nom ostidagi izohlar (masalan "Steam'ga darhol") va o'yin kartalaridagi "N ta paket" yozuvi olib tashlandi. Kartada faqat nom va narx qoldi. Bo'shagan joy hisobiga nom endi 2 qatorgacha to'liq ko'rinadi ("Telegram…" o'rniga "Telegram Premium — 1 oy"). Kartalar eski kichik o'lchamda, 3 ustunda, balandligi o'zgarmagan.
+- **Skinlar do'koniga kirish.** Bosilgan karta ekran bo'ylab kengayadi (`clip-path`). Uning ustida oltin nur va ikki halqa chiqadi; logo xiralikdan tiniqlashadi, ustidan yorug'lik o'tadi; ostida "CS2 · DOTA 2 · RUST" yozuvi. Keyin do'kon silliq ochiladi (~1,6 s). "Harakatni kamaytirish" yoqilgan bo'lsa, animatsiyasiz to'g'ridan-to'g'ri ochiladi.
+- **Profil.** Har qatorning o'z rangi va o'z ikonkasi bor. Sodiqlik — oltin toj, sevimlilar — qizil yurak, nakrutka — yashil, taklif — binafsha sovg'a, top xaridorlar — to'q sariq medal, yordam — firuza, til — ko'k, mavzu — indigo, animatsiya — binafsha, bildirishnomalar — to'q sariq qo'ng'iroq. Versiya qatori endi faqat adminga ko'rinadi.
+- **Bo'sh bloklar.** Sharh yoki reyting hali bo'lmasa, bosh sahifada bo'sh blok chiqmaydi.
+- **Tarjima.** Steam hamyon sahifasi va login yo'riqnomasi, virtual raqam, profildagi promokod/FAQ/ijtimoiy tarmoqlar bloklari, "Nusxa olindi" xabari endi rus va ingliz tilida ham chiqadi. Lug'at `XT` va `_x()`; o'zbekcha matn kalit bo'lib qoladi, shuning uchun yangi matn qo'shilsa, avval o'zbekcha ishlaydi.
+- **Steam yo'riqnomasi.** "Mana shu yerda" belgisi endi kerakli qator ichida, nik ustini to'smaydi.
+- **Mayda yozuvlar.** Sharh sanalari, zaxira belgisi va promokod izohidagi 9–10,5 px yozuvlar shkaladagi eng kichik o'lchamga (11 px) keltirildi.
+- **Xavfsizlik.** HTML javobga `Content-Security-Policy` qo'shildi: `frame-ancestors` (ilovani faqat Telegram o'z oynasiga joylay oladi — clickjacking yopiq), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`. Skript va rasm manbalari cheklanmagan, ilova ishlashiga ta'sir qilmaydi. Hamma `/api/admin/*` yo'llari umumiy admin tekshiruvi ichida ekani qayta tekshirildi. Hujum to'plamlari (`sec-test`, `atk-all`) o'tdi.
+
 ## Rasmiy ochilishdan oldin (faqat egasi qila oladi)
 
 Admin panel → «🚀 Tayyorlik» bo'limida hammasi yashil bo'lsin. Majburiy bandlar:

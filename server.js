@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-03.6";
+const BUILD = "2026-11-03.7";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -4047,7 +4047,11 @@ function handleRequest(req, res) {
       "Referrer-Policy": "same-origin",
       // faqat HTTPS (Railway TLS); kamera/mikrofon/joylashuv ilovaga kerak emas — yopiq
       "Strict-Transport-Security": "max-age=31536000",
-      "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()"
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+      // Clickjacking'dan himoya: ilovani faqat Telegram (web.telegram.org) o'z oynasiga joylay oladi;
+      // <object>/<base> orqali begona kod ulash va formani boshqa saytga yuborish yopiq.
+      // Skript/rasm manbalari cheklanmaydi (ichki skriptlar va skin rasmlari CDN'dan keladi).
+      "Content-Security-Policy": "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; object-src 'none'; base-uri 'self'; form-action 'self'"
     }, enc ? { "Content-Encoding": enc } : {}));
     res.end(enc === "br" ? H.br : enc === "gzip" ? H.gz : H.raw);
   });
