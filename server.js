@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-03.5";
+const BUILD = "2026-11-03.6";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2401,6 +2401,16 @@ function handleRequest(req, res) {
     return fs.readFile(path.join(__dirname, "fonts", f), (err, buf) => {
       if (err) return send(res, 404, { error: "not found" });
       res.writeHead(200, { "Content-Type": "font/woff2", "Cache-Control": "public, max-age=31536000, immutable", "Access-Control-Allow-Origin": "*" });
+      res.end(buf);
+    });
+  }
+  // Brend rasmlari (favicon, ijtimoiy karta) — faqat assets/ papkasidagi oddiy nomli fayllar
+  if (m === "GET" && url.indexOf("/assets/") === 0) {
+    const f = url.slice(8), mt = /^[a-z0-9-]+\.(png|jpg|svg)$/.exec(f);
+    if (!mt) return send(res, 404, { error: "not found" });
+    return fs.readFile(path.join(__dirname, "assets", f), (err, buf) => {
+      if (err) return send(res, 404, { error: "not found" });
+      res.writeHead(200, { "Content-Type": { png: "image/png", jpg: "image/jpeg", svg: "image/svg+xml" }[mt[1]], "Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff" });
       res.end(buf);
     });
   }

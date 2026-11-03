@@ -3,7 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Shop</title>
+<title>Verion Shop — raqamli mahsulotlar do'koni</title>
+<meta name="description" content="O'yin valyutalari, obunalar, Telegram Premium va Stars, CS2 skinlar — tez yetkazib berish va balans orqali qulay to'lov.">
+<meta name="theme-color" content="#080a12">
+<link rel="canonical" href="https://verionshop.uz/">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Verion Shop">
+<meta property="og:locale" content="uz_UZ">
+<meta property="og:url" content="https://verionshop.uz/">
+<meta property="og:title" content="Verion Shop — raqamli mahsulotlar do'koni">
+<meta property="og:description" content="O'yin valyutalari, obunalar, Telegram Premium va Stars, CS2 skinlar — tez yetkazib berish va balans orqali qulay to'lov.">
+<meta property="og:image" content="https://verionshop.uz/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Verion Shop — raqamli mahsulotlar do'koni">
+<meta name="twitter:card" content="summary_large_image">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js" defer onload="window.initLottieTiles&&initLottieTiles()"></script>
 <style>
@@ -1620,7 +1636,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-03.5";
+var CLIENT_BUILD="2026-11-03.6";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2540,6 +2556,15 @@ function updateNavActive(){
     if(on)nav.style.setProperty("--ni",i);
   }
 }
+// Kirish qulayligi: har bir .swbtn — role="switch", aria-checked holati va qatordagi nom (admin oynalari ham)
+function a11ySwitches(root){var els=(root||document).querySelectorAll(".swbtn");for(var i=0;i<els.length;i++){var b=els[i];
+  if(!b.hasAttribute("role"))b.setAttribute("role","switch");
+  var on=b.classList.contains("on")?"true":"false";if(b.getAttribute("aria-checked")!==on)b.setAttribute("aria-checked",on);
+  if(!b.hasAttribute("aria-label")){var row=b.closest(".row,.switch"),l=row&&(row.querySelector(".l")||row.querySelector("span"));
+    var txt=l?(l.firstChild&&l.firstChild.nodeType===3?l.firstChild.textContent:l.textContent):"";if(txt)b.setAttribute("aria-label",txt.trim().slice(0,60));}}}
+try{var _a11yT=null;new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var m=ms[i];
+  if((m.type==="attributes"&&m.target.classList&&m.target.classList.contains("swbtn"))||m.type==="childList"){clearTimeout(_a11yT);_a11yT=setTimeout(function(){a11ySwitches();},40);return;}}})
+  .observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});}catch(e){}
 // iOS: sahifa aylantirilganda sarlavha ostida ingichka chiziq paydo bo'ladi
 (function(){var tk=false;window.addEventListener("scroll",function(){if(tk)return;tk=true;requestAnimationFrame(function(){tk=false;document.body.classList.toggle("scrolled",window.scrollY>4);});},{passive:true});})();
 
@@ -4079,12 +4104,12 @@ function payHTML(){
       html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
         +'<span class="rowicon ric-red">'+ic("play",16,"")+'</span><div><div>'+esc(t("video_guide"))+'</div>'
         +'<div class="d" style="color:var(--err)">'+esc(t("video_guide_sub"))+'</div></div></div>'
-        +'<button class="btn sm gray" data-openvid="1">'+ic("arrowRight",14)+'</button></div>';
+        +'<button class="btn sm gray" data-openvid="1" aria-label="'+esc(t("video_guide"))+'">'+ic("arrowRight",14)+'</button></div>';
     }
     html+='<div class="row"><div class="l" style="display:flex;align-items:center;gap:10px">'
       +'<span class="rowicon ric-green">'+ic("headset",16)+'</span><div><div>'+esc(t("support"))+'</div>'
       +'<div class="d" style="color:var(--ok)">@'+esc(SUPPORT_USERNAME)+'</div></div></div>'
-      +'<button class="btn sm gray" data-support="1">'+ic("arrowRight",14)+'</button></div>'
+      +'<button class="btn sm gray" data-support="1" aria-label="'+esc(t("support"))+'">'+ic("arrowRight",14)+'</button></div>'
       +'</div>';
     return html;
   }
@@ -4774,8 +4799,8 @@ function langSegHTML(){
 }
 function themeSegHTML(){
   return '<div class="seg mini">'
-    +'<button class="'+(S.theme!=="light"?"on":"")+'" data-settheme="dark">'+ic("moon",13)+'</button>'
-    +'<button class="'+(S.theme==="light"?"on":"")+'" data-settheme="light">'+ic("sun",13)+'</button>'
+    +'<button class="'+(S.theme!=="light"?"on":"")+'" data-settheme="dark" aria-label="Dark" aria-pressed="'+(S.theme!=="light")+'">'+ic("moon",13)+'</button>'
+    +'<button class="'+(S.theme==="light"?"on":"")+'" data-settheme="light" aria-label="Light" aria-pressed="'+(S.theme==="light")+'">'+ic("sun",13)+'</button>'
     +'</div>';
 }
 function svcRow(attr,iconName,color,title,sub,rightHTML,slotKey){

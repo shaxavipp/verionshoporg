@@ -567,3 +567,36 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 - Telegram imzosi vaqtga bog'liq bo'lmagan usulda tekshiriladi (`safeEq`).
 - Shrift yo'lida papkadan tashqariga chiqib bo'lmaydi.
 - Mijozga faqat oq ro'yxatdagi maydonlar boradi (`pubOrder` / `pubPayment`).
+
+## Sahifa metadatasi va kirish qulayligi (v3.6)
+
+- **Sarlavha va tavsif.** Sarlavha: "Verion Shop — raqamli mahsulotlar do'koni" (avval shunchaki "Shop" edi). Meta tavsif, `theme-color` va `canonical` (https://verionshop.uz/) qo'shildi.
+- **Ijtimoiy karta (Telegram, boshqa tarmoqlar).** Open Graph va Twitter teglari. Rasm `assets/og.jpg` (1200×630) haqiqiy start banneridan qirqilgan. verionshop.uz havolasi yuborilganda logo bilan chiroyli kartochka chiqadi.
+- **Ikonkalar.** `assets/icon-32.png` (favicon) va `assets/icon-180.png` (iPhone) haqiqiy avatardan kichraytirilgan.
+- **Yo'l.** Server `GET /assets/<nom>.(png|jpg|svg)` ni beradi. Nom regex bilan tekshiriladi, papkadan tashqariga chiqib bo'lmaydi; bir kun keshlanadi.
+- **Kirish qulayligi** (`fixing-accessibility` bo'yicha avtomatik tekshiruv — 0 ta nomsiz element):
+  - to'lov sahifasidagi "›" tugmalari, mavzu tugmalari (oy/quyosh) va hamma switch'lar nomlandi;
+  - har bir `.swbtn` (admin oynalari ham) `role="switch"` va `aria-checked` oladi (`a11ySwitches()`, MutationObserver orqali).
+
+## Rasmiy ochilishdan oldin (faqat egasi qila oladi)
+
+Admin panel → «🚀 Tayyorlik» bo'limida hammasi yashil bo'lsin. Majburiy bandlar:
+
+1. **Ma'lumotlar doimiy diskda** — Railway'da `/data` volume ulangan bo'lsin.
+2. **Do'kon boti tokeni** — Railway → Variables → `BOT_TOKEN`.
+3. **Ilova manzili** — Admin panel → Bot va /start.
+4. **Bot /start'ga javob beradi** — webhook ulangan.
+5. **Admin bot** — Admin panel → Admin bot → token.
+6. **Buyurtmalar kanali va to'lovlar kanali** — Admin panel → Kanallar.
+7. **SMS orqali avtomatik tasdiqlash** — Railway → `TG_WEBHOOK_SECRET` va userbot ishlab turgan bo'lsin.
+8. **Katalog e'lon qilingan va o'yinlarga narx qo'yilgan.**
+9. **Telegram Gift yuborish boti.**
+
+Tavsiya etiladi:
+- o'zingiz 1 000 so'm to'ldirib, haqiqiy to'lovni sinang;
+- o'yin liniyalari (MooGold, G2Bulk, Smile) kalit va balansi;
+- nakrutka paneli, Steam, 5sim, lis-skins (User ID);
+- kunlik zaxira nusxa;
+- FAQ va ijtimoiy tarmoqlar;
+- kamida 5 ta tasdiqlangan sharh;
+- AI yoki operator yordami.
