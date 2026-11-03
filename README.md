@@ -456,9 +456,29 @@ Butun ilova (mijoz ekranlari, oynalar, admin panel, yordam chati, sovg'alar) bit
 - **Ranglar: Verion brend palitrasi (v3.1).** Tun ko'ki fon (`#080a12`, kartalar `#131728`), elektr-ko'k urg'u (`#2f8fff`), brend gradienti (`#0b57cf → #2f8fff → #8fc2ff`) va oltin aksent. Logo va avatar shu ranglarda chizilgan, shuning uchun ular qaytarildi. v3'dagi neytral kulrang palitra botni boshqalardan ajratib turmasdi. Gradient faqat brend joylarida ishlatiladi: balans kartasi, asosiy tugma (`--grad-btn`), tanlangan tab, avatar, menyudagi faol belgi va yordam tugmasi. Profil va bo'lim ikonkalari bir xil brend ko'ki tusida, rang-barang emas. Fonda yengil ko'k nur bor. Kuchli porlash va doimiy animatsiya yo'q. Ochilish ekranida logodagi chaqmoq chaqnashi va gradientli yuklanish chizig'i qaytdi. Yorug' mavzu ham eski brend tokenlarida.
 - **Shrift.** Onest (OFL litsenziyasi). Inter juda ko'p ishlatiladi va dizayn detektori uni "AI belgisi" deb hisoblaydi, shuning uchun Onest tanlandi. Fayllar o'zimizda: `fonts/` papkasi, server `/fonts/*.woff2` yo'lidan bir yil keshlab beradi. Lotin (o'zbekcha ʻ belgisi ham), kengaytirilgan lotin va kirill qismlari bor, jami ~78 KB. Sarlavhalar 600–700, matn 400–500. Raqamlar teng kenglikda (`tabular-nums`).
 - **Burchaklar.** 10 (kichik), 14 (karta), 20 (oyna va katta karta).
-- **Harakat.** 150–280 ms, iOS uslubidagi egri chiziq. Bosilganda element biroz kichrayadi (0.97). Abadiy animatsiya yo'q. "Kamroq harakat" sozlamasi hurmat qilinadi.
+- **Harakat va animatsiya.** Asosiy egri chiziq — kuchli ease-out (`--spring`), oynalar va belgilar uchun iOS prujinasi (`--ios`, ~4% oshib ketish; `linear()` bilmaydigan brauzerda oddiy egri chiziq ishlaydi). Animatsiyalar faqat `transform`/`opacity` bilan, bosish effekti hamma joyda 0.96–0.97. Bot bo'ylab animatsiyalar:
+  - **Ekran almashganda** bloklar ketma-ket pastdan ko'tariladi, mahsulot kartalari bittadan chiqadi. Bu faqat bo'lim o'zgarganda ishlaydi, oddiy qayta chizishda emas (`_lastViewKey`).
+  - **Pastki menyu:** faol bo'lim ostidagi shisha belgi prujina bilan siljiydi, ikonka "sakrab" qo'yiladi.
+  - **Balans o'zgarganda** raqam yuqoriga "aylanib" chiqadi (`balBump()`, matn darhol yangi qiymatda).
+  - **Pastki oyna** prujina bilan chiqadi va pastga silliq tushib yopiladi.
+  - **Xabar (toast)** iOS banneri kabi shisha fonda, kattalashib paydo bo'ladi.
+  - **Sevimlilarga qo'shilganda** yurak "uradi".
+  - **iOS switch** tugmasi prujina bilan suriladi.
+  - **Bo'lim kartasi** bosilganda ikonkasi kichrayadi.
+  - **Ro'yxat qatorlari** bosilganda xiralashadi.
+  - **Sarlavha:** sahifa aylantirilganda ostida ingichka chiziq paydo bo'ladi.
+
+  "Animatsiyalarni kamaytirish" sozlamasi va tizimdagi `prefers-reduced-motion` hammasini o'chiradi.
+- **iOS elementlari.**
+  - **Pastki menyu:** suzuvchi shaffof "suyuq shisha" panel (blur + to'yinganlik, ichki yorug' chiziq), faol bo'lim ostida siljiydigan shisha belgi.
+  - **Segment tugmasi** ("Buyurtmalar / To'ldirishlar", admin davrlari): oq/kulrang "bosh barmoq" bilan.
+  - **Switch:** iOS o'lchamida (51×31).
+  - **Pastki oyna:** 28 px burchak va tutqich.
+  - **Xabar:** shisha banner.
+  - **Sarlavha:** shisha.
+- **Bosh sahifa bo'limlari.** Yana katta kartalar (2 ustun). Har biri ichida yengil ko'k "oyna" bor, markazda halqa ichida ikonka turadi, ostida nom va son. Burchaklar konsentrik (24 = 16 + 8). Admin rasm yuklasa, rasm oynani to'ldiradi.
 - **Ikonkalar.** Lucide (ISC litsenziyasi), hammasi bir uslubda: asosiy ilovada chiziq qalinligi 1.75, skinlar do'konida 2. Rangli kvadrat fonlar o'rniga neytral fon ishlatiladi.
-- **Tuzilish.** Pastki menyu butun kenglikdagi oddiy tab bar. Bosh sahifadagi bo'limlar ixcham gorizontal kartalar (`.catgrid`). Balans kartasi tekis. Summada "so'm" kichik va xira yoziladi (`curS()`). Bo'lim sarlavhalari katta harf bilan emas, oddiy yoziladi. Yordam tugmasi kichik va neytral; profil, to'lov, Steam va virtual raqam sahifalarida u ko'rsatilmaydi, chunki u yerda yordam havolasi yoki pastki xarid tugmasi bor (`body.no-fab`).
+- **Tuzilish.** Summada "so'm" kichik va xira yoziladi (`curS()`). Bo'lim sarlavhalari katta harf bilan emas, oddiy yoziladi. Yordam tugmasi kichik va neytral; profil, to'lov, Steam va virtual raqam sahifalarida u ko'rsatilmaydi, chunki u yerda yordam havolasi yoki pastki xarid tugmasi bor (`body.no-fab`).
 - **Emoji.** Mijozga ko'rinadigan chat tugmalari, virtual raqam tablari va admin bosh sahifasidagi ko'rsatkichlardan olib tashlangan.
 - **Ochilish ekrani.** Logo chiziq bo'ylab ochiladi va pastda yuklanish chizig'i bor. Chaqmoq porlashi (radial glow) olib tashlangan.
 - **Kirish qulayligi.** Faqat ikonkali tugmalarda nom bor (`aria-label`): mavzu, sevimlilar, yopish, orqaga. Bezak ikonkalari ekran o'quvchidan yashirilgan (`aria-hidden`). Escape tugmasi pastki oynani yopadi. Bo'sh ro'yxatlarda aniq keyingi harakat tugmasi bor ("Mahsulotlar", "Balansni to'ldirish").

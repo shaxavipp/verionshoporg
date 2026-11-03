@@ -39,7 +39,9 @@
   --shadow-pop:0 18px 44px rgba(2,4,12,.6),0 2px 8px rgba(2,4,12,.35);
   --shadow-acc:0 10px 22px -10px rgba(47,143,255,.75);
   --font:"Onest",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --navh:calc(58px + env(safe-area-inset-bottom));
+  --navh:calc(84px + env(safe-area-inset-bottom)); /* suzuvchi menyu + chekka */
+  /* iOS prujinasi (~4% oshib ketish); linear() bilmaydigan brauzerlarda --ease ishlaydi */
+  --ios:linear(0,.06 3%,.23 7%,.5 13%,.76 20%,.92 28%,1.01 37%,1.035 45%,1.03 55%,1.01 68%,1);
   --noise:none;
 }
 [data-theme="light"]{
@@ -120,13 +122,35 @@ img{max-width:100%}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes slide{0%{margin-left:-40%}100%{margin-left:100%}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.screen{animation:fadeUp .2s var(--spring)}
+/* Ekran almashganda bloklar ketma-ket ko'tarilib chiqadi; oddiy qayta chizishda animatsiya yo'q */
+@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.screen.enter>*{animation:rise .42s var(--spring) both}
+.screen.enter>*:nth-child(2){animation-delay:.03s}.screen.enter>*:nth-child(3){animation-delay:.06s}
+.screen.enter>*:nth-child(4){animation-delay:.09s}.screen.enter>*:nth-child(5){animation-delay:.12s}
+.screen.enter>*:nth-child(n+6){animation-delay:.15s}
+.screen.enter .grid>*{animation:rise .42s var(--spring) both}
+.screen.enter .grid>*:nth-child(1){animation-delay:.05s}.screen.enter .grid>*:nth-child(2){animation-delay:.075s}
+.screen.enter .grid>*:nth-child(3){animation-delay:.1s}.screen.enter .grid>*:nth-child(4){animation-delay:.125s}
+.screen.enter .grid>*:nth-child(5){animation-delay:.15s}.screen.enter .grid>*:nth-child(6){animation-delay:.175s}
+.screen.enter .grid>*:nth-child(n+7){animation-delay:.2s}
+/* balans o'zgarganda raqam yuqoriga "aylanib" chiqadi (matn darhol yangi qiymatda) */
+@keyframes balRoll{from{opacity:0;transform:translateY(45%);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+.bump{display:inline-block;animation:balRoll .55s var(--spring)}
+/* sevimli — yurak "urib" qo'yiladi */
+@keyframes heartPop{0%{transform:scale(1)}35%{transform:scale(1.3)}100%{transform:scale(1)}}
+.favbtn.pop svg{animation:heartPop .45s var(--spring)}
+/* ro'yxat qatorlari — iOS kabi bosilganda xiralashadi */
+.row{transition:opacity .15s ease}
+.row:active{opacity:.55}
+[data-reduce-motion="1"] .screen.enter>*,[data-reduce-motion="1"] .screen.enter .grid>*,[data-reduce-motion="1"] .bump,[data-reduce-motion="1"] .favbtn.pop svg{animation:none}
+@media (prefers-reduced-motion:reduce){.screen.enter>*,.screen.enter .grid>*,.bump,.favbtn.pop svg{animation:none}}
 
 /* sarlavha */
 header{position:sticky;top:0;z-index:50;background:var(--hdrbg);
   backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
-  padding:10px 16px;border-bottom:1px solid var(--line);
+  padding:10px 16px;border-bottom:1px solid transparent;transition:border-color .2s ease,background-color .2s ease;
   display:flex;align-items:center;justify-content:space-between;gap:10px;}
+body.scrolled header{border-bottom-color:var(--line)}
 header .hu{display:flex;align-items:center;gap:10px;min-width:0}
 header .hav{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 auto;
   background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:650;color:#fff}
@@ -226,15 +250,24 @@ header .hun{font-size:12px;color:var(--mut);line-height:1.25}
 .empty{padding:48px 24px;text-align:center;color:var(--mut);font-size:14px;grid-column:1/-1}
 .emptycard{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--mut);font-size:14px;padding:14px}
 .emptycard .btn{flex:0 0 auto}
-/* bosh sahifa bo'limlari — ixcham gorizontal kartalar */
-.catgrid.grid{grid-template-columns:1fr 1fr;gap:10px;padding:4px 16px 8px}
-.catgrid .pcard{flex-direction:row;align-items:center;gap:12px;padding:12px;min-height:72px;background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
-.catgrid .pcard .ptile{flex:0 0 44px;width:44px;height:44px;aspect-ratio:auto;padding:0;border-radius:12px;background:var(--grad-navy)!important;color:#cfe3ff!important}
-.catgrid .pcard .ptile .isvg{width:22px;height:22px}
-.catgrid .pcard .ptile img{transform:none}
-.catgrid .pcard .pbody{padding:0;gap:2px;min-width:0}
-.catgrid .pcard .pbody .nm{font-size:15px;font-weight:600;-webkit-line-clamp:1}
-.catgrid .pcard .pbody .ct{font-size:12.5px}
+/* bosh sahifa bo'limlari — katta, minimalistik kartalar (ichida yorug' "oyna", markazda ikonka) */
+.homecats.grid{grid-template-columns:1fr 1fr;gap:12px;padding:6px 16px 10px}
+.homecats .pcard{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:8px;overflow:hidden;
+  transition:transform .25s var(--spring),border-color .2s ease}
+.homecats .pcard:active{transform:scale(.97);border-color:var(--line2)}
+.homecats .pcard .ptile{aspect-ratio:5/4;height:auto;border-radius:16px;padding:0;color:var(--acc2)!important;
+  background:radial-gradient(90% 75% at 50% 0%,rgba(47,143,255,.26),rgba(47,143,255,0) 72%),linear-gradient(180deg,#17204a 0%,#111733 100%)!important}
+[data-theme="light"] .homecats .pcard .ptile{color:var(--acc)!important;
+  background:radial-gradient(90% 75% at 50% 0%,rgba(31,122,224,.16),rgba(31,122,224,0) 72%),linear-gradient(180deg,#eaf1ff 0%,#f5f8ff 100%)!important}
+.homecats .pcard .ptile::before{content:"";position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px 0 0 -33px;border-radius:50%;
+  background:rgba(255,255,255,.05);border:1px solid rgba(143,194,255,.2);transition:transform .35s var(--spring)}
+[data-theme="light"] .homecats .pcard .ptile::before{background:rgba(255,255,255,.75);border-color:rgba(31,122,224,.14)}
+.homecats .pcard .ptile .isvg{position:relative;z-index:1;width:30px;height:30px;transition:transform .35s var(--spring)}
+.homecats .pcard:active .ptile .isvg,.homecats .pcard:active .ptile::before{transform:scale(.9)}
+.homecats .pcard .ptile img{transform:none}
+.homecats .pcard .pbody{padding:10px 6px 4px;gap:2px}
+.homecats .pcard .pbody .nm{font-size:15.5px;font-weight:600;letter-spacing:-.01em;-webkit-line-clamp:1}
+.homecats .pcard .pbody .ct{font-size:12.5px;color:var(--mut)}
 
 /* nakrutka (SMM) xizmatlar ro'yxati — ixcham qatorlar */
 .svclist{display:flex;flex-direction:column;gap:8px;padding:10px 16px}
@@ -253,18 +286,20 @@ header .hun{font-size:12px;color:var(--mut);line-height:1.25}
 .svcgrid .ptile{height:74px}
 
 /* pastdan chiqadigan oyna */
-.dim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;opacity:0;transition:opacity .28s ease}
+.dim{position:fixed;inset:0;background:rgba(2,4,12,.55);z-index:100;opacity:0;transition:opacity .3s ease}
 [data-theme="light"] .dim{background:rgba(17,20,28,.32)}
 .dim.on{opacity:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;
   background:var(--card);border-radius:20px 20px 0 0;border-top:1px solid var(--line);padding:0;display:flex;flex-direction:column;
   max-height:calc(var(--vh, 1vh) * 92);top:auto;overflow:hidden;box-shadow:var(--shadow-pop);
-  transform:translateY(105%);transition:transform .36s var(--ease);}
+  transform:translateY(105%);transition:transform .42s var(--ease);transition:transform .5s var(--ios);}
+.sheet.out{transition:transform .26s var(--ease)}
 .sheet.on{transform:translateY(0)}
 .sheet-head{position:relative;flex:0 0 auto;padding:8px 16px 0;min-height:40px}
 .sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   padding:0 16px calc(32px + env(safe-area-inset-bottom));}
 .grab{width:36px;height:5px;border-radius:3px;background:var(--line2);margin:0 auto 12px}
+.sheet{border-radius:28px 28px 0 0}
 .bal-retry{color:var(--acc2);text-decoration:underline;font-size:.85em;cursor:pointer}
 .sheet-x,.sheet-back{position:absolute;top:6px;width:32px;height:32px;border-radius:50%;
   background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;color:var(--mut2);flex-shrink:0}
@@ -367,26 +402,36 @@ header .hun{font-size:12px;color:var(--mut);line-height:1.25}
 .hc-acts{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .hc-acts .btn.sm{flex:1}
 /* xabar (toast) — pastki menyu ustida, hech narsani bosishga xalaqit bermaydi */
-.toast{position:fixed;left:50%;bottom:calc(var(--navh) + 14px);transform:translateX(-50%) translateY(12px);
-  background:#26272d;border:1px solid rgba(255,255,255,.08);color:#f2f3f5;padding:11px 16px;border-radius:12px;
-  font-size:14px;font-weight:500;z-index:600;opacity:0;transition:opacity .2s ease,transform .28s var(--spring);max-width:88vw;text-align:center;
+.toast{position:fixed;left:50%;bottom:calc(var(--navh) + 10px);transform:translateX(-50%) translateY(14px) scale(.94);
+  background:rgba(24,30,54,.82);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid rgba(255,255,255,.08);color:#f3f6fd;padding:11px 18px;border-radius:18px;
+  font-size:14px;font-weight:500;z-index:600;opacity:0;transition:opacity .2s ease,transform .3s var(--ease);transition:opacity .2s ease,transform .5s var(--ios);max-width:88vw;text-align:center;
   box-shadow:var(--shadow-pop);pointer-events:none}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+[data-theme="light"] .toast{background:rgba(255,255,255,.86);color:var(--txt);border-color:rgba(255,255,255,.9)}
 .has-gbuy .toast{bottom:calc(var(--navh) + 84px)}
-.toast.err{background:#3a1d1d;border-color:rgba(240,90,82,.35);color:#ffc9c5}
+.toast.err{background:rgba(70,20,32,.88);border-color:rgba(255,92,114,.35);color:#ffd0d6}
+[data-theme="light"] .toast.err{background:rgba(255,236,239,.92);color:#b0182c;border-color:rgba(224,41,63,.25)}
 
-/* pastki menyu — butun kenglikdagi oddiy tab bar */
-nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
-  background:var(--hdrbg);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);
-  border-top:1px solid var(--line);padding:6px 4px env(safe-area-inset-bottom);height:var(--navh)}
-nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:2px 0 4px;height:52px;
-  color:var(--mut);font-size:10.5px;font-weight:500;letter-spacing:0}
-nav button:active{transform:scale(.96)}
+/* pastki menyu — iOS uslubidagi suzuvchi shaffof (liquid glass) panel, faol bo'lim ostida siljiydigan shisha belgi */
+nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:60;display:flex;height:64px;padding:6px;border-radius:26px;
+  background:rgba(18,23,44,.58);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(2,4,12,.5),inset 0 1px 0 rgba(255,255,255,.07)}
+[data-theme="light"] nav{background:rgba(255,255,255,.66);border-color:rgba(255,255,255,.75);
+  box-shadow:0 12px 32px rgba(17,30,70,.14),inset 0 1px 0 rgba(255,255,255,.95)}
+.navind{position:absolute;left:6px;top:6px;bottom:6px;width:calc((100% - 12px) / 5);border-radius:20px;z-index:0;pointer-events:none;
+  background:rgba(47,143,255,.17);border:1px solid rgba(143,194,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateX(calc(var(--ni,0) * 100%));transition:transform .45s var(--ease);transition:transform .6s var(--ios)}
+[data-theme="light"] .navind{background:rgba(31,122,224,.11);border-color:rgba(31,122,224,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;height:52px;
+  color:var(--mut);font-size:10.5px;font-weight:500;letter-spacing:0;transition:color .2s ease,transform .15s var(--spring)}
+nav button:active{transform:scale(.94)}
 nav button.on{color:var(--acc2)}
 [data-theme="light"] nav button.on{color:var(--acc)}
-nav button::before{content:"";position:absolute;top:2px;left:50%;width:54px;height:30px;margin-left:-27px;border-radius:15px;z-index:-1;
-  background:var(--acc-soft);opacity:0;transform:scale(.7);transition:opacity .2s ease,transform .25s var(--spring)}
-nav button.on::before{opacity:1;transform:none}
+@keyframes navPop{0%{transform:scale(.82)}55%{transform:scale(1.1)}100%{transform:scale(1)}}
+nav button.on svg{animation:navPop .5s var(--spring)}
+[data-reduce-motion="1"] nav button.on svg{animation:none}
+[data-reduce-motion="1"] .navind{transition:none}
 nav button svg{width:24px;height:24px}
 .shine-ic{display:inline-flex;color:var(--gold)}
 
@@ -1405,18 +1450,20 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .itemrow .acts button{padding:7px 9px;border-radius:8px;background:var(--card2);border:none;font-size:13px}
 .itemrow.offi .nm{opacity:.45;text-decoration:line-through}
 /* segmentli tanlagich — iOS uslubida */
-.seg{display:flex;background:var(--card2);border:none;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
-.seg button{flex:1;padding:7px 6px;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--mut2);min-width:70px}
-.seg button.on{background:var(--grad-btn);color:#fff;font-weight:600}
+.seg{display:flex;background:var(--card2);border:none;border-radius:11px;padding:2px;gap:2px;flex-wrap:wrap}
+.seg button{flex:1;padding:7px 6px;border-radius:9px;font-size:13px;font-weight:500;color:var(--mut2);min-width:70px;transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.seg button.on{background:#2d3866;color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(2,4,12,.35),inset 0 1px 0 rgba(255,255,255,.06)}
+[data-theme="light"] .seg button.on{background:#fff;color:var(--txt);box-shadow:0 3px 8px rgba(17,30,70,.12),0 0 0 .5px rgba(17,30,70,.06)}
 .seg.mini{padding:2px;border-radius:9px;flex-wrap:nowrap;width:auto;gap:2px}
 .seg.mini button{flex:none;min-width:30px;padding:5px 9px;font-size:11.5px;border-radius:7px}
 .ibadge{transition:transform .15s var(--spring)}
 .row:active .ibadge{transform:scale(.96)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
-.swbtn{width:46px;height:28px;border-radius:999px;background:var(--card3);border:none;position:relative;transition:background-color .2s ease}
-.swbtn i{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s var(--spring)}
+.swbtn{width:51px;height:31px;flex:0 0 auto;border-radius:999px;background:var(--card3);border:none;position:relative;transition:background-color .25s ease}
+.swbtn i{position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 3px 1px rgba(0,0,0,.06);
+  transition:transform .35s var(--ease);transition:transform .45s var(--ios)}
 .swbtn.on{background:var(--acc);border-color:var(--acc)}
-.swbtn.on i{left:20px;background:#fff}
+.swbtn.on i{left:2px;transform:translateX(20px);background:#fff}
 .giftSpin{width:40px;height:40px;border-radius:50%;border:3px solid var(--card3);border-top-color:var(--acc);animation:giftspin .8s linear infinite;margin:28px auto 18px}
 @keyframes giftspin{to{transform:rotate(360deg)}}
 .giftOkCircle{width:60px;height:60px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;margin:22px auto 16px;animation:giftpop .3s var(--spring)}
@@ -1502,7 +1549,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-03.2";
+var CLIENT_BUILD="2026-11-03.3";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2295,7 +2342,10 @@ function render(){
     _navLangBuilt=S.lang;
     bindNavOnce(); // faqat shu yerda — aks holda bosilganda listener ko'payib, bir bosishda bir necha marta ishga tushib qolardi
   }
-  var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen">';
+  // Ekran (bo'lim) o'zgargandagina kirish animatsiyasi — oddiy qayta chizishda emas
+  var vk=[S.screen,S.category,S.group&&S.group.key,S.game&&S.game.id,S.steamPage,S.vnumPage,S.giftHub?1:0,S.ordTab].join("|");
+  var enter=vk!==_lastViewKey;_lastViewKey=vk;
+  var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen'+(enter?" enter":"")+'">';
   if(S.screen==="home")html+=homeHTML();
   else if(S.screen==="products")html+=(S.game&&gameById(S.game.id))?gamePageHTML():productsScreenHTML();
   else if(S.screen==="orders")html+=ordersHTML();
@@ -2308,6 +2358,17 @@ function render(){
   keepImgs();
   updateNavActive();
   bind();
+  balBump();
+}
+var _lastViewKey="";
+/* Balans o'zgarganda raqam "aylanib" chiqadi (matn darhol yangi qiymatda — faqat ko'rinish) */
+var BAL_SHOWN=null;
+function balBump(){
+  if(ME.balance===null)return;
+  var prev=BAL_SHOWN;BAL_SHOWN=ME.balance;
+  if(prev===null||prev===ME.balance)return;
+  var els=document.querySelectorAll(".balcard .bv,.pbal .pbv");
+  for(var i=0;i<els.length;i++){var el=els[i];el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");}
 }
 var _navLangBuilt=null;
 function go(screen){if(screen==="home"){S.group=null;S.category=null;S.giftHub=null;S.game=null;S.steamPage=false;S.vnumPage=false;}S.screen=screen;haptic();render();window.scrollTo(0,0);if(screen==="profile"&&REFERRAL===null)loadReferral();if(screen==="profile"&&LOYALTY===null)loadLoyalty();}
@@ -2388,7 +2449,8 @@ function headerHTML(){
 }
 function navHTML(){
   function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon].replace("<svg ",'<svg aria-hidden="true" ')+'<span>'+esc(label)+'</span></button>';}
-  return '<nav id="mainNav">'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'</nav>';
+  var idx=["home","products","pay","orders","profile"].indexOf(S.screen);
+  return '<nav id="mainNav" style="--ni:'+(idx<0?0:idx)+'"><span class="navind" aria-hidden="true"></span>'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'</nav>';
 }
 // Nav DOM'ini yo'q qilib qaytadan yaratmasdan — faqat aktiv tugmani almashtiradi.
 // (backdrop-filter blur bor nav har safar noldan yaratilsa, tab bosilganda qotish hissi beradi.)
@@ -2399,8 +2461,11 @@ function updateNavActive(){
   for(var i=0;i<btns.length;i++){
     var on=btns[i].getAttribute("data-nav")===S.screen;
     btns[i].classList.toggle("on",on);
+    if(on)nav.style.setProperty("--ni",i);
   }
 }
+// iOS: sahifa aylantirilganda sarlavha ostida ingichka chiziq paydo bo'ladi
+(function(){var tk=false;window.addEventListener("scroll",function(){if(tk)return;tk=true;requestAnimationFrame(function(){tk=false;document.body.classList.toggle("scrolled",window.scrollY>4);});},{passive:true});})();
 
 /* ===== Mahsulotlar (qidiruv + filtr) ===== */
 var PRODUCTS_ALL_PILL=["all","tab_all"];
@@ -2709,7 +2774,7 @@ var CAT_ICON={obuna:"diamond",promokod:"gift",telegram:"send",games:"gamepad",na
    Bosilganda o'sha kategoriyaning tarkibi (guruhlar yoki, guruh yo'q bo'lsa,
    to'g'ridan-to'g'ri mahsulotlar) alohida "ekran" sifatida ochiladi. */
 function categoryCardsHTML(){
-  var html='<div class="grid groupgrid catgrid">',any=false;
+  var html='<div class="grid groupgrid homecats">',any=false;
   for(var m=0;m<PRODUCTS_PILLS.length;m++){
     var kind=PRODUCTS_PILLS[m][0],labelKey=PRODUCTS_PILLS[m][1];
     // "telegram_gift" mahsulotlari (TG Gift ichidagi har bir sovg'a) bu yerda
@@ -2722,7 +2787,7 @@ function categoryCardsHTML(){
     any=true;
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
-    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",22);
+    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",30);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
@@ -2736,7 +2801,7 @@ function categoryCardsHTML(){
   var aiList=gamesOf("ai"),aiMeta=CatMeta.ai||{};
   if(aiList.length&&aiMeta.enabled!==false){
     any=true;
-    var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("sparkles",22);
+    var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("sparkles",30);
     html+='<button class="pcard" data-opencat="ai">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+aiTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(categoryLabel("ai"))+'</div>'
@@ -2746,7 +2811,7 @@ function categoryCardsHTML(){
   if(nkMeta.enabled!==false){
     any=true;
     ensureNkLoadedForHome(); // hali yuklanmagan bo'lsa fonda yuklaydi, tayyor bo'lgach son yangilanadi
-    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",22);
+    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",30);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):esc(t("nakrutka_sub"));
     html+='<button class="pcard" data-opencat="nakrutka">'
@@ -3515,7 +3580,8 @@ function openReviewForm(orderId,itemTitle){
 // chaqiriladi (ya'ni oldingi ekran qayta ochiladi). X tugmasi esa hamon HAMMASINI
 // (butun zanjirni) yopadi — bu ikkalasi endi alohida, aniq vazifaga ega.
 function openSheet(inner,backFn){
-  closeSheet();
+  closeSheet(true);
+  var old=document.querySelectorAll(".sheet.out,.dim:not(#dim)");for(var oi=0;oi<old.length;oi++)old[oi].remove();
   var dim=document.createElement("div");dim.className="dim";dim.id="dim";
   var sh=document.createElement("div");sh.className="sheet";sh.id="sheetEl";
   sh.innerHTML='<div class="sheet-head">'
@@ -3531,7 +3597,14 @@ function openSheet(inner,backFn){
   if(backFn){var bb=sh.querySelector("#sheetBackBtn");if(bb)bb.addEventListener("click",function(){backFn();});}
   return sh;
 }
-function closeSheet(){var d=document.getElementById("dim"),s=document.getElementById("sheetEl");if(d)d.remove();if(s)s.remove();document.body.style.overflow="";}
+function closeSheet(instant){
+  var d=document.getElementById("dim"),s=document.getElementById("sheetEl");document.body.style.overflow="";
+  // Oyna pastga silliq tushib yopiladi; id darhol olinadi — yangi oyna bilan to'qnashmaydi
+  var quick=instant===true||S.reduceMotion||!s||!s.classList.contains("on");
+  [d,s].forEach(function(el){if(!el)return;el.removeAttribute("id");el.style.pointerEvents="none";
+    if(quick){el.remove();return;}
+    if(el===s)el.classList.add("out");el.classList.remove("on");setTimeout(function(){el.remove();},300);});
+}
 // Klaviatura: Escape pastki oynani yopadi
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&document.getElementById("sheetEl"))closeSheet();});
 
@@ -9745,7 +9818,8 @@ function bind(){
     openLink(shareUrl);
   });
   els=document.querySelectorAll("[data-fav]");
-  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();toggleFavorite(this.getAttribute("data-fav"));});
+  for(i=0;i<els.length;i++)els[i].addEventListener("click",function(e){e.stopPropagation();var id=this.getAttribute("data-fav");toggleFavorite(id);
+    var nb=document.querySelectorAll("[data-fav]");for(var k=0;k<nb.length;k++)if(nb[k].getAttribute("data-fav")===id&&nb[k].classList.contains("on"))nb[k].classList.add("pop");});
   els=document.querySelectorAll("[data-openfavs]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",openFavoritesSheet);
   els=document.querySelectorAll("[data-opennakrutka]");
