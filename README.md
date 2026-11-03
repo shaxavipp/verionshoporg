@@ -531,3 +531,39 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 `impeccable`ning `craft-floor.md`, `new-work.md`, `operate.md` fayllari va ishga tushirgichi yuklanmadi (impeccable.style bloklangan). Ular o'rnida `baseline-ui` va loyiha dizayn tizimi ishlatiladi.
 
 **Dizayn detektori (impeccable, Apache-2.0):** `npx impeccable detect verion-shop.html`. U "AI chizgan" belgilarni topadi: gradient matn, porlash, binafsha palitra, ichma-ich kartalar, ko'p ishlatiladigan shrift, past kontrast. Hozirgi holat: 4 ta topilma, hammasi ataylab qoldirilgan: asosiy tugma ostidagi brend ko'k soyasi, ochilish ekranidagi chaqmoq chaqnashi, chatdagi "yozmoqda" nuqtalari va skinlar do'konining to'r foni. `impeccable`ning o'z qoidasi ("the brief wins") bo'yicha ham brend tanlovi detektor ogohlantirishidan ustun turadi.
+
+## Tezlik (qotmaslik) va yengil rejim
+
+- **Kartochkalarda xiralashtirish yo'q.** Sevimli tugmasi, zaxira belgisi, admin ✏️ va o'yin sahifasidagi "orqaga" tugmasi zich yarim-shaffof fonda. Ilgari ularning har birida `backdrop-filter` bor edi: 20 ta mahsulotda 40 ta xiralashgan qatlam paydo bo'lib, telefonni qotirardi.
+- **Menyu va sarlavha:** xiralashtirish yengillashtirildi (16–18 px), fon zichroq.
+- **Yashirin xabar (toast)** umuman chizilmaydi (`visibility:hidden`).
+- **Ekrandan tashqaridagi mahsulot kartochkalari** chizilmaydi (`content-visibility:auto`).
+- **Logo soyasi** (`drop-shadow`) faqat katta rasmda qoladi.
+- **Video va lottie** faqat ekranda ko'rinib turganda o'ynaydi (`watchMedia()`, IntersectionObserver). To'rdagi videolar avtomatik o'ynamaydi.
+- **Yengil rejim (`html.lite`).** Telegram Android telefon kuchini xabar qiladi (User-Agent oxirida `LOW` / `AVERAGE` / `HIGH`). `LOW` yoki `AVERAGE` bo'lsa yoki zaif Android bo'lsa (≤3 GB xotira yoki ≤4 yadro), quyidagilar o'chiriladi: xiralashtirish, fon nuri, bezak animatsiyalari (yorug'lik o'tishi, suzish, halqa) va mahsulot kartochkalarining ketma-ket kirishi.
+- **O'lchov (protsessor 4× sekinlashtirilgan):** bosh sahifani aylantirish — eng sekin kadr 17 ms, tushib qolgan kadr yo'q. Ekranni chizish 1–1.5 ms.
+
+## Ranglar va animatsiya (v3.5)
+
+**Ranglar**
+- **Profil:**
+  - bosh karta brend gradientida, avatar atrofida sekin aylanuvchi yorug' halqa;
+  - statistikada rangli belgilar: buyurtma ko'k, xarid yashil, balans oltin;
+  - qatorlarda iOS "Sozlamalar" uslubidagi rangli ikonka kataklari (oq belgi, rang gradienti).
+- **Admin plitkalari** ham iOS uslubidagi rangli ikonkalarda.
+- **Bosh sahifa bo'limlari** — har birining o'z rangi (`CAT_COLOR`): Obuna binafsha, O'yinlar yashil, Telegram ko'k, Nakrutka to'q sariq, AI firuza.
+
+**Animatsiyalar** (uzunroq, faqat `transform` va `opacity`)
+- **Ekran kirishi:** 0.65 s, bloklar ketma-ket chiqadi. Yo'nalish: bo'lim ichiga kirilsa o'ngdan, orqaga qaytilsa chapdan, pastki menyu orqali o'tilsa pastdan. Mahsulot kartochkalari ham bittadan chiqadi (birinchi 12 tasi).
+- **Bosh kartalar:** balans, to'lov va profil kartalari bo'ylab har 7 soniyada sekin yorug'lik o'tadi.
+- **Bo'lim ikonkalari** sekin "suzadi", atrofidagi halqa "nafas oladi".
+- **Pastki oyna:** ochilganda ichidagi bloklar ketma-ket chiqadi.
+- **O'chirish:** "Kamroq harakat" sozlamasi, tizimdagi `prefers-reduced-motion` va yengil rejim bezak animatsiyalarini o'chiradi.
+
+## Xavfsizlik (v3.5 tekshiruvi)
+
+- `npm audit`: 0 zaiflik.
+- HTML javobga `Strict-Transport-Security` va `Permissions-Policy` (kamera, mikrofon, joylashuv, to'lov API — yopiq) qo'shildi. `X-Content-Type-Options` va `Referrer-Policy` avvaldan bor.
+- Telegram imzosi vaqtga bog'liq bo'lmagan usulda tekshiriladi (`safeEq`).
+- Shrift yo'lida papkadan tashqariga chiqib bo'lmaydi.
+- Mijozga faqat oq ro'yxatdagi maydonlar boradi (`pubOrder` / `pubPayment`).

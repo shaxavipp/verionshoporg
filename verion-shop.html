@@ -29,7 +29,7 @@
   --grad-white:linear-gradient(135deg,#eaf3ff 0%,#ffffff 100%);
   --grad-navy:linear-gradient(135deg,#0a2a6b 0%,#1c4fb0 100%);
   --navy:#4d7fdb;
-  --hdrbg:rgba(9,12,22,.8); --glassline:rgba(160,180,255,.16);
+  --hdrbg:rgba(9,12,22,.86); --glassline:rgba(160,180,255,.16);
   --ok:#31e08a; --warn:#ffcf4d; --blue:#5b9dff; --err:#ff5c72; --gold:#ffcf70;
   --ok-soft:rgba(49,224,138,.13); --warn-soft:rgba(255,207,77,.13); --err-soft:rgba(255,92,114,.14);
   /* Burchaklar: 6 belgi/teg · 10 kichik boshqaruv/ikonka · 14 tugma/maydon/ixcham plitka · 20 panel · 24 kartochka va bosh karta · 28 oyna */
@@ -38,7 +38,7 @@
   --fs-2xs:11px; --fs-xs:12.5px; --fs-sm:13.5px; --fs-md:15px; --fs-lg:17px; --fs-xl:20px; --fs-2xl:24px; --fs-3xl:30px;
   --spring:cubic-bezier(.23,1,.32,1); /* kuchli ease-out — bosish va kirish uchun */
   --ease:cubic-bezier(.32,.72,0,1);
-  --glass:blur(22px) saturate(180%);
+  --glass:blur(16px) saturate(150%);
   --shadow-pop:0 18px 44px rgba(2,4,12,.6),0 2px 8px rgba(2,4,12,.35);
   --shadow-acc:0 10px 22px -10px rgba(47,143,255,.75);
   --font:"Onest",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -125,17 +125,56 @@ img{max-width:100%}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes slide{0%{margin-left:-40%}100%{margin-left:100%}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* yengil rejim (zaif Android): xiralashtirish, fon nuri va bezak animatsiyalari yo'q */
+.lite body::before{content:none}
+.lite nav{background:rgba(18,23,44,.97);backdrop-filter:none;-webkit-backdrop-filter:none}
+.lite[data-theme="light"] nav{background:rgba(255,255,255,.97)}
+.lite header,.lite .adm-head,.lite .sup-head{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
+.lite .toast{backdrop-filter:none;-webkit-backdrop-filter:none;background:#1c2340}
+.lite[data-theme="light"] .toast{background:#fff}
+.lite .giftGlow::before,.lite .giftFloat{animation:none}
 /* Ekran almashganda bloklar ketma-ket ko'tarilib chiqadi; oddiy qayta chizishda animatsiya yo'q */
-@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
-.screen.enter>*{animation:rise .42s var(--spring) both}
-.screen.enter>*:nth-child(2){animation-delay:.03s}.screen.enter>*:nth-child(3){animation-delay:.06s}
-.screen.enter>*:nth-child(4){animation-delay:.09s}.screen.enter>*:nth-child(5){animation-delay:.12s}
-.screen.enter>*:nth-child(n+6){animation-delay:.15s}
-.screen.enter .grid>*{animation:rise .42s var(--spring) both}
-.screen.enter .grid>*:nth-child(1){animation-delay:.05s}.screen.enter .grid>*:nth-child(2){animation-delay:.075s}
-.screen.enter .grid>*:nth-child(3){animation-delay:.1s}.screen.enter .grid>*:nth-child(4){animation-delay:.125s}
-.screen.enter .grid>*:nth-child(5){animation-delay:.15s}.screen.enter .grid>*:nth-child(6){animation-delay:.175s}
-.screen.enter .grid>*:nth-child(n+7){animation-delay:.2s}
+/* Ekran kirishi: ichkariga kirganda o'ngdan, orqaga qaytganda chapdan, bo'limlar orasida pastdan — 0.65 s, ketma-ket */
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes riseR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes riseL{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+.screen.enter>*{animation:rise .65s var(--spring) both}
+.screen.enter.fwd>*{animation-name:riseR}
+.screen.enter.back>*{animation-name:riseL}
+.screen.enter>*:nth-child(2){animation-delay:.05s}.screen.enter>*:nth-child(3){animation-delay:.1s}
+.screen.enter>*:nth-child(4){animation-delay:.15s}.screen.enter>*:nth-child(5){animation-delay:.2s}
+.screen.enter>*:nth-child(n+6){animation-delay:.25s}
+.screen.enter .grid>*{animation:rise .6s var(--spring) both}
+.screen.enter .grid>*:nth-child(1){animation-delay:.08s}.screen.enter .grid>*:nth-child(2){animation-delay:.12s}
+.screen.enter .grid>*:nth-child(3){animation-delay:.16s}.screen.enter .grid>*:nth-child(4){animation-delay:.2s}
+.screen.enter .grid>*:nth-child(5){animation-delay:.24s}.screen.enter .grid>*:nth-child(6){animation-delay:.28s}
+.screen.enter .grid>*:nth-child(7){animation-delay:.32s}.screen.enter .grid>*:nth-child(8){animation-delay:.36s}
+.screen.enter .grid>*:nth-child(9){animation-delay:.4s}
+.screen.enter .grid>*:nth-child(n+13){animation:none}
+/* balans kartasi bo'ylab har 7 soniyada sekin yorug'lik o'tadi */
+@keyframes sweep{0%,62%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(330%) skewX(-18deg)}}
+.balcard::before,.pbal::before,.profhero::before{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.18),rgba(255,255,255,0));animation:sweep 7s 1.2s ease-in-out infinite}
+/* bo'lim ikonkalari sekin "suzadi", halqa nafas oladi */
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.07);opacity:.85}}
+.homecats .pcard .ptile .isvg{animation:floaty 4.2s ease-in-out infinite}
+.homecats .pcard .ptile::before{animation:breathe 4.2s ease-in-out infinite}
+.homecats .pcard:nth-child(2) .ptile .isvg,.homecats .pcard:nth-child(2) .ptile::before{animation-delay:-1s}
+.homecats .pcard:nth-child(3) .ptile .isvg,.homecats .pcard:nth-child(3) .ptile::before{animation-delay:-2s}
+.homecats .pcard:nth-child(4) .ptile .isvg,.homecats .pcard:nth-child(4) .ptile::before{animation-delay:-3s}
+.homecats .pcard:nth-child(5) .ptile .isvg,.homecats .pcard:nth-child(5) .ptile::before{animation-delay:-1.5s}
+/* oyna ochilganda ichidagi bloklar ketma-ket chiqadi (faqat ochilishda) */
+.sheet.intro .sheet-body>*{animation:rise .55s var(--spring) both}
+.sheet.intro .sheet-body>*:nth-child(2){animation-delay:.06s}.sheet.intro .sheet-body>*:nth-child(3){animation-delay:.12s}
+.sheet.intro .sheet-body>*:nth-child(4){animation-delay:.18s}.sheet.intro .sheet-body>*:nth-child(n+5){animation-delay:.24s}
+/* bezak animatsiyalari: kamroq harakat rejimi va zaif telefonda o'chadi */
+[data-reduce-motion="1"] .balcard::before,[data-reduce-motion="1"] .pbal::before,[data-reduce-motion="1"] .profhero::before,
+[data-reduce-motion="1"] .homecats .pcard .ptile .isvg,[data-reduce-motion="1"] .homecats .pcard .ptile::before,
+[data-reduce-motion="1"] .profhero .avatar::before,[data-reduce-motion="1"] .sheet.intro .sheet-body>*,
+.lite .balcard::before,.lite .pbal::before,.lite .profhero::before,.lite .homecats .pcard .ptile .isvg,.lite .homecats .pcard .ptile::before,.lite .profhero .avatar::before{animation:none}
+.lite .screen.enter .grid>*{animation:none}
+@media (prefers-reduced-motion:reduce){.balcard::before,.pbal::before,.profhero::before,.homecats .pcard .ptile .isvg,.homecats .pcard .ptile::before,.profhero .avatar::before,.sheet.intro .sheet-body>*{animation:none}}
 /* balans o'zgarganda raqam yuqoriga "aylanib" chiqadi (matn darhol yangi qiymatda) */
 @keyframes balRoll{from{opacity:0;transform:translateY(45%);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 .bump{display:inline-block;animation:balRoll .55s var(--spring)}
@@ -206,7 +245,8 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* ko'p o'yin rasmlari o'zi yumaloq ikonka — chetidagi shaffof joy ko'rinmasin */
 .grid .ptile:not(.cardart) img:not(.fit){transform:scale(1.06)}
-.ptile img.fit{inset:10%;width:80%;height:80%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
+.ptile img.fit{inset:10%;width:80%;height:80%;object-fit:contain}
+.bigtile img.fit{filter:drop-shadow(0 6px 14px rgba(0,0,0,.28))}
 /* maxsus kartochka rasmi (Steam, raqam, skinlar): shaffof logo kartochka fonida markazda */
 .cardart{background:var(--card2)!important;position:relative}
 .cardart img{object-fit:contain!important;padding:12%;box-sizing:border-box}
@@ -216,6 +256,7 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 .ptile .ts{font-size:10px;opacity:.85;position:relative;z-index:1;text-align:center}
 /* --- mahsulot kartochkasi (kichik) --- */
 .grid>.pcard .ptile{border-radius:var(--r);border:1px solid var(--line)}
+.grid:not(.groupgrid)>.pcard{content-visibility:auto;contain-intrinsic-size:auto 170px}
 .pbody{flex:0 0 auto;min-height:42px;box-sizing:border-box;padding:7px 2px 0;display:flex;flex-direction:column;gap:1px;align-items:flex-start;position:relative;z-index:2}
 .pbody .nm{font-size:13px;font-weight:500;line-height:1.25;color:var(--txt);max-width:100%;min-height:1.25em;
   overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
@@ -223,15 +264,14 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 .prow{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;justify-content:flex-start;max-width:100%}
 .prc{font-size:13px;font-weight:600;color:var(--txt);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .favbtn{position:absolute;top:6px;right:6px;z-index:5;width:28px;height:28px;border-radius:50%;
-  background:rgba(8,10,18,.45);border:none;display:flex;align-items:center;justify-content:center;color:#fff;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  background:rgba(8,10,18,.58);border:none;display:flex;align-items:center;justify-content:center;color:#fff}
 .favbtn:active{opacity:.7;transform:scale(.96)}
 .favbtn.on{color:#ff5a6e}
 .stkb{font-size:10.5px;font-weight:500;padding:2px 7px;border-radius:var(--r-xs);background:var(--ok-soft);color:var(--ok);white-space:nowrap;
   display:inline-flex;align-items:center;gap:4px}
 .stkb::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:0 0 auto}
 .stkb.out{background:var(--err-soft);color:var(--err)}
-.grid>.pcard .stkb{position:absolute;left:6px;top:-27px;z-index:4;background:rgba(8,10,18,.55);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.grid>.pcard .stkb{position:absolute;left:6px;top:-27px;z-index:4;background:rgba(8,10,18,.72);color:#fff}
 .grid>.pcard .stkb.out{background:rgba(150,20,40,.78);color:#fff}
 /* nakrutka xizmatlari to'ri */
 .svcgrid .ptile{height:74px}
@@ -259,6 +299,13 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
   background:radial-gradient(90% 75% at 50% 0%,rgba(31,122,224,.16),rgba(31,122,224,0) 72%),linear-gradient(180deg,#eaf1ff 0%,#f5f8ff 100%)!important}
 .homecats .pcard .ptile::before{content:"";position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;
   background:rgba(255,255,255,.05);border:1px solid rgba(143,194,255,.2);transition:transform .35s var(--spring)}
+/* har bo'limning o'z rangi (--cc): nur, halqa va ikonka */
+.homecats .pcard[style*="--cc"] .ptile{color:color-mix(in srgb,var(--cc) 55%,#fff)!important;
+  background:radial-gradient(90% 75% at 50% 0%,color-mix(in srgb,var(--cc) 34%,transparent),transparent 72%),linear-gradient(180deg,color-mix(in srgb,var(--cc) 14%,#121733) 0%,#10152c 100%)!important}
+.homecats .pcard[style*="--cc"] .ptile::before{border-color:color-mix(in srgb,var(--cc) 42%,transparent);background:color-mix(in srgb,var(--cc) 12%,transparent)}
+[data-theme="light"] .homecats .pcard[style*="--cc"] .ptile{color:var(--cc)!important;
+  background:radial-gradient(90% 75% at 50% 0%,color-mix(in srgb,var(--cc) 20%,transparent),transparent 72%),linear-gradient(180deg,color-mix(in srgb,var(--cc) 9%,#fff) 0%,#f8f9ff 100%)!important}
+[data-theme="light"] .homecats .pcard[style*="--cc"] .ptile::before{background:rgba(255,255,255,.8);border-color:color-mix(in srgb,var(--cc) 26%,transparent)}
 [data-theme="light"] .homecats .pcard .ptile::before{background:rgba(255,255,255,.75);border-color:rgba(31,122,224,.14)}
 .homecats .pcard .ptile .isvg{position:relative;z-index:1;width:32px;height:32px;transition:transform .35s var(--spring)}
 .homecats .pcard:active .ptile .isvg,.homecats .pcard:active .ptile::before{transform:scale(.9)}
@@ -331,8 +378,9 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);margin:0 16px 12px;padding:12px 14px;
   transition:transform .2s var(--spring)}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;min-height:52px}
-.ibadge{width:36px;height:36px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex:0 0 auto;
-  background:var(--acc-soft)!important;color:var(--acc2)!important}
+.ibadge{--ib:var(--acc);width:36px;height:36px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#fff;
+  background:var(--ib);background:linear-gradient(160deg,color-mix(in srgb,var(--ib) 72%,#fff) 0%,var(--ib) 62%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 4px 10px -6px var(--ib)}
 .row:last-child{border-bottom:none}
 .row>svg:last-child{color:var(--mut);opacity:.8}
 .row .l{font-size:var(--fs-md);font-weight:500}
@@ -347,7 +395,7 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
   background:var(--acc-soft);border:none;color:var(--acc2);cursor:pointer;transition:transform .15s var(--spring)}
 .admpen:active{transform:scale(.9)}
 .backrow:has(.admpen){width:calc(100% - 24px)}
-.admpen.abs,.admpen.sk{position:absolute;top:10px;right:10px;z-index:4;margin:0;background:rgba(0,0,0,.5);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.admpen.abs,.admpen.sk{position:absolute;top:10px;right:10px;z-index:4;margin:0;background:rgba(0,0,0,.62);color:#fff}
 .backrow svg{flex:0 0 auto}
 
 .ordcard{padding:12px 14px}
@@ -396,7 +444,8 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
   border:1px solid rgba(255,255,255,.08);color:#f3f6fd;padding:11px 18px;border-radius:var(--r-lg);
   font-size:var(--fs-sm);font-weight:500;z-index:600;opacity:0;transition:opacity .2s ease,transform .3s var(--ease);transition:opacity .2s ease,transform .5s var(--ios);max-width:88vw;text-align:center;
   box-shadow:var(--shadow-pop);pointer-events:none}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.toast{visibility:hidden}
+.toast.on{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0) scale(1)}
 [data-theme="light"] .toast{background:rgba(255,255,255,.86);color:var(--txt);border-color:rgba(255,255,255,.9)}
 .has-gbuy .toast{bottom:calc(var(--navh) + 84px)}
 .toast.err{background:rgba(70,20,32,.88);border-color:rgba(255,92,114,.35);color:#ffd0d6}
@@ -404,9 +453,9 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 
 /* pastki menyu — iOS uslubidagi suzuvchi shaffof (liquid glass) panel, faol bo'lim ostida siljiydigan shisha belgi */
 nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:60;display:flex;height:64px;padding:6px;border-radius:26px;
-  background:rgba(18,23,44,.58);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+  background:rgba(18,23,44,.68);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
   border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 32px rgba(2,4,12,.5),inset 0 1px 0 rgba(255,255,255,.07)}
-[data-theme="light"] nav{background:rgba(255,255,255,.66);border-color:rgba(255,255,255,.75);
+[data-theme="light"] nav{background:rgba(255,255,255,.76);border-color:rgba(255,255,255,.75);
   box-shadow:0 12px 32px rgba(17,30,70,.14),inset 0 1px 0 rgba(255,255,255,.95)}
 .navind{position:absolute;left:6px;top:6px;bottom:6px;width:calc((100% - 12px) / 5);border-radius:var(--r-lg);z-index:0;pointer-events:none;
   background:rgba(47,143,255,.17);border:1px solid rgba(143,194,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
@@ -457,7 +506,7 @@ nav button svg{width:24px;height:24px}
 .gpi{border-radius:var(--r-sm);background:none}
 .gpkg.hot .gpi,.gpkg.on .gpi{background:none}
 .gback{position:absolute;left:10px;top:10px;z-index:2;width:36px;height:36px;border-radius:50%;border:none;display:flex;
-  align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff}
 .ghero-t{position:absolute;left:16px;right:16px;bottom:14px;z-index:2;display:flex;align-items:center;gap:12px}
 .gav{width:52px;height:52px;border-radius:var(--r);overflow:hidden;flex:0 0 auto;background:rgba(255,255,255,.12);display:flex;
   align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#fff;border:1px solid rgba(255,255,255,.16)}
@@ -540,6 +589,7 @@ nav button svg{width:24px;height:24px}
   box-shadow:0 16px 32px -18px rgba(11,87,207,.9)}
 .pbal::after{content:"";position:absolute;right:-60px;top:-80px;width:220px;height:220px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,255,255,.22),rgba(255,255,255,0) 65%)}
+.pbal .pbl,.pbal .pbv{position:relative;z-index:1}
 .pbal .pbl{font-size:var(--fs-sm);font-weight:500;letter-spacing:0;color:rgba(255,255,255,.78)}
 .pbal .pbv{font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.03em;margin-top:2px;color:#fff;font-variant-numeric:tabular-nums}
 .pbal .pbv .cs{color:rgba(255,255,255,.72)}
@@ -750,7 +800,22 @@ nav button svg{width:24px;height:24px}
 .avatar{width:52px;height:52px;border-radius:50%;background:var(--grad);display:flex;align-items:center;
   justify-content:center;font-size:20px;font-weight:650;color:#fff;overflow:hidden;flex:0 0 auto}
 .avatar img{width:100%;height:100%;object-fit:cover}
-.prof{display:flex;align-items:center;gap:12px}
+.prof{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+/* profil bosh kartasi — brend gradienti, avatar atrofida aylanuvchi yorug' halqa */
+.profhero{background:var(--grad-hero);border:none;color:#fff;border-radius:var(--r-xl);padding:16px;position:relative;overflow:hidden;
+  box-shadow:0 16px 32px -18px rgba(11,87,207,.9)}
+.profhero::after{content:"";position:absolute;right:-70px;top:-90px;width:240px;height:240px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.2),rgba(255,255,255,0) 65%)}
+.profhero .l{color:#fff}
+.profhero .l .d{color:rgba(255,255,255,.78)}
+.profhero .avatar{position:relative;overflow:visible;background:linear-gradient(135deg,#0b57cf,#4b97ff);box-shadow:0 0 0 2px rgba(255,255,255,.92)}
+.profhero .avatar img{border-radius:50%}
+.profhero .avatar::before{content:"";position:absolute;inset:-5px;border-radius:50%;z-index:-1;
+  background:conic-gradient(from 0deg,rgba(255,255,255,0),rgba(255,255,255,.75),rgba(143,194,255,0) 40%,rgba(255,255,255,0));animation:ringSpin 6s linear infinite}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+/* statistika: rangli kichik belgi */
+.stat .sic{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;margin-bottom:8px;
+  color:var(--sc,var(--acc));background:var(--acc-soft);background:color-mix(in srgb,var(--sc,var(--acc)) 16%,transparent)}
 
 /* reyting (top xaridorlar) — sokin, o'qilishi oson */
 .lb-trophy-ic{display:inline-flex;color:var(--gold)}
@@ -1332,7 +1397,8 @@ body.adm-open{overflow:hidden}
 .adm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .adm-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:104px;padding:14px;border-radius:var(--r-lg);cursor:pointer;text-align:left;
   background:var(--card);border:1px solid var(--line);color:var(--txt);font:inherit;transition:transform .15s var(--spring),border-color .15s ease}
-.adm-ic{width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;background:var(--acc-soft)!important;color:var(--acc2)!important}
+.adm-ic{--ib:var(--acc);width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#fff;
+  background:var(--ib);background:linear-gradient(160deg,color-mix(in srgb,var(--ib) 72%,#fff) 0%,var(--ib) 62%);box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
 .adm-ic svg{width:22px;height:22px}
 .adm-tl{font-size:var(--fs-md);font-weight:600;line-height:1.25}
 .adm-ts{font-size:var(--fs-xs);color:var(--mut);line-height:1.3}
@@ -1513,6 +1579,22 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
   window.addEventListener("unhandledrejection",function(e){show("Promise: "+(e.reason&&e.reason.message?e.reason.message:String(e.reason)));});
 })();
 
+/* ===== Yengil rejim: Telegram Android telefon kuchini xabar qiladi (LOW/AVERAGE/HIGH).
+   Zaif telefonda xiralashtirish, fon nuri va doimiy bezak animatsiyalari o'chiriladi — qotmasin. ===== */
+var LITE=(function(){try{var ua=navigator.userAgent||"",m=/Telegram-Android\/[\d.]+ \([^)]*;\s*(LOW|AVERAGE|HIGH)\)/i.exec(ua);
+  if(m)return m[1].toUpperCase()!=="HIGH";
+  var dm=navigator.deviceMemory,hc=navigator.hardwareConcurrency;return /Android/i.test(ua)&&((dm&&dm<=3)||(hc&&hc<=4));}catch(e){return false;}})();
+if(LITE)document.documentElement.classList.add("lite");
+/* Video va lottie faqat ekranda ko'rinib turganda o'ynaydi */
+var MEDIA_IO=null;
+function watchMedia(root){
+  if(!("IntersectionObserver" in window))return;
+  if(!MEDIA_IO)MEDIA_IO=new IntersectionObserver(function(es){es.forEach(function(e){var v=e.target;
+    if(v.tagName==="VIDEO"){if(e.isIntersecting&&!LITE){var p=v.play();if(p&&p.catch)p.catch(function(){});}else v.pause();}
+    else if(v.__anim){if(e.isIntersecting)v.__anim.play();else v.__anim.pause();}});},{rootMargin:"80px"});
+  var vs=(root||document).querySelectorAll("video[data-inview]:not([data-io])");
+  for(var i=0;i<vs.length;i++){vs[i].setAttribute("data-io","1");MEDIA_IO.observe(vs[i]);}
+}
 /* ===== CONFIG ===== */
 var SUPPORT_USERNAME="verionshop_support";
 var BOT_USERNAME="verionshopbot";     /* @ belgisisiz, do'st taklif havolasi uchun — o'zingiznikiga moslang */
@@ -1538,7 +1620,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-03.4";
+var CLIENT_BUILD="2026-11-03.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2334,7 +2416,11 @@ function render(){
   // Ekran (bo'lim) o'zgargandagina kirish animatsiyasi — oddiy qayta chizishda emas
   var vk=[S.screen,S.category,S.group&&S.group.key,S.game&&S.game.id,S.steamPage,S.vnumPage,S.giftHub?1:0,S.ordTab].join("|");
   var enter=vk!==_lastViewKey;_lastViewKey=vk;
-  var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen'+(enter?" enter":"")+'">';
+  // yo'nalish: bo'lim ichiga kirilsa — o'ngdan, orqaga qaytilsa — chapdan; pastki menyu orqali — pastdan
+  var depth=(S.category?1:0)+(S.group?1:0)+(S.game?1:0)+(S.steamPage||S.vnumPage||S.giftHub?1:0),dir="";
+  if(enter&&S.screen===_lastScreen)dir=depth>_lastDepth?" fwd":(depth<_lastDepth?" back":"");
+  _lastDepth=depth;_lastScreen=S.screen;
+  var html=(S.screen==="profile"?"":headerHTML())+'<div class="screen'+(enter?" enter"+dir:"")+'">';
   if(S.screen==="home")html+=homeHTML();
   else if(S.screen==="products")html+=(S.game&&gameById(S.game.id))?gamePageHTML():productsScreenHTML();
   else if(S.screen==="orders")html+=ordersHTML();
@@ -2348,8 +2434,9 @@ function render(){
   updateNavActive();
   bind();
   balBump();
+  watchMedia(screenWrap);
 }
-var _lastViewKey="";
+var _lastViewKey="",_lastDepth=0,_lastScreen="";
 /* Balans o'zgarganda raqam "aylanib" chiqadi (matn darhol yangi qiymatda — faqat ko'rinish) */
 var BAL_SHOWN=null;
 function balBump(){
@@ -2572,8 +2659,9 @@ function initLottieTiles(root){
     if(!data)continue; // hali yuklanmagan (URL fetch tugamagan) — tugagach qayta chaqiriladi
     el.setAttribute("data-lottie-ready","1");
     try{
-      var anim=lottie.loadAnimation({container:el,renderer:"svg",loop:true,autoplay:true,animationData:data});
+      var anim=lottie.loadAnimation({container:el,renderer:"svg",loop:true,autoplay:!LITE,animationData:data});
       LOTTIE_INSTANCES.push({wrapper:el,anim:anim});
+      if(!LITE&&"IntersectionObserver" in window){el.__anim=anim;watchMedia();if(MEDIA_IO)MEDIA_IO.observe(el);}
     }catch(e){}
   }
 }
@@ -2586,7 +2674,7 @@ try{
 }catch(e){}
 function tileIconHTML(tile,fallback){
   tile=tile||{};
-  if(tile.video)return '<video src="'+esc(tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></video>';
+  if(tile.video)return '<video data-inview src="'+esc(tile.video)+'" preload="metadata" loop muted playsinline webkit-playsinline="true" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></video>';
   if(tile.lottie)return lottieTileHTML(tile.lottie);
   if(tile.img)return '<img src="'+esc(tile.img)+'" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit">';
   if(tile.emoji)return esc(tile.emoji);
@@ -2596,7 +2684,7 @@ function tileHTML(it,big){
   var st=it.tile||{};
   var isGift=it&&it.fulfill==="telegram_gift";
   if(st.video){
-    return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000"><video src="'+esc(st.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
+    return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000"><video '+(big?"autoplay":'data-inview preload="metadata"')+' src="'+esc(st.video)+'" loop muted playsinline webkit-playsinline="true"></video></div>';
   }
   if(st.lottie){
     return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000">'+lottieTileHTML(st.lottie)+'</div>';
@@ -2758,6 +2846,8 @@ function groupProductsHTML(){
 }
 /* Kategoriya kartochkasi ikonkasi (faqat vizual, umumiy/neytral svg — brend logotip emas) */
 var CAT_ICON={obuna:"diamond",promokod:"gift",telegram:"send",games:"gamepad",nakrutka:"trendUp"};
+/* Bo'lim kartochkasi rangi (brend palitrasi bilan uyg'un) */
+var CAT_COLOR={obuna:"#8b5cf6",games:"#22c55e",telegram:"#2f8fff",nakrutka:"#ff8a3f",ai:"#14c8b4",promokod:"#ec4899"};
 /* Bosh sahifa — endi faqat kategoriya kartochkalari (4-6 ta) ko'rsatiladi.
    Bosilganda o'sha kategoriyaning tarkibi (guruhlar yoki, guruh yo'q bo'lsa,
    to'g'ridan-to'g'ri mahsulotlar) alohida "ekran" sifatida ochiladi. */
@@ -2776,7 +2866,7 @@ function categoryCardsHTML(){
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
     var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",32);
-    html+='<button class="pcard" data-opencat="'+esc(kind)+'">'
+    html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
       +'<div class="ct">'+(gcount?(gcount+' '+esc(t("games_unit"))):(items.length+' '+esc(t("group_count_unit"))))+'</div></div></button>';
@@ -2790,7 +2880,7 @@ function categoryCardsHTML(){
   if(aiList.length&&aiMeta.enabled!==false){
     any=true;
     var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("sparkles",32);
-    html+='<button class="pcard" data-opencat="ai">'
+    html+='<button class="pcard" data-opencat="ai" style="--cc:'+CAT_COLOR.ai+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+aiTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(categoryLabel("ai"))+'</div>'
       +'<div class="ct">'+aiList.length+' '+esc(t("ai_unit"))+'</div></div></button>';
@@ -2802,7 +2892,7 @@ function categoryCardsHTML(){
     var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):esc(t("nakrutka_sub"));
-    html+='<button class="pcard" data-opencat="nakrutka">'
+    html+='<button class="pcard" data-opencat="nakrutka" style="--cc:'+CAT_COLOR.nakrutka+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+nkTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(nkLabel)+'</div>'
       +'<div class="ct">'+nkCountText+'</div></div></button>';
@@ -3579,6 +3669,7 @@ function openSheet(inner,backFn){
     +'<div class="sheet-body">'+inner+'</div>';
   document.body.appendChild(dim);document.body.appendChild(sh);
   document.body.style.overflow="hidden";
+  sh.classList.add("intro");setTimeout(function(){sh.classList.remove("intro");},900);
   requestAnimationFrame(function(){dim.classList.add("on");sh.classList.add("on");});
   dim.addEventListener("click",closeSheet);
   sh.querySelector("#sheetXBtn").addEventListener("click",closeSheet);
@@ -4169,7 +4260,7 @@ var AMT_CLASS={pend:"wait",chk:"chk",ok:"pos",cncl:"err"};
 var ORD_BADGE={pending:["chk","st_deliver"],done:["ok","st_done"],cancelled:["cncl","st_cancelled"]};
 function historyThumbHTML(itemId,fallbackSvg){
   var it=itemId?byId(itemId):null;
-  if(it&&it.tile&&it.tile.video)return '<div class="hc-thumb"><video src="'+esc(it.tile.video)+'" autoplay loop muted playsinline webkit-playsinline="true"></video></div>';
+  if(it&&it.tile&&it.tile.video)return '<div class="hc-thumb"><video data-inview preload="metadata" src="'+esc(it.tile.video)+'" loop muted playsinline webkit-playsinline="true"></video></div>';
   if(it&&it.tile&&it.tile.lottie)return '<div class="hc-thumb">'+lottieTileHTML(it.tile.lottie)+'</div>';
   if(it&&it.tile&&it.tile.emoji)return '<div class="hc-thumb">'+esc(it.tile.emoji)+'</div>';
   if(it&&it.tile&&it.tile.img)return '<div class="hc-thumb"><img src="'+esc(it.tile.img)+'" alt="" onerror="this.parentNode.textContent=\'\'"></div>';
@@ -4691,7 +4782,7 @@ function svcRow(attr,iconName,color,title,sub,rightHTML,slotKey){
   var iconHTML=slotKey?slotEmojiHTML(slotKey,ic(iconName,17)):ic(iconName,17);
   return '<div class="row" '+attr+'>'
     +'<div style="display:flex;align-items:center;gap:11px;flex:1;min-width:0">'
-    +'<div class="ibadge" style="background:'+color+'38;color:'+color+'">'+iconHTML+'</div>'
+    +'<div class="ibadge" style="--ib:'+color+'">'+iconHTML+'</div>'
     +'<div class="l" style="min-width:0">'+esc(title)+'<div class="d">'+esc(sub)+'</div></div></div>'
     +(rightHTML!==undefined?rightHTML:ic("arrowRight",14))
     +'</div>';
@@ -4707,16 +4798,16 @@ function profileHTML(){
     :"…";
   var idTxt=u?String(u.id):"—";
   var html='<div style="height:6px"></div>'
-    +'<div class="card"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
-    +'<div class="d" style="font-weight:400;color:var(--mut);font-size:12px;display:flex;align-items:center;gap:5px">'
+    +'<div class="card profhero"><div class="prof"><div class="avatar">'+av+'</div><div class="l" style="font-weight:700">'+esc(name||t("guest"))
+    +'<div class="d" style="font-weight:400;font-size:12px;display:flex;align-items:center;gap:5px">'
     +(u&&u.username?'@'+esc(u.username)+' · ':'')+'ID: '+esc(idTxt)
-    +(u?'<button data-copy="'+esc(idTxt)+'" style="background:none;border:none;color:var(--mut);padding:0;display:inline-flex" onclick="event.stopPropagation()">'+ic("clipboard",12)+'</button>':'')
+    +(u?'<button data-copy="'+esc(idTxt)+'" aria-label="ID nusxa" style="background:none;border:none;color:inherit;padding:0;display:inline-flex" onclick="event.stopPropagation()">'+ic("clipboard",12)+'</button>':'')
     +'</div>'
-    +'<div class="d" style="font-weight:400;color:var(--mut);font-size:10px;opacity:.6">v'+esc(CLIENT_BUILD)+(ME.build?(' · srv '+esc(ME.build)):'')+'</div>'
+    +'<div class="d" style="font-weight:400;font-size:11px;opacity:.6">v'+esc(CLIENT_BUILD)+(ME.build?(' · srv '+esc(ME.build)):'')+'</div>'
     +'</div></div></div>'
-    +'<div class="stats"><div class="stat"><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
-    +'<div class="stat"><div class="v">'+curS(esc(money(sum)))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
-    +'<div class="stat"><div class="v">'+curS(balHTML())+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
+    +'<div class="stats"><div class="stat" style="--sc:#2f8fff"><span class="sic">'+ic("cart",15)+'</span><div class="v">'+cnt+'</div><div class="k">'+esc(t("stat_orders"))+'</div></div>'
+    +'<div class="stat" style="--sc:#22c55e"><span class="sic">'+ic("trendUp",15)+'</span><div class="v">'+curS(esc(money(sum)))+'</div><div class="k">'+esc(t("stat_spent"))+'</div></div>'
+    +'<div class="stat" style="--sc:#ffb23f"><span class="sic">'+ic("wallet",15)+'</span><div class="v">'+curS(balHTML())+'</div><div class="k">'+esc(t("bal_title"))+'</div></div></div>'
     // Admin panel — eng tepada, darhol ko'rinsin (ilgari sahifa oxirida edi va topilmasdi).
     +(isAdmin()?'<div class="card card-adm">'+svcRow('id="adminBtnRow"',"tools","#3b82f6",t("a_panel"),t("a_panel_sub"),undefined,"profile:admin")+'</div>':'')
     +'<div class="card">'
@@ -4795,7 +4886,7 @@ function openAdmin(){
   document.body.classList.add("adm-open");
   var tiles=ADM_TILES.map(function(sec){
     return '<div class="adm-sect">'+esc(sec[0])+'</div><div class="adm-grid">'+sec[1].map(function(x){
-      return '<button class="adm-tile" data-adm="'+x[0]+'"><span class="adm-ic" style="background:'+x[2]+'22;color:'+x[2]+'">'+ic(x[1],26)+'</span>'
+      return '<button class="adm-tile" data-adm="'+x[0]+'"><span class="adm-ic" style="--ib:'+x[2]+'">'+ic(x[1],26)+'</span>'
         +'<span class="adm-tl">'+esc(x[3])+'</span><span class="adm-ts" id="admTs_'+x[0]+'">'+esc(x[4])+'</span>'
         +(x[0]==="money"?'<span class="adm-badge" id="admBadge" hidden></span>':'')+'</button>';
     }).join("")+'</div>';
