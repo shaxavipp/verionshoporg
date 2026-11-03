@@ -606,7 +606,7 @@ module.exports = function createAi(ctx) {
       if (isLate) needHuman = true;
       actions.push({ section: "pay", text: L.appPay });
     }
-    if ((!out.length || isPrice) && !isOrd && !isPay && !topics.length) {
+    if ((!out.length || isPrice) && !isOrd && !isPay && !isBal && !topics.length) {
       const words = low.replace(/[^\p{L}\p{N}\s'‘]/gu, " ").split(/\s+/).filter(w => w.length > 1 && !STOP.has(w));
       let hits = [];
       try { if (words.length) hits = catalogSearch(words.join(" "), { limit: 8 }).filter(h => Number(h.price) > 0); } catch (e) {}

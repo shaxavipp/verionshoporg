@@ -31,7 +31,11 @@ function loadLib() {
 }
 
 module.exports = function createTgSupport(ctx) {
-  const lib = loadLib();
+  // Kutubxona faqat kerak bo'lganda yuklanadi (sessiya bor yoki admin ulash oynasini ochdi) — ulanmagan
+  // serverda ishga tushish sekinlashmasin va xotira band bo'lmasin.
+  let LIB;
+  const getLib = () => (LIB === undefined ? (LIB = loadLib()) : LIB);
+  const lib = new Proxy({}, { get: (t, k) => { const l = getLib(); return l ? l[k] : undefined; } });
   const DB = () => ctx.getDB();
   function cfg() {
     const s = DB().settings || (DB().settings = {});
@@ -70,7 +74,7 @@ module.exports = function createTgSupport(ctx) {
 
   function status() {
     const c = cfg();
-    return { lib: !!lib, configured: !!(apiId() && apiHash()), credsFromEnv: !!(process.env.TG_API_ID && process.env.TG_API_HASH),
+    return { lib: !!getLib(), configured: !!(apiId() && apiHash()), credsFromEnv: !!(process.env.TG_API_ID && process.env.TG_API_HASH),
       apiId: apiId() ? String(apiId()) : "", hasSession: !!session(), connected: st.connected, connecting: st.connecting,
       me: c.me || null, error: st.error, step: st.login ? st.login.step : "", hint: st.login ? st.login.hint || "" : "",
       phone: st.login ? maskPhone(st.login.phone) : "", ai: !!c.ai, lastIn: st.lastIn, lastOut: st.lastOut, startedAt: st.startedAt };
@@ -93,7 +97,7 @@ module.exports = function createTgSupport(ctx) {
     if (l && l.client && l.client !== st.client) { try { await l.client.disconnect(); } catch (e) {} }
   }
   async function loginStart(phone) {
-    if (!lib) return { ok: false, error: "Telegram kutubxonasi (teleproto) o'rnatilmagan — npm install" };
+    if (!getLib()) return { ok: false, error: "Telegram kutubxonasi (teleproto) o'rnatilmagan — npm install" };
     if (!apiId() || !apiHash()) return { ok: false, error: "Avval api_id va api_hash kiriting" };
     const p = "+" + String(phone || "").replace(/\D/g, "");
     if (!/^\+\d{9,15}$/.test(p)) return { ok: false, error: "Telefon raqam ko'rinishi: +998901234567" };
@@ -176,7 +180,7 @@ module.exports = function createTgSupport(ctx) {
     console.log("[tgs] support akkaunt ulandi" + (cfg().me && cfg().me.username ? " @" + cfg().me.username : ""));
   }
   async function start() {
-    if (!lib || st.connecting || st.connected || !apiId() || !apiHash() || !session()) return status();
+    if (st.connecting || st.connected || !apiId() || !apiHash() || !session() || !getLib()) return null;
     st.connecting = true;
     const client = makeClient(session());
     try {
@@ -197,7 +201,7 @@ module.exports = function createTgSupport(ctx) {
       // Tarmoq uzilishi — keyinroq qayta urinish.
       const t = setTimeout(() => { start(); }, 60000); if (t.unref) t.unref();
     } finally { st.connecting = false; }
-    return status();
+    return null;
   }
   function mediaLabel(msg) {
     if (msg.photo) return "[rasm]";
