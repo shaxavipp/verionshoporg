@@ -363,5 +363,5 @@ module.exports = function (ctx) {
     }
     return false;
   }
-  return { handle, steamCfg, vnCfg, vnCountries, vnCheck };
+  return { handle, steamCfg, steamPublic, vnCfg, vnCountries, vnCheck };
 };

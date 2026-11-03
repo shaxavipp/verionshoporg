@@ -1497,7 +1497,129 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .sup-send{width:44px;height:44px;border-radius:50%;border:none;background:var(--grad-btn);color:#fff;cursor:pointer;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
 .sup-send svg{width:20px;height:20px}
 .sup-welcome{text-align:center;color:var(--mut);font-size:var(--fs-sm);padding:16px 10px}
-.sup-welcome b{display:block;color:var(--txt);font-size:var(--fs-lg);font-weight:600;margin:8px 0 4px}
+.sup-welcome{display:flex;flex-direction:column;align-items:center;gap:4px;margin:12px auto 8px;max-width:320px;padding:22px 18px;border-radius:var(--r-xl);background:var(--card);border:1px solid var(--line)}
+.sup-welcome b{display:block;color:var(--txt);font-size:var(--fs-lg);font-weight:600;margin:10px 0 2px}
+.sup-wav{width:56px;height:56px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-acc)}
+.sup-feats{display:flex;flex-direction:column;gap:6px;margin-top:12px;width:100%}
+.sup-feats span{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r-sm);background:var(--card2);color:var(--mut2);font-size:var(--fs-xs);text-align:left}
+.sup-feats svg{color:var(--acc2)}
+.sup-m.a.op{background:var(--acc-soft)}
+.sup-m .who{display:flex;align-items:center;gap:4px}
+.sup-av i.off{background:var(--mut)}
+.sup-t span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tgs-me span{display:block;overflow-wrap:anywhere}
+/* ===== Admin: Support inbox (ro'yxat → chat), «Xabarlar» lentasi, support akkaunt ===== */
+.sinb,.sthr{position:fixed;inset:0;z-index:96;background:var(--bg);display:flex;flex-direction:column;animation:supIn .28s var(--ease)}
+.sthr{z-index:97}
+body.sinb-open{overflow:hidden}
+.sinb-head,.sthr-head{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;flex:0 0 auto;
+  background:var(--hdrbg);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);border-bottom:1px solid var(--line)}
+.sinb-back{width:36px;height:36px;border-radius:50%;border:none;background:var(--card2);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;position:relative}
+.sinb-back::after{content:"";position:absolute;inset:-4px}
+.sinb-back:active,.sinb-row:active,.sinb-acc:active{transform:scale(.97)}
+.sinb-t{flex:1;min-width:0}
+.sinb-t b{display:block;font-size:var(--fs-lg);font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sinb-t span{display:block;font-size:var(--fs-xs);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sinb-acc{display:flex;align-items:center;gap:10px;width:calc(100% - 24px);margin:10px 12px 0;padding:10px 12px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);
+  color:var(--mut2);font-size:var(--fs-sm);text-align:left;cursor:pointer;transition:transform .15s var(--spring)}
+.sinb-acc .tx{flex:1;min-width:0}.sinb-acc b{color:var(--txt);font-weight:600}
+.sinb-acc .dot{width:9px;height:9px;border-radius:50%;background:var(--mut);flex:0 0 auto}
+.sinb-acc .dot.on{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+.sinb-tools{padding:10px 12px 0;flex:0 0 auto}
+.sinb-tools input{margin:0;height:44px}
+.sinb-tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;scrollbar-width:none;flex:0 0 auto}
+.sinb-tabs::-webkit-scrollbar{display:none}
+.sinb-tabs button{flex:0 0 auto;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--mut2);
+  font-size:var(--fs-sm);font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.sinb-tabs button.on{background:var(--acc-soft);border-color:transparent;color:var(--acc2);font-weight:600}
+.sinb-tabs .n{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--card3);color:var(--txt);font-size:var(--fs-2xs);font-weight:650;
+  display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.sinb-tabs button.hot .n{background:var(--err);color:#fff}
+.sinb-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.sinb-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 14px;border:none;background:transparent;color:var(--txt);text-align:left;cursor:pointer;position:relative;
+  transition:transform .15s var(--spring),background .15s}
+.sinb-row+.sinb-row::before{content:"";position:absolute;left:72px;right:0;top:0;height:1px;background:var(--line)}
+.sinb-row.unr .sinb-top b{font-weight:700}
+.sinb-row.unr .sinb-pv{color:var(--mut2)}
+.sinb-av{--h:210;position:relative;width:46px;height:46px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-weight:650;font-size:17px;color:#fff;background:linear-gradient(140deg,hsl(var(--h) 72% 58%),hsl(calc(var(--h) + 36) 70% 42%))}
+.sinb-av.sm{width:38px;height:38px;font-size:15px}
+.sinb-av .src{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;background:var(--card2);border:2px solid var(--bg);
+  display:flex;align-items:center;justify-content:center;color:var(--acc2)}
+.sinb-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.sinb-top,.sinb-bot{display:flex;align-items:center;gap:8px;min-width:0}
+.sinb-top b{flex:1;min-width:0;font-size:var(--fs-md);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sinb-top time{font-size:var(--fs-xs);color:var(--mut);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.sinb-pv{flex:1;min-width:0;font-size:var(--fs-sm);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sinb-pv i{font-style:normal;color:var(--mut2)}
+.sinb-chip{flex:0 0 auto;height:20px;padding:0 8px;border-radius:999px;font-size:var(--fs-2xs);font-weight:600;display:inline-flex;align-items:center;white-space:nowrap}
+.sinb-chip.want{background:var(--warn-soft);color:var(--warn)}
+.sinb-chip.human{background:var(--acc-soft);color:var(--acc2)}
+.sinb-chip.closed{background:var(--card2);color:var(--mut)}
+.sinb-ub{flex:0 0 auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--acc);color:#fff;font-size:var(--fs-2xs);font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.sinb-empty{padding:56px 28px;text-align:center;color:var(--mut);font-size:var(--fs-sm);line-height:1.5}
+.sinb-empty svg{color:var(--mut);opacity:.7}
+.sinb-empty b{display:block;color:var(--txt);font-size:var(--fs-lg);font-weight:600;margin:12px 0 4px}
+/* chat */
+.sthr-who{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.sthr-mode{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line);
+  font-size:var(--fs-xs);color:var(--mut2);flex:0 0 auto}
+.sthr-mode b{color:var(--txt);font-weight:600}
+.sthr-mode.want{background:var(--warn-soft)}.sthr-mode.want b{color:var(--warn)}
+.sthr-mode.human{background:var(--acc-soft)}.sthr-mode.human b{color:var(--acc2)}
+.sthr-mode button{flex:0 0 auto;height:32px;padding:0 12px;border-radius:999px;border:none;font-size:var(--fs-xs);font-weight:600;cursor:pointer;background:var(--card3);color:var(--txt)}
+.sthr-card{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;border-bottom:1px solid var(--line);flex:0 0 auto;scrollbar-width:none}
+.sthr-card::-webkit-scrollbar{display:none}
+.sthr-card button,.sthr-card span{flex:0 0 auto;height:30px;padding:0 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut2);
+  font-size:var(--fs-xs);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer}
+.sthr-card b{color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
+.sthr-body{flex:1;overflow-y:auto;padding:10px 12px 8px;display:flex;flex-direction:column;gap:4px;-webkit-overflow-scrolling:touch}
+.sthr-day{align-self:center;margin:10px 0 6px;padding:3px 10px;border-radius:999px;background:var(--card);color:var(--mut);font-size:var(--fs-2xs);font-weight:600}
+.sthr-m{max-width:84%;padding:8px 12px 6px;border-radius:18px;font-size:var(--fs-md);line-height:1.42;overflow-wrap:anywhere;white-space:pre-wrap}
+.sthr-m.u{align-self:flex-start;background:var(--card2);border-bottom-left-radius:6px}
+.sthr-m.ai{align-self:flex-end;background:var(--acc-soft);border-bottom-right-radius:6px}
+.sthr-m.ad{align-self:flex-end;background:var(--grad-btn);color:#fff;border-bottom-right-radius:6px}
+.sthr-m.s{align-self:center;background:transparent;color:var(--mut);font-size:var(--fs-xs);text-align:center;max-width:92%}
+.sthr-m .who{display:flex;align-items:center;gap:4px;font-size:var(--fs-2xs);font-weight:650;letter-spacing:.02em;margin-bottom:2px;opacity:.9;white-space:normal}
+.sthr-m.ai .who{color:var(--acc2)}
+.sthr-m .tm{font-size:var(--fs-2xs);opacity:.6;margin-top:2px;text-align:right;font-variant-numeric:tabular-nums;white-space:normal}
+.sthr-m .acts{margin-top:4px;font-size:var(--fs-xs);opacity:.75;white-space:normal}
+.sthr-quick{display:flex;gap:6px;overflow-x:auto;padding:6px 12px 0;scrollbar-width:none;flex:0 0 auto;background:var(--hdrbg)}
+.sthr-quick::-webkit-scrollbar{display:none}
+.sthr-quick button{flex:0 0 auto;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--mut2);font-size:var(--fs-xs);cursor:pointer}
+.sthr-bar{display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(10px + env(safe-area-inset-bottom));background:var(--hdrbg);flex:0 0 auto}
+.sthr-bar textarea{flex:1;margin:0;min-height:44px;max-height:140px;resize:none;border-radius:22px;padding:11px 16px;font-size:16px;line-height:1.35}
+.sthr-bar .sup-send:disabled{opacity:.5}
+/* «Xabarlar» */
+.ntc{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ntc.new{background:color-mix(in srgb,var(--acc) 7%,transparent)}
+.ntc-ic{--ib:var(--acc);width:36px;height:36px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#fff;flex:0 0 auto;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--ib) 88%,#fff),var(--ib))}
+.ntc-b{flex:1;min-width:0}
+.ntc-b b{display:block;font-size:var(--fs-sm);font-weight:600;line-height:1.35}
+.ntc-n{font-weight:500;color:var(--mut)}
+.ntc-b p{margin:3px 0 0;font-size:var(--fs-xs);color:var(--mut2);white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.ntc-b p.open{-webkit-line-clamp:unset;display:block}
+.ntc-m{display:flex;gap:10px;align-items:center;margin-top:6px;font-size:var(--fs-2xs);color:var(--mut);font-variant-numeric:tabular-nums}
+.ntc-m button{height:28px;padding:0 10px;border-radius:999px;border:none;background:var(--acc-soft);color:var(--acc2);font-size:var(--fs-2xs);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+/* support akkaunt oynasi */
+.tgs-step{display:flex;align-items:center;gap:10px;margin:2px 0 8px}
+.tgs-step span{width:26px;height:26px;border-radius:50%;background:var(--grad-btn);color:#fff;font-size:var(--fs-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.tgs-step b{font-size:var(--fs-md);font-weight:600}
+.tgs-on{padding:12px;margin:0 0 10px}
+.tgs-me{display:flex;align-items:center;gap:12px}
+.tgs-me>div{flex:1;min-width:0}.tgs-me b{display:block;font-size:var(--fs-md);font-weight:600}.tgs-me span{font-size:var(--fs-xs);color:var(--mut)}
+.tgs-st{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:999px;background:var(--ok-soft);color:var(--ok)!important;font-size:var(--fs-2xs)!important;font-weight:600;flex:0 0 auto}
+/* admin bosh sahifadagi ogohlantirish va yumshoq belgi */
+.adm-alert{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;padding:12px 14px;border-radius:var(--r-lg);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);
+  background:var(--warn-soft);color:var(--txt);text-align:left;cursor:pointer}
+.adm-alert>svg:first-child{color:var(--warn)}
+.adm-alert>span{flex:1;min-width:0}.adm-alert b{display:block;font-size:var(--fs-md);font-weight:600}.adm-alert span span{display:block;font-size:var(--fs-xs);color:var(--mut2);margin-top:1px}
+.adm-badge.soft{background:var(--acc)}
+[data-reduce-motion="1"] .sinb,[data-reduce-motion="1"] .sthr{animation:none}
+@media (prefers-reduced-motion:reduce){.sinb,.sthr{animation:none}}
+.lite .sinb-head,.lite .sthr-head{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
 /* admin: do'kon ichida ko'rish (qoralama, 🔧) */
 .gst-tag{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:6;background:var(--err);color:#fff;font-size:var(--fs-2xs);font-weight:600;padding:3px 7px;border-radius:var(--r-xs);white-space:nowrap}
 .adm-tag{position:absolute;top:6px;left:6px;z-index:6;background:var(--warn);color:#1a1206;font-size:var(--fs-2xs);font-weight:600;padding:2px 7px;border-radius:var(--r-xs)}
@@ -1655,7 +1777,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-03.7";
+var CLIENT_BUILD="2026-11-03.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2199,6 +2321,7 @@ var _adminDeepDone=false;
 function handleAdminDeepLink(){
   // AI yordamchi tugmalari: ?open=pay|orders|games|ai|nakrutka|telegram — kerakli bo'lim ochiladi.
   var op="";try{op=new URLSearchParams(location.search).get("open")||"";}catch(e){}
+  if(!op){var spo=/^open_([a-z]+)$/.exec(tgStartParam());if(spo)op=spo[1];}
   if(op==="pay"||op==="orders"){go(op);}
   else if(["games","ai","nakrutka","telegram"].indexOf(op)!==-1){S.screen="home";S.category=op;render();}
   var v="";try{v=new URLSearchParams(location.search).get("admin")||"";}catch(e){}
@@ -2206,6 +2329,7 @@ function handleAdminDeepLink(){
   if(!v||!isAdmin())return;
   try{
     if(v==="finance")openAdminFinance();
+    else if(v==="support")openAdminSupport();
     else if(v==="money")openAdminMoney();
     else if(/^u-\d+$/.test(v))openAdminMoney(v.slice(2));
     else openAdmin();
@@ -2379,7 +2503,12 @@ var ICON={
   instagram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>',
   tiktok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="18" r="4"/><path d="M12 18V2l7 4"/></svg>',
   youtube:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>',
-  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>'
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+  msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>',
+  bot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>',
+  archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>',
+  logout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>'
 };
 function ic(name,size,cls){
   size=size||16;
@@ -4879,11 +5008,14 @@ var ADM_PERIOD="today";
 var ADM_TILES=[
   ["Asosiy",[
     ["ready","bolt","#22c55e","🚀 Tayyorlik","Ishga tushirish uchun nima qoldi"],
+    ["support","headset","#14b8a6","Support","Hamma chatlar, javob yozish"],
+    ["notices","bell","#f97316","Xabarlar","SMS, operator chaqiruvlari"],
     ["money","wallet","#3b82f6","To'lovlar va buyurtmalar","Tasdiqlash, bekor qilish"],
     ["finance","trendUp","#22c55e","Moliya","Kirim, sotuv, foyda"],
     ["users","users","#a855f7","Mijozlar","Ro'yxat, balans, tarix"],
     ["adminbot","bolt","#f59e0b","Admin bot","Chatda boshqaruv"],
-    ["aibot","sparkles","#8b5cf6","AI yordamchi","Mijozlar bilan o'zi gaplashadi"]]],
+    ["aibot","sparkles","#8b5cf6","AI yordamchi","Mijozlar bilan o'zi gaplashadi"],
+    ["tgsupport","send","#0ea5e9","Support akkaunt","Telegram sessiya, AI javoblari"]]],
   ["Do'kon",[
     ["catalog","clipboard","#0ea5e9","Mahsulotlar","Katalog, narx, zaxira"],
     ["games","gamepad","#ef4444","O'yinlar va liniyalar","MooGold, G2Bulk, Smile"],
@@ -4908,7 +5040,7 @@ var ADM_TILES=[
     ["backup","clipboard","#64748b","Zaxira nusxa","Bot orqali yuborish"]]]
 ];
 function admTileAction(k){
-  var m={ready:openAdminReadiness,money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},aibot:function(){openAdminAi(openAdmin);},
+  var m={ready:openAdminReadiness,money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},support:function(){openAdminSupport();},notices:openAdminNotices,tgsupport:function(){openAdminTgSupport(openAdmin);},aibot:function(){openAdminAi(openAdmin);},
     catalog:openAdminCatalog,games:function(){openAdminGames("");},ai:function(){openAdminGames("ai");},nakrutka:openAdminNakrutka,cs2:openAdminCs2,cats:openAdminCategories,deliveries:openAdminDeliveries,reviews:openAdminReviews,
     promo:openAdminPromo,extras:openAdminExtras,steamvn:openAdminSteamVn,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
     bot:openAdminBot,channels:openAdminChannels,automation:openAdminAutomation,dash:openAdminDashboard,emoji:openAdminUiEmoji,
@@ -4930,7 +5062,7 @@ function openAdmin(){
     return '<div class="adm-sect">'+esc(sec[0])+'</div><div class="adm-grid">'+sec[1].map(function(x){
       return '<button class="adm-tile" data-adm="'+x[0]+'"><span class="adm-ic" style="--ib:'+x[2]+'">'+ic(x[1],26)+'</span>'
         +'<span class="adm-tl">'+esc(x[3])+'</span><span class="adm-ts" id="admTs_'+x[0]+'">'+esc(x[4])+'</span>'
-        +(x[0]==="money"?'<span class="adm-badge" id="admBadge" hidden></span>':'')+'</button>';
+        +(x[0]==="money"?'<span class="adm-badge" id="admBadge" hidden></span>':x[0]==="support"||x[0]==="notices"?'<span class="adm-badge" id="admBadge_'+x[0]+'" hidden></span>':'')+'</button>';
     }).join("")+'</div>';
   }).join("");
   el.innerHTML='<div class="adm-head"><div><div class="adm-h1">Admin panel</div><div class="adm-sub" id="admSub">v'+esc(CLIENT_BUILD)+'</div></div>'
@@ -4945,6 +5077,7 @@ function openAdmin(){
     +'</div>'
     +'<div class="adm-mini"><span>Mijozlar: <b id="admUsers">…</b></span><span>Balanslarda: <b id="admLiab">…</b></span></div>'
     +'<form class="adm-search" id="admSearch"><input id="admQ" type="search" placeholder="Mijoz ID, @username, ism" autocomplete="off"><button class="btn sm" type="submit">Qidirish</button></form>'
+    +'<div id="aSupCard"></div>'
     +'<div id="aRdCard"></div>'
     +'<div id="aAbCard"></div>'
     +tiles
@@ -4971,13 +5104,14 @@ function openAdmin(){
   var acts=el.querySelectorAll("[data-adm]");
   for(var j=0;j<acts.length;j++)acts[j].addEventListener("click",function(){haptic();admTileAction(this.getAttribute("data-adm"));});
   el.querySelector("#admClose").addEventListener("click",function(){haptic();closeAdminHome();});
-  el.querySelector("#admRefresh").addEventListener("click",function(){haptic();load(ADM_PERIOD);paintAdminBotCard(el.querySelector("#aAbCard"));paintReadinessCard(el.querySelector("#aRdCard"));});
+  el.querySelector("#admRefresh").addEventListener("click",function(){haptic();load(ADM_PERIOD);admBadges();paintAdminBotCard(el.querySelector("#aAbCard"));paintReadinessCard(el.querySelector("#aRdCard"));});
   el.querySelector("#admSearch").addEventListener("submit",function(e){e.preventDefault();var q=el.querySelector("#admQ").value.trim();if(q)openAdminMoney(q);});
   paintAdminBotCard(el.querySelector("#aAbCard"));
   paintReadinessCard(el.querySelector("#aRdCard"));
   var ab=ME.adminBot,sub=el.querySelector("#admSub");
   if(sub)sub.textContent="v"+CLIENT_BUILD+(ab&&ab.active&&ab.username?" · 🛡 @"+ab.username:"");
   load(ADM_PERIOD);
+  admBadges();
 }
 function openAdminCatalog(){
   var html='<h2>Mahsulotlar va katalog</h2>'
@@ -7395,18 +7529,20 @@ function supMsgHTML(m){
       return a.type==="confirm"?'<button data-supconf="'+esc(a.token)+'">'+esc(a.label)+'</button>'
         :'<button class="o" data-supopen="'+esc(a.section)+'">'+esc(a.label)+'</button>';}).join("")+'</div>';
   }
-  return '<div class="sup-m '+(mine?"u":"a")+'">'+(mine?"":'<div class="who">'+(m.from==="admin"?"Operator":"Verion AI")+'</div>')
+  return '<div class="sup-m '+(mine?"u":m.from==="admin"?"a op":"a")+'">'+(mine?"":'<div class="who">'+(m.from==="admin"?ic("headset",11)+" "+esc(_x("Operator")):ic("sparkles",11)+" Verion AI")+'</div>')
     +esc(m.text).replace(/\n/g,"<br>")+acts+'<div class="tm">'+supFmtTime(m.ts)+'</div></div>';
 }
 function supRender(){
   var box=document.getElementById("supBody");if(!box)return;
-  var h=SUP.msgs.length?"":'<div class="sup-welcome">'+ic("headset",34)+'<b>Salom! Qanday yordam kerak?</b>Narxlar, buyurtma, to\'lov — istalgan savolni yozing. '
-    +(SUP.state&&SUP.state.ai?'AI yordamchi darhol javob beradi, kerak bo\'lsa operatorni chaqiradi.':'Operator tez orada javob beradi.')+'</div>';
-  h+=SUP.msgs.map(supMsgHTML).join("");
+  var h=SUP.msgs.length?"":'<div class="sup-welcome"><div class="sup-wav">'+ic("headset",28)+'</div><b>'+esc(_x("Salom! Qanday yordam kerak?"))+'</b><span>'+esc(_x("Narxlar, buyurtma, to'lov — istalgan savolni yozing."))+'</span>'
+    +'<div class="sup-feats"><span>'+ic("bolt",14)+' '+esc(_x(SUP.state&&!SUP.state.ai?"Operator tez orada javob beradi":"AI darhol javob beradi"))+'</span><span>'+ic("headset",14)+' '+esc(_x("Kerak bo'lsa operator ulanadi"))+'</span></div></div>';
+  var day="";
+  SUP.msgs.forEach(function(m){var d=new Date(m.ts).toDateString();if(SUP.msgs.length>1&&d!==day){day=d;h+='<div class="sthr-day">'+esc(sinbDay(m.ts)==="Bugun"?_x("Bugun"):sinbDay(m.ts)==="Kecha"?_x("Kecha"):sinbDay(m.ts))+'</div>';}h+=supMsgHTML(m);});
   if(SUP.waiting&&Date.now()-SUP.waiting<60000)h+='<div class="sup-typing"><i></i><i></i><i></i></div>';
   box.innerHTML=h;box.scrollTop=box.scrollHeight;
   var st=document.getElementById("supSub");
-  if(st&&SUP.state)st.textContent=SUP.state.human?"Operator bilan suhbat":SUP.state.queued?"Operator navbatida · AI yordam beradi":(SUP.state.ai?"AI 24/7 · operator "+(SUP.state.opAvailable?"onlayn":"oflayn ("+SUP.state.opHours+")"):(SUP.state.opAvailable?"Operator onlayn":"Operator ish vaqti: "+SUP.state.opHours));
+  if(st&&SUP.state)st.textContent=SUP.state.human?_x("Operator bilan suhbat"):SUP.state.queued?_x("Operator navbatida · AI yordam beradi"):(SUP.state.ai?_x("AI 24/7 · operator")+" "+(SUP.state.opAvailable?_x("onlayn"):_x("oflayn")+" ("+SUP.state.opHours+")"):(SUP.state.opAvailable?_x("Operator onlayn"):_x("Operator ish vaqti:")+" "+SUP.state.opHours));
+  var avd=document.querySelector("#supChat .sup-av i");if(avd&&SUP.state)avd.className=SUP.state.human||SUP.state.ai||SUP.state.opAvailable?"":"off";
   var cs=box.querySelectorAll("[data-supconf]");
   for(var i=0;i<cs.length;i++)cs[i].addEventListener("click",function(){
     var b=this;b.disabled=true;haptic();
@@ -7438,11 +7574,11 @@ function openSupportChat(prefill){
   closeSheet();
   var old=document.getElementById("supChat");if(old)old.remove();
   var el=document.createElement("div");el.className="sup";el.id="supChat";
-  el.innerHTML='<div class="sup-head"><div class="sup-av">V<i></i></div><div class="sup-t"><b>Verion yordam</b><span id="supSub">…</span></div>'
+  el.innerHTML='<div class="sup-head"><div class="sup-av">V<i></i></div><div class="sup-t"><b>'+esc(_x("Verion yordam"))+'</b><span id="supSub">…</span></div>'
     +'<button class="sup-x" id="supTg" aria-label="Telegram" title="Telegram">'+ic("send",16)+'</button><button class="sup-x" id="supClose" aria-label="close">✕</button></div>'
     +'<div class="sup-body" id="supBody"></div>'
-    +'<div class="sup-chips" id="supChips">'+["Narxlar","MLBB olmos","ChatGPT Plus","Buyurtmam qayerda?","Balansni qanday to'ldiraman?","Operator"].map(function(c){return '<button>'+esc(c)+'</button>';}).join("")+'</div>'
-    +'<div class="sup-bar"><textarea id="supIn" rows="1" placeholder="Xabar yozing…"></textarea><button class="sup-send" id="supSend" aria-label="send">'+ic("send",20)+'</button></div>';
+    +'<div class="sup-chips" id="supChips">'+["Narxlar","MLBB olmos","ChatGPT Plus","Buyurtmam qayerda?","Balansni qanday to'ldiraman?","Operator"].map(function(c){return '<button data-op="'+(c==="Operator"?1:0)+'">'+esc(_x(c))+'</button>';}).join("")+'</div>'
+    +'<div class="sup-bar"><textarea id="supIn" rows="1" placeholder="'+esc(_x("Xabar yozing…"))+'"></textarea><button class="sup-send" id="supSend" aria-label="send">'+ic("send",20)+'</button></div>';
   document.body.appendChild(el);document.body.classList.add("sup-open");
   SUP.open=true;
   var inp=el.querySelector("#supIn");
@@ -7459,7 +7595,7 @@ function openSupportChat(prefill){
   inp.addEventListener("input",function(){this.style.height="";this.style.height=Math.min(120,this.scrollHeight)+"px";});
   var chips=el.querySelectorAll("#supChips button");
   for(var i=0;i<chips.length;i++)chips[i].addEventListener("click",function(){haptic();
-    var txt=this.textContent;sendText(/Operator/.test(txt)?"Operator bilan gaplashmoqchiman":txt);});
+    var txt=this.textContent;sendText(this.getAttribute("data-op")==="1"?_x("Operator bilan gaplashmoqchiman"):txt);});
   el.querySelector("#supClose").addEventListener("click",function(){haptic();closeSupportChat();});
   el.querySelector("#supTg").addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
   var dot=document.getElementById("supDot");if(dot)dot.hidden=true;
@@ -7480,6 +7616,300 @@ function supCheckUnread(){
   }).catch(function(){});
 }
 setInterval(supCheckUnread,60000);
+/* ===== Admin: Support inbox — hamma mijoz suhbatlari (ilova, do'kon boti, support akkaunt) =====
+   Bo'limlar: «Operator kutyapti» (so'ragan / navbatda / siz gaplashyapsiz), «Hammasi», «AI hal qildi», «Yopilgan».
+   Chatni ochib to'liq tarixni o'qish, istalgan payt javob yozish, AI'ni shu chat uchun to'xtatish/qaytarish. */
+var SINB={tab:"want",q:"",timer:null,items:[],counts:{},tgs:null};
+var SINB_ST={want:["want","Operator kutyapti"],human:["human","Siz gaplashyapsiz"],ai:["ai","AI"],closed:["closed","Yopilgan"]};
+var SINB_QUICK=["Salom! Qanday yordam bera olaman?","Tekshiryapman, biroz kuting","To'lovingiz tushdi ✅","Buyurtmangiz bajarildi ✅","Rahmat! Yana savol bo'lsa yozing"];
+function sinbHue(uid){var n=Number(uid)||0;return Math.abs((n*47)%360);}
+function sinbInit(it){var n=String(it.name||it.uname||it.uid||"?").trim();return esc((n.charAt(0)||"?").toUpperCase());}
+function sinbSrcIc(v){return v==="tg"?ic("send",11):v==="bot"?ic("bot",11):ic("phone",11);}
+function sinbSrcName(v){return v==="tg"?"Support akkaunt":v==="bot"?"Do'kon boti":"Ilova";}
+function sinbName(it){return it.name||(it.uname?"@"+it.uname:"ID "+it.uid);}
+function sinbTime(ts){
+  if(!ts)return "";var d=new Date(ts),n=new Date();
+  if(d.toDateString()===n.toDateString())return supFmtTime(ts);
+  var y=new Date(n.getTime()-86400000);if(d.toDateString()===y.toDateString())return "Kecha";
+  return ("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2);
+}
+function sinbDay(ts){
+  var d=new Date(ts),n=new Date();if(d.toDateString()===n.toDateString())return "Bugun";
+  var y=new Date(n.getTime()-86400000);if(d.toDateString()===y.toDateString())return "Kecha";
+  return ("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+"."+d.getFullYear();
+}
+function sinbAv(it,cls){return '<span class="sinb-av'+(cls?" "+cls:"")+'" style="--h:'+sinbHue(it.uid)+'">'+sinbInit(it)+'<i class="src" title="'+esc(sinbSrcName(it.via))+'">'+sinbSrcIc(it.via)+'</i></span>';}
+function sinbRow(it){
+  var who=it.last.from==="ai"?"AI: ":it.last.from==="admin"?"Siz: ":"",st=SINB_ST[it.status]||SINB_ST.ai;
+  return '<button class="sinb-row'+(it.unread?" unr":"")+'" data-uid="'+it.uid+'">'+sinbAv(it)
+    +'<span class="sinb-mid"><span class="sinb-top"><b>'+esc(sinbName(it))+'</b><time>'+sinbTime(it.last.ts)+'</time></span>'
+    +'<span class="sinb-bot"><span class="sinb-pv"><i>'+esc(who)+'</i>'+esc(it.last.text||"")+'</span>'
+    +(it.status!=="ai"?'<span class="sinb-chip '+st[0]+'">'+esc(st[1])+'</span>':'')
+    +(it.unread?'<span class="sinb-ub">'+(it.unread>99?"99+":it.unread)+'</span>':'')+'</span></span></button>';
+}
+function sinbAccHTML(s){
+  if(!s)return "";
+  if(s.connected&&s.me)return '<button class="sinb-acc" id="sInbAcc"><span class="dot on"></span><span class="tx"><b>'+esc(s.me.username?"@"+s.me.username:s.me.name)+'</b> ulangan · '+(s.ai?"AI javob beradi":"AI o'chiq — faqat siz")+'</span>'+ic("arrowRight",14)+'</button>';
+  return '<button class="sinb-acc" id="sInbAcc"><span class="dot"></span><span class="tx">Support akkaunt ulanmagan'+(s.error?' · <span style="color:var(--err)">'+esc(s.error)+'</span>':'')+' — <b>ulash</b></span>'+ic("arrowRight",14)+'</button>';
+}
+function openAdminSupport(uid){
+  closeSheet();
+  var el=document.getElementById("sInb");if(el)el.remove();
+  el=document.createElement("div");el.className="sinb";el.id="sInb";
+  el.innerHTML='<div class="sinb-head"><button class="sinb-back" id="sInbBack" aria-label="Orqaga">'+ic("arrowLeft",18)+'</button>'
+    +'<div class="sinb-t"><b>Support</b><span id="sInbSub">Hamma mijoz suhbatlari</span></div>'
+    +'<button class="adm-hb" id="sInbNtc" aria-label="Xabarlar">'+ic("bell",16)+'</button></div>'
+    +'<div id="sInbAccW"></div>'
+    +'<div class="sinb-tools"><input id="sInbQ" type="search" placeholder="Ism, @username yoki ID" autocomplete="off"></div>'
+    +'<div class="sinb-tabs" id="sInbTabs"></div>'
+    +'<div class="sinb-list" id="sInbList"><div class="sinb-empty">Yuklanmoqda…</div></div>';
+  document.body.appendChild(el);document.body.classList.add("sinb-open");
+  el.querySelector("#sInbBack").addEventListener("click",function(){haptic();closeAdminSupport();});
+  el.querySelector("#sInbNtc").addEventListener("click",function(){haptic();openAdminNotices();});
+  var qi=el.querySelector("#sInbQ"),qt=null;
+  qi.addEventListener("input",function(){clearTimeout(qt);var v=this.value;qt=setTimeout(function(){SINB.q=v.trim();sinbLoad();},250);});
+  el.querySelector("#sInbList").addEventListener("click",function(e){var b=e.target.closest("[data-uid]");if(b){haptic();openSupportThread(Number(b.getAttribute("data-uid")));}});
+  el.querySelector("#sInbTabs").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(!b)return;haptic();SINB.tab=b.getAttribute("data-tab");sinbPaint();sinbLoad();});
+  sinbLoad();sinbLoadAcc();
+  clearInterval(SINB.timer);SINB.timer=setInterval(function(){if(document.getElementById("sInb")&&!document.getElementById("sThr")&&!document.hidden)sinbLoad();},5000);
+  if(uid)openSupportThread(uid);
+}
+function closeAdminSupport(){clearInterval(SINB.timer);SINB.timer=null;var el=document.getElementById("sInb");if(el)el.remove();document.body.classList.remove("sinb-open");admBadges();}
+function sinbLoadAcc(){
+  api("/api/admin/tgsupport").then(function(s){SINB.tgs=s;var w=document.getElementById("sInbAccW");if(!w)return;
+    w.innerHTML=sinbAccHTML(s);var b=w.querySelector("#sInbAcc");if(b)b.addEventListener("click",function(){haptic();openAdminTgSupport(function(){sinbLoadAcc();});});
+  }).catch(function(){});
+}
+function sinbLoad(){
+  return api("/api/admin/inbox?tab="+encodeURIComponent(SINB.tab)+"&q="+encodeURIComponent(SINB.q)).then(function(r){
+    SINB.items=r.items||[];SINB.counts=r.counts||{};sinbPaint();
+  }).catch(function(){var l=document.getElementById("sInbList");if(l&&!SINB.items.length)l.innerHTML='<div class="sinb-empty">Yuklab bo\'lmadi. Internetni tekshiring.</div>';});
+}
+function sinbPaint(){
+  var el=document.getElementById("sInb");if(!el)return;var c=SINB.counts||{};
+  var tabs=[["want","Operator kutyapti",c.want],["all","Hammasi",c.all],["ai","AI hal qildi",c.ai],["closed","Yopilgan",c.closed]];
+  el.querySelector("#sInbTabs").innerHTML=tabs.map(function(t){
+    return '<button data-tab="'+t[0]+'" class="'+(SINB.tab===t[0]?"on":"")+(t[0]==="want"&&t[2]?" hot":"")+'">'+esc(t[1])+(t[2]?'<span class="n">'+t[2]+'</span>':'')+'</button>';}).join("");
+  var sub=el.querySelector("#sInbSub");if(sub)sub.textContent=(c.all||0)+" ta suhbat"+(c.unread?" · "+c.unread+" ta o'qilmagan":"");
+  var l=el.querySelector("#sInbList");
+  if(!SINB.items.length){
+    var em={want:["Hozir hech kim operator kutmayapti","AI mijozlarga o'zi javob bermoqda. Operator so'ragan yoki AI hal qila olmagan chatlar shu yerga tushadi."],
+      ai:["AI hal qilgan suhbatlar yo'q",""],closed:["Yopilgan suhbat yo'q",""],all:["Hali suhbat yo'q","Mijoz ilovadagi yordam tugmasi, do'kon boti yoki support akkauntga yozsa — shu yerda chiqadi."]}[SINB.tab]||["Topilmadi",""];
+    l.innerHTML='<div class="sinb-empty">'+ic("headset",34)+'<b>'+esc(SINB.q?"Topilmadi":em[0])+'</b>'+esc(SINB.q?"":em[1])+'</div>';return;
+  }
+  l.innerHTML=SINB.items.map(sinbRow).join("");
+}
+/* ---------- Bitta chat ---------- */
+var STHR={uid:0,timer:null,last:0,data:null,sending:false};
+function openSupportThread(uid){
+  var el=document.getElementById("sThr");if(el)el.remove();
+  STHR.uid=uid;STHR.last=0;STHR.data=null;
+  el=document.createElement("div");el.className="sthr";el.id="sThr";
+  el.innerHTML='<div class="sthr-head"><button class="sinb-back" id="sThrBack" aria-label="Orqaga">'+ic("arrowLeft",18)+'</button>'
+    +'<div class="sthr-who" id="sThrWho"><div class="sinb-t"><b>…</b></div></div>'
+    +'<button class="adm-hb" id="sThrClose" aria-label="Suhbatni yopish" title="Yopish">'+ic("archive",16)+'</button></div>'
+    +'<div class="sthr-mode" id="sThrMode"></div>'
+    +'<div class="sthr-card" id="sThrCard"></div>'
+    +'<div class="sthr-body" id="sThrBody"><div class="sinb-empty">Yuklanmoqda…</div></div>'
+    +'<div class="sthr-quick" id="sThrQuick">'+SINB_QUICK.map(function(q){return '<button>'+esc(q)+'</button>';}).join("")+'</div>'
+    +'<div class="sthr-bar"><textarea id="sThrIn" rows="1" placeholder="Javob yozing…"></textarea><button class="sup-send" id="sThrSend" aria-label="Yuborish">'+ic("send",20)+'</button></div>';
+  document.body.appendChild(el);
+  var inp=el.querySelector("#sThrIn");
+  el.querySelector("#sThrBack").addEventListener("click",function(){haptic();closeSupportThread();});
+  el.querySelector("#sThrSend").addEventListener("click",function(){haptic();sthrSend(inp.value);});
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sthrSend(inp.value);}});
+  inp.addEventListener("input",function(){this.style.height="";this.style.height=Math.min(140,this.scrollHeight)+"px";});
+  el.querySelector("#sThrQuick").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;haptic();inp.value=b.textContent;inp.focus();inp.dispatchEvent(new Event("input"));});
+  el.querySelector("#sThrClose").addEventListener("click",function(){
+    var it=STHR.data&&STHR.data.item;haptic();
+    sthrState(it&&it.status==="closed"?"open":"close");
+  });
+  el.querySelector("#sThrMode").addEventListener("click",function(e){var b=e.target.closest("[data-act]");if(b){haptic();sthrState(b.getAttribute("data-act"));}});
+  el.querySelector("#sThrCard").addEventListener("click",function(e){
+    var b=e.target.closest("[data-c]");if(!b)return;haptic();var k=b.getAttribute("data-c");
+    if(k==="money")openAdminMoney(String(STHR.uid));
+    else if(k==="id")copyText(String(STHR.uid));
+    else if(k==="tg"){var it=STHR.data&&STHR.data.item;if(it&&/^[A-Za-z0-9_]{3,40}$/.test(it.uname||""))openLink("https://t.me/"+it.uname);}
+  });
+  sthrLoad(true);
+  clearInterval(STHR.timer);STHR.timer=setInterval(function(){if(document.getElementById("sThr")&&!document.hidden)sthrLoad(false);},3000);
+}
+function closeSupportThread(){clearInterval(STHR.timer);STHR.timer=null;var el=document.getElementById("sThr");if(el)el.remove();if(document.getElementById("sInb"))sinbLoad();}
+function sthrLoad(first){
+  var uid=STHR.uid;
+  return api("/api/admin/inbox/thread?uid="+uid).then(function(r){
+    if(uid!==STHR.uid)return;
+    var lastId=r.messages.length?r.messages[r.messages.length-1].id:0;
+    var changed=first||lastId!==STHR.last||!STHR.data||JSON.stringify(STHR.data.item)!==JSON.stringify(r.item);
+    STHR.data=r;if(changed){STHR.last=lastId;sthrPaint(first);}
+  }).catch(function(e){if(first){var b=document.getElementById("sThrBody");if(b)b.innerHTML='<div class="sinb-empty">'+esc((e&&e.resp&&e.resp.error)||"Yuklab bo'lmadi")+'</div>';}});
+}
+function sthrMsg(m){
+  if(m.from==="system")return '<div class="sthr-m s">'+esc(m.text)+'</div>';
+  var cls=m.from==="user"?"u":m.from==="ai"?"ai":"ad";
+  var who=m.from==="ai"?ic("sparkles",11)+" AI"+(m.local?" · ichki javob":""):m.from==="admin"?ic("headset",11)+" "+esc(m.by?m.by:"Operator"):"";
+  var acts=m.actions&&m.actions.length?'<div class="acts">'+m.actions.map(function(a){return "▸ "+esc(a.label||"");}).join("  ")+'</div>':"";
+  return '<div class="sthr-m '+cls+'">'+(who?'<div class="who">'+who+'</div>':'')+esc(m.text)+acts+'<div class="tm">'+supFmtTime(m.ts)+(m.via==="tg"&&m.from==="user"?" · TG":"")+'</div></div>';
+}
+function sthrPaint(first){
+  var el=document.getElementById("sThr"),r=STHR.data;if(!el||!r)return;
+  var it=r.item,u=r.user;
+  el.querySelector("#sThrWho").innerHTML=sinbAv(it,"sm")+'<div class="sinb-t"><b>'+esc(sinbName(it))+'</b><span>'+esc(sinbSrcName(it.via))+(it.uname?" · @"+esc(it.uname):"")+'</span></div>';
+  var hm=it.humanUntil?supFmtTime(it.humanUntil):"";
+  var mode=it.status==="human"?['<b>Siz gaplashyapsiz</b> — bu chatda AI '+esc(hm)+' gacha jim','ai',"AI'ga qaytarish"]
+    :it.status==="want"?['<b>Mijoz operator kutyapti</b>'+(it.reason?' · '+esc(it.reason):'')+(it.queued?' · navbatda':''),'human',"Men gaplashaman"]
+    :it.status==="closed"?['<b>Suhbat yopilgan</b>','open',"Qayta ochish"]
+    :['<b>AI javob bermoqda</b> · yozsangiz AI shu chatda to\'xtaydi','human',"AI'ni to'xtatish"];
+  el.querySelector("#sThrMode").innerHTML='<span>'+mode[0]+'</span><button data-act="'+mode[1]+'">'+esc(mode[2])+'</button>';
+  el.querySelector("#sThrMode").className="sthr-mode "+it.status;
+  el.querySelector("#sThrClose").innerHTML=it.status==="closed"?ic("arrowLeft",16):ic("archive",16);
+  el.querySelector("#sThrClose").setAttribute("aria-label",it.status==="closed"?"Qayta ochish":"Suhbatni yopish");
+  el.querySelector("#sThrCard").innerHTML=(u?'<button data-c="money">'+ic("wallet",13)+' Balans <b>'+esc(money(u.balance))+'</b></button>'
+      +'<button data-c="money">'+ic("cart",13)+' Buyurtma <b>'+u.orders+'</b></button>'
+      +'<button data-c="money">'+ic("trendUp",13)+' Xarid <b>'+esc(money(u.spent))+'</b></button>':'<span>Do\'konda ro\'yxatdan o\'tmagan</span>')
+    +'<button data-c="id">ID <b>'+it.uid+'</b></button>'+(it.uname?'<button data-c="tg">'+ic("send",13)+' @'+esc(it.uname)+'</button>':'');
+  var body=el.querySelector("#sThrBody"),near=first||body.scrollHeight-body.scrollTop-body.clientHeight<120,h="",day="";
+  r.messages.forEach(function(m){var d=sinbDay(m.ts);if(d!==day){day=d;h+='<div class="sthr-day">'+esc(d)+'</div>';}h+=sthrMsg(m);});
+  body.innerHTML=h||'<div class="sinb-empty">Xabar yo\'q</div>';
+  if(near)body.scrollTop=body.scrollHeight;
+  var inp=el.querySelector("#sThrIn");
+  if(inp)inp.placeholder=it.via==="tg"?(r.tgs?"Support akkaunt nomidan javob…":"Akkaunt uzilgan — bot orqali ketadi"):"Javob yozing…";
+}
+function sthrSend(txt){
+  txt=String(txt||"").trim();if(!txt||STHR.sending)return;
+  var inp=document.getElementById("sThrIn"),btn=document.getElementById("sThrSend");
+  STHR.sending=true;if(btn)btn.disabled=true;
+  api("/api/admin/inbox/reply","POST",{uid:STHR.uid,text:txt}).then(function(r){
+    STHR.sending=false;if(btn)btn.disabled=false;haptic("ok");
+    if(inp){inp.value="";inp.style.height="";}
+    if(r.warn)toast("Support akkaunt orqali ketmadi ("+r.warn+") — do'kon boti orqali yuborildi",true);
+    sthrLoad(true);
+  }).catch(function(e){STHR.sending=false;if(btn)btn.disabled=false;toast((e&&e.resp&&e.resp.error)||"Yuborilmadi",true);});
+}
+function sthrState(act){
+  api("/api/admin/inbox/state","POST",{uid:STHR.uid,action:act}).then(function(){
+    haptic("ok");toast(act==="ai"?"AI yana javob beradi":act==="human"?"AI bu chatda to'xtadi":act==="close"?"Suhbat yopildi":"Suhbat ochildi");
+    if(act==="close"){closeSupportThread();return;}
+    sthrLoad(true);
+  }).catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xatolik",true);});
+}
+/* ---------- «Xabarlar» lentasi: SMS, operator chaqiruvlari, support, support akkaunt holati ---------- */
+var NTC={f:"",items:[],seen:0};
+var NTC_KIND={sms:["card","#0ea5e9","SMS"],handoff:["headset","#f97316","Operator"],queue:["clock","#f59e0b","Operator"],support:["msg","#14b8a6","Support"],tgs:["send","#3b82f6","Tizim"]};
+function openAdminNotices(){
+  closeSheet();
+  var el=document.getElementById("sNtc");if(el)el.remove();
+  el=document.createElement("div");el.className="sinb ntcw";el.id="sNtc";
+  el.innerHTML='<div class="sinb-head"><button class="sinb-back" id="sNtcBack" aria-label="Orqaga">'+ic("arrowLeft",18)+'</button>'
+    +'<div class="sinb-t"><b>Xabarlar</b><span>SMS, operator chaqiruvlari, support</span></div>'
+    +'<button class="adm-hb" id="sNtcSup" aria-label="Support">'+ic("headset",16)+'</button></div>'
+    +'<div class="sinb-tabs" id="sNtcTabs"></div><div class="sinb-list" id="sNtcList"><div class="sinb-empty">Yuklanmoqda…</div></div>';
+  document.body.appendChild(el);document.body.classList.add("sinb-open");
+  el.querySelector("#sNtcBack").addEventListener("click",function(){haptic();el.remove();if(!document.getElementById("sInb"))document.body.classList.remove("sinb-open");admBadges();});
+  el.querySelector("#sNtcSup").addEventListener("click",function(){haptic();el.remove();openAdminSupport();});
+  el.querySelector("#sNtcTabs").addEventListener("click",function(e){var b=e.target.closest("[data-f]");if(!b)return;haptic();NTC.f=b.getAttribute("data-f");ntcPaint();});
+  el.querySelector("#sNtcList").addEventListener("click",function(e){
+    var b=e.target.closest("[data-open]");if(b){haptic();var u=Number(b.getAttribute("data-open"));el.remove();openAdminSupport(u);return;}
+    var p=e.target.closest(".ntc-b p");if(p)p.classList.toggle("open");
+  });
+  api("/api/admin/notices").then(function(r){
+    NTC.items=r.items||[];NTC.seen=r.seen||0;ntcPaint();
+    api("/api/admin/notices/seen","POST",{}).then(function(){admBadges();}).catch(function(){});
+  }).catch(function(){el.querySelector("#sNtcList").innerHTML='<div class="sinb-empty">Yuklab bo\'lmadi.</div>';});
+}
+function ntcGroup(k){return k==="handoff"||k==="queue"?"op":k;}
+function ntcPaint(){
+  var el=document.getElementById("sNtc");if(!el)return;
+  var cnt={"":NTC.items.length};NTC.items.forEach(function(x){var g=ntcGroup(x.kind);cnt[g]=(cnt[g]||0)+1;});
+  var f=[["","Hammasi"],["op","Operator chaqiruvlari"],["support","Support"],["sms","SMS"],["tgs","Tizim"]];
+  el.querySelector("#sNtcTabs").innerHTML=f.map(function(x){return '<button data-f="'+x[0]+'" class="'+(NTC.f===x[0]?"on":"")+'">'+esc(x[1])+(cnt[x[0]]?'<span class="n">'+cnt[x[0]]+'</span>':'')+'</button>';}).join("");
+  var L=NTC.items.filter(function(x){return !NTC.f||ntcGroup(x.kind)===NTC.f;});
+  if(!L.length){el.querySelector("#sNtcList").innerHTML='<div class="sinb-empty">'+ic("bell",34)+'<b>Hozircha xabar yo\'q</b>SMS, operator chaqiruvlari va support xabarlari shu yerga tushadi. Admin botga faqat sayt va moliya xabarlari boradi.</div>';return;}
+  el.querySelector("#sNtcList").innerHTML=L.map(function(x){
+    var k=NTC_KIND[x.kind]||["info","#64748b",""];
+    return '<div class="ntc'+(x.id>NTC.seen?" new":"")+'"><span class="ntc-ic" style="--ib:'+k[1]+'">'+ic(k[0],17)+'</span><div class="ntc-b"><b>'+esc(x.title)+(x.n>1?' <span class="ntc-n">×'+x.n+'</span>':'')+'</b>'
+      +(x.text?'<p>'+esc(x.text)+'</p>':'')+'<div class="ntc-m"><span>'+esc(sinbTime(x.ts))+(new Date(x.ts).toDateString()===new Date().toDateString()?"":" "+supFmtTime(x.ts))+'</span>'
+      +(x.uid?'<button data-open="'+x.uid+'">'+ic("msg",12)+' Chatni ochish</button>':'')+'</div></div></div>';
+  }).join("");
+}
+/* ---------- Support akkaunt ulash: api_id/api_hash → raqam → kod → 2FA ---------- */
+function openAdminTgSupport(backFn){
+  var sh=openSheet('<h2 style="display:flex;align-items:center;gap:10px">'+ic("send",20)+' Support akkaunt</h2>'
+    +'<div class="paynote" style="margin:0 0 12px">Oddiy Telegram akkauntni (masalan @'+esc(SUPPORT_USERNAME)+') ulang: unga yozgan mijozlarga <b>AI shu akkaunt nomidan</b> javob beradi, '
+    +'siz esa hamma chatni <b>«Support»</b> oynasida ko\'rib, istalgan payt javob yozasiz. Telefondan o\'zingiz yozsangiz ham chatga tushadi.</div>'
+    +'<div id="tgsBox"><div class="d">Yuklanmoqda…</div></div>',backFn);
+  var box=sh.querySelector("#tgsBox");
+  function post(path,body,btn){
+    if(btn)btn.disabled=true;
+    return api("/api/admin/tgsupport/"+path,"POST",body||{}).then(function(r){if(btn)btn.disabled=false;haptic("ok");paint(r.status||r);return r;})
+      .catch(function(e){if(btn)btn.disabled=false;haptic("err");var er=(e&&e.resp&&e.resp.error)||"Xatolik";var x=box.querySelector("#tgsErr");if(x)x.textContent="⚠️ "+er;else toast(er,true);if(e&&e.resp&&e.resp.status)paint(e.resp.status,er);});
+  }
+  function paint(s,err){
+    var h="";
+    if(!s.lib)h='<div class="card" style="color:var(--err)">Serverda Telegram kutubxonasi o\'rnatilmagan (npm install).</div>';
+    else if(s.connected&&s.me){
+      h='<div class="card tgs-on"><div class="tgs-me">'+sinbAv({uid:s.me.id,name:s.me.name,via:"tg"})+'<div><b>'+esc(s.me.name||"")+'</b><span>'+(s.me.username?"@"+esc(s.me.username):"")+(s.me.phone?" · "+esc(s.me.phone):"")+'</span></div><span class="tgs-st">'+ic("ok",14)+' Ulangan</span></div></div>'
+        +'<div class="switch"><span style="font-size:var(--fs-sm)">'+ic("sparkles",15)+' AI shu akkauntda javob bersin</span><button class="swbtn'+(s.ai?" on":"")+'" id="tgsAi"><i></i></button></div>'
+        +'<div class="d" style="margin:4px 0 12px">O\'chirilsa — mijoz xabarlari faqat «Support» oynasiga tushadi, javobni o\'zingiz yozasiz.</div>'
+        +'<button class="btn" id="tgsInbox">'+ic("headset",15)+' Support chatlarini ochish</button>'
+        +'<button class="btn red" id="tgsOut" style="margin-top:8px">'+ic("logout",15)+' Akkauntdan chiqish</button>'
+        +'<div class="d" style="margin-top:10px">Sessiya faqat serverda saqlanadi va hech qayerga qaytarilmaydi; 2FA parol saqlanmaydi. Telegram → Sozlamalar → Qurilmalar bo\'limidan ham uzish mumkin.</div>';
+    } else if(s.step==="password"){
+      h='<div class="tgs-step"><span>3</span><b>Ikki bosqichli himoya paroli</b></div>'
+        +'<div class="d" style="margin:0 0 8px">Akkauntda 2FA yoqilgan. Telegram bulut parolini kiriting'+(s.hint?' (maslahat: <b>'+esc(s.hint)+'</b>)':'')+'.</div>'
+        +'<input id="tgsPw" type="password" autocomplete="current-password" placeholder="2FA parol">'
+        +'<button class="btn" id="tgsPwGo" style="margin-top:8px">Kirish</button>';
+    } else if(s.step==="code"){
+      h='<div class="tgs-step"><span>2</span><b>Kodni kiriting</b></div>'
+        +'<div class="d" style="margin:0 0 8px">Telegram '+esc(s.phone||"raqam")+' ga kod yubordi (odatda Telegram ilovasidagi «Telegram» chatiga).</div>'
+        +'<input id="tgsCode" inputmode="numeric" autocomplete="one-time-code" placeholder="12345" maxlength="8">'
+        +'<button class="btn" id="tgsCodeGo" style="margin-top:8px">Tasdiqlash</button>'
+        +'<button class="btn gray" id="tgsRestart" style="margin-top:8px">Boshqa raqam</button>';
+    } else if(!s.configured){
+      h='<div class="tgs-step"><span>1</span><b>Telegram API kaliti</b></div>'
+        +'<ol class="sg-steps" style="margin:0 0 10px"><li><b>my.telegram.org</b> saytiga support akkaunt raqami bilan kiring</li><li><b>API development tools</b> → ilova yarating (nomi ixtiyoriy)</li><li><b>App api_id</b> va <b>App api_hash</b> ni shu yerga kiriting</li></ol>'
+        +'<input id="tgsId" inputmode="numeric" placeholder="api_id (masalan 1234567)">'
+        +'<input id="tgsHash" style="margin-top:8px" autocomplete="off" placeholder="api_hash (32 belgi)">'
+        +'<button class="btn" id="tgsCredGo" style="margin-top:8px">Saqlash</button>'
+        +'<button class="btn gray" id="tgsOpenMy" style="margin-top:8px">'+ic("globe",15)+' my.telegram.org ni ochish</button>';
+    } else {
+      h='<div class="tgs-step"><span>'+(s.credsFromEnv?"1":"2")+'</span><b>Support akkaunt raqami</b></div>'
+        +'<div class="d" style="margin:0 0 8px">Telegram shu raqamga kirish kodini yuboradi.</div>'
+        +'<input id="tgsPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67">'
+        +'<button class="btn" id="tgsPhoneGo" style="margin-top:8px">Kod yuborish</button>'
+        +(s.credsFromEnv?'':'<button class="btn gray" id="tgsCredEdit" style="margin-top:8px">api_id / api_hash ni o\'zgartirish (hozir: '+esc(s.apiId)+')</button>');
+    }
+    if(s.error&&!s.connected)h='<div class="card" style="border-color:var(--err);color:var(--err);margin:0 0 10px">'+esc(s.error)+'</div>'+h;
+    box.innerHTML=h+'<div class="d" id="tgsErr" style="margin-top:8px;color:var(--err)">'+(err?"⚠️ "+esc(err):"")+'</div>';
+    var $=function(id){return box.querySelector("#"+id);};
+    if($("tgsCredGo"))$("tgsCredGo").addEventListener("click",function(){post("creds",{apiId:$("tgsId").value.trim(),apiHash:$("tgsHash").value.trim()},this);});
+    if($("tgsOpenMy"))$("tgsOpenMy").addEventListener("click",function(){openLink("https://my.telegram.org/apps");});
+    if($("tgsCredEdit"))$("tgsCredEdit").addEventListener("click",function(){paint(Object.assign({},s,{configured:false}));});
+    if($("tgsPhoneGo"))$("tgsPhoneGo").addEventListener("click",function(){post("login",{phone:$("tgsPhone").value},this);});
+    if($("tgsCodeGo"))$("tgsCodeGo").addEventListener("click",function(){post("code",{code:$("tgsCode").value},this);});
+    if($("tgsRestart"))$("tgsRestart").addEventListener("click",function(){paint(Object.assign({},s,{step:""}));});
+    if($("tgsPwGo"))$("tgsPwGo").addEventListener("click",function(){var v=$("tgsPw").value;$("tgsPw").value="";post("password",{password:v},this);});
+    if($("tgsAi"))$("tgsAi").addEventListener("click",function(){var on=!this.classList.contains("on");this.classList.toggle("on",on);post("options",{ai:on});});
+    if($("tgsInbox"))$("tgsInbox").addEventListener("click",function(){closeSheet();openAdminSupport();});
+    if($("tgsOut"))$("tgsOut").addEventListener("click",function(){if(confirm("Support akkauntdan chiqilsinmi? AI va inbox bu akkaunt orqali ishlamay qoladi."))post("logout",{},this);});
+    var f=$("tgsCode")||$("tgsPw")||$("tgsPhone");if(f)setTimeout(function(){try{f.focus();}catch(e){}},250);
+  }
+  api("/api/admin/tgsupport").then(function(s){paint(s);}).catch(function(){box.innerHTML='<div class="d">Yuklab bo\'lmadi.</div>';});
+}
+/* Admin bosh sahifasidagi belgilar: operator kutayotgan chatlar va o'qilmagan xabarlar */
+function admBadges(){
+  var el=document.getElementById("admHome");if(!el||!isAdmin())return;
+  api("/api/admin/badges").then(function(b){
+    var s=el.querySelector("#admBadge_support"),n=el.querySelector("#admBadge_notices"),w=(b.inbox&&b.inbox.want)||0,u=(b.inbox&&b.inbox.unread)||0;
+    if(s){s.hidden=!(w||u);s.textContent=w>99?"99+":String(w||u);s.classList.toggle("soft",!w);}
+    if(n){n.hidden=!b.notices;n.textContent=b.notices>99?"99+":String(b.notices);}
+    var c=el.querySelector("#aSupCard");
+    if(c)c.innerHTML=w?'<button class="adm-alert" id="aSupGo">'+ic("headset",18)+'<span><b>'+w+' ta mijoz operator kutyapti</b><span>Support oynasida javob bering</span></span>'+ic("arrowRight",16)+'</button>':'';
+    var g=c&&c.querySelector("#aSupGo");if(g)g.addEventListener("click",function(){haptic();openAdminSupport();});
+  }).catch(function(){});
+}
+setInterval(function(){if(document.getElementById("admHome")&&!document.getElementById("sInb")&&!document.hidden)admBadges();},20000);
+
 /* ---------- AI yordamchi (Claude) sozlamasi ---------- */
 function openAdminAi(backFn){
   var html='<h2>✨ AI yordamchi</h2>'
@@ -7587,7 +8017,8 @@ function openAdminAdminBot(backFn){
     +'<div class="switch"><span style="font-size:13.5px">🛒 Yangi buyurtmalar</span><button class="swbtn" data-n="orders"><i></i></button></div>'
     +'<div class="switch"><span style="font-size:13.5px">🧾 To\'lovlar va qo\'lda balans</span><button class="swbtn" data-n="payments"><i></i></button></div>'
     +'<div class="switch"><span style="font-size:13.5px">📩 Mos kelmagan SMS</span><button class="swbtn" data-n="sms"><i></i></button></div>'
-    +'<div class="d" style="margin:4px 0 0">Muhim ogohlantirishlar (liniya xatosi, zaxira tugashi) har doim keladi. Admin botni hali ochmagan adminga ular do\'kon boti orqali boradi.</div>'
+    +'<div class="switch"><span style="font-size:13.5px">💬 Support: mijoz yozdi, operator chaqirdi</span><button class="swbtn" data-n="support"><i></i></button></div>'
+    +'<div class="d" style="margin:4px 0 0">Admin botga sukut bo\'yicha faqat sayt va moliya xabarlari keladi. SMS va support xabarlari admin paneldagi <b>«Xabarlar»</b> va <b>«Support»</b> oynalarida turadi — xohlasangiz shu yerdan botga ham yoqing. Muhim ogohlantirishlar (liniya xatosi, zaxira tugashi) har doim keladi.</div>'
     +'<div style="height:24px"></div>';
   var sh=openSheet(html,backFn),ST=null;
   function paint(r){
@@ -9127,7 +9558,7 @@ var XT={ru:{
 "Telegram uchun SMS kod kutiladi. Kod kelmasa pul qaytadi.":"SMS-код для Telegram ожидается. Если код не придёт, деньги вернутся.","Sotib olasizmi?":"Купить?",
 "⏳ Raqam olinmoqda…":"⏳ Получаем номер…","Promokodlar":"Промокоды","chegirma":"скидка","faqat":"только","Nusxa":"Копировать",
 "Kodni xarid oynasidagi «Promo-kod» maydoniga kiriting.":"Введите код в поле «Промокод» при покупке.","Ko'p so'raladigan savollar":"Частые вопросы",
-"Ijtimoiy tarmoqlar":"Соцсети","✅ Nusxa olindi":"✅ Скопировано"
+"Ijtimoiy tarmoqlar":"Соцсети","✅ Nusxa olindi":"✅ Скопировано","Operator":"Оператор","Salom! Qanday yordam kerak?":"Здравствуйте! Чем помочь?","Narxlar, buyurtma, to'lov — istalgan savolni yozing.":"Цены, заказы, оплата — задайте любой вопрос.","AI darhol javob beradi":"AI отвечает сразу","Operator tez orada javob beradi":"Оператор скоро ответит","Kerak bo'lsa operator ulanadi":"При необходимости подключится оператор","Bugun":"Сегодня","Kecha":"Вчера","Operator bilan suhbat":"Чат с оператором","Operator navbatida · AI yordam beradi":"В очереди к оператору · AI поможет","AI 24/7 · operator":"AI 24/7 · оператор","onlayn":"онлайн","oflayn":"офлайн","Operator onlayn":"Оператор онлайн","Operator ish vaqti:":"Оператор работает:","Verion yordam":"Поддержка Verion","Narxlar":"Цены","MLBB olmos":"MLBB алмазы","ChatGPT Plus":"ChatGPT Plus","Buyurtmam qayerda?":"Где мой заказ?","Balansni qanday to'ldiraman?":"Как пополнить баланс?","Xabar yozing…":"Напишите сообщение…","Operator bilan gaplashmoqchiman":"Хочу поговорить с оператором"
 },en:{
 "Steam hamyonini to'ldirish":"Top up Steam wallet","Login kiriting — hamyon avtomatik to'ldiriladi":"Enter your login — the wallet is topped up automatically",
 "Login kiriting — hamyon tez to'ldiriladi":"Enter your login — the wallet is topped up quickly","To'ldiriladi":"You get","To'lov summasi":"You pay",
@@ -9149,7 +9580,7 @@ var XT={ru:{
 "Telegram uchun SMS kod kutiladi. Kod kelmasa pul qaytadi.":"The SMS code for Telegram is awaited. If it doesn't arrive, the money is refunded.","Sotib olasizmi?":"Buy it?",
 "⏳ Raqam olinmoqda…":"⏳ Getting a number…","Promokodlar":"Promo codes","chegirma":"off","faqat":"only","Nusxa":"Copy",
 "Kodni xarid oynasidagi «Promo-kod» maydoniga kiriting.":"Enter the code in the “Promo code” field at checkout.","Ko'p so'raladigan savollar":"FAQ",
-"Ijtimoiy tarmoqlar":"Social media","✅ Nusxa olindi":"✅ Copied"
+"Ijtimoiy tarmoqlar":"Social media","✅ Nusxa olindi":"✅ Copied","Operator":"Operator","Salom! Qanday yordam kerak?":"Hi! How can we help?","Narxlar, buyurtma, to'lov — istalgan savolni yozing.":"Prices, orders, payments — ask anything.","AI darhol javob beradi":"AI replies instantly","Operator tez orada javob beradi":"An operator will reply soon","Kerak bo'lsa operator ulanadi":"An operator joins if needed","Bugun":"Today","Kecha":"Yesterday","Operator bilan suhbat":"Chat with operator","Operator navbatida · AI yordam beradi":"Queued for operator · AI will help","AI 24/7 · operator":"AI 24/7 · operator","onlayn":"online","oflayn":"offline","Operator onlayn":"Operator online","Operator ish vaqti:":"Operator hours:","Verion yordam":"Verion support","Narxlar":"Prices","MLBB olmos":"MLBB diamonds","ChatGPT Plus":"ChatGPT Plus","Buyurtmam qayerda?":"Where is my order?","Balansni qanday to'ldiraman?":"How do I top up?","Xabar yozing…":"Type a message…","Operator bilan gaplashmoqchiman":"I want to talk to an operator"
 }};
 function _x(s){var d=XT[S.lang];return d&&d[s]||s;}
 /* HTML bo'laklari (ichida teglar) — butun bo'lak tarjima qilinadi */

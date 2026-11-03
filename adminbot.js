@@ -26,8 +26,12 @@ module.exports = function createAdminBot(ctx) {
   const admins = () => ctx.ADMIN_IDS;
   const isAdmin = id => admins().indexOf(Number(id)) !== -1;
   const cfg = () => { const D = DB(); if (!D.settings) D.settings = {}; return D.settings.adminBot || (D.settings.adminBot = {}); };
-  const notifyOn = k => (cfg().notify || {})[k] !== false;
-  const NOTIFY_LABEL = { orders: "Buyurtmalar", payments: "To'lovlar", sms: "SMS" };
+  /* Admin botga faqat sayt va moliya: buyurtma, to'lov, liniya/sayt xatolari, hisobot. SMS lentasi va
+     support (mijoz yozdi, operator chaqiruvi) admin paneldagi «Xabarlar» va «Support» oynalariga
+     boradi — xohlasa admin shu yerdan qayta yoqadi. */
+  const NOTIFY_DEFAULT = { orders: true, payments: true, sms: false, support: false };
+  const notifyOn = k => { const v = (cfg().notify || {})[k]; return v === undefined ? NOTIFY_DEFAULT[k] !== false : v !== false; };
+  const NOTIFY_LABEL = { orders: "Buyurtmalar", payments: "To'lovlar", sms: "SMS", support: "Support" };
 
   /* ---------- Telegram API (admin bot tokeni bilan) ---------- */
   function api(method, payload, tok) {
@@ -606,6 +610,7 @@ module.exports = function createAdminBot(ctx) {
 
   // Mijoz operator so'radi yoki operator rejimida yozdi — hamma adminlarga, javob tugmalari bilan.
   function customerEvent(from, title, body, isHandoff) {
+    if (!notifyOn("support")) return;
     const uid = from.id;
     const text = title + "\n👤 " + who(uid, from.username) + "\n\n" + String(body || "").slice(0, 2500);
     const kb = kbd([[btn("✍️ Javob yozish", "hr:" + uid), btn("🤖 AI'ga qaytarish", "hx:" + uid)], [btn("👤 Mijoz", "uc:" + uid)]]);

@@ -589,6 +589,67 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 - **Mayda yozuvlar.** Sharh sanalari, zaxira belgisi va promokod izohidagi 9–10,5 px yozuvlar shkaladagi eng kichik o'lchamga (11 px) keltirildi.
 - **Xavfsizlik.** HTML javobga `Content-Security-Policy` qo'shildi: `frame-ancestors` (ilovani faqat Telegram o'z oynasiga joylay oladi — clickjacking yopiq), `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`. Skript va rasm manbalari cheklanmagan, ilova ishlashiga ta'sir qilmaydi. Hamma `/api/admin/*` yo'llari umumiy admin tekshiruvi ichida ekani qayta tekshirildi. Hujum to'plamlari (`sec-test`, `atk-all`) o'tdi.
 
+## Support: AI, support akkaunt, admin inbox va «Xabarlar» (v3.8)
+
+**AI mustaqil ishlaydi.** Mijoz ilovadagi yordam tugmasi, do'kon boti yoki support akkauntga yozsa, AI javob beradi:
+- **Bilim bazasi.** Ilova tuzilishi, to'lov tartibi, o'yinlar, AI obunalar, Steam hamyon (kurs, chegaralar, login), virtual raqam, skinlar do'koni (trade havola, yetkazish), Telegram Stars/Premium, nakrutka, ommaviy promokodlar, admin yozgan FAQ, ijtimoiy tarmoqlar, buyurtma holatlari.
+- **Vositalar.** `search_products`, `get_my_account`, `get_order` (yangi: #raqam bo'yicha holat va bekor qilinish sababi), `prepare_order`, `show_app_button`, `call_human`.
+- **«Javob bera olmayman» endi yo'q:**
+  - tanlangan provayder xato bersa, ikkinchisi sinaladi (Claude ↔ Gemini);
+  - Gemini'da kalit yoki model limitga yetsa, keyingi model sinaladi;
+  - xavfsizlik filtri faqat og'ir holatlarni to'sadi (`BLOCK_ONLY_HIGH`);
+  - AI umuman ishlamasa (kalit yo'q yoki xato), **ichki yordamchi** javob beradi. U uch tilda kalit so'zlarni taniydi: salom, balans, to'ldirish, buyurtma holati, narx (katalogdan), Steam, skinlar, virtual raqam, Stars, nakrutka, operator. Tushunmagan savol inbox'ning «Operator kutyapti» bo'limiga tushadi.
+- **Operator chaqirilsa AI to'xtamaydi.** Suhbat «Operator kutyapti» bo'limiga tushadi, AI esa admin o'zi javob yozguncha yordam berishda davom etadi. Admin yozgach, shu chatda AI `handoffMin` daqiqa jim turadi. Admin istalgan payt «AI'ga qaytarish» qila oladi.
+
+**Support akkaunt (tgsupport.js, `teleproto` — GramJS'ning faol davomi).** Admin panel → Asosiy → «Support akkaunt»:
+1. **api_id va api_hash.** my.telegram.org → API development tools. Yoki Railway'da `TG_API_ID` / `TG_API_HASH`.
+2. **Telefon raqam.** Telegram kod yuboradi.
+3. **Kod.** Akkauntda ikki bosqichli himoya yoqilgan bo'lsa, 2FA parol so'raladi (maslahati ko'rsatiladi).
+4. **Sessiya saqlanadi.** Server qayta ishga tushsa, avtomatik ulanadi.
+
+Ulangandan keyin:
+- akkauntga shaxsiy chatda yozgan mijozga AI shu akkaunt nomidan javob beradi; tugmalar o'rniga `t.me/<bot>/<app>?startapp=open_<bo'lim>` havolasi qo'shiladi;
+- egasi telefondan o'zi yozsa, xabar suhbatga «admin» bo'lib tushadi va shu mijoz uchun AI to'xtaydi;
+- guruh, kanal, bot va Telegram xizmat xabarlari (777000, kirish kodlari) e'tiborsiz qoladi;
+- AI'ni akkaunt uchun alohida o'chirish mumkin: unda xabarlar faqat inbox'ga tushadi.
+
+Xavfsizlik:
+- sessiya satri va api_hash hech qachon javobda qaytmaydi;
+- 2FA parol saqlanmaydi;
+- telefon raqam yashirib ko'rsatiladi (`+998 ••• 2233`);
+- hamma endpointlar faqat admin uchun (`/api/admin/tgsupport/*`).
+
+**Admin inbox** (Admin panel → «Support»). Ilova, do'kon boti va support akkauntdagi hamma suhbatlar bitta joyda:
+- **Bo'limlar:** «Operator kutyapti» (so'ragan, navbatda yoki siz gaplashayotgan), «Hammasi», «AI hal qildi», «Yopilgan».
+- **Ro'yxat:** qidiruv, o'qilmaganlar soni, manba belgisi (ilova / bot / support akkaunt).
+- **Chat oynasi:**
+  - to'liq tarix sanalar bilan; AI javoblari va ichki yordamchi javoblari alohida belgilangan;
+  - mijoz kartasi: balans, buyurtmalar, xarid, ID, @username;
+  - tayyor javoblar va javob yozish; javob mijoz yozgan kanalga ketadi (support akkaunt yoki do'kon boti + ilova);
+  - AI'ni shu chatda to'xtatish yoki qaytarish; suhbatni yopish (mijoz yana yozsa, o'zi qayta ochiladi).
+- **Admin bosh sahifasi:** «N ta mijoz operator kutyapti» ogohlantirishi va plitkalardagi belgilar (20 soniyada yangilanadi).
+
+**«Xabarlar» lentasi** (Admin panel → «Xabarlar»). Kanalga o'xshash oyna:
+- **Nima tushadi:** SMS lentasi (tasdiqlangan, mos to'lov topilmagan, rad etilgan), operator chaqiruvlari, navbat, support xabarlari, support akkaunt holati (ulandi, uzildi).
+- **Qanday ishlaydi:** bir mijozning ketma-ket xabarlari bitta yozuvga yig'iladi (×N). «Chatni ochish» tugmasi bor. Har admin uchun o'qilmaganlar alohida sanaladi. Lentada oxirgi 400 ta xabar saqlanadi.
+
+**Admin bot** endi sukut bo'yicha faqat sayt va moliya xabarlarini yuboradi: buyurtmalar, to'lovlar, qo'lda balans, liniya va sayt xatolari, kunlik hisobot. SMS va support xabarlari «Xabarlar» va «Support» oynalariga tushadi. Admin bot → Bildirishnomalar'da «SMS» va «Support» yana yoqilishi mumkin.
+
+**Mijoz chati** yangilandi:
+- kutib olish kartasi;
+- sana ajratgichlari;
+- «Verion AI» va «Operator» ikonka bilan belgilangan;
+- operator holati nuqtasi;
+- RU/EN tarjima.
+
+Testlar (`sup-test`, 48 tekshiruv; soxta teleproto `TGS_TEST=1 TGS_FAKE_LIB=...` bilan, haqiqiy Telegram'siz):
+- ichki yordamchi;
+- inbox bo'limlari, admin javobi, AI to'xtatish/qaytarish, yopish;
+- xavfsizlik (mijoz admin API'larini ko'ra olmaydi);
+- support akkaunt: noto'g'ri raqam, kod, 2FA, sessiya yashirinligi;
+- kiruvchi/chiquvchi xabarlar, xizmat xabarlari filtri, AI o'chiq rejimi;
+- SMS lentasi va badge'lar.
+
 ## Rasmiy ochilishdan oldin (faqat egasi qila oladi)
 
 Admin panel → «🚀 Tayyorlik» bo'limida hammasi yashil bo'lsin. Majburiy bandlar:

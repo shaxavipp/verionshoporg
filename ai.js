@@ -51,7 +51,14 @@ module.exports = function createAi(ctx) {
   // Tanlanmagan bo'lsa: Claude kaliti bor — Claude, aks holda bepul Gemini.
   const provider = () => { const p = cfg().provider; return p === "gemini" || p === "claude" ? p : (apiKey() ? "claude" : "gemini"); };
   const geminiKeys = () => String(process.env.GEMINI_API_KEYS || "").split(",").concat(cfg().geminiKeys || []).map(k => String(k).trim()).filter(Boolean);
-  const ready = () => provider() === "gemini" ? geminiKeys().length > 0 : !!(Anthropic && apiKey());
+  const claudeOk = () => !!(Anthropic && apiKey());
+  const geminiOk = () => geminiKeys().length > 0;
+  // Ikkala provayderdan biri sozlangan bo'lsa yetarli: tanlangani ishlamasa, ikkinchisi zaxira bo'ladi.
+  const ready = () => claudeOk() || geminiOk();
+  function providers() {
+    const p = provider(), other = p === "claude" ? "gemini" : "claude";
+    return [p, other].filter(x => (x === "claude" ? claudeOk() : geminiOk()));
+  }
   let client = null, clientKey = "";
   function api() {
     const k = apiKey();
@@ -90,10 +97,22 @@ module.exports = function createAi(ctx) {
     }
     return api().messages.create(req);
   }
-  // Agent sikli: modelga vositalar beriladi, chaqiruvlar bajariladi, natija qaytariladi.
+  /* Agent sikli: modelga vositalar beriladi, chaqiruvlar bajariladi, natija qaytariladi.
+     Tanlangan provayder xato bersa, bo'sh javob qaytarsa yoki rad etsa — ikkinchisi (sozlangan bo'lsa)
+     sinab ko'riladi. Ikkalasi ham bo'lmasa xato tashlanadi va chaqiruvchi ichki javobga o'tadi. */
   async function runAgent(system, tools, impl, history, userText, effort) {
-    if (provider() === "gemini") return runGemini(system, tools, impl, history, userText);
-    return runClaude(system, tools, impl, history, userText, effort);
+    let last = null;
+    for (const p of providers()) {
+      try {
+        const r = p === "gemini" ? await runGemini(system, tools, impl, history, userText) : await runClaude(system, tools, impl, history, userText, effort);
+        if (r && r.text && !r.refused) return r;
+        last = Object.assign(new Error(r && r.refused ? "javob rad etildi" : "bo'sh javob"), { refused: !!(r && r.refused) });
+      } catch (e) {
+        last = e;
+        console.log("[ai] " + p + " xato: " + (e && e.status ? e.status + " " : "") + S(e && e.message, 200));
+      }
+    }
+    throw last || new Error("AI provayder sozlanmagan");
   }
   /* ---------- Gemini (REST, generateContent + function calling) ---------- */
   const coolUntil = {};    // kalit -> vaqt (429 dan keyin dam oladi)
@@ -110,32 +129,46 @@ module.exports = function createAi(ctx) {
     }
     return o;
   }
+  /* Kalitlar va modellar bo'yicha aylanish. Bepul limit har model uchun alohida: tanlangan modelda
+     hamma kalit limitga yetsa yoki model topilmasa (nomi o'zgargan/yopilgan) — ro'yxatdagi keyingi
+     model sinaladi. Boshqa 400 xatolar (so'rov noto'g'ri) boshqa model bilan ham takrorlanadi. */
+  const coolModel = {};    // kalit|model -> vaqt
   async function geminiCall(body) {
     const keys = geminiKeys();
     if (!keys.length) throw new Error("Gemini kaliti kiritilmagan");
-    const model = cfg().geminiModel || GEMINI_MODELS[0].id;
+    const sel = cfg().geminiModel || GEMINI_MODELS[0].id;
+    const models = [sel].concat(GEMINI_MODELS.map(x => x.id).filter(id => id !== sel));
     let lastErr = null;
-    for (let n = 0; n < keys.length; n++) {
-      const key = keys[(gIdx + n) % keys.length];
-      if ((coolUntil[key] || 0) > Date.now()) continue;
-      const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 60000);
-      let r, j = null;
-      try {
-        r = await fetch(GEMINI_BASE() + "/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
-          method: "POST", signal: ac.signal, headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body) });
-        try { j = await r.json(); } catch (e) {}
-      } catch (e) { lastErr = new Error("Gemini bilan aloqa yo'q: " + S(e.message, 120)); continue; }
-      finally { clearTimeout(tm); }
-      if (r.ok) { gIdx = (gIdx + n + 1) % keys.length; return j || {}; }
-      const msg = S(j && j.error && j.error.message, 200) || ("HTTP " + r.status);
-      lastErr = Object.assign(new Error(msg), { status: r.status });
-      if (r.status === 429) { coolUntil[key] = Date.now() + (/per ?day|PerDay/i.test(msg) ? 6 * 3600000 : 60000); continue; }   // limit — keyingi kalit
-      if (r.status === 401 || r.status === 403) { coolUntil[key] = Date.now() + 3600000; continue; }                            // yaroqsiz kalit
-      if (r.status >= 500) continue;
-      throw lastErr;                                                                                                              // 400/404 — boshqa kalit ham yordam bermaydi
+    for (const model of models) {
+      let fatal = false;
+      for (let n = 0; n < keys.length; n++) {
+        const key = keys[(gIdx + n) % keys.length], ck = key + "|" + model;
+        if ((coolUntil[key] || 0) > Date.now() || (coolModel[ck] || 0) > Date.now()) continue;
+        const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 60000);
+        let r, j = null;
+        try {
+          r = await fetch(GEMINI_BASE() + "/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+            method: "POST", signal: ac.signal, headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body) });
+          try { j = await r.json(); } catch (e) {}
+        } catch (e) { lastErr = new Error("Gemini bilan aloqa yo'q: " + S(e.message, 120)); continue; }
+        finally { clearTimeout(tm); }
+        if (r.ok) { gIdx = (gIdx + n + 1) % keys.length; return j || {}; }
+        const msg = S(j && j.error && j.error.message, 200) || ("HTTP " + r.status);
+        lastErr = Object.assign(new Error(msg), { status: r.status });
+        if (r.status === 429) { coolModel[ck] = Date.now() + (/per ?day|PerDay/i.test(msg) ? 6 * 3600000 : 60000); continue; }   // shu model limiti — keyingi kalit
+        if (r.status === 401 || r.status === 403) { coolUntil[key] = Date.now() + 3600000; continue; }                           // yaroqsiz kalit
+        if (r.status >= 500) continue;
+        if (r.status === 404 || /not found|not supported|is not available|unknown model/i.test(msg)) { coolModel[ck] = Date.now() + 3600000; break; }   // model yo'q — keyingi model
+        fatal = true; break;                                                                                                       // so'rov xatosi — boshqa kalit yordam bermaydi
+      }
+      if (fatal) break;
     }
     throw lastErr || new Error("Barcha Gemini kalitlari limitda — birozdan keyin urinib ko'ring");
   }
+  // Do'kon savollari (narx, to'lov, o'yin) xavfsizlik filtriga deyarli tushmaydi; standart chegarada esa
+  // oddiy so'zlar ham ba'zan bloklanib, mijoz «javob bera olmayman» olardi — faqat og'ir holatlar to'siladi.
+  const G_SAFETY = ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"]
+    .map(category => ({ category, threshold: "BLOCK_ONLY_HIGH" }));
   async function runGemini(system, tools, impl, history, userText) {
     const contents = history.map(h => ({ role: h.role === "assistant" ? "model" : "user", parts: [{ text: h.text }] }));
     contents.push({ role: "user", parts: [{ text: userText }] });
@@ -143,14 +176,15 @@ module.exports = function createAi(ctx) {
       Object.keys(t.input_schema.properties || {}).length ? { parameters: gSchema(t.input_schema) } : {}));
     const actions = [];
     for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
-      const j = await geminiCall({ systemInstruction: { parts: [{ text: system }] }, contents,
-        tools: decl.length ? [{ functionDeclarations: decl }] : undefined, generationConfig: { maxOutputTokens: 2000 } });
+      // 8192: «fikrlaydigan» modellarda fikrlash tokenlari ham shu chegaraga kiradi — kichik bo'lsa javob bo'sh qolardi.
+      const j = await geminiCall({ systemInstruction: { parts: [{ text: system }] }, contents, safetySettings: G_SAFETY,
+        tools: decl.length ? [{ functionDeclarations: decl }] : undefined, generationConfig: { maxOutputTokens: 8192 } });
       const um = j.usageMetadata || {};
       addUsage({ input_tokens: (um.promptTokenCount || 0) - (um.cachedContentTokenCount || 0), cache_read_input_tokens: um.cachedContentTokenCount || 0,
         output_tokens: (um.candidatesTokenCount || 0) + (um.thoughtsTokenCount || 0) });
       const cand = (j.candidates || [])[0];
       if (!cand || cand.finishReason === "SAFETY" || (j.promptFeedback && j.promptFeedback.blockReason))
-        return { text: "Kechirasiz, bu savolga javob bera olmayman. Boshqa savol bo'lsa, yozing.", actions };
+        return { text: "", refused: true, actions };
       const parts = (cand.content && cand.content.parts) || [];
       const calls = parts.filter(x => x.functionCall);
       const text = parts.filter(x => x.text && !x.thought).map(x => x.text).join("").trim();
@@ -176,7 +210,7 @@ module.exports = function createAi(ctx) {
     for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
       const r = await call(system, tools, messages, effort);
       addUsage(r.usage);
-      if (r.stop_reason === "refusal") return { text: "Kechirasiz, bu savolga javob bera olmayman. Boshqa savol bo'lsa, yozing.", actions };
+      if (r.stop_reason === "refusal") return { text: "", refused: true, actions };
       const text = r.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
       if (r.stop_reason === "pause_turn") { messages.push({ role: "assistant", content: r.content }); continue; }
       if (r.stop_reason !== "tool_use") return { text, actions };
@@ -257,11 +291,15 @@ module.exports = function createAi(ctx) {
   }
   function dequeue(uid) { if (queue()[String(uid)]) { delete queue()[String(uid)]; ctx.save(); } }
   const QUEUED_TEXT = st => "Hozir operator " + (st.reason === "busy" ? "band" : "faol emas") + " — sizni navbatga qo'shdim. Operator faol bo'lishi bilan sizga shu yerda javob beradi (ish vaqti " + st.hours + ", Toshkent vaqti). Shu orada men yordam berishga harakat qilaman.";
-  // Mijozni operatorga uzatish: operator bo'lsa — jonli suhbat, bo'lmasa — navbat.
+  /* Mijozni operatorga uzatish: suhbat inbox'ning «Operator kerak» bo'limiga tushadi. Operator faol
+     bo'lsa — darhol xabar, bo'lmasa — navbat. AI admin o'zi javob yozmaguncha yordam berishda davom
+     etadi (avval AI shu zahoti jim bo'lib qolardi va admin ko'rmasa mijoz javobsiz qolardi). */
   function toOperator(from, reason, lastText) {
-    const st = opStatus();
+    const st = opStatus(), mt = meta(from.id);
+    mt.want = true; mt.wantTs = mt.wantTs || Date.now(); mt.closed = false;
+    if (reason) mt.reason = S(reason, 200);
+    ctx.save();
     if (st.available) {
-      human()[String(from.id)] = Date.now() + (Number(cfg().handoffMin) || 60) * 60000; ctx.save();
       dequeue(from.id);
       ctx.notifyHandoff(from, S(reason, 300), lastText);
       return { live: true, st };
@@ -291,11 +329,36 @@ module.exports = function createAi(ctx) {
       k.loyalty ? "• Sodiqlik darajalari (umumiy xaridga qarab, har xariddan keshbek): " + k.loyalty + "." : "",
       "• Promo-kod bo'lsa — xaridni tasdiqlash oynasida kiritiladi.",
       "• Ish vaqti: AI yordamchi 24/7; operator (admin) " + st.hours + " (Toshkent vaqti). Operator hozir: " + (st.available ? "FAOL" : st.reason === "busy" ? "BAND" : st.reason === "off" ? "O'CHIQ" : "ISH VAQTIDAN TASHQARIDA") + ".",
-      "• Telegram'dagi support akkaunt: @" + ctx.supportUsername() + "."
+      "• Telegram'dagi support akkaunt: @" + ctx.supportUsername() + ".",
+      ...extraKnowledge(k)
     ].filter(Boolean).join("\n");
   }
-  const SUPPORT_SYSTEM = () => [
-    "Siz Verion Shop do'konining rasmiy yordamchisisiz (Telegram bot va ilovadagi support chat). Maqsad: mijoz savoliga TO'G'RI va TO'LIQ javob berish, xaridni oxirigacha yetkazish, muammoni hal qilish.",
+  // Qo'shimcha bo'limlar: Steam, virtual raqam, skinlar, do'kon mahsulotlari, FAQ, promokod, tarmoqlar.
+  function extraKnowledge(k) {
+    const L = [], sm = s => money(s).replace(" so'm", "");
+    if (k.botUsername) L.push("• Bot: @" + k.botUsername + (k.appLink ? ". Ilovani ochish havolasi: " + k.appLink : "") + ".");
+    const sh = k.shop || {};
+    if (sh.sections && sh.sections.length) L.push("• Do'kon mahsulotlari bo'limlari (Mahsulotlar sahifasi): " + sh.sections.join("; ") + ". Aniq narx — search_products bilan.");
+    const s = k.steam;
+    if (s && s.enabled) L.push("• Steam hamyonini to'ldirish (Asosiy → Steam hamyon): Steam LOGIN kiritiladi (nickname yoki email EMAS — Steam'ga kirishda yoziladigan login), summa $" + s.min + "–$" + s.max +
+      ", kurs 1$ ≈ " + sm(s.rate) + " so'm. " + (s.auto ? "Avtomatik, odatda bir necha daqiqada tushadi." : "Operator bajaradi, odatda 1 soat ichida.") + " Login noto'g'ri bo'lsa pul boshqa akkauntga ketadi — tekshirishni so'rang.");
+    const v = k.vnum;
+    if (v && v.enabled) L.push("• Virtual raqam (Telegram uchun SMS qabul qilish): mamlakat tanlanadi, raqam beriladi, Telegram'ga shu raqam kiritiladi, kod ilovada chiqadi. Kod " + v.ttlMin + " daqiqada kelmasa pul avtomatik balansga qaytadi. Kod kelguncha mijoz o'zi bekor qilishi ham mumkin.");
+    const sk = k.skins || {};
+    const skOn = ["cs2", "dota2", "rust"].filter(g => sk[g]).map(g => ({ cs2: "CS2", dota2: "Dota 2", rust: "Rust" })[g]);
+    if (skOn.length) L.push("• Skinlar do'koni (" + skOn.join(", ") + "): ilovada alohida do'kon. Mijoz Steam TRADE havolasini kiritadi (Steam → Inventar → Savdo takliflari → «Kim menga savdo taklifi yubora oladi?»), skin tanlaydi, balansdan to'laydi. Skin Steam'ga savdo taklifi bo'lib keladi (odatda ~1 daqiqa); taklifni Steam'da qabul qilish kerak. Inventar ochiq va Steam Guard 7 kundan beri yoqilgan bo'lishi kerak. Yetkazib bo'lmasa pul balansga qaytadi.");
+    if (sh.telegram) L.push("• Telegram Stars, Premium va sovg'alar — Telegram bo'limida, @username bo'yicha; Stars sonini o'zi kiritsa ham bo'ladi.");
+    const ex = k.extras || {};
+    if (ex.promos && ex.promos.length) L.push("• Hozirgi ommaviy promokodlar: " + ex.promos.slice(0, 8).map(p => p.code + " (" + (p.type === "percent" ? p.value + "%" : sm(p.value) + " so'm") + " chegirma" + (p.minOrder ? ", " + sm(p.minOrder) + " so'mdan" : "") + (p.only && p.only.length ? ", faqat: " + p.only.join(", ") : "") + ")").join("; ") + ".");
+    if (ex.faq && ex.faq.length) L.push("• Ko'p so'raladigan savollar (do'kon egasi yozgan, shularga tayaning):\n" + ex.faq.slice(0, 20).map(f => "  — " + S(f.q, 200) + " → " + S(f.a, 600)).join("\n"));
+    if (ex.social && ex.social.length) L.push("• Ijtimoiy tarmoqlar: " + ex.social.slice(0, 8).map(x => S(x.name || x.title || "", 40) + " " + S(x.url || "", 120)).join("; ") + ".");
+    L.push("• Buyurtma holatlari: «kutilmoqda/bajarilmoqda» — jarayonda; «bajarildi» — yetkazilgan; «bekor qilingan» — pul balansga qaytgan. Buyurtma raqami #123 ko'rinishida (Buyurtmalar bo'limida).");
+    return L;
+  }
+  const SUPPORT_SYSTEM = via => [
+    "Siz Verion Shop do'konining rasmiy yordamchisisiz (Telegram bot, ilovadagi support chat va @" + ctx.supportUsername() + " support akkaunti). Maqsad: mijoz savoliga TO'G'RI va TO'LIQ javob berish, xaridni oxirigacha yetkazish, muammoni hal qilish.",
+    "Siz mustaqil ishlaysiz: hech qachon «javob bera olmayman», «bilmayman» deb qoldirmang. Pastdagi bilimlar va vositalar bilan javob toping; ma'lumot yetmasa — bitta aniqlashtiruvchi savol bering yoki operatorni taklif qiling.",
+    via === "tg" ? "BU SUHBAT TELEGRAM SUPPORT AKKAUNTIDA: bu yerda tugmalar yo'q. Xarid, to'ldirish va buyurtmalar ilovada qilinadi — kerak bo'lsa show_app_button chaqiring (havola matn sifatida qo'shiladi). prepare_order bu yerda ishlamaydi: o'yin/AI obuna buyurtmasi uchun mijozga ilovani oching deng." : "",
     "Uslub: mijoz qaysi tilda yozsa (o'zbek lotin, o'zbek kirill, rus, ingliz) — o'sha tilda. Samimiy, hurmat bilan («siz»), qisqa: odatda 1–4 gap; kerak bo'lsa raqamlangan qadamlar. Oddiy matn, markdown yulduzchalarsiz. Narxlarni «15 000 so'm» ko'rinishida yozing.",
     "Ishlash tartibi:",
     "1) Savolni tushunmasangiz — bitta aniqlashtiruvchi savol bering. Taxmin qilmang.",
@@ -311,6 +374,9 @@ module.exports = function createAi(ctx) {
   const SUPPORT_TOOLS = [
     T("search_products", "Do'kondagi mahsulot va paketlarni qidiradi (narxi bilan). Bo'sh so'rov — hammasi.", { query: { type: "string", description: "Masalan: 'mlbb olmos', 'chatgpt', 'pubg uc'" } }),
     T("get_my_account", "Mijozning balansi, oxirgi buyurtmalari va kutilayotgan to'lovlari.", {}),
+    T("get_order", "Mijozning bitta buyurtmasi haqida to'liq ma'lumot (holat, akkaunt, sana, bekor qilinish sababi). Raqam — #123 dagi son.", {
+      number: { type: "integer", description: "Buyurtma raqami (# siz)" }
+    }),
     T("prepare_order", "O'yin paketi yoki AI obuna uchun buyurtma tayyorlaydi va mijozga «✅ Tasdiqlash» tugmasini yuboradi. Kerak bo'lmagan maydonga bo'sh qator bering.", {
       package_id: { type: "string", description: "search_products natijasidagi package_id" },
       player_id: { type: "string", description: "O'yinchi ID (o'yinlar uchun)" },
@@ -324,10 +390,21 @@ module.exports = function createAi(ctx) {
       reason: { type: "string", description: "Qisqa sabab: nima kerakligi" }
     })
   ];
-  function supportImpl(from) {
+  const ORDER_WORD = { done: "bajarildi", pending: "kutilmoqda", processing: "bajarilmoqda", cancelled: "bekor qilingan, pul balansga qaytarilgan" };
+  function supportImpl(from, via) {
     const uid = from.id;
     return {
       search_products: a => ({ natijalar: catalogSearch(a.query) }),
+      get_order: a => {
+        const n = Math.round(Number(a.number) || 0);
+        const o = DB().orders.find(x => x.uid === uid && Number(x.seq) === n);
+        if (!o) return { error: "Bu mijozda #" + n + " raqamli buyurtma topilmadi. Raqamni Buyurtmalar bo'limidan tekshirishni so'rang." };
+        return { raqam: "#" + o.seq, mahsulot: o.item, narx: money(o.price), holat: ORDER_WORD[o.status] || o.status,
+          akkaunt: (o.game && o.game.accountText) || (o.steam && o.steam.login ? "Steam: " + o.steam.login : "") || (o.giftRecipient ? "@" + o.giftRecipient : "") || "",
+          yaratilgan: new Date(o.ts).toISOString().slice(0, 16).replace("T", " "),
+          bekor_sababi: o.status === "cancelled" ? S(o.cancelReason || "", 200) : undefined,
+          eslatma: o.status === "pending" || o.status === "processing" ? "Jarayonda. Odatda bir necha daqiqadan 1 soatgacha; uzoq cho'zilsa operatorga uzating." : undefined };
+      },
       get_my_account: () => {
         const D = DB(), acc = D.users[String(uid)] || { balance: 0 };
         return {
@@ -340,6 +417,10 @@ module.exports = function createAi(ctx) {
         };
       },
       prepare_order: (a, actions) => {
+        if (via === "tg") {
+          actions.push({ section: "games", text: "Ilovani ochish" });
+          return { error: "Support akkauntda tasdiqlash tugmasi yo'q. Mijozga paket nomi va narxini ayting, xaridni ilovada qilishini so'rang (havola javobga avtomatik qo'shiladi)." };
+        }
         const g = ctx.games.gameById((ctx.games.pkgById(S(a.package_id, 80)) || {}).gameId);
         const account = {};
         for (const f of (g && g.fields) || []) account[f.key] = f.type === "email" ? S(a.email, 80).trim() : f.key === "zoneId" ? S(a.server_id, 30).trim() : S(a.player_id, 30).trim();
@@ -357,8 +438,9 @@ module.exports = function createAi(ctx) {
       call_human: a => {
         stats().handoffs++;
         const last = (chats.get(uid) || []).slice(-6).map(h => (h.role === "user" ? "👤 " : "🤖 ") + S(h.text, 300)).join("\n");
+        const mt = meta(uid); mt.want = true; mt.wantTs = Date.now(); mt.reason = S(a.reason, 200); mt.closed = false;
         const r = toOperator(from, a.reason, last);
-        if (r.live) return { ok: true, operator: "faol", eslatma: "Operator chaqirildi. Mijozga operator tez orada shu yerda yozishini ayting." };
+        if (r.live) return { ok: true, operator: "faol", eslatma: "Operator chaqirildi. Mijozga operator tez orada shu yerda yozishini ayting va shu orada yordam berishda davom eting." };
         return { ok: true, operator: r.st.reason === "busy" ? "band" : "faol emas", navbatga_qoshildi: true,
           eslatma: "Mijozga aynan shuni ayting: " + QUEUED_TEXT(r.st) + " Keyin muammoni o'zingiz hal qilishga harakat qiling (get_my_account bilan tekshiring, yo'riqnoma bering)." };
       }
@@ -376,11 +458,23 @@ module.exports = function createAi(ctx) {
     }
     return rows.length ? { inline_keyboard: rows } : undefined;
   }
-  /* ---------- Umumiy suhbat yozuvi (bot + ilova bitta suhbat) ----------
-     DB.settings.support[uid] = [{ id, from: "user"|"ai"|"admin"|"system", text, ts, actions?, via }] */
+  /* ---------- Umumiy suhbat yozuvi (bot + ilova + support akkaunt — bitta suhbat) ----------
+     DB.settings.support[uid]     = [{ id, from: "user"|"ai"|"admin"|"system", text, ts, actions?, via, by?, local? }]
+     DB.settings.supportMeta[uid] = { name, uname, via, seen, want, wantTs, reason, closed, attn } — admin inbox uchun */
+  const THREAD_MAX = 150;
   function thread(uid) {
     const D = DB(); const all = D.settings.support || (D.settings.support = {});
     return all[String(uid)] || (all[String(uid)] = []);
+  }
+  function metaAll() { const D = DB(); return D.settings.supportMeta || (D.settings.supportMeta = {}); }
+  function meta(uid) { const a = metaAll(), k = String(uid); return a[k] || (a[k] = { seen: 0 }); }
+  function touchMeta(from, via) {
+    const m = meta(from.id);
+    const nm = S(((from.first_name || "") + " " + (from.last_name || "")).trim(), 60);
+    if (nm) m.name = nm;
+    if (from.username) m.uname = S(from.username, 40);
+    if (via) m.via = via;
+    return m;
   }
   let msgSeq = Date.now();
   /* Tozalash: hamma suhbatlar bitta sozlama yozuvida turadi va har saqlashda JSON'ga aylantiriladi —
@@ -390,6 +484,8 @@ module.exports = function createAi(ctx) {
     const D = DB(), now = Date.now(), all = (D.settings && D.settings.support) || {};
     let changed = false;
     for (const k of Object.keys(all)) { const t = all[k]; if (!Array.isArray(t) || !t.length || now - (t[t.length - 1].ts || 0) > 30 * 86400000) { delete all[k]; changed = true; } }
+    const ma = (D.settings && D.settings.supportMeta) || {};
+    for (const k of Object.keys(ma)) if (!all[k]) { delete ma[k]; changed = true; }
     const hu = (D.settings && D.settings.aiHuman) || {};
     for (const k of Object.keys(hu)) if (!(hu[k] > now)) { delete hu[k]; changed = true; }
     for (const [k, v] of pending) if (now - v.ts > 15 * 60000) pending.delete(k);
@@ -401,33 +497,152 @@ module.exports = function createAi(ctx) {
     const t = thread(uid);
     const m = Object.assign({ id: ++msgSeq, from, text: S(text, 4000), ts: Date.now() }, extra || {});
     t.push(m);
-    if (t.length > 60) t.splice(0, t.length - 60);
+    if (t.length > THREAD_MAX) t.splice(0, t.length - THREAD_MAX);
     ctx.save();
     return m;
   }
   // Ilova uchun tugmalar: tasdiqlash (token) va bo'lim ochish.
   const appActions = actions => actions.map(a => a.callback_data ? { type: "confirm", token: a.callback_data.slice(4), label: a.text }
     : { type: "open", section: a.section, label: a.text });
-  /* Yadro: bitta mijoz xabariga javob. via — "bot" yoki "app".
-     Natija: { kind: "ai"|"human"|"limit"|"off"|"error", text, actions } */
+
+  /* ---------- Ichki yordamchi: AI kaliti bo'lmasa yoki AI xato bersa ham mijoz javobsiz qolmaydi ----------
+     Kalit so'zlar bo'yicha: salomlashish, balans, to'ldirish, buyurtma holati, narx, operator.
+     Tushunmagan savol operatorga (inbox «Operator kerak» bo'limiga) yetkaziladi. */
+  const LT = {
+    uz: { hi: "Assalomu alaykum! Men Verion Shop yordamchisiman. Narxlar, balansni to'ldirish, buyurtma holati — istalgan savolingizni yozing.",
+      bal: "Balansingiz", pay: "Balansni to'ldirish:\n1) Ilovada «To'lov» bo'limini oching\n2) Summani kiriting, HUMO yoki UZCARD ni tanlang\n3) Ko'rsatilgan ANIQ summani kartaga o'tkazing\n4) «To'lov qildim» tugmasini bosing\nPul odatda 1–5 daqiqada avtomatik tushadi.",
+      late: "To'lov 15 daqiqada tushmagan bo'lsa, chekni shu yerga yuboring — operator tekshiradi.",
+      ord: "Oxirgi buyurtmalaringiz:", noOrd: "Sizda hali buyurtma yo'q.", noSuch: n => "#" + n + " raqamli buyurtma topilmadi. Raqamni «Buyurtmalar» bo'limidan tekshiring.",
+      pend: "Kutilayotgan to'lov", found: "Topdim:", buy: "Sotib olish uchun ilovani oching.",
+      op: "Operatorga yetkazdim — tez orada shu yerda javob beradi.", opQ: h => "Operator hozir ish vaqtidan tashqarida (" + h + "). Navbatga qo'shdim — ish vaqtida shu yerda javob beradi.",
+      gen: "Savolingizni operatorga yetkazdim, tez orada aniq javob beradi. Shu orada: narx uchun mahsulot nomini yozing (masalan «MLBB olmos»), buyurtma holati uchun «buyurtmam» deb yozing.",
+      appPay: "Balansni to'ldirish", appOrd: "Buyurtmalarim", appHome: "Ilovani ochish",
+      noPrice: "Bu nom bo'yicha hozir narx topilmadi — ilovadagi «Mahsulotlar» bo'limida ko'ring yoki aniqroq yozing (masalan «PUBG 60 UC»).",
+      steam: (s) => "Steam hamyonini to'ldirish: ilovada Asosiy → «Steam hamyon». Steam LOGIN kiriting (nickname yoki email emas), summa $" + s.min + "–$" + s.max + ", 1$ ≈ " + s.rate + " so'm. Pul balansdan yechiladi" + (s.auto ? ", hamyonga odatda bir necha daqiqada tushadi." : ", operator 1 soat ichida to'ldiradi."),
+      skins: "Skinlar do'koni (CS2, Dota 2, Rust): ilovada «O'yinlar» → «Skinlar». Steam trade havolangizni kiriting, skinni tanlang — u Steam'ga savdo taklifi bo'lib keladi (odatda ~1 daqiqa). Yetkazib bo'lmasa pul balansga qaytadi.",
+      vnum: (m) => "Virtual raqam (Telegram uchun SMS): ilovada Asosiy → «Virtual raqam» → mamlakat. Raqamni Telegram'ga kiriting, kod ilovada chiqadi. Kod " + m + " daqiqada kelmasa pul avtomatik qaytadi.",
+      tg: "Telegram Stars, Premium va sovg'alar: ilovada «Telegram» bo'limi → @username kiriting. Avtomatik yuboriladi.",
+      smm: "Nakrutka (obunachi, layk, ko'rish): ilovada «Nakrutka» bo'limi → xizmat → havola → miqdor. Akkaunt yoki kanal ochiq bo'lishi kerak.",
+      st: { done: "bajarildi", pending: "kutilmoqda", processing: "bajarilmoqda", cancelled: "bekor qilindi, pul balansga qaytdi" } },
+    ru: { hi: "Здравствуйте! Я помощник Verion Shop. Цены, пополнение баланса, статус заказа — спрашивайте.",
+      bal: "Ваш баланс", pay: "Пополнение баланса:\n1) Откройте раздел «Оплата» в приложении\n2) Введите сумму, выберите HUMO или UZCARD\n3) Переведите на карту ТОЧНУЮ сумму, которую покажет приложение\n4) Нажмите «Я оплатил»\nДеньги обычно зачисляются автоматически за 1–5 минут.",
+      late: "Если оплата не пришла за 15 минут — отправьте сюда чек, оператор проверит.",
+      ord: "Ваши последние заказы:", noOrd: "У вас пока нет заказов.", noSuch: n => "Заказ #" + n + " не найден. Проверьте номер в разделе «Заказы».",
+      pend: "Ожидаемая оплата", found: "Нашёл:", buy: "Купить можно в приложении.",
+      op: "Передал оператору — он скоро ответит здесь.", opQ: h => "Оператор сейчас вне рабочего времени (" + h + "). Вы в очереди — ответим здесь в рабочее время.",
+      gen: "Передал ваш вопрос оператору, он скоро ответит. А пока: для цены напишите название товара (например «MLBB алмазы»), для статуса заказа — «мой заказ».",
+      appPay: "Пополнить баланс", appOrd: "Мои заказы", appHome: "Открыть приложение",
+      noPrice: "Цену по этому названию сейчас не нашёл — посмотрите раздел «Товары» в приложении или уточните (например «PUBG 60 UC»).",
+      steam: (s) => "Пополнение Steam: в приложении Главная → «Steam кошелёк». Введите ЛОГИН Steam (не никнейм и не email), сумма $" + s.min + "–$" + s.max + ", 1$ ≈ " + s.rate + " сум. Оплата с баланса" + (s.auto ? ", обычно зачисляется за несколько минут." : ", оператор пополнит в течение часа."),
+      skins: "Магазин скинов (CS2, Dota 2, Rust): в приложении «Игры» → «Скины». Укажите трейд-ссылку Steam, выберите скин — он придёт обменом в Steam (обычно ~1 минута). Если доставка не удастся, деньги вернутся на баланс.",
+      vnum: (m) => "Виртуальный номер (SMS для Telegram): в приложении Главная → «Виртуальный номер» → страна. Введите номер в Telegram, код появится в приложении. Если код не придёт за " + m + " мин, деньги вернутся автоматически.",
+      tg: "Telegram Stars, Premium и подарки: раздел «Telegram» в приложении → укажите @username. Отправляется автоматически.",
+      smm: "Накрутка (подписчики, лайки, просмотры): раздел «Накрутка» → услуга → ссылка → количество. Аккаунт или канал должен быть открытым.",
+      st: { done: "выполнен", pending: "в ожидании", processing: "выполняется", cancelled: "отменён, деньги вернулись на баланс" } },
+    en: { hi: "Hello! I'm the Verion Shop assistant. Prices, balance top-up, order status — just ask.",
+      bal: "Your balance", pay: "Top up your balance:\n1) Open «Payment» in the app\n2) Enter the amount, choose HUMO or UZCARD\n3) Transfer the EXACT amount shown to the card\n4) Tap «I've paid»\nMoney usually arrives automatically in 1–5 minutes.",
+      late: "If the payment hasn't arrived in 15 minutes, send the receipt here — an operator will check.",
+      ord: "Your latest orders:", noOrd: "You don't have orders yet.", noSuch: n => "Order #" + n + " was not found. Check the number in «Orders».",
+      pend: "Pending payment", found: "Found:", buy: "You can buy it in the app.",
+      op: "I've passed this to an operator — they'll reply here soon.", opQ: h => "The operator is off hours now (" + h + "). You're in the queue — we'll reply here during working hours.",
+      gen: "I've passed your question to an operator, they'll reply soon. Meanwhile: type a product name for its price (e.g. «MLBB diamonds»), or «my order» for order status.",
+      appPay: "Top up balance", appOrd: "My orders", appHome: "Open the app",
+      noPrice: "I couldn't find a price for that name — check «Products» in the app or be more specific (e.g. «PUBG 60 UC»).",
+      steam: (s) => "Steam wallet top-up: in the app Home → «Steam wallet». Enter your Steam LOGIN (not nickname or email), amount $" + s.min + "–$" + s.max + ", $1 ≈ " + s.rate + " UZS. Paid from balance" + (s.auto ? ", usually arrives in a few minutes." : ", an operator tops it up within an hour."),
+      skins: "Skins store (CS2, Dota 2, Rust): in the app «Games» → «Skins». Add your Steam trade link, pick a skin — it arrives as a Steam trade offer (usually ~1 minute). If delivery fails, the money returns to your balance.",
+      vnum: (m) => "Virtual number (SMS for Telegram): in the app Home → «Virtual number» → country. Enter the number in Telegram, the code shows up in the app. If no code in " + m + " min, you get an automatic refund.",
+      tg: "Telegram Stars, Premium and gifts: «Telegram» section in the app → enter @username. Sent automatically.",
+      smm: "Social boosting (followers, likes, views): «Nakrutka» section → service → link → quantity. The account or channel must be public.",
+      st: { done: "completed", pending: "pending", processing: "in progress", cancelled: "cancelled, refunded to balance" } }
+  };
+  function langOf(t) {
+    if (/[ўқғҳ]/i.test(t)) return "uz";
+    if (/[а-яё]/i.test(t)) return "ru";
+    if (/\b(the|what|how|price|order|please|hello|hi|balance|buy|my|where|when|can)\b/i.test(t) && !/\b(qanday|narx|qancha|salom|buyurtma|kerak|bormi)\b/i.test(t)) return "en";
+    return "uz";
+  }
+  const STOP = new Set("salom assalomu alaykum qancha narxi narx necha pul turadi bormi kerak menga sizda sotib olmoqchiman olsam bo'ladimi qanday price how much cost what is the buy want need цена сколько стоит есть нужно хочу купить привет здравствуйте hello hi hey".split(" "));
+  function localAnswer(from, text, via) {
+    const L = LT[langOf(text)], t = String(text || ""), low = t.toLowerCase(), uid = from.id, D = DB();
+    const acc = D.users[String(uid)] || { balance: 0 };
+    const out = [], actions = [];
+    let needHuman = false;
+    const ordLine = o => "#" + o.seq + " " + S(o.item, 60) + " — " + money(o.price) + " — " + (L.st[o.status] || o.status);
+    const wantOp = /operator|admin|odam bilan|jonli|оператор|человек|админ|human|live agent|real person/i.test(t);
+    const isGreet = /^(salom|assalom|hello|hi|hey|привет|здравствуй|добрый)/i.test(t.trim());
+    const isBal = /balans|hisobim|pulim|баланс|balance/i.test(t);
+    const isPay = /to'?l?dir|to‘ldir|toldir|karta|humo|uzcard|to'lov|tolov|to‘lov|пополн|оплат|карт|top ?up|deposit|payment|pay\b/i.test(t);
+    const isLate = /tushmadi|kelmadi|tushmayapti|не приш|не пришл|не зачисл|didn'?t (arrive|come)|not (arrived|received)/i.test(t);
+    const isOrd = /buyurtma|zakaz|заказ|order|#\d+/i.test(t);
+    const isPrice = /narx|qancha|necha pul|цена|сколько|стоит|price|cost|how much/i.test(t);
+    const kn = (() => { try { return ctx.knowledge ? ctx.knowledge() : {}; } catch (e) { return {}; } })();
+    const topics = [];
+    if (/steam\s*(hamyon|wallet|кошел|balans|пополн|to.?ldir|top)|hamyon|кошел[её]к стим|steam\s*\$/i.test(t) && kn.steam && kn.steam.enabled) topics.push(L.steam({ min: kn.steam.min, max: kn.steam.max, rate: money(kn.steam.rate).replace(" so'm", ""), auto: kn.steam.auto }));
+    if (/skin|скин|cs ?2|cs:?go|dota|дота|rust|раст|trade/i.test(t) && kn.skins && (kn.skins.cs2 || kn.skins.dota2 || kn.skins.rust)) topics.push(L.skins);
+    if (/virtual|виртуал|nomer|номер|raqam ol|sms kod|смс/i.test(t) && kn.vnum && kn.vnum.enabled) topics.push(L.vnum(kn.vnum.ttlMin || 20));
+    if (/stars|yulduz|звёзд|звезд|premium|премиум|gift|sovg.?a|подар/i.test(t)) topics.push(L.tg);
+    if (/nakrutka|накрут|obunachi|подписчик|layk|лайк|follower|views|ko.?rish/i.test(t)) topics.push(L.smm);
+    if (wantOp) {
+      const r = toOperator(from, "Mijoz operator so'radi", S(t, 300));
+      return { text: r.live ? L.op : L.opQ(r.st.hours), actions, needHuman: false };
+    }
+    if (isGreet && t.length < 40 && !topics.length && !isPrice) out.push(L.hi);
+    for (const x of topics) out.push(x);
+    if (topics.length) actions.push({ section: "home", text: L.appHome });
+    if (isBal || (isPay && isLate)) out.push(L.bal + ": " + money(acc.balance) + ".");
+    if (isOrd) {
+      const m = /#?\b(\d{1,7})\b/.exec(t);
+      const mine = D.orders.filter(o => o.uid === uid);
+      if (m && /#|buyurtma|заказ|order/i.test(t) && mine.some(o => Number(o.seq) === Number(m[1]))) out.push(ordLine(mine.find(o => Number(o.seq) === Number(m[1]))));
+      else if (m && /#/.test(t)) out.push(L.noSuch(m[1]));
+      else out.push(mine.length ? L.ord + "\n" + mine.slice(-5).reverse().map(ordLine).join("\n") : L.noOrd);
+      if (isLate) needHuman = true;
+      actions.push({ section: "orders", text: L.appOrd });
+    }
+    if (isPay) {
+      const pend = D.payments.filter(p => p.uid === uid && (p.status === "waiting" || p.status === "checking")).slice(-1)[0];
+      if (pend) out.push(L.pend + ": " + money(pend.amount) + ".");
+      out.push(isLate ? L.late : L.pay);
+      if (isLate) needHuman = true;
+      actions.push({ section: "pay", text: L.appPay });
+    }
+    if ((!out.length || isPrice) && !isOrd && !isPay && !topics.length) {
+      const words = low.replace(/[^\p{L}\p{N}\s'‘]/gu, " ").split(/\s+/).filter(w => w.length > 1 && !STOP.has(w));
+      let hits = [];
+      try { if (words.length) hits = catalogSearch(words.join(" "), { limit: 8 }).filter(h => Number(h.price) > 0); } catch (e) {}
+      if (hits.length) { out.push(L.found + "\n" + hits.slice(0, 6).map(h => "• " + h.title + " — " + money(h.price)).join("\n") + "\n" + L.buy); actions.push({ section: "home", text: L.appHome }); }
+      else if (isPrice) { out.push(L.noPrice); needHuman = true; actions.push({ section: "home", text: L.appHome }); }
+    }
+    if (!out.length || (out.length === 1 && isGreet && t.length >= 40)) { needHuman = true; out.push(L.gen); }
+    if (needHuman) {
+      const mt = meta(uid); mt.want = true; mt.wantTs = mt.wantTs || Date.now(); mt.reason = mt.reason || S(t, 200);
+    }
+    return { text: out.join("\n\n"), actions, needHuman };
+  }
+
+  /* Yadro: bitta mijoz xabariga javob. via — "bot", "app" yoki "tg" (support akkaunt).
+     Natija: { kind: "ai"|"human"|"limit"|"off"|"queued", text, actions, local? }
+     AI mustaqil ishlaydi: operator chaqirilsa ham, admin o'zi javob yozmaguncha AI yordam berishda
+     davom etadi. Admin inbox'dan yozsa — shu suhbatda AI to'xtaydi (handoffMin daqiqa). */
   function reply(from, text, via) {
     const c = cfg(), uid = from.id;
     text = S(text, 2000).trim();
+    const mt = touchMeta(from, via);
+    if (mt.closed) mt.closed = false;
     log(uid, "user", text, { via });
-    const hu = human()[String(uid)];
-    if (hu && hu > Date.now()) { ctx.forwardToAdmins(from, text); return Promise.resolve({ kind: "human" }); }
-    if (!c.support || !ready()) {
-      // AI o'chiq — xabar operatorga; operator yo'q bo'lsa navbat va mijozga xabar.
-      ctx.forwardToAdmins(from, text);
+    if (isHuman(uid)) { ctx.forwardToAdmins(from, text, via); return Promise.resolve({ kind: "human" }); }
+    if (!c.support) {
+      // AI admin tomonidan o'chirilgan — xabar operatorga; operator yo'q bo'lsa navbat va mijozga xabar.
+      ctx.forwardToAdmins(from, text, via);
+      mt.want = true; mt.wantTs = mt.wantTs || Date.now();
       const st = opStatus();
-      if (!st.available) {
-        if (enqueue(from, text)) { const m = log(uid, "system", QUEUED_TEXT(st).replace(/ Shu orada.*$/, "")); return Promise.resolve({ kind: "queued", text: m.text, actions: [] }); }
-      }
+      if (!st.available && enqueue(from, text)) { const m = log(uid, "system", QUEUED_TEXT(st).replace(/ Shu orada.*$/, "")); return Promise.resolve({ kind: "queued", text: m.text, actions: [] }); }
       return Promise.resolve({ kind: "off" });
     }
     const st = stats(), used = st.users[String(uid)] || 0;
     if (used >= (Number(c.dailyLimit) || 40)) {
-      ctx.forwardToAdmins(from, text);
+      ctx.forwardToAdmins(from, text, via);
+      mt.want = true; mt.wantTs = mt.wantTs || Date.now();
       const m = log(uid, "system", "Bugungi AI savollar chegarasiga yetdingiz — xabaringiz operatorga yuborildi.");
       return Promise.resolve({ kind: "limit", text: m.text, actions: [] });
     }
@@ -435,37 +650,135 @@ module.exports = function createAi(ctx) {
     const prev = busy.get(uid) || Promise.resolve();
     const job = prev.then(async () => {
       const hist = chats.get(uid) || [];
-      try {
-        const r = await runAgent(SUPPORT_SYSTEM(), SUPPORT_TOOLS, supportImpl(from), hist, text, "low");
-        const out = r.text || "Tushunmadim, iltimos boshqacharoq yozing.";
-        hist.push({ role: "user", text }, { role: "assistant", text: S(out, 3000) });
-        // Xotirada eng ko'pi ~3000 ta faol suhbat (eng eskilari tashlanadi).
-        chats.delete(uid); chats.set(uid, hist.slice(-HISTORY_MAX));
-        if (chats.size > 3000) for (const k of chats.keys()) { chats.delete(k); if (chats.size <= 2000) break; }
-        log(uid, "ai", out, r.actions.length ? { actions: appActions(r.actions) } : undefined);
-        return { kind: "ai", text: out, actions: r.actions };
-      } catch (e) {
-        stats().errors++;
-        console.log("[ai] mijoz xato: " + (e && e.status ? e.status + " " : "") + S(e && e.message, 200));
-        ctx.forwardToAdmins(from, text);
-        const m = log(uid, "system", "AI hozir javob bera olmayapti — xabaringiz operatorga yuborildi.");
-        return { kind: "error", text: m.text, actions: [] };
+      let out = "", actions = [], local = false;
+      if (ready()) {
+        try {
+          const r = await runAgent(SUPPORT_SYSTEM(via), SUPPORT_TOOLS, supportImpl(from, via), hist, text, "low");
+          out = r.text; actions = r.actions || [];
+        } catch (e) {
+          stats().errors++;
+          console.log("[ai] mijoz xato: " + (e && e.status ? e.status + " " : "") + S(e && e.message, 200));
+        }
       }
+      if (!out) {
+        // AI kaliti yo'q yoki hamma provayder ishlamadi — ichki yordamchi javob beradi.
+        local = true;
+        const la = localAnswer(from, text, via);
+        out = la.text; actions = la.actions;
+        if (la.needHuman) ctx.forwardToAdmins(from, text, via);
+      }
+      hist.push({ role: "user", text }, { role: "assistant", text: S(out, 3000) });
+      // Xotirada eng ko'pi ~3000 ta faol suhbat (eng eskilari tashlanadi).
+      chats.delete(uid); chats.set(uid, hist.slice(-HISTORY_MAX));
+      if (chats.size > 3000) for (const k of chats.keys()) { chats.delete(k); if (chats.size <= 2000) break; }
+      log(uid, "ai", out, Object.assign(actions.length ? { actions: appActions(actions) } : {}, local ? { local: true } : {}));
+      return { kind: "ai", text: out, actions, local };
     });
     const tail = job.catch(() => {});
     busy.set(uid, tail);
     tail.then(() => { if (busy.get(uid) === tail) busy.delete(uid); });
     return job;
   }
+
+  /* ---------- Admin inbox: hamma suhbatlar bitta joyda ----------
+     Bo'limlar: want — operator kerak (so'ragan, navbatda yoki admin gaplashyapti), ai — AI o'zi
+     hal qilgan, closed — yopilgan, all — hammasi. */
+  function inboxItem(k, t) {
+    const mt = metaAll()[k] || { seen: 0 }, last = t[t.length - 1] || {}, u = DB().users[k] || {};
+    let unread = 0;
+    for (let i = t.length - 1; i >= 0 && t[i].id > (mt.seen || 0); i--) if (t[i].from === "user") unread++;
+    const uid = Number(k), hum = isHuman(uid), q = !!queue()[k];
+    const status = mt.closed ? "closed" : hum ? "human" : (mt.want || q) ? "want" : "ai";
+    return { uid, name: mt.name || u.name || "", uname: mt.uname || u.uname || "", via: mt.via || last.via || "app",
+      last: { from: last.from || "", text: S(last.text, 160), ts: last.ts || 0 }, unread, status, queued: q, attn: !!mt.attn,
+      reason: mt.reason || "", wantTs: mt.wantTs || 0, humanUntil: hum ? human()[k] : 0 };
+  }
+  function inboxList(tab, query) {
+    const all = DB().settings.support || {}, out = [], counts = { want: 0, ai: 0, closed: 0, all: 0, unread: 0 };
+    const qq = String(query || "").toLowerCase().replace(/^@/, "").trim();
+    const tb = ["want", "ai", "closed", "all", "unread"].indexOf(tab) !== -1 ? tab : "want";
+    for (const k of Object.keys(all)) {
+      const t = all[k];
+      if (!Array.isArray(t) || !t.length) continue;
+      const it = inboxItem(k, t);
+      if (qq && !(String(it.uid).indexOf(qq) !== -1 || it.name.toLowerCase().indexOf(qq) !== -1 || it.uname.toLowerCase().indexOf(qq) !== -1)) continue;
+      const grp = it.status === "want" || it.status === "human" ? "want" : it.status;
+      counts.all++; counts[grp]++; if (it.unread) counts.unread++;
+      if (tb === "unread" ? !it.unread : tb !== "all" && tb !== grp) continue;
+      out.push(it);
+    }
+    out.sort((a, b) => (b.last.ts || 0) - (a.last.ts || 0));
+    return { tab: tb, items: out.slice(0, 300), counts };
+  }
+  function inboxThread(uid) {
+    const k = String(Number(uid) || 0), t = (DB().settings.support || {})[k];
+    if (!t || !t.length) return null;
+    const mt = meta(k), lastId = t[t.length - 1].id;
+    if (mt.seen !== lastId || mt.attn) { mt.seen = lastId; mt.attn = false; ctx.save(); }
+    const D = DB(), u = D.users[k], mine = D.orders.filter(o => String(o.uid) === k);
+    return {
+      item: inboxItem(k, t),
+      messages: t.map(m => ({ id: m.id, from: m.from, text: m.text, ts: m.ts, via: m.via || undefined, by: m.by || undefined, local: m.local || undefined,
+        actions: m.actions ? m.actions.map(a => ({ type: a.type, label: a.label })) : undefined })),
+      user: u ? { balance: Number(u.balance) || 0, since: u.ts || 0, orders: mine.length,
+        spent: mine.filter(o => o.status === "done").reduce((s, o) => s + (Number(o.price) || 0), 0),
+        recent: mine.slice(-3).reverse().map(o => ({ seq: o.seq, item: S(o.item, 60), price: o.price, status: o.status, ts: o.ts })) } : null
+    };
+  }
+  // Admin javobi: suhbatga yoziladi, shu mijoz uchun AI to'xtaydi. Yetkazishni server qiladi (via bo'yicha).
+  function inboxReply(uid, text, admin, opts) {
+    text = S(text, 3500).trim();
+    if (!text) return { ok: false, error: "Bo'sh xabar" };
+    const k = String(Number(uid) || 0), t = (DB().settings.support || {})[k];
+    if ((!t || !t.length) && !(opts && opts.via)) return { ok: false, error: "Suhbat topilmadi" };
+    const mt = meta(k);
+    if (opts && opts.via && !mt.via) mt.via = opts.via;
+    const via = mt.via || "app";
+    human()[k] = Date.now() + (Number(cfg().handoffMin) || 60) * 60000;
+    dequeue(k); mt.want = false; mt.attn = false; mt.closed = false;
+    const m = log(Number(k), "admin", text, { via, by: S((admin && (admin.first_name || admin.username)) || "", 40) || undefined });
+    mt.seen = m.id;
+    // AI keyin davom etsa, operator nima deganini bilsin (navbat: user → assistant).
+    const hist = chats.get(Number(k));
+    if (hist && hist.length) {
+      const lastH = hist[hist.length - 1];
+      if (lastH.role === "assistant") lastH.text = S(lastH.text + "\n[Operator yozdi]: " + text, 3000);
+      else hist.push({ role: "assistant", text: "[Operator yozdi]: " + S(text, 1000) });
+    }
+    ctx.save();
+    return { ok: true, via, message: { id: m.id, from: m.from, text: m.text, ts: m.ts, via, by: m.by } };
+  }
+  function inboxSet(uid, action) {
+    const k = String(Number(uid) || 0), t = (DB().settings.support || {})[k];
+    if (!t || !t.length) return { ok: false, error: "Suhbat topilmadi" };
+    const mt = meta(k);
+    if (action === "ai") { delete human()[k]; dequeue(k); mt.want = false; mt.closed = false; }
+    else if (action === "human") { human()[k] = Date.now() + (Number(cfg().handoffMin) || 60) * 60000; mt.closed = false; }
+    else if (action === "close") { delete human()[k]; dequeue(k); mt.want = false; mt.attn = false; mt.closed = true; mt.seen = t[t.length - 1].id; }
+    else if (action === "open") { mt.closed = false; }
+    else return { ok: false, error: "Noma'lum amal" };
+    ctx.save();
+    return { ok: true, item: inboxItem(k, t) };
+  }
+  // AI o'chiq kanal (masalan support akkauntda AI o'chirilgan): xabar faqat inbox'ga yoziladi.
+  function inboxIncoming(from, text, via) {
+    const mt = touchMeta(from, via);
+    mt.closed = false; mt.want = true; mt.wantTs = mt.wantTs || Date.now();
+    log(from.id, "user", S(text, 2000), { via });
+    ctx.forwardToAdmins(from, text, via);
+  }
+  function inboxBadge() { const c = inboxList("all").counts; return { want: c.want, unread: c.unread }; }
   // Do'kon botiga kelgan oddiy xabar. true — qayta ishlandi.
+  /* Do'kon botiga kelgan oddiy xabar. Har bir xabar inbox'ga yoziladi va javobsiz qolmaydi:
+     AI (yoki ichki yordamchi) javob beradi; AI o'chiq bo'lsa — operatorga yetkaziladi. */
   function onCustomerMessage(from, text) {
-    const c = cfg();
-    if (!c.support || !ready() || !text) return false;
+    if (!text) return false;
     const uid = from.id;
-    ctx.shopApi("sendChatAction", { chat_id: uid, action: "typing" });
+    if (cfg().support) ctx.shopApi("sendChatAction", { chat_id: uid, action: "typing" });
     reply(from, text, "bot").then(r => {
       if (r.kind === "ai") return ctx.shopApi("sendMessage", { chat_id: uid, text: S(r.text, 4000), reply_markup: keyboard(r.actions) });
-      if (r.kind === "limit" || r.kind === "error") return ctx.shopApi("sendMessage", { chat_id: uid, text: r.text + " Operator: @" + ctx.supportUsername() });
+      if (r.kind === "limit" || r.kind === "queued") return ctx.shopApi("sendMessage", { chat_id: uid, text: r.text + " Operator: @" + ctx.supportUsername() });
+      if (r.kind === "off") return ctx.shopApi("sendMessage", { chat_id: uid, text: "✅ Xabaringiz operatorga yetkazildi — tez orada shu yerda javob beramiz." });
     }).catch(() => {});
     return true;
   }
@@ -509,7 +822,7 @@ module.exports = function createAi(ctx) {
   }
   function supportState(uid) {
     const st = opStatus();
-    return { ai: !!(cfg().support && ready()), human: isHuman(uid), queued: !!queue()[String(uid)], opAvailable: st.available, opHours: st.hours, operator: "@" + ctx.supportUsername() };
+    return { ai: !!cfg().support, human: isHuman(uid), queued: !!queue()[String(uid)], want: !!(metaAll()[String(uid)] || {}).want, opAvailable: st.available, opHours: st.hours, operator: "@" + ctx.supportUsername() };
   }
   function release(uid) { delete human()[String(uid)]; ctx.save(); }
   function opPublic() {
@@ -663,5 +976,6 @@ module.exports = function createAi(ctx) {
   }
 
   return { onCustomerMessage, onCustomerCallback, reply, confirm, history, log, supportState, opPublic, opSet, dequeue, onAdminText, runAdminOp, release, isHuman, publicCfg, saveCfg, testKey, ready,
-    _internal: { catalogSearch, runAgent, pending, chats } };
+    inboxList, inboxThread, inboxReply, inboxSet, inboxBadge, inboxIncoming, localAnswer, keyboard,
+    _internal: { catalogSearch, runAgent, pending, chats, langOf, meta } };
 };

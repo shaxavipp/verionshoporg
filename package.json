@@ -9,6 +9,7 @@
     "node": "22.x"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.135.0"
+    "@anthropic-ai/sdk": "^0.135.0",
+    "teleproto": "^1.232.1"
   }
 }

@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-03.7";
+const BUILD = "2026-11-03.8";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -480,6 +480,36 @@ function setAdminBotToken(raw) {
   c.token = t; save();
   return "";
 }
+/* ---------- Admin «Xabarlar» lentasi (admin panelda kanalga o'xshash oyna) ----------
+   Admin botga tushmaydigan, lekin bilib turish kerak bo'lgan voqealar: SMS lentasi, operator
+   chaqiruvlari, support xabarlari, support akkaunt holati. kind: sms | handoff | queue | support | tgs.
+   Bir mijozning ketma-ket support xabarlari bitta yozuvga yig'iladi (lenta to'lib ketmasin). */
+const NOTICE_MAX = 400;
+let noticeSeq = Date.now();
+function notices() { return DB.settings.notices || (DB.settings.notices = []); }
+function addNotice(kind, title, text, extra) {
+  const L = notices(), now = Date.now(), ex = extra || {};
+  if (ex.merge && ex.uid) {
+    for (let i = L.length - 1; i >= 0 && i >= L.length - 30; i--) {
+      const x = L[i];
+      if (x.kind === kind && x.uid === ex.uid && now - x.ts < 15 * 60000) {
+        L.splice(i, 1);
+        x.id = ++noticeSeq; x.ts = now; x.n = (x.n || 1) + 1;
+        x.text = String(text || "").slice(0, 1500); x.title = String(title || "").slice(0, 200);
+        L.push(x); save(); return x;
+      }
+    }
+  }
+  const n = { id: ++noticeSeq, ts: now, kind: String(kind), title: String(title || "").slice(0, 200), text: String(text || "").slice(0, 1500) };
+  if (ex.uid) n.uid = Number(ex.uid);
+  L.push(n);
+  if (L.length > NOTICE_MAX) L.splice(0, L.length - NOTICE_MAX);
+  save();
+  return n;
+}
+function noticeSeen(aid) { const m = DB.settings.noticeSeen || (DB.settings.noticeSeen = {}); return Number(m[String(aid)]) || 0; }
+function noticeUnread(aid) { const seen = noticeSeen(aid); let c = 0; const L = notices(); for (let i = L.length - 1; i >= 0 && L[i].id > seen; i--) c++; return c; }
+const whoOf = from => (((from.first_name || "") + " " + (from.last_name || "")).trim() || (from.username ? "@" + from.username : "ID " + from.id));
 // Adminlarga xabar: admin bot ishlayotgan bo'lsa — o'sha orqali, aks holda do'kon boti orqali.
 function notifyAdmins(text, opts) {
   try { if (ADMINBOT && ADMINBOT.notify(text, opts)) return; } catch (e) {}
@@ -556,6 +586,9 @@ async function computeReadiness() {
   const revs = DB.reviews.filter(r => r.status === "approved").length;
   add("should", "reviews", "Kamida 5 ta tasdiqlangan sharh (ishonch uchun)", revs >= 5, revs + " ta sharh", "reviews");
   add("should", "support", "Mijozga yordam: AI yoki operator", !!((AI && AI.ready && AI.ready()) || SUPPORT_USERNAME), AI && AI.ready && AI.ready() ? "AI yoqilgan" : "Operator: @" + SUPPORT_USERNAME, "aibot");
+  { const ts = TGS.status();
+    add("should", "tgsupport", "Support akkaunt ulangan (AI shu akkauntda javob beradi)", ts.connected,
+      ts.connected ? (ts.me && ts.me.username ? "@" + ts.me.username : "Ulangan") + (ts.ai ? " · AI yoqilgan" : " · AI o'chiq") : (ts.error || "Admin panel → Support akkaunt → raqam, kod, 2FA"), "tgsupport"); }
   // — Sinov xaridlari: sotuvdagi har mahsulot turi haqiqatan kamida 1 marta muvaffaqiyatli sotilganmi —
   // (sozlama to'g'ri bo'lishi hali "ishlaydi" degani emas; 100% = har turi haqiqiy xarid bilan sinalgan).
   const doneOrders = DB.orders.filter(o => o.status === "done");
@@ -1888,6 +1921,12 @@ function extractInt(raw) {
 }
 function logSms(entry) {
   try { if (ADMINBOT) ADMINBOT.onSms(entry); } catch (e) {}
+  try {
+    const amt = entry.parsedAmount ? Number(entry.parsedAmount).toLocaleString("ru-RU").replace(/,/g, " ") + " so'm" : "";
+    addNotice("sms", entry.matched ? "✅ SMS: to'lov tasdiqlandi" + (amt ? " · " + amt : "")
+      : entry.rejected ? "⛔ SMS rad etildi (" + entry.rejected + ")" : entry.parsedAmount ? "📩 SMS keldi, mos to'lov yo'q · " + amt : "📩 SMS (summa topilmadi)",
+      (entry.from ? entry.from + ": " : "") + String(entry.text || "").slice(0, 400));
+  } catch (e) {}
   DB.smsLog.push(entry);
   if (DB.smsLog.length > SMS_LOG_MAX) DB.smsLog.splice(0, DB.smsLog.length - SMS_LOG_MAX);
   save();
@@ -2312,8 +2351,8 @@ ADMINBOT = require("./adminbot.js")({
   aiAdmin: (id, text) => (AI ? AI.onAdminText(id, text) : Promise.resolve(null)),
   aiAdminOp: (tok, id) => (AI ? AI.runAdminOp(tok, id) : "AI ulanmagan"),
   aiRelease: uid => { if (AI) AI.release(uid); },
-  // Operator javobi: Telegram'da ham, ilovadagi chat oynasida ham ko'rinadi.
-  operatorReply: (uid, text) => { tgSend(uid, "👨‍💼 Operator: " + text); if (AI) { AI.log(uid, "admin", text); AI.dequeue(uid); } },
+  // Operator javobi (admin bot orqali): suhbatga yoziladi va mijoz qayerdan yozgan bo'lsa o'sha yerga ketadi.
+  operatorReply: (uid, text) => { operatorSend(uid, text, null); },
   aiOp: () => (AI ? AI.opPublic() : null),
   aiOpSet: b => (AI ? AI.opSet(b) : "AI yo'q"),
   aiOn: () => !!(AI && AI.ready()),
@@ -2332,15 +2371,38 @@ var AI = require("./ai.js")({
   getDB: () => DB, save, games: GAMES, catalogArr, appUrl: () => publicBase(),
   shopApi: (method, payload) => tgApiPost(method, payload).catch(e => ({ ok: false, description: e.message })),
   supportUsername: () => SUPPORT_USERNAME,
-  notifyHandoff: (from, reason, last) => ADMINBOT.customerEvent(from, "🙋 Mijoz operatorni so'radi" + (reason ? ": " + reason : ""), last, true),
-  notifyQueued: (from, reason, last, st) => ADMINBOT.customerEvent(from, "⏳ Navbatga qo'shildi (operator " + (st.reason === "busy" ? "band" : "faol emas") + ")" + (reason ? ": " + reason : ""), last, true),
+  // Operator chaqiruvi va support xabarlari — admin paneldagi «Support»/«Xabarlar» oynasiga; admin botga
+  // faqat admin o'zi yoqqan bo'lsa (Admin bot → Bildirishnomalar → Support).
+  notifyHandoff: (from, reason, last) => {
+    addNotice("handoff", "🙋 " + whoOf(from) + " operatorni so'radi", (reason ? reason + "\n\n" : "") + (last || ""), { uid: from.id });
+    ADMINBOT.customerEvent(from, "🙋 Mijoz operatorni so'radi" + (reason ? ": " + reason : ""), last, true);
+  },
+  notifyQueued: (from, reason, last, st) => {
+    addNotice("queue", "⏳ " + whoOf(from) + " navbatga qo'shildi (operator " + (st.reason === "busy" ? "band" : "faol emas") + ")", (reason ? reason + "\n\n" : "") + (last || ""), { uid: from.id });
+    ADMINBOT.customerEvent(from, "⏳ Navbatga qo'shildi (operator " + (st.reason === "busy" ? "band" : "faol emas") + ")" + (reason ? ": " + reason : ""), last, true);
+  },
   knowledge: () => {
     const r = DB.settings.referral || {}, l = DB.settings.loyalty || {};
-    return { minTopup: MIN_TOPUP, maxTopup: MAX_TOPUP, ttlMin: Math.round(TOPUP_TTL / 60000),
+    let steam = null, vnum = null, skins = {}, extras = {}, shop = {};
+    try { steam = EXTRA.steamPublic(); } catch (e) {}
+    try { const v = EXTRA.vnCfg(); vnum = { enabled: !!(v.enabled && v.apiKey), ttlMin: v.ttlMin }; } catch (e) {}
+    try { skins = CS2.games(); } catch (e) {}
+    try { extras = publicExtras(); } catch (e) {}
+    try {
+      const kinds = {};
+      for (const it of catalogArr() || []) if (it && it.active !== false) { const k = it.kind || it.cat || "boshqa"; (kinds[k] = kinds[k] || []).push(typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || it.id)); }
+      shop.sections = Object.keys(kinds).map(k => k + ": " + kinds[k].slice(0, 6).join(", ") + (kinds[k].length > 6 ? " va yana " + (kinds[k].length - 6) + " ta" : ""));
+      shop.telegram = !!kinds.telegram;
+    } catch (e) {}
+    return { botUsername: BOT_USERNAME, appLink: BOT_USERNAME ? "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME : "", steam, vnum, skins, extras, shop,
+      minTopup: MIN_TOPUP, maxTopup: MAX_TOPUP, ttlMin: Math.round(TOPUP_TTL / 60000),
       referral: r.enabled !== false && Number(r.percent) > 0 ? Number(r.percent) : 0,
       loyalty: l.enabled && Array.isArray(l.tiers) ? l.tiers.map(t => t.name + " — " + Number(t.minSpent).toLocaleString("ru-RU").replace(/,/g, " ") + " so'mdan, " + (Number(t.percent) || 0) + "%").join("; ") : "" };
   },
-  forwardToAdmins: (from, text) => ADMINBOT.customerEvent(from, "💬 Mijoz support'ga yozdi", text, false),
+  forwardToAdmins: (from, text, via) => {
+    addNotice("support", "💬 " + whoOf(from) + (via === "tg" ? " (support akkaunt)" : "") + " yozdi", text, { uid: from.id, merge: true });
+    ADMINBOT.customerEvent(from, "💬 Mijoz support'ga yozdi", text, false);
+  },
   finance: p => computeFinance(["today", "week", "month", "all"].indexOf(p) !== -1 ? p : "today"),
   findCustomer: q => ADMINBOT.findCustomerText(q),
   lineBalances: f => allLineBalances(f),
@@ -2352,6 +2414,45 @@ var AI = require("./ai.js")({
   },
   balanceChange: adminBalanceChange
 });
+/* ---------- Support akkaunt (tgsupport.js) va umumiy support yetkazish ----------
+   Mijoz qayerdan yozgan bo'lsa (ilova, do'kon boti yoki support akkaunt), javob ham o'sha yerga ketadi. */
+const appOpenLink = sec => BOT_USERNAME ? "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME + (sec && sec !== "home" ? "?startapp=open_" + sec : "") : "";
+// Support akkauntda tugma yo'q — AI tugmalari matndagi havolaga aylanadi.
+function tgLinks(actions) {
+  const seen = new Set(), out = [];
+  for (const a of actions || []) {
+    if (!a || !a.section || seen.has(a.section)) continue;
+    seen.add(a.section);
+    const u = appOpenLink(a.section);
+    if (u) out.push(String(a.text || "Ilovani ochish").replace(/^[^\p{L}\p{N}]+/u, "") + ": " + u);
+  }
+  return out.length ? "\n\n" + out.join("\n") : "";
+}
+function operatorSend(uid, text, admin) {
+  const r = AI ? AI.inboxReply(uid, text, admin) : { ok: false };
+  const via = r.ok ? r.via : "bot";
+  if (!r.ok && AI) { AI.log(uid, "admin", text); AI.dequeue(uid); }
+  if (via === "tg" && TGS.connected()) return TGS.send(uid, text).then(x => x.ok ? Object.assign({ channel: "tg" }, r) : (tgSend(uid, "👨‍💼 Operator: " + text), Object.assign({ channel: "bot", warn: x.error }, r)));
+  tgSend(uid, "👨‍💼 Operator: " + text);
+  return Promise.resolve(Object.assign({ channel: "bot" }, r));
+}
+const TGS = require("./tgsupport.js")({
+  getDB: () => DB, save,
+  notice: (kind, title, text) => addNotice(kind, title, text),
+  // Support akkauntga mijoz yozdi: AI yoqilgan bo'lsa — javob shu akkaunt nomidan; aks holda inbox.
+  onIncoming: (from, text) => {
+    if (!AI) return;
+    if (!TGS.aiOn()) { AI.inboxIncoming(from, text, "tg"); return; }
+    TGS.typing(from.id);
+    AI.reply(from, text, "tg").then(r => {
+      if (r.kind === "ai") return TGS.send(from.id, String(r.text || "").slice(0, 3800) + tgLinks(r.actions));
+      if (r.kind === "limit" || r.kind === "queued") return TGS.send(from.id, r.text);
+    }).catch(e => console.log("[tgs] javob xatosi: " + e.message));
+  },
+  // Egasi telefondan o'zi yozdi — suhbatga admin xabari bo'lib tushadi, shu mijoz uchun AI to'xtaydi.
+  onOutgoing: (uid, text) => { if (AI) AI.inboxReply(uid, text, { first_name: "Telegram" }, { via: "tg" }); }
+});
+setTimeout(() => { TGS.start().catch(e => console.log("[tgs] " + e.message)); }, 2500).unref();
 setTimeout(() => {
   ADMINBOT.start().catch(e => console.log("[adminbot] " + e.message));
   if (BOT_TOKEN) for (const aid of ADMIN_IDS) tgApiPost("setMyCommands", { scope: { type: "chat", chat_id: aid }, commands: [
@@ -3152,6 +3253,69 @@ function handleRequest(req, res) {
     // manzili. Shu bilan bot webhook'i hech qanday sozlamasiz ulanadi.
     rememberPublicBase(req);
 
+    /* ----- Support inbox: hamma mijoz suhbatlari (ilova, bot, support akkaunt) ----- */
+    if (url === "/api/admin/badges" && m === "GET") {
+      const ib = AI ? AI.inboxBadge() : { want: 0, unread: 0 };
+      return send(res, 200, { inbox: ib, notices: noticeUnread(a.id), tgs: TGS.connected() });
+    }
+    if (url === "/api/admin/inbox" && m === "GET") {
+      if (!AI) return send(res, 503, { error: "AI moduli yo'q" });
+      return send(res, 200, AI.inboxList(q.get("tab") || "want", String(q.get("q") || "").slice(0, 60)));
+    }
+    if (url === "/api/admin/inbox/thread" && m === "GET") {
+      const r = AI ? AI.inboxThread(Number(q.get("uid")) || 0) : null;
+      if (!r) return send(res, 404, { error: "Suhbat topilmadi" });
+      return send(res, 200, Object.assign(r, { tgs: TGS.connected() }));
+    }
+    if (url === "/api/admin/inbox/reply" && m === "POST") {
+      return readBody(req, res, b => {
+        const uid = Number(b.uid) || 0, text = String(b.text || "").trim();
+        if (!uid || !text) return send(res, 400, { error: "uid va matn kerak" });
+        if (text.length > 3500) return send(res, 400, { error: "Xabar juda uzun (3500 belgigacha)" });
+        operatorSend(uid, text, a).then(r => send(res, r.ok ? 200 : 400, r.ok ? { ok: true, channel: r.channel, warn: r.warn, message: r.message } : { error: r.error || "Yuborilmadi" }))
+          .catch(e => send(res, 500, { error: String(e.message || e) }));
+      });
+    }
+    if (url === "/api/admin/inbox/state" && m === "POST") {
+      return readBody(req, res, b => {
+        if (!AI) return send(res, 503, { error: "AI moduli yo'q" });
+        const r = AI.inboxSet(Number(b.uid) || 0, String(b.action || ""));
+        send(res, r.ok ? 200 : 400, r);
+      });
+    }
+    /* ----- «Xabarlar» lentasi ----- */
+    if (url === "/api/admin/notices" && m === "GET") {
+      const kind = String(q.get("kind") || ""), before = Number(q.get("before")) || 0;
+      const L = notices(), out = [];
+      for (let i = L.length - 1; i >= 0 && out.length < 100; i--) {
+        const x = L[i];
+        if (before && x.id >= before) continue;
+        if (kind && x.kind !== kind) continue;
+        out.push(x);
+      }
+      const counts = {}; for (const x of L) counts[x.kind] = (counts[x.kind] || 0) + 1;
+      return send(res, 200, { items: out, seen: noticeSeen(a.id), unread: noticeUnread(a.id), counts, total: L.length });
+    }
+    if (url === "/api/admin/notices/seen" && m === "POST") {
+      const L = notices(), last = L.length ? L[L.length - 1].id : 0;
+      const mp = DB.settings.noticeSeen || (DB.settings.noticeSeen = {});
+      mp[String(a.id)] = last; save();
+      return send(res, 200, { ok: true, seen: last });
+    }
+    /* ----- Support akkaunt (Telegram sessiya) ----- */
+    if (url === "/api/admin/tgsupport" && m === "GET") return send(res, 200, TGS.status());
+    if (url.indexOf("/api/admin/tgsupport/") === 0 && m === "POST") {
+      const act = url.slice("/api/admin/tgsupport/".length);
+      if (["creds", "options", "login", "code", "password", "logout"].indexOf(act) === -1) return send(res, 404, { error: "not found" });
+      return readBody(req, res, b => {
+        const done = r => send(res, r && r.ok === false ? 400 : 200, Object.assign({}, r || {}, { status: TGS.status() }));
+        if (act === "creds") { const e = TGS.setCreds(b); return e ? send(res, 400, { error: e }) : done({ ok: true }); }
+        if (act === "options") { TGS.setOptions(b); return done({ ok: true }); }
+        const p = act === "login" ? TGS.loginStart(b.phone) : act === "code" ? TGS.loginCode(b.code) : act === "password" ? TGS.loginPassword(b.password) : TGS.logout();
+        p.then(done).catch(e => send(res, 500, { error: String((e && e.message) || e) }));
+      });
+    }
+
     if (url === "/api/admin/list" && m === "GET") {
       expireOld();
       return send(res, 200, {
@@ -3761,7 +3925,7 @@ function handleRequest(req, res) {
     if (url === "/api/admin/adminbot" && m === "GET") {
       const c = (DB.settings.adminBot || {});
       return send(res, 200, Object.assign({ tokenSet: !!adminBotToken(), fromEnv: !!process.env.ADMIN_BOT_TOKEN,
-        notify: Object.assign({ orders: true, payments: true, sms: true }, c.notify || {}) }, ADMINBOT.status()));
+        notify: Object.assign({ orders: true, payments: true, sms: false, support: false }, c.notify || {}) }, ADMINBOT.status()));
     }
     if (url === "/api/admin/adminbot" && m === "POST") {
       return readBody(req, res, b => {
@@ -3772,7 +3936,7 @@ function handleRequest(req, res) {
         }
         if (b.notify && typeof b.notify === "object") {
           c.notify = Object.assign({}, c.notify);
-          for (const k of ["orders", "payments", "sms"]) if (typeof b.notify[k] === "boolean") c.notify[k] = b.notify[k];
+          for (const k of ["orders", "payments", "sms", "support"]) if (typeof b.notify[k] === "boolean") c.notify[k] = b.notify[k];
         }
         save();
         ADMINBOT.start().then(st => send(res, 200, Object.assign({ ok: true, tokenSet: !!adminBotToken() }, st)))
