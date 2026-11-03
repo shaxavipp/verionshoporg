@@ -27,7 +27,7 @@
   --ok:#35c27b; --warn:#f0a93b; --blue:#6ea6ff; --err:#f05a52; --gold:#e2b04a;
   --ok-soft:rgba(53,194,123,.14); --warn-soft:rgba(240,169,59,.14); --err-soft:rgba(240,90,82,.14);
   --r:14px; --r-sm:10px; --r-lg:20px;
-  --spring:cubic-bezier(.2,.8,.2,1);
+  --spring:cubic-bezier(.23,1,.32,1); /* kuchli ease-out — bosish va kirish uchun */
   --ease:cubic-bezier(.32,.72,0,1);
   --glass:blur(20px) saturate(150%);
   --shadow-pop:0 18px 44px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);
@@ -117,7 +117,10 @@ header .hun{font-size:12px;color:var(--mut);line-height:1.25}
 .hctrl{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .hbtn{height:32px;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--card2);border:none;border-radius:10px;padding:0 11px;
   font-size:12.5px;font-weight:600;color:var(--txt);white-space:nowrap}
-.hbtn:active{transform:scale(.94)}
+.hbtn:active{transform:scale(.96)}
+.hbtn,.sheet-x,.sheet-back,.admpen{position:relative}
+.hbtn::after{content:"";position:absolute;inset:-6px -3px}
+.favbtn::after,.sheet-x::after,.sheet-back::after,.admpen::after{content:"";position:absolute;inset:-8px}
 .hbtn-ic{width:32px;padding:0}
 .hbtn.hbtn.hbtn-adm{display:inline-flex;align-items:center;gap:6px;background:var(--acc-soft);color:var(--acc2);font-weight:600}
 .hbtn.hbtn-adm svg{width:14px;height:14px}
@@ -142,7 +145,7 @@ header .hun{font-size:12px;color:var(--mut);line-height:1.25}
 .tab{flex:0 0 auto;padding:8px 14px;border-radius:999px;background:var(--card2);border:none;
   font-size:13.5px;color:var(--mut2);font-weight:500}
 .tab.on{background:var(--txt);color:var(--bg);font-weight:600}
-.tab:active{transform:scale(.95)}
+.tab:active{transform:scale(.96)}
 
 /* mahsulotlar to'ri */
 .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px;align-items:start}
@@ -236,7 +239,7 @@ header .hun{font-size:12px;color:var(--mut);line-height:1.25}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;
   background:var(--card);border-radius:20px 20px 0 0;border-top:1px solid var(--line);padding:0;display:flex;flex-direction:column;
   max-height:calc(var(--vh, 1vh) * 92);top:auto;overflow:hidden;box-shadow:var(--shadow-pop);
-  transform:translateY(105%);transition:transform .42s var(--ease);}
+  transform:translateY(105%);transition:transform .36s var(--ease);}
 .sheet.on{transform:translateY(0)}
 .sheet-head{position:relative;flex:0 0 auto;padding:8px 16px 0;min-height:40px}
 .sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
@@ -358,7 +361,7 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
   border-top:1px solid var(--line);padding:6px 4px env(safe-area-inset-bottom);height:var(--navh)}
 nav button{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:2px 0 4px;height:52px;
   color:var(--mut);font-size:10.5px;font-weight:500;letter-spacing:0}
-nav button:active{transform:scale(.92)}
+nav button:active{transform:scale(.96)}
 nav button.on{color:var(--acc2)}
 [data-theme="light"] nav button.on{color:var(--acc)}
 nav button svg{width:24px;height:24px}
@@ -472,7 +475,7 @@ nav button svg{width:24px;height:24px}
 .chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .chips button{flex:1;padding:9px 4px;border-radius:10px;background:var(--card2);border:none;
   font-size:13px;font-weight:500;color:var(--mut2);font-variant-numeric:tabular-nums}
-.chips button:active{transform:scale(.95)}
+.chips button:active{transform:scale(.96)}
 .chips button.on{color:var(--acc2);background:var(--acc-soft);font-weight:600;box-shadow:inset 0 0 0 1px var(--acc)}
 .methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pbal{margin:6px 16px 4px;padding:18px 20px;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);text-align:left}
@@ -511,7 +514,7 @@ nav button svg{width:24px;height:24px}
 .cardbox .chold{font-size:12px;color:var(--mut);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;position:relative;z-index:1}
 .cardbox .crow{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:1}
 .cardbox .cpy{background:var(--acc);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;color:#fff}
-.cardbox .cpy:active{transform:scale(.94)}
+.cardbox .cpy:active{transform:scale(.96)}
 .paynote{font-size:12.5px;color:var(--mut);margin:10px 0;line-height:1.5}
 .refline{display:flex;align-items:center;justify-content:space-between;background:var(--card2);
   border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-top:8px;font-size:13px}
@@ -625,7 +628,7 @@ nav button svg{width:24px;height:24px}
 .method .ic img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
 .gtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;padding:6px 16px 4px}
 .gtile{background:none;border:none;padding:0;color:var(--txt);text-align:center;position:relative;min-width:0}
-.gtile:active{transform:scale(.95)}
+.gtile:active{transform:scale(.96)}
 .gtile .gti{aspect-ratio:1/1;border-radius:var(--r);overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:18px;color:var(--mut2);border:1px solid var(--line);position:relative}
 .gtile .gti img{width:100%;height:100%;object-fit:cover;display:block}
@@ -640,14 +643,15 @@ nav button svg{width:24px;height:24px}
 .hello b{display:block;color:var(--txt);font-size:18px;font-weight:650;margin-top:1px}
 .ghsearch{margin:6px 16px 4px}
 /* bosh sahifa: balans — tekis karta, bitta asosiy harakat */
-.balcard{margin:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden;
+.balcard{margin:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:14px 14px 14px;position:relative;overflow:hidden;
   color:var(--txt);animation:fadeUp .2s var(--spring)}
 .balcard::after{content:none}
 .balcard .bl{font-size:13px;color:var(--mut);font-weight:500;letter-spacing:0;display:flex;align-items:center;gap:6px}
 .balcard .bl .shine-ic{color:var(--mut)}
 .balcard .bv{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:2px;font-variant-numeric:tabular-nums}
 .balcard .brow{display:flex;gap:8px;margin-top:14px;position:relative}
-.balcard .brow button{flex:1;min-width:0;min-height:42px;background:var(--card2);border-radius:12px;padding:10px 6px;white-space:nowrap;
+.balcard .bl,.balcard .bv{padding:0 4px}
+.balcard .brow button{flex:1;min-width:0;min-height:44px;background:var(--card2);border-radius:10px;padding:10px 6px;white-space:nowrap;
   font-weight:600;color:var(--txt);font-size:14px;border:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .balcard .brow button:first-child{background:var(--acc);color:#fff}
 /* «aynan shu summani o'tkazing» */
@@ -1295,7 +1299,7 @@ body.adm-open{overflow:hidden}
 .sup-fab{position:fixed;right:16px;bottom:calc(var(--navh) + 16px);z-index:59;width:48px;height:48px;border-radius:50%;border:1px solid var(--line2);cursor:pointer;
   background:var(--card2);color:var(--txt);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.35);transition:transform .15s var(--spring)}
 [data-theme="light"] .sup-fab{background:var(--card);box-shadow:0 6px 18px rgba(17,20,28,.12)}
-.sup-fab:active{transform:scale(.92)}
+.sup-fab:active{transform:scale(.96)}
 .sup-fab svg{width:22px;height:22px}
 .sup-fab .dot{position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:var(--err);border:2px solid var(--bg)}
 body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab .sup-fab{display:none}
@@ -1359,7 +1363,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .qtyRow{display:flex;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px}
 .qtyBtn{width:32px;height:32px;border-radius:8px;border:none;background:transparent;color:var(--txt);
   font-size:18px;font-weight:500;line-height:1;display:flex;align-items:center;justify-content:center}
-.qtyBtn:active{background:var(--card2);transform:scale(.94)}
+.qtyBtn:active{background:var(--card2);transform:scale(.96)}
 .qtyBtn:disabled{opacity:.3}
 .qtyVal{min-width:26px;text-align:center;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
 .qtyHint{font-size:11.5px;color:var(--mut);white-space:nowrap}
@@ -1378,7 +1382,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .seg.mini{padding:2px;border-radius:9px;flex-wrap:nowrap;width:auto;gap:2px}
 .seg.mini button{flex:none;min-width:30px;padding:5px 9px;font-size:11.5px;border-radius:7px}
 .ibadge{transition:transform .15s var(--spring)}
-.row:active .ibadge{transform:scale(.92)}
+.row:active .ibadge{transform:scale(.96)}
 .switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0}
 .swbtn{width:46px;height:28px;border-radius:999px;background:var(--card3);border:none;position:relative;transition:background-color .2s ease}
 .swbtn i{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s var(--spring)}
@@ -1410,7 +1414,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .ghtabs button{padding:8px 16px;border-radius:999px;border:none;background:var(--card2);
   color:var(--mut2);font-weight:500;font-size:13.5px;transition:transform .15s var(--spring),background-color .15s ease}
 .ghtabs button.on{background:var(--txt);color:var(--bg);font-weight:600}
-.ghtabs button:active{transform:scale(.95)}
+.ghtabs button:active{transform:scale(.96)}
 .ghGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 6px}
 .ghRow{display:flex;align-items:center;gap:10px;padding:11px;border-radius:var(--r);background:var(--card);
   border:1px solid var(--line);text-align:left;position:relative;overflow:visible;

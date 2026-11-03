@@ -469,19 +469,28 @@ Claude bu loyihada ishlaganda quyidagi ko'nikmalardan foydalanadi:
 
 | Ko'nikma | Manba | Nima uchun |
 |---|---|---|
-| `baseline-ui` | ui-skills (MIT) | "AI ko'rinishi"siz UI qoidalari: gradient yo'q, faqat transform/opacity animatsiyasi, tabular raqamlar, bo'sh holatda harakat |
-| `fixing-accessibility` | ui-skills (MIT) | tugma nomlari, klaviatura, fokus, kontrast |
-| `fixing-motion-performance` | ui-skills (MIT) | silliq animatsiya: layout animatsiyasi yo'q, blur cheklangan |
-| `fixing-metadata` | ui-skills (MIT) | sahifa sarlavhasi va meta teglar |
-| `improve-ui` | ui-skills (MIT) | mavjud ekranni o'z dizayn tizimiga qarab tekshirish va reja yozish |
-| `ui-skills-root` | ui-skills (MIT) | qaysi UI ko'nikmasini ishlatishni tanlash |
-| `design-elevation-protocol` | claude-skills-library (MIT) | topshirishdan oldin 5 bosqichli dizayn tekshiruvi |
-| `distinctive-typography-pairings` | claude-skills-library (MIT) | shrift tanlash (Inter/Roboto o'rniga) |
-| `motion-orchestration-staggered` | claude-skills-library (MIT) | sahifa ochilishidagi ketma-ket animatsiya |
+| `impeccable` (+ `reference/`: polish, audit, critique, typeset, layout, distill, quieter, harden, clarify, adapt, animate, optimize, colorize, bolder, delight, shape, overdrive) | Paul Bakaus, ui-skills.com (Apache-2.0) | to'liq dizayn ish oqimi: tanqid, audit, sayqal, tipografiya, ritm, soddalashtirish |
+| `baseline-ui`, `fixing-accessibility`, `fixing-motion-performance`, `fixing-metadata`, `improve-ui`, `ui-skills-root` | ibelick/ui-skills (MIT) | "AI ko'rinishi"siz UI qoidalari, kirish qulayligi, silliq animatsiya, meta teglar, mavjud ekranni tekshirish |
+| `emil-design-eng`, `apple-design`, `review-animations`, `animation-vocabulary` | Emil Kowalski, ui-skills.com | UI sayqali, iOS uslubidagi harakat, animatsiya ko'rigi |
+| `make-interfaces-feel-better`, `better-typography`, `better-colors`, `better-interface`, `interface-review` | Jakub Krehel, ui-skills.com | mayda detallar (bosish 0.96, bosish maydoni 44 px, konsentrik burchaklar), shrift, rang tokenlari, o'zgarishlar ko'rigi |
+| `web-design-guidelines` | Vercel, ui-skills.com | Web Interface Guidelines bo'yicha tekshiruv |
+| `frontend-design` | Anthropic, ui-skills.com | o'ziga xos, shablonga o'xshamaydigan vizual yo'nalish |
+| `design-taste-frontend` | leonxlnx/taste-skill, ui-skills.com | "AI slop"ga qarshi qat'iy qoidalar |
+| `rams` | rams.ai, ui-skills.com | kirish qulayligi va vizual dizayn ko'rigi |
+| `accessible-animation`, `wcag-audit-patterns`, `web-quality-audit` | iart-ai, wshobson, Addy Osmani — ui-skills.com | kamroq harakat rejimi, WCAG 2.2 audit, sifat auditi |
+| `best-practices`, `prototype-to-production` | Addy Osmani, kemiljk — ui-skills.com | xavfsizlik va zamonaviy veb amaliyotlari, prototipni production'ga tayyorlash |
+| `design-elevation-protocol`, `distinctive-typography-pairings`, `motion-orchestration-staggered` | claude-skills-library (MIT) | 5 bosqichli dizayn tekshiruvi, shrift tanlash, ketma-ket animatsiya |
 | `owasp-review-2026` | claude-skills-library (MIT) | Node.js uchun OWASP xavfsizlik tekshiruv ro'yxati |
 
 Bulardan tashqari Claude Code'ning o'z `security-review` ko'nikmasi bor. Unda o'zgarishlarning xavfsizlik ko'rigi qilinadi.
 
-`layered-background-craft` ko'nikmasi ataylab o'rnatilmadi: u fonga gradient va porlash qo'shishni o'rgatadi, bu esa dizayn detektori "AI belgisi" deb topadigan narsa.
+Ataylab o'rnatilmaganlar:
+- `layered-background-craft`: fonga gradient va porlash qo'shadi, dizayn detektori buni "AI belgisi" deb topadi.
+- Framework'ga bog'liq ko'nikmalar (React, Next.js, Vue, Three.js, GSAP va boshqalar): ilova oddiy HTML/CSS/JS.
+- Matn "humanizer"lari: ular dizayn emas, matn uchun.
+
+ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana kerak bo'lsa: `NODE_USE_ENV_PROXY=1 npx ui-skills list --category <topic>`, keyin `npx ui-skills get <slug>`.
+
+`impeccable`ning `craft-floor.md`, `new-work.md`, `operate.md` fayllari va ishga tushirgichi yuklanmadi (impeccable.style bloklangan). Ular o'rnida `baseline-ui` va loyiha dizayn tizimi ishlatiladi.
 
 **Dizayn detektori (impeccable, Apache-2.0):** `npx impeccable detect verion-shop.html`. U "AI chizgan" belgilarni topadi: gradient matn, porlash, binafsha palitra, ichma-ich kartalar, ko'p ishlatiladigan shrift, past kontrast. Hozirgi holat: asosiy ilovada topilma yo'q. Uchta topilma ataylab qoldirilgan: chatdagi "yozmoqda" nuqtalari (haqiqiy jonli holat) hamda skinlar do'konidagi uchqunlar va to'r fon (do'konning o'z uslubi).
