@@ -195,14 +195,13 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 .tab.on{background:var(--grad-btn);color:#fff;font-weight:600}
 .tab:active{transform:scale(.96)}
 
-/* ===== Kartochkalar to'ri — BITTA shablon: bo'limlar, guruhlar, mahsulotlar, o'yinlar, xizmatlar =====
-   2 ustun · kartochka 24 burchak, 8 ichki chekinish · rasm 1:1, 16 burchak (16 + 8 = 24) · ostida nom (15) va ikkinchi qator (12.5/13.5) */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 16px 10px;align-items:stretch}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:8px;overflow:hidden;
-  text-align:left;display:flex;flex-direction:column;position:relative;
-  transition:transform .25s var(--spring),border-color .2s ease}
-.pcard:active{transform:scale(.97);border-color:var(--line2)}
-.ptile{flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+/* ===== Kartochkalar to'ri =====
+   Mahsulotlar (.grid) — kichik, avvalgi o'lchamda: 3 ustun, kvadrat rasm (14 burchak), ostida nom va narx, kartochka qutisi yo'q.
+   Bo'limlar va guruhlar (.groupgrid) — katta: 2 ustun, kartochka 24 burchak, 8 chekinish, 1:1 rasm 16 burchak (16 + 8 = 24). */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px;padding:10px 16px;align-items:start}
+.pcard{min-width:0;text-align:left;display:flex;flex-direction:column;position:relative;transition:transform .25s var(--spring),border-color .2s ease}
+.pcard:active{transform:scale(.96)}
+.ptile{flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:2px;padding:8px;position:relative;overflow:hidden}
 .ptile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* ko'p o'yin rasmlari o'zi yumaloq ikonka — chetidagi shaffof joy ko'rinmasin */
@@ -212,30 +211,44 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25}
 .cardart{background:var(--card2)!important;position:relative}
 .cardart img{object-fit:contain!important;padding:12%;box-sizing:border-box}
 .ptile.emoji-only{background:var(--card2)!important}
-.ptile .emj{font-size:48px;line-height:1;position:relative;z-index:1}
-.ptile .tl{font-size:var(--fs-md);font-weight:700;letter-spacing:.01em;position:relative;z-index:1;text-align:center}
-.groupgrid .ptile .tl{font-size:26px}
-.ptile .ts{font-size:var(--fs-2xs);opacity:.85;position:relative;z-index:1;text-align:center}
-.pbody{flex:1;min-height:58px;box-sizing:border-box;padding:10px 6px 4px;display:flex;flex-direction:column;gap:2px;position:relative;z-index:2}
-.pbody .nm{font-size:var(--fs-md);font-weight:600;letter-spacing:-.01em;line-height:1.3;color:var(--txt);
+.ptile .emj{font-size:42px;line-height:1;position:relative;z-index:1}
+.ptile .tl{font-size:13px;font-weight:700;letter-spacing:.01em;position:relative;z-index:1;text-align:center}
+.ptile .ts{font-size:10px;opacity:.85;position:relative;z-index:1;text-align:center}
+/* --- mahsulot kartochkasi (kichik) --- */
+.grid>.pcard .ptile{border-radius:var(--r);border:1px solid var(--line)}
+.pbody{flex:0 0 auto;min-height:42px;box-sizing:border-box;padding:7px 2px 0;display:flex;flex-direction:column;gap:1px;align-items:flex-start;position:relative;z-index:2}
+.pbody .nm{font-size:13px;font-weight:500;line-height:1.25;color:var(--txt);max-width:100%;min-height:1.25em;
   overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
-.pbody .ct{font-size:var(--fs-xs);color:var(--mut);line-height:1.35;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.prow{display:flex;align-items:center;gap:6px;margin-top:1px;min-width:0}
-.prc{font-size:var(--fs-sm);font-weight:650;color:var(--acc2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-[data-theme="light"] .prc{color:var(--acc)}
-/* sevimli — rasm burchagida (8 + 8 chekinish) */
-.favbtn{position:absolute;top:16px;right:16px;z-index:5;width:30px;height:30px;border-radius:50%;
+.pbody .ct{font-size:11.5px;line-height:1.25;color:var(--mut);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.prow{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;justify-content:flex-start;max-width:100%}
+.prc{font-size:13px;font-weight:600;color:var(--txt);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.favbtn{position:absolute;top:6px;right:6px;z-index:5;width:28px;height:28px;border-radius:50%;
   background:rgba(8,10,18,.45);border:none;display:flex;align-items:center;justify-content:center;color:#fff;
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .favbtn:active{opacity:.7;transform:scale(.96)}
 .favbtn.on{color:#ff5a6e}
-/* zaxira belgisi — rasm pastki-chap burchagida */
-.stkb{font-size:var(--fs-2xs);font-weight:500;padding:3px 8px;border-radius:var(--r-xs);background:var(--ok-soft);color:var(--ok);white-space:nowrap;
+.stkb{font-size:10.5px;font-weight:500;padding:2px 7px;border-radius:var(--r-xs);background:var(--ok-soft);color:var(--ok);white-space:nowrap;
   display:inline-flex;align-items:center;gap:4px}
 .stkb::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:0 0 auto}
 .stkb.out{background:var(--err-soft);color:var(--err)}
-.pcard .stkb{position:absolute;left:8px;top:-30px;z-index:4;background:rgba(8,10,18,.55);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.pcard .stkb.out{background:rgba(150,20,40,.78);color:#fff}
+.grid>.pcard .stkb{position:absolute;left:6px;top:-27px;z-index:4;background:rgba(8,10,18,.55);color:#fff;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.grid>.pcard .stkb.out{background:rgba(150,20,40,.78);color:#fff}
+/* nakrutka xizmatlari to'ri */
+.svcgrid .ptile{height:74px}
+.svcgrid .ptile .emj{font-size:30px}
+.svcgrid.grid .pbody .nm{font-size:12.5px;-webkit-line-clamp:2;min-height:2.3em}
+.svcgrid.grid .pbody .ct{font-size:11px}
+/* --- bo'lim va guruh kartochkasi (katta) --- */
+.groupgrid.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:6px 16px 10px;align-items:stretch}
+.groupgrid>.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:8px;overflow:hidden}
+.groupgrid>.pcard:active{transform:scale(.97);border-color:var(--line2)}
+.groupgrid>.pcard .ptile{border-radius:16px;border:none}
+.groupgrid>.pcard .pbody{flex:1;min-height:58px;padding:10px 6px 4px;gap:2px;align-items:stretch}
+.groupgrid>.pcard .pbody .nm{font-size:var(--fs-md);font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.groupgrid>.pcard .pbody .ct{font-size:var(--fs-xs);line-height:1.35}
+.groupgrid>.pcard .favbtn{top:16px;right:16px;width:30px;height:30px}
+.groupgrid .ptile .tl{font-size:26px}
+.groupgrid .ptile .emj{font-size:52px}
 .empty{padding:48px 24px;text-align:center;color:var(--mut);font-size:var(--fs-sm);grid-column:1/-1}
 .emptycard{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--mut);font-size:var(--fs-sm);padding:14px}
 .emptycard .btn{flex:0 0 auto}
@@ -468,7 +481,7 @@ nav button svg{width:24px;height:24px}
 .gpills button{flex:0 0 auto;display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:999px;border:none;background:var(--card2);
   color:var(--mut2);font-weight:500;font-size:var(--fs-sm);white-space:nowrap}
 .gpills button.on{background:var(--grad-btn);color:#fff;font-weight:600}
-.gpgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:2px 16px 12px}
+.gpgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:2px 16px 12px}
 .gpkg{position:relative;display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-lg);text-align:left;
   background:var(--card);border:1px solid var(--line);color:var(--txt);min-height:68px;transition:transform .15s var(--spring),border-color .15s ease,background-color .15s ease}
 .gpkg:active{transform:scale(.97)}
@@ -522,7 +535,7 @@ nav button svg{width:24px;height:24px}
   font-size:var(--fs-sm);font-weight:500;color:var(--mut2);font-variant-numeric:tabular-nums}
 .chips button:active{transform:scale(.96)}
 .chips button.on{color:var(--acc2);background:var(--acc-soft);font-weight:600;box-shadow:inset 0 0 0 1px var(--acc)}
-.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .pbal{margin:6px 16px 4px;padding:18px 20px;border-radius:var(--r-xl);border:none;background:var(--grad-hero);text-align:left;color:#fff;position:relative;overflow:hidden;
   box-shadow:0 16px 32px -18px rgba(11,87,207,.9)}
 .pbal::after{content:"";position:absolute;right:-60px;top:-80px;width:220px;height:220px;border-radius:50%;pointer-events:none;
@@ -594,7 +607,7 @@ nav button svg{width:24px;height:24px}
 .xamt span{font-size:24px;font-weight:600;color:var(--mut)}
 .xamt input{flex:1;min-width:0;background:none;border:none;font-size:var(--fs-3xl);font-weight:700;color:var(--txt);padding:8px 0;outline:none;box-shadow:none;font-variant-numeric:tabular-nums}
 .xamt input:focus{box-shadow:none;background:none}
-.xchips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.xchips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
 .xchips button{background:var(--card2);border:none;color:var(--mut2);border-radius:var(--r-sm);height:40px;padding:0;font-weight:500;font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
 .xchips button.on{background:var(--acc-soft);color:var(--acc2);font-weight:600;box-shadow:inset 0 0 0 1px var(--acc)}
 .xrate{margin-top:10px;font-size:var(--fs-sm);color:var(--mut);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -611,7 +624,7 @@ nav button svg{width:24px;height:24px}
 .sg-cmp .no .tg{background:var(--err-soft);color:var(--err)}.sg-cmp .ok .tg{background:var(--ok-soft);color:var(--ok)}
 .sg-cmp small{display:block;font-size:var(--fs-2xs);color:var(--mut)}
 .sg-cmp b{font-size:var(--fs-md);font-weight:600}
-.sg-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px}
+.sg-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 12px}
 .sg-tabs button{border:none;border-radius:var(--r-sm);height:40px;padding:0 10px;font-size:var(--fs-sm);font-weight:500;background:var(--card2);color:var(--mut2)}
 .sg-tabs button.on{background:var(--grad-btn);color:#fff;font-weight:600}
 .sg-steps{margin:0;padding-left:20px;font-size:var(--fs-sm);line-height:1.55}
@@ -627,7 +640,7 @@ nav button svg{width:24px;height:24px}
 .vn-head{text-align:left;padding:8px 4px 4px}
 .vn-head h2{margin:0;font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
 .vn-head p{margin:6px 0 0;max-width:340px;color:var(--mut);font-size:var(--fs-sm)}
-.vn-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.vn-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
 .vn-seg button{border:none;background:var(--card2);color:var(--mut2);border-radius:var(--r-sm);height:40px;padding:0 10px;font-size:var(--fs-sm);font-weight:500}
 .vn-seg button.on{background:var(--grad-btn);color:#fff;font-weight:600}
 .vn-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:8px;color:var(--txt)}
@@ -636,7 +649,7 @@ nav button svg{width:24px;height:24px}
 .vn-row .nm{font-weight:600;font-size:var(--fs-md)}
 .vn-row .sb{font-size:var(--fs-xs);color:var(--mut);margin-top:2px}
 .vn-row .pr{margin-left:auto;flex:0 0 auto;background:var(--card2);color:var(--txt);font-weight:600;font-size:var(--fs-sm);border-radius:var(--r-sm);padding:8px 12px;font-variant-numeric:tabular-nums}
-.vn-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.vn-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
 .vn-tabs button{border:none;border-radius:var(--r-sm);height:40px;padding:0 10px;font-weight:500;background:var(--card2);color:var(--mut2);font-size:var(--fs-sm)}
 .vn-tabs button.on{background:var(--grad-btn);color:#fff;font-weight:600}
 .vn-act{text-align:center}
@@ -675,7 +688,7 @@ nav button svg{width:24px;height:24px}
 .bnr .bd i.on{width:16px;background:#fff}
 .pmlogo{font-weight:700;font-size:11px;letter-spacing:0;line-height:1}
 .method .ic img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
-.gtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;padding:6px 16px 4px}
+.gtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 10px;padding:6px 16px 4px}
 .gtile{background:none;border:none;padding:0;color:var(--txt);text-align:center;position:relative;min-width:0}
 .gtile:active{transform:scale(.96)}
 .gtile .gti{aspect-ratio:1/1;border-radius:var(--r-lg);overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center;
@@ -725,7 +738,7 @@ nav button svg{width:24px;height:24px}
 .stepnum{width:22px;height:22px;border-radius:50%;background:var(--grad-btn);color:#fff;font-size:12px;font-weight:600;
   display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px;position:relative;z-index:1}
 .stepitem .st{font-size:var(--fs-sm);color:var(--mut2);line-height:1.45;padding-top:2px}
-.warncard{margin:0 16px 10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.warncard{margin:0 16px 10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .warncard button,.warncard>div{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-lg);background:var(--card);
   border:1px solid var(--line);text-align:left;font-size:var(--fs-xs);font-weight:500}
 .warncard button:active{transform:scale(.97)}
@@ -782,7 +795,7 @@ nav button svg{width:24px;height:24px}
 .lb-rest .nm3{flex:1;min-width:0;font-weight:500;font-size:var(--fs-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-rest .amt3{font-weight:600;font-size:var(--fs-sm);color:var(--txt);flex:0 0 auto;font-variant-numeric:tabular-nums}
 .stats{display:flex;gap:8px;margin:0 16px 12px}
-.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 10px;text-align:left;position:relative;overflow:hidden}
+.stat{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 10px;text-align:left;position:relative;overflow:hidden}
 .stat .v{font-size:var(--fs-md);font-weight:650;color:var(--txt);letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.3}
 .stat .v .cs{white-space:nowrap}
 .stat .k{font-size:var(--fs-xs);color:var(--mut);margin-top:2px}
@@ -1286,7 +1299,7 @@ body.adm-open{overflow:hidden}
 .adm-hb{border:none;background:var(--card2);color:var(--txt);border-radius:var(--r-sm);height:36px;min-width:36px;padding:0 12px;font-size:var(--fs-sm);font-weight:600;cursor:pointer}
 .adm-body{padding:12px 16px}
 .adm-seg{margin:0 0 12px}
-.adm-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .rd-card{display:block;width:100%;text-align:left;margin:0 0 12px;padding:14px;border-radius:var(--r-lg);background:var(--card);border:1px solid var(--line);color:var(--txt);font:inherit;cursor:pointer}
 .rd-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rd-t{font-weight:600;font-size:var(--fs-md)}
@@ -1316,7 +1329,7 @@ body.adm-open{overflow:hidden}
 .adm-search input{flex:1;margin:0;height:48px;font-size:16px}
 .adm-search .btn{width:auto;margin:0;padding:0 16px;min-height:48px;height:48px}
 .adm-sect{font-size:var(--fs-sm);font-weight:600;letter-spacing:0;text-transform:none;color:var(--mut);margin:18px 2px 8px}
-.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .adm-tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:104px;padding:14px;border-radius:var(--r-lg);cursor:pointer;text-align:left;
   background:var(--card);border:1px solid var(--line);color:var(--txt);font:inherit;transition:transform .15s var(--spring),border-color .15s ease}
 .adm-ic{width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;background:var(--acc-soft)!important;color:var(--acc2)!important}
@@ -1393,7 +1406,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .gback.gedit{left:auto;right:10px;font-size:17px}
 .adm-bar{margin:10px 16px 0;padding:12px;border-radius:var(--r-lg);background:var(--warn-soft);border:1px solid rgba(240,169,59,.35);font-size:var(--fs-sm)}
 /* admin: moliya */
-.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.fin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 10px}
 .fin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:11px 12px;min-width:0}
 .fin-card .k{font-size:var(--fs-xs);color:var(--mut);display:flex;align-items:center;gap:5px}
 .fin-card .v{font-size:var(--fs-md);font-weight:650;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
@@ -1405,7 +1418,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
 .fin-list .r:last-child{border-bottom:0}
 .fin-list .r b{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}
 /* admin */
-.colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .arow{display:flex;gap:8px}
 .arow>*{flex:1}
 .qtyBlock{display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -1467,7 +1480,7 @@ body.has-gbuy .sup-fab,body.adm-open .sup-fab,body.sup-open .sup-fab,body.no-fab
   color:var(--mut2);font-weight:500;font-size:var(--fs-sm);transition:transform .15s var(--spring),background-color .15s ease}
 .ghtabs button.on{background:var(--grad-btn);color:#fff;font-weight:600}
 .ghtabs button:active{transform:scale(.96)}
-.ghGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 6px}
+.ghGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 16px 6px}
 .ghRow{display:flex;align-items:center;gap:10px;padding:11px;border-radius:var(--r-lg);background:var(--card);
   border:1px solid var(--line);text-align:left;position:relative;overflow:visible;
   transition:transform .15s var(--spring),border-color .15s ease,background-color .15s ease}

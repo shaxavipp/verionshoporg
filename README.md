@@ -468,14 +468,11 @@ Butun ilova (mijoz ekranlari, oynalar, admin panel, yordam chati, sovg'alar) bit
   - Shrift shkalasi (`--fs-*`): 11 · 12.5 · 13.5 · 15 · 17 · 20 · 24 · 30. Kiritish maydonlari 16 px, aks holda iPhone ularni bosganda ekranni kattalashtiradi.
   - Balandliklar: kichik tugma va sarlavha tugmasi 34; tabletka tablar 36; to'rtburchak tanlagichlar 40; maydon, qidiruv va asosiy tugma 48; katta tugma 52.
   - Ikonka kataklari: ro'yxat 36; plitka 40; media 44.
-- **Kartochkalar — bitta shablon.** Bosh sahifa bo'limlari, guruhlar, mahsulotlar, o'yinlar va xizmatlar bir xil ko'rinadi:
-  - 2 ustun, 12 px oraliq;
-  - kartochka 24 burchak, 8 ichki chekinish;
-  - rasm 1:1, 16 burchak;
-  - ostida nom (15) va ikkinchi qator (izoh 12.5 yoki narx 13.5);
-  - balandlik qatorda teng.
+- **Kartochkalar: ikki o'lcham.**
+  - **Bo'limlar va guruhlar** katta: 2 ustun, kartochka 24 burchak, 8 ichki chekinish, rasm 1:1 va 16 burchak, ostida nom (15) va izoh (12.5), balandlik teng.
+  - **Mahsulotlar** (mahsulot, o'yin, xizmat) avvalgi kichik o'lchamida: 3 ustun, kvadrat rasm 14 burchak, ostida nom (13) va narx, kartochka qutisi yo'q. Foydalanuvchi so'rovi bilan ataylab bo'limdan kichik.
 
-  Sevimli tugmasi va zaxira belgisi rasm burchaklarida 8 px ichkarida turadi. Mahsulotlar sahifasidagi filtrlar bitta iOS segmentida: Barchasi | Obuna | O'yinlar | Telegram.
+  Hamma to'rlarda ustunlar qat'iy teng (`repeat(n, minmax(0,1fr))`), uzun matn ustunni kengaytirmaydi. Mahsulotlar sahifasidagi filtrlar bitta iOS segmentida: Barchasi | Obuna | O'yinlar | Telegram.
 - **Harakat va animatsiya.** Asosiy egri chiziq — kuchli ease-out (`--spring`), oynalar va belgilar uchun iOS prujinasi (`--ios`, ~4% oshib ketish; `linear()` bilmaydigan brauzerda oddiy egri chiziq ishlaydi). Animatsiyalar faqat `transform`/`opacity` bilan, bosish effekti hamma joyda 0.96–0.97. Bot bo'ylab animatsiyalar:
   - **Ekran almashganda** bloklar ketma-ket pastdan ko'tariladi, mahsulot kartalari bittadan chiqadi. Bu faqat bo'lim o'zgarganda ishlaydi, oddiy qayta chizishda emas (`_lastViewKey`).
   - **Pastki menyu:** faol bo'lim ostidagi shisha belgi prujina bilan siljiydi, ikonka "sakrab" qo'yiladi.
