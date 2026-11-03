@@ -130,6 +130,15 @@ Full docs are public at `lis-skins.stoplight.io` (Stoplight project id 288247; n
 - **Steam login domain:** `siteBase()` in server.js returns `SITE_URL` (default `https://verionshop.uz`) only after `probeAppUrl` confirms it reaches a Verion Shop server (`app === "verion-shop"`; the instance id is NOT required — during a deploy the domain briefly hits the old container). First check 15 s after listen, retries every 30 s ×10 then every 5 min, 6 h when OK; `SITE.ip` = resolved IP for diagnostics. `ctx.siteRecheck()` backs admin `GET /api/admin/cs2?site=1` («Qayta tekshirish»). cs2.js `appOrigin()` uses `STEAM_RETURN_BASE` → `ctx.siteUrl()` → `ctx.appUrl()`; the base is stored per nonce in `LINKS` so the return check uses the same origin. Admin view field `site` (`?site=1` forces a recheck).
 - **Admin:** `openAdminCs2` — per-game toggles `#skOn_<g>`, catalog status `#skSt_<g>`, price URL `#skPu_<g>`, refresh `[data-skcat2]`.
 
+### Design system v3 (main app)
+- Tokens on `:root` / `[data-theme="light"]`: neutral surfaces `--bg --bg2 --card --card2 --card3`, lines `--line --line2`, text `--txt --mut --mut2`, one accent `--acc` (+ `--acc2`, `--acc-soft`, `--acc-rgb`), status `--ok --warn --err` + `*-soft`. Radii `--r-sm 10 / --r 14 / --r-lg 20`. `--grad` is now a plain alias of `--acc`, so there are no gradients. Motion: `--spring` and `--ease`, 150–280 ms. No glow, no infinite idle animations.
+- Font: Onest, self-hosted from `fonts/` (OFL) through the server route `GET /fonts/<name>.woff2` (name checked by regex). Numbers use `tabular-nums`. Inter was dropped because the impeccable detector flags it as an overused "AI" font.
+- Icons: Lucide (ISC) in `ICON`/`IC` (stroke 1.75) and `SK_I` (skins store, stroke 2). Don't hand-draw new icons. Take them from Lucide.
+- Patterns: full-width tab bar (no pill). Home categories are `.grid.groupgrid.catgrid`. Profile row icons (`.ibadge`) are forced neutral. Section labels are sentence case, not uppercase. `curS(html)` renders the trailing "so'm" small and muted. `body.no-fab` hides the support FAB on profile, pay, Steam and virtual number pages.
+- The skins store (`.sk`) keeps its own dark look. Only its icons were switched to Lucide, and its glow shadows were removed. Sparks and the grid texture stay on purpose (the user asked for them).
+- Accessibility: `ic()` and nav icons are `aria-hidden`. Icon-only buttons carry `aria-label`. Escape closes the sheet. Empty lists show one next-action button (`[data-gonav]`, `[data-gotopay]`).
+- Skills to use for UI work: `baseline-ui`, `fixing-accessibility`, `fixing-motion-performance`, `improve-ui`, `design-elevation-protocol`, `distinctive-typography-pairings`. For security: built-in `security-review` + `owasp-review-2026`. Design lint: `npx impeccable detect --json verion-shop.html` (works offline; its skill bundle download from impeccable.style is blocked in the cloud env).
+
 ### Design reference
 The user likes skinsavdo.uz (an Uzbek CS2 skins market). Take ideas only, not their branding, yellow `#fbd506`, logo or text.
 

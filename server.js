@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-01.1";
+const BUILD = "2026-11-03.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1912,8 +1912,9 @@ function checkInitData(initData) {
     const dcs = [...params.entries()].map(([k, v]) => k + "=" + v).sort().join("\n");
     const sigOf = tok => crypto.createHmac("sha256", crypto.createHmac("sha256", "WebAppData").update(tok).digest()).update(dcs).digest("hex");
     let via = "";
-    if (sigOf(BOT_TOKEN) === hash) via = "main";
-    else { const at = adminBotToken(); if (at && sigOf(at) === hash) via = "admin"; }
+    // imzo vaqtga bog'liq bo'lmagan usulda solishtiriladi (safeEq)
+    if (safeEq(sigOf(BOT_TOKEN), hash)) via = "main";
+    else { const at = adminBotToken(); if (at && safeEq(sigOf(at), hash)) via = "admin"; }
     if (!via) return { reason: "auth", user: null };
     const authDate = Number(params.get("auth_date") || 0);
     if (!authDate) return { reason: "auth", user: null };
@@ -2393,6 +2394,16 @@ function handleRequest(req, res) {
     return send(res, 200, { app: "verion-shop", ok: true, build: BUILD, instance: INSTANCE_ID, time: Date.now() });
   }
 
+  // Shriftlar (Inter, OFL) — o'zimizdan, bir yil keshlanadi (tashqi CDN'ga bog'liq emas)
+  if (m === "GET" && url.indexOf("/fonts/") === 0) {
+    const f = url.slice(7);
+    if (!/^[a-z0-9-]+\.woff2$/.test(f)) return send(res, 404, { error: "not found" });
+    return fs.readFile(path.join(__dirname, "fonts", f), (err, buf) => {
+      if (err) return send(res, 404, { error: "not found" });
+      res.writeHead(200, { "Content-Type": "font/woff2", "Cache-Control": "public, max-age=31536000, immutable", "Access-Control-Allow-Origin": "*" });
+      res.end(buf);
+    });
+  }
   // O'yinlar: /api/games*, /api/admin/games*, /gimg/* — modul o'zi javob beradi.
   if (GAMES.handle(req, res, url, m)) return;
   if (EXTRA.handle(req, res, url, m, q)) return;

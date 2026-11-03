@@ -448,3 +448,40 @@ Admin (server tasdiqlagan `isAdmin`) har bir mahsulot sahifasida kichik ✏️ t
 - **Eski rasmlar — avtomatik, bir marta:** deploy'dan keyin admin ilovani birinchi ochganda mavjud rasmlarning foni o'zi olinadi (ekran almashmaydi, pastda «🪄 … n/m» chiqadi) va jimgina nashr qilinadi; server buni eslab qoladi (`settings.imgCutV`, `/api/me` → `imgCut`, `POST /api/admin/img-cut-done`). Server katalogi yuklanmagan yoki admin qurilmasida nashr qilinmagan qoralama bo'lsa — ishlamaydi (qoralama tasodifan chiqib ketmasin); unda tugma bilan.
 - **Qo'lda:** Admin → «Mahsulotlar va katalog» → «🪄 Hamma mahsulot rasmlari fonini olib tashlash» (bo'lim ✏️ menyusida ham bor): katalog mahsulotlari, guruhlar, nakrutka ilovalari va maxsus kartochkalar bir yo'la; tugagach darhol nashr qilinadi. Asl rasm `tile.img0` da saqlanadi — mahsulot oynasida «↩ Asl rasmga qaytarish».
 
+
+## Dizayn tizimi v3 (2026-11)
+
+Butun ilova (mijoz ekranlari, oynalar, admin panel, yordam chati, sovg'alar) bitta tizimga keltirildi. Maqsad: "AI chizgan" ko'rinish emas, tajribali dizayner qo'li bilan qilingandek sokin va tartibli interfeys.
+
+- **Ranglar.** Neytral sirtlar: `--bg`, `--card`, `--card2`, `--card3`. Bitta urg'u rangi bor: `--acc` (brend ko'ki). U faqat asosiy tugma, tanlangan holat va havolalarda ishlatiladi. Holat ranglari: `--ok`, `--warn`, `--err` va ularning yumshoq foni (`*-soft`). Gradient, porlash (glow) va doimiy "tirik" animatsiyalar olib tashlangan. Yorug' mavzu ham shu tokenlar bilan ishlaydi.
+- **Shrift.** Onest (OFL litsenziyasi). Inter juda ko'p ishlatiladi va dizayn detektori uni "AI belgisi" deb hisoblaydi, shuning uchun Onest tanlandi. Fayllar o'zimizda: `fonts/` papkasi, server `/fonts/*.woff2` yo'lidan bir yil keshlab beradi. Lotin (o'zbekcha ʻ belgisi ham), kengaytirilgan lotin va kirill qismlari bor, jami ~78 KB. Sarlavhalar 600–700, matn 400–500. Raqamlar teng kenglikda (`tabular-nums`).
+- **Burchaklar.** 10 (kichik), 14 (karta), 20 (oyna va katta karta).
+- **Harakat.** 150–280 ms, iOS uslubidagi egri chiziq. Bosilganda element biroz kichrayadi (0.97). Abadiy animatsiya yo'q. "Kamroq harakat" sozlamasi hurmat qilinadi.
+- **Ikonkalar.** Lucide (ISC litsenziyasi), hammasi bir uslubda: asosiy ilovada chiziq qalinligi 1.75, skinlar do'konida 2. Rangli kvadrat fonlar o'rniga neytral fon ishlatiladi.
+- **Tuzilish.** Pastki menyu butun kenglikdagi oddiy tab bar. Bosh sahifadagi bo'limlar ixcham gorizontal kartalar (`.catgrid`). Balans kartasi tekis. Summada "so'm" kichik va xira yoziladi (`curS()`). Bo'lim sarlavhalari katta harf bilan emas, oddiy yoziladi. Yordam tugmasi kichik va neytral; profil, to'lov, Steam va virtual raqam sahifalarida u ko'rsatilmaydi, chunki u yerda yordam havolasi yoki pastki xarid tugmasi bor (`body.no-fab`).
+- **Emoji.** Mijozga ko'rinadigan chat tugmalari, virtual raqam tablari va admin bosh sahifasidagi ko'rsatkichlardan olib tashlangan.
+- **Ochilish ekrani.** Logo chiziq bo'ylab ochiladi va pastda yuklanish chizig'i bor. Chaqmoq porlashi (radial glow) olib tashlangan.
+- **Kirish qulayligi.** Faqat ikonkali tugmalarda nom bor (`aria-label`): mavzu, sevimlilar, yopish, orqaga. Bezak ikonkalari ekran o'quvchidan yashirilgan (`aria-hidden`). Escape tugmasi pastki oynani yopadi. Bo'sh ro'yxatlarda aniq keyingi harakat tugmasi bor ("Mahsulotlar", "Balansni to'ldirish").
+
+## Dizayn va xavfsizlik ko'nikmalari (`.claude/skills/`)
+
+Claude bu loyihada ishlaganda quyidagi ko'nikmalardan foydalanadi:
+
+| Ko'nikma | Manba | Nima uchun |
+|---|---|---|
+| `baseline-ui` | ui-skills (MIT) | "AI ko'rinishi"siz UI qoidalari: gradient yo'q, faqat transform/opacity animatsiyasi, tabular raqamlar, bo'sh holatda harakat |
+| `fixing-accessibility` | ui-skills (MIT) | tugma nomlari, klaviatura, fokus, kontrast |
+| `fixing-motion-performance` | ui-skills (MIT) | silliq animatsiya: layout animatsiyasi yo'q, blur cheklangan |
+| `fixing-metadata` | ui-skills (MIT) | sahifa sarlavhasi va meta teglar |
+| `improve-ui` | ui-skills (MIT) | mavjud ekranni o'z dizayn tizimiga qarab tekshirish va reja yozish |
+| `ui-skills-root` | ui-skills (MIT) | qaysi UI ko'nikmasini ishlatishni tanlash |
+| `design-elevation-protocol` | claude-skills-library (MIT) | topshirishdan oldin 5 bosqichli dizayn tekshiruvi |
+| `distinctive-typography-pairings` | claude-skills-library (MIT) | shrift tanlash (Inter/Roboto o'rniga) |
+| `motion-orchestration-staggered` | claude-skills-library (MIT) | sahifa ochilishidagi ketma-ket animatsiya |
+| `owasp-review-2026` | claude-skills-library (MIT) | Node.js uchun OWASP xavfsizlik tekshiruv ro'yxati |
+
+Bulardan tashqari Claude Code'ning o'z `security-review` ko'nikmasi bor. Unda o'zgarishlarning xavfsizlik ko'rigi qilinadi.
+
+`layered-background-craft` ko'nikmasi ataylab o'rnatilmadi: u fonga gradient va porlash qo'shishni o'rgatadi, bu esa dizayn detektori "AI belgisi" deb topadigan narsa.
+
+**Dizayn detektori (impeccable, Apache-2.0):** `npx impeccable detect verion-shop.html`. U "AI chizgan" belgilarni topadi: gradient matn, porlash, binafsha palitra, ichma-ich kartalar, ko'p ishlatiladigan shrift, past kontrast. Hozirgi holat: asosiy ilovada topilma yo'q. Uchta topilma ataylab qoldirilgan: chatdagi "yozmoqda" nuqtalari (haqiqiy jonli holat) hamda skinlar do'konidagi uchqunlar va to'r fon (do'konning o'z uslubi).
