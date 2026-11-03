@@ -455,7 +455,27 @@ Butun ilova (mijoz ekranlari, oynalar, admin panel, yordam chati, sovg'alar) bit
 
 - **Ranglar: Verion brend palitrasi (v3.1).** Tun ko'ki fon (`#080a12`, kartalar `#131728`), elektr-ko'k urg'u (`#2f8fff`), brend gradienti (`#0b57cf → #2f8fff → #8fc2ff`) va oltin aksent. Logo va avatar shu ranglarda chizilgan, shuning uchun ular qaytarildi. v3'dagi neytral kulrang palitra botni boshqalardan ajratib turmasdi. Gradient faqat brend joylarida ishlatiladi: balans kartasi, asosiy tugma (`--grad-btn`), tanlangan tab, avatar, menyudagi faol belgi va yordam tugmasi. Profil va bo'lim ikonkalari bir xil brend ko'ki tusida, rang-barang emas. Fonda yengil ko'k nur bor. Kuchli porlash va doimiy animatsiya yo'q. Ochilish ekranida logodagi chaqmoq chaqnashi va gradientli yuklanish chizig'i qaytdi. Yorug' mavzu ham eski brend tokenlarida.
 - **Shrift.** Onest (OFL litsenziyasi). Inter juda ko'p ishlatiladi va dizayn detektori uni "AI belgisi" deb hisoblaydi, shuning uchun Onest tanlandi. Fayllar o'zimizda: `fonts/` papkasi, server `/fonts/*.woff2` yo'lidan bir yil keshlab beradi. Lotin (o'zbekcha ʻ belgisi ham), kengaytirilgan lotin va kirill qismlari bor, jami ~78 KB. Sarlavhalar 600–700, matn 400–500. Raqamlar teng kenglikda (`tabular-nums`).
-- **Burchaklar.** 10 (kichik), 14 (karta), 20 (oyna va katta karta).
+- **Burchaklar (bitta shkala, `--r-*` tokenlari).**
+  - 6 — belgi va teg;
+  - 10 — kichik boshqaruv: chip, kichik tugma, ikonka katagi;
+  - 14 — tugma va kiritish maydoni;
+  - 20 — har qanday panel va plitka: ro'yxat kartasi, to'lov usuli, paket, statistika, xabar;
+  - 24 — kartochka va bosh karta: bo'lim/mahsulot kartochkasi, balans, banner, o'yin va Steam sarlavhasi;
+  - 28 — pastki oyna.
+
+  Ichma-ich elementlarda burchaklar konsentrik: kartochka 24 = rasm 16 + chekinish 8; menyu 26 = belgi 20 + 6.
+- **O'lchamlar.**
+  - Shrift shkalasi (`--fs-*`): 11 · 12.5 · 13.5 · 15 · 17 · 20 · 24 · 30. Kiritish maydonlari 16 px, aks holda iPhone ularni bosganda ekranni kattalashtiradi.
+  - Balandliklar: kichik tugma va sarlavha tugmasi 34; tabletka tablar 36; to'rtburchak tanlagichlar 40; maydon, qidiruv va asosiy tugma 48; katta tugma 52.
+  - Ikonka kataklari: ro'yxat 36; plitka 40; media 44.
+- **Kartochkalar — bitta shablon.** Bosh sahifa bo'limlari, guruhlar, mahsulotlar, o'yinlar va xizmatlar bir xil ko'rinadi:
+  - 2 ustun, 12 px oraliq;
+  - kartochka 24 burchak, 8 ichki chekinish;
+  - rasm 1:1, 16 burchak;
+  - ostida nom (15) va ikkinchi qator (izoh 12.5 yoki narx 13.5);
+  - balandlik qatorda teng.
+
+  Sevimli tugmasi va zaxira belgisi rasm burchaklarida 8 px ichkarida turadi. Mahsulotlar sahifasidagi filtrlar bitta iOS segmentida: Barchasi | Obuna | O'yinlar | Telegram.
 - **Harakat va animatsiya.** Asosiy egri chiziq — kuchli ease-out (`--spring`), oynalar va belgilar uchun iOS prujinasi (`--ios`, ~4% oshib ketish; `linear()` bilmaydigan brauzerda oddiy egri chiziq ishlaydi). Animatsiyalar faqat `transform`/`opacity` bilan, bosish effekti hamma joyda 0.96–0.97. Bot bo'ylab animatsiyalar:
   - **Ekran almashganda** bloklar ketma-ket pastdan ko'tariladi, mahsulot kartalari bittadan chiqadi. Bu faqat bo'lim o'zgarganda ishlaydi, oddiy qayta chizishda emas (`_lastViewKey`).
   - **Pastki menyu:** faol bo'lim ostidagi shisha belgi prujina bilan siljiydi, ikonka "sakrab" qo'yiladi.
