@@ -482,8 +482,8 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25;white-space
 .sheet-back svg{width:16px;height:16px}
 .sheet h2{font-size:var(--fs-xl);font-weight:650;letter-spacing:-.02em;margin-bottom:4px;line-height:1.25}
 .sheet .cat{font-size:var(--fs-sm);color:var(--mut);margin-bottom:10px}
-.sheet h2,.ghero-t h1,.xhero h2,.vn-head h2,#onb h1{text-wrap:balance}
-.sheet .desc,.paynote,.xhero p,.vn-head p,.row .l .d{text-wrap:pretty}
+.sheet h2,.ghero-t h1,.xhero h2,.vn2-title h1,#onb h1{text-wrap:balance}
+.sheet .desc,.paynote,.xhero p,.vn2-title p,.vn2-how p,.row .l .d{text-wrap:pretty}
 .sheet .desc{font-size:var(--fs-md);color:var(--mut2);margin:10px 0 16px;white-space:pre-wrap;line-height:1.5}
 .bigtile{width:100%;height:auto;aspect-ratio:16/9;border-radius:var(--r-lg);margin-bottom:14px}
 .vidtile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -834,28 +834,117 @@ nav button svg{width:24px;height:24px}
 .sg-mock .here::before{content:"";position:absolute;left:-5px;top:50%;margin-top:-5px;border:5px solid transparent;border-left:0;border-right-color:#f2c94c}
 .sg-mock .dim{color:#7d8794}
 /* virtual raqam */
-.vn-head{text-align:left;padding:8px 4px 4px}
-.vn-head h2{margin:0;font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-.vn-head p{margin:6px 0 0;max-width:340px;color:var(--mut);font-size:var(--fs-sm)}
-.vn-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
-.vn-seg button{border:none;background:var(--card2);color:var(--mut2);border-radius:var(--r-sm);height:40px;padding:0 10px;font-size:var(--fs-sm);font-weight:500}
-.vn-seg button.on{background:var(--grad-btn);color:#fff;font-weight:600}
-.vn-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:8px;color:var(--txt)}
-.vn-row:active{transform:scale(.98)}
-.vn-row .fl{font-size:28px;line-height:1;width:38px;text-align:center}
-.vn-row .nm{font-weight:600;font-size:var(--fs-md)}
-.vn-row .sb{font-size:var(--fs-xs);color:var(--mut);margin-top:2px}
-.vn-row .pr{margin-left:auto;flex:0 0 auto;background:var(--card2);color:var(--txt);font-weight:600;font-size:var(--fs-sm);border-radius:var(--r-sm);padding:8px 12px;font-variant-numeric:tabular-nums}
-.vn-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
-.vn-tabs button{border:none;border-radius:var(--r-sm);height:40px;padding:0 10px;font-weight:500;background:var(--card2);color:var(--mut2);font-size:var(--fs-sm)}
-.vn-tabs button.on{background:var(--grad-btn);color:#fff;font-weight:600}
-.vn-steps{text-align:left;margin:14px 0 12px;padding-left:20px;font-size:var(--fs-sm);color:var(--mut2);line-height:1.45}
-.vn-steps li{margin:4px 0}
-.vn-act .code.vn-pass{font-size:22px;letter-spacing:.04em}
-.vn-act{text-align:center}
-.vn-act .ph{font-size:var(--fs-2xl);font-weight:700;letter-spacing:.02em;margin:6px 0;font-variant-numeric:tabular-nums}
-.vn-act .code{font-size:var(--fs-3xl);font-weight:700;letter-spacing:.16em;color:var(--ok);margin:8px 0;font-variant-numeric:tabular-nums}
-.vn-act .wait{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--mut);font-size:var(--fs-sm);margin:8px 0}
+.vn2{padding-bottom:8px}
+.vn2 .num,.vn2-sum{font-variant-numeric:tabular-nums}
+.vn2-cur{color:var(--mut);font-weight:500;font-size:.82em}
+.vn2-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:4px 0 16px}
+.vn2-tl{min-width:0}
+.vn2-title h1{margin:0;font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.vn2-title p{margin:6px 0 0;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
+.vn2-bal{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;border:none;background:var(--card);border-radius:var(--r);padding:8px 12px;color:var(--txt);min-height:44px}
+.vn2-bal span{font-size:var(--fs-xs);color:var(--mut)}
+.vn2-bal b{font-size:var(--fs-md);font-weight:600;white-space:nowrap}
+.vn2-bal:active{background:var(--card2)}
+.vn2-panel{background:var(--card);border-radius:var(--r-lg);padding:4px 0;margin:0 0 12px}
+.vn2-panel h2,.vn2-how h2{margin:0;padding:12px 16px 4px;font-size:var(--fs-sm);font-weight:600;color:var(--mut2)}
+.vn2-pend{padding-bottom:6px}
+.vn2-tabs{display:flex;gap:22px;margin:4px 0 14px;border-bottom:1px solid var(--line)}
+.vn2-tabs button{position:relative;border:none;background:none;padding:10px 0 12px;font-size:var(--fs-md);font-weight:500;color:var(--mut);display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.vn2-tabs button.on{color:var(--txt);font-weight:600}
+.vn2-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--txt)}
+.vn2-cnt{font-size:var(--fs-2xs);font-weight:600;background:var(--card2);color:var(--mut2);border-radius:999px;padding:2px 7px;line-height:1.3}
+.vn2-how{background:var(--card);border-radius:var(--r-lg);padding:2px 0 14px;margin:4px 0 12px}
+.vn2-how p{margin:10px 16px 0;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
+.vn2-search{margin:0 0 12px;height:44px}
+.vn2-lh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 6px 16px}
+.vn2-lh>span{font-size:var(--fs-xs);color:var(--mut)}
+.vn2-seg{display:inline-flex;background:var(--card2);border-radius:999px;padding:2px;gap:2px}
+.vn2-seg button{border:none;background:none;color:var(--mut2);font-size:var(--fs-xs);font-weight:500;border-radius:999px;padding:0 11px;height:30px}
+.vn2-seg button.on{background:var(--card3);color:var(--txt);font-weight:600}
+.vn2-gh{margin:0;padding:12px 16px 4px;font-size:var(--fs-xs);font-weight:600;color:var(--mut)}
+.vn2-row,.vn2-prow{display:flex;align-items:center;gap:12px;width:100%;border:none;background:none;text-align:left;color:var(--txt);padding:10px 16px;min-height:60px;transition:background-color .15s ease}
+.vn2-row+.vn2-row{border-top:1px solid var(--line)}
+.vn2-row:active,.vn2-prow:active{background:var(--card2)}
+@media (hover:hover){.vn2-row:hover,.vn2-prow:hover{background:var(--card2)}}
+.vn2-fl{flex:0 0 32px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1}
+.vn2-fl.lg{flex-basis:44px;width:44px;height:44px;font-size:36px}
+.vn2-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.vn2-mid>b{font-size:var(--fs-md);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vn2-mid>span{font-size:var(--fs-xs);color:var(--mut);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.vn2-pr{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.vn2-pr .vn2-sum{font-size:var(--fs-md);font-weight:600;white-space:nowrap}
+.vn2-row.no .vn2-pr .vn2-sum{color:var(--mut)}
+.vn2-no{font-size:var(--fs-2xs);color:var(--mut)}
+.vn2-act{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:600;color:var(--txt)}
+.vn2-pill{flex:none;white-space:nowrap;display:inline-flex;align-items:center;font-size:var(--fs-2xs);font-weight:600;line-height:1;padding:5px 8px;border-radius:999px;background:var(--card2);color:var(--mut2)}
+.vn2-pill.sm{padding:3px 6px}
+.vn2-pill.ok{background:var(--ok-soft);color:var(--ok)}
+.vn2-pill.warn{background:var(--warn-soft);color:var(--warn)}
+.vn2-code-sm{font-size:var(--fs-sm);font-weight:600;letter-spacing:.06em}
+.vn2-empty{padding:18px 16px;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
+.vn2-link{border:none;background:none;padding:0;color:var(--txt);font-weight:600;text-decoration:underline;text-underline-offset:3px;font-size:inherit}
+/* yuklanish: oxirgi joylashuv, qiymatlar o'rnida tekis kulrang bloklar (miltillashsiz) */
+.vn2-row.sk .vn2-fl{background:var(--card2);border-radius:8px}
+.vn2-row.sk .vn2-mid b{display:block;width:46%;height:14px;border-radius:4px;background:var(--card2)}
+.vn2-row.sk .vn2-mid span{display:block;width:28%;height:10px;border-radius:4px;background:var(--card2)}
+.vn2-row.sk .vn2-pr b{display:block;width:72px;height:14px;border-radius:4px;background:var(--card2)}
+/* kirish yo'li: Raqam → Kod → Parol */
+.vn2-path{list-style:none;margin:6px 16px 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.vn2-path.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.vn2-sheet .vn2-path{margin:6px 0 0}
+.vn2-path li{position:relative;display:flex;flex-direction:column;gap:3px;padding-top:20px;min-width:0}
+.vn2-path li i{position:absolute;top:2px;left:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--mut);background:transparent;box-sizing:border-box}
+.vn2-path li::before{content:"";position:absolute;top:7px;left:16px;right:4px;height:2px;border-radius:2px;background:var(--line2)}
+.vn2-path li:last-child::before{display:none}
+.vn2-path li.on i{background:var(--txt);border-color:var(--txt)}
+.vn2-path li.on::before{background:var(--txt)}
+.vn2-path li.cur i{border-color:var(--acc2);background:transparent}
+.vn2-path b{font-size:var(--fs-sm);font-weight:600;color:var(--txt);padding-right:6px}
+.vn2-path span{font-size:var(--fs-xs);color:var(--mut);padding-right:6px}
+.vn2-path li.cur span{color:var(--acc2)}
+/* oynalar */
+.vn2-sheet{display:flex;flex-direction:column;gap:12px;padding-bottom:6px}
+.vn2-sh-h{display:flex;align-items:center;gap:12px;padding-right:44px}
+.vn2-sh-h>div{flex:1;min-width:0}
+.vn2-sh-h h2{margin:0;font-size:var(--fs-xl);font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.vn2-sh-t{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px}
+.vn2 .nowrap,.vn2-sheet .nowrap{white-space:nowrap}
+.vn2-sh-h p{margin:3px 0 0;color:var(--mut);font-size:var(--fs-xs)}
+.vn2-big{font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:2px}
+.vn2-kv{margin:0;background:var(--card2);border-radius:var(--r);padding:4px 14px}
+.vn2-kv>div{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px}
+.vn2-kv>div+div{border-top:1px solid var(--line)}
+.vn2-kv dt{color:var(--mut2);font-size:var(--fs-sm)}
+.vn2-kv dd{margin:0;font-weight:600;font-size:var(--fs-md)}
+.vn2-kv .bad dd,.vn2-kv .bad dt{color:var(--err)}
+.vn2-sub{margin:4px 0 0;font-size:var(--fs-sm);font-weight:600;color:var(--mut2)}
+.vn2-note{margin:0;font-size:var(--fs-sm);line-height:1.45;color:var(--mut2);background:var(--card2);border-radius:var(--r);padding:11px 14px}
+.vn2-note.warn{background:var(--warn-soft);color:var(--warn)}
+.vn2-hint{margin:0;font-size:var(--fs-sm);line-height:1.45;color:var(--mut2)}
+.vn2-hint:empty{display:none}
+.vn2-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:none;border-radius:999px;background:var(--txt);color:var(--bg);font-size:var(--fs-md);font-weight:600;transition:transform .15s var(--spring),opacity .15s ease}
+.vn2-primary:active{transform:scale(.98)}
+.vn2-primary:disabled{opacity:.7}
+.vn2-ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:none;border-radius:999px;background:none;color:var(--mut2);font-size:var(--fs-md);font-weight:500}
+.vn2-ghost.bordered{border:1px solid var(--line2);color:var(--txt)}
+.vn2-ghost.danger{border:1px solid var(--line2);color:var(--err)}
+.vn2-ghost:active{background:var(--card2)}
+.vn2-num{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border-radius:var(--r);padding:12px 12px 12px 16px}
+.vn2-num .vn2-ph{font-size:var(--fs-2xl);font-weight:700;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.vn2-copy{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--card3);color:var(--txt);font-size:var(--fs-xs);font-weight:600;min-height:36px;padding:0 12px}
+.vn2-copy:active{transform:scale(.96)}
+.vn2-codebox{display:flex;flex-direction:column;gap:6px;background:var(--card2);border-radius:var(--r);padding:12px 12px 14px 16px;animation:vn2in .25s var(--spring)}
+.vn2-lbl{font-size:var(--fs-xs);color:var(--mut)}
+.vn2-codeln{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.vn2-code{font-size:36px;font-weight:700;letter-spacing:.14em;color:var(--acc2);line-height:1.1}
+.vn2-pass{font-size:var(--fs-xl);font-weight:600;letter-spacing:.04em;overflow-wrap:anywhere;min-width:0}
+.vn2-timer{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:var(--fs-sm);color:var(--mut2)}
+.vn2-timer b{font-size:var(--fs-lg);color:var(--txt)}
+.vn2-bar{height:6px;border-radius:999px;background:var(--card2);overflow:hidden}
+.vn2-bar i{display:block;height:100%;border-radius:999px;background:var(--txt);transition:width 1s linear}
+@keyframes vn2in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.vn2-codebox{animation:none}.vn2-bar i{transition:none}}
+[data-reduce-motion="1"] .vn2-codebox{animation:none}
 .vn-spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line2);border-top-color:var(--acc);animation:vnspin .8s linear infinite}
 @keyframes vnspin{to{transform:rotate(360deg)}}
 .xentry{display:flex;align-items:center;gap:12px;margin:8px 16px;padding:14px;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);color:var(--txt);width:calc(100% - 32px);text-align:left}
@@ -1981,7 +2070,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-04.4";
+var CLIENT_BUILD="2026-11-04.5";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -10195,7 +10284,7 @@ var XT={ru:{
 "Kutilmoqda…":"Ожидание…","Mamlakat qidirish...":"Поиск страны...","Ommabop":"Популярные","Narx":"Цена","Topilmadi":"Не найдено","ta":"шт",
 "Telegram uchun raqam":"Номер для Telegram","Raqamni nusxalash":"Скопировать номер","Raqam tayyorlanmoqda…":"Номер готовится…","SMS kod:":"SMS-код:",
 "Kodni nusxalash":"Скопировать код","❌ Bekor qilindi, pul balansga qaytarildi":"❌ Отменено, деньги возвращены на баланс","SMS kod kutilmoqda…":"Ожидание SMS-кода…",
-"Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa — pul avtomatik qaytadi.":"Введите этот номер в Telegram — код придёт сюда. Если код не придёт, деньги вернутся автоматически.",
+"Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa, pul avtomatik qaytadi.":"Введите этот номер в Telegram, код придёт сюда. Если код не придёт, деньги вернутся автоматически.",
 "Bekor qilish":"Отменить","Raqamni bekor qilasizmi? Pul balansga qaytadi.":"Отменить номер? Деньги вернутся на баланс.","Kod allaqachon kelgan":"Код уже получен",
 "Bekor qilib bo'lmadi, birozdan keyin urinib ko'ring":"Не удалось отменить, попробуйте позже","raqami":"номер","daqiqa":"мин",
 "Telegram uchun SMS kod kutiladi. Kod kelmasa pul qaytadi.":"SMS-код для Telegram ожидается. Если код не придёт, деньги вернутся.","Sotib olasizmi?":"Купить?",
@@ -10207,18 +10296,78 @@ var XT={ru:{
 "2 bosqichli parol:":"Пароль двухэтапной проверки:",
 "Parolni nusxalash":"Скопировать пароль",
 "Telegram akkaunt raqami":"Номер аккаунта Telegram",
-"Telegram yangi kod yuborsa — «Kodni yangilash» bosing (24 soat ichida).":"Если Telegram пришлёт новый код — нажмите «Обновить код» (в течение 24 часов).",
+"Telegram yangi kod yuborsa, «Kodni yangilash» bosing (24 soat ichida).":"Если Telegram пришлёт новый код, нажмите «Обновить код» (в течение 24 часов).",
 "Kodni yangilash":"Обновить код",
-"Raqam tekshirilmoqda — operator tez orada yuboradi.":"Номер проверяется — оператор скоро отправит его.",
+"Raqam tekshirilmoqda, operator tez orada yuboradi.":"Номер проверяется, оператор скоро отправит его.",
 "Telegram ilovasini oching va shu raqam bilan kiring.":"Откройте Telegram и войдите по этому номеру.",
 "Telegram kod yuborgach, shu yerda «Kodni olish» bosing.":"Когда Telegram отправит код, нажмите здесь «Получить код».",
 "Kodni olish":"Получить код",
-"Kod hali kelmadi — operator xabardor. Kerak bo'lsa yordamga yozing.":"Код пока не пришёл — оператор уведомлён. При необходимости напишите в поддержку.",
+"Kod hali kelmadi. Operator xabardor, kerak bo'lsa yordamga yozing.":"Код пока не пришёл. Оператор уведомлён, при необходимости напишите в поддержку.",
 "Kod hali kelmadi. Telegram'da raqamni kiritganingizga ishonch hosil qiling va birozdan keyin qayta bosing.":"Код ещё не пришёл. Убедитесь, что ввели номер в Telegram, и нажмите ещё раз чуть позже.",
 "Yangi kod yo'q":"Нового кода нет",
 "Bu raqamni bekor qilib bo'lmaydi":"Этот номер нельзя отменить",
 "Tayyor Telegram akkaunt raqami. Raqamni Telegram'ga kiriting, so'ng ilovada «Kodni olish» bosing. Raqam olingach bekor qilinmaydi va pul qaytmaydi.":"Готовый номер аккаунта Telegram. Введите номер в Telegram, затем нажмите в приложении «Получить код». После покупки номер не отменяется и деньги не возвращаются.",
-"Tayyor Telegram akkaunt raqami — kod va parol shu yerda chiqadi. Balansingizdan to'lanadi.":"Готовый номер аккаунта Telegram — код и пароль появятся здесь. Оплата с баланса."
+"Tayyor Telegram akkaunt raqami — kod va parol shu yerda chiqadi. Balansingizdan to'lanadi.":"Готовый номер аккаунта Telegram — код и пароль появятся здесь. Оплата с баланса.",
+"Kod keldi":"Код получен",
+"Kod kutilmoqda":"Ждём код",
+"Tekshirilmoqda":"Проверяется",
+"Raqam":"Номер",
+"olindi":"получен",
+"darhol beriladi":"выдаётся сразу",
+"Kirish kodi":"Код входа",
+"SMS kod":"SMS-код",
+"keldi":"пришёл",
+"kutilmoqda":"ожидается",
+"shu oynada chiqadi":"появится здесь",
+"Parol":"Пароль",
+"bor":"есть",
+"yo'q":"нет",
+"bo'lsa, kod bilan":"если есть — вместе с кодом",
+"Kirish yo'li":"Путь входа",
+"Balansni to'ldirish":"Пополнить баланс",
+"Balans":"Баланс",
+"Raqam tekshirilmoqda":"Номер проверяется",
+"Qanday ishlaydi":"Как это работает",
+"Tayyor Telegram akkaunt raqami":"Готовый номер аккаунта Telegram",
+"SMS qabul qiluvchi raqam":"Номер для приёма SMS",
+"Raqamni Telegram'ga kiritasiz, kod va parol shu oynada chiqadi. Raqam olingach bekor qilinmaydi.":"Вы вводите номер в Telegram — код и пароль появятся здесь. После покупки номер не отменяется.",
+"Raqamni Telegram'ga kiritasiz, SMS kod shu oynada chiqadi. Kod kelmasa pul avtomatik qaytadi.":"Вы вводите номер в Telegram — SMS-код появится здесь. Если код не придёт, деньги вернутся автоматически.",
+"Mamlakatlar":"Страны",
+"Saralash":"Сортировка",
+"Arzon":"Дешевле",
+"Ko'p":"Больше всего",
+"SMS qabul qilish uchun raqam, balansingizdan to'lanadi.":"Номер для приёма SMS, оплата с баланса.",
+"Tayyor Telegram akkaunt raqami. Kod va parol shu yerda chiqadi.":"Готовый номер аккаунта Telegram. Код и пароль появятся здесь.",
+"Balans yetmaydi: eng arzon raqam":"Баланса не хватает: самый дешёвый номер",
+"Balansingiz hamma mamlakatlarga yetadi.":"Баланса хватает на любую страну.",
+"Balansingiz {n} ta mamlakatga yetadi":"Баланса хватает на {n} стран",
+"eng arzoni":"самый дешёвый",
+"ta mamlakat":"стран",
+"Kam qoldi":"Мало",
+"ta mavjud":"в наличии",
+"balans yetmaydi":"не хватает баланса",
+"Ro'yxatni yuklab bo'lmadi.":"Не удалось загрузить список.",
+"Qayta urinish":"Повторить",
+"Yuklanmoqda":"Загрузка",
+"«{q}» bo'yicha mamlakat topilmadi.":"Страна «{q}» не найдена.",
+"Hozircha bo'sh raqam yo'q. Birozdan keyin qarang.":"Свободных номеров пока нет. Загляните чуть позже.",
+"Boshqa mamlakatlar":"Другие страны",
+"Hali raqam olmagansiz.":"Вы ещё не покупали номера.",
+"{c} raqami":"Номер: {c}",
+"Telegram akkaunt":"Аккаунт Telegram",
+"SMS uchun raqam":"Номер для SMS",
+"Balansingiz":"Ваш баланс",
+"Yetishmaydi":"Не хватает",
+"Xariddan keyin":"После покупки",
+"Nima olasiz":"Что вы получите",
+"Raqam olingach bekor qilinmaydi va pul qaytmaydi.":"После покупки номер не отменяется, деньги не возвращаются.",
+"Kod {m} daqiqada kelmasa raqam bekor qilinadi va pul qaytadi.":"Если код не придёт за {m} мин, номер отменится и деньги вернутся.",
+"{p} to'lash":"Оплатить {p}",
+"Raqam olinmoqda…":"Получаем номер…",
+"Bekor qilindi, pul balansga qaytarildi.":"Отменено, деньги вернулись на баланс.",
+"2 bosqichli parol":"Пароль двухэтапной проверки",
+"Telegram'da shu raqam bilan kiring. Telegram kod yuborgach, «Kodni olish» bosing.":"Войдите в Telegram по этому номеру. Когда Telegram отправит код, нажмите «Получить код».",
+"Yangi kod yo'q. Telegram kod yuborgach qayta bosing.":"Нового кода нет. Нажмите снова, когда Telegram отправит код."
 },en:{
 "Steam hamyonini to'ldirish":"Top up Steam wallet","Login kiriting — hamyon avtomatik to'ldiriladi":"Enter your login — the wallet is topped up automatically",
 "Login kiriting — hamyon tez to'ldiriladi":"Enter your login — the wallet is topped up quickly","To'ldiriladi":"You get","To'lov summasi":"You pay",
@@ -10234,7 +10383,7 @@ var XT={ru:{
 "Kutilmoqda…":"Waiting…","Mamlakat qidirish...":"Search country...","Ommabop":"Popular","Narx":"Price","Topilmadi":"Not found","ta":"pcs",
 "Telegram uchun raqam":"Number for Telegram","Raqamni nusxalash":"Copy number","Raqam tayyorlanmoqda…":"Preparing number…","SMS kod:":"SMS code:",
 "Kodni nusxalash":"Copy code","❌ Bekor qilindi, pul balansga qaytarildi":"❌ Cancelled, money returned to your balance","SMS kod kutilmoqda…":"Waiting for SMS code…",
-"Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa — pul avtomatik qaytadi.":"Enter this number in Telegram — the code will arrive here. If it doesn't, the money is refunded automatically.",
+"Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa, pul avtomatik qaytadi.":"Enter this number in Telegram, the code comes here. If it doesn't, you get an automatic refund.",
 "Bekor qilish":"Cancel","Raqamni bekor qilasizmi? Pul balansga qaytadi.":"Cancel the number? The money returns to your balance.","Kod allaqachon kelgan":"Code already received",
 "Bekor qilib bo'lmadi, birozdan keyin urinib ko'ring":"Couldn't cancel, please try again later","raqami":"number","daqiqa":"min",
 "Telegram uchun SMS kod kutiladi. Kod kelmasa pul qaytadi.":"The SMS code for Telegram is awaited. If it doesn't arrive, the money is refunded.","Sotib olasizmi?":"Buy it?",
@@ -10246,18 +10395,78 @@ var XT={ru:{
 "2 bosqichli parol:":"Two-step password:",
 "Parolni nusxalash":"Copy password",
 "Telegram akkaunt raqami":"Telegram account number",
-"Telegram yangi kod yuborsa — «Kodni yangilash» bosing (24 soat ichida).":"If Telegram sends a new code, tap “Refresh code” (within 24 hours).",
+"Telegram yangi kod yuborsa, «Kodni yangilash» bosing (24 soat ichida).":"If Telegram sends a new code, tap “Refresh code” (within 24 hours).",
 "Kodni yangilash":"Refresh code",
-"Raqam tekshirilmoqda — operator tez orada yuboradi.":"The number is being checked — an operator will send it shortly.",
+"Raqam tekshirilmoqda, operator tez orada yuboradi.":"The number is being checked, an operator will send it shortly.",
 "Telegram ilovasini oching va shu raqam bilan kiring.":"Open Telegram and log in with this number.",
 "Telegram kod yuborgach, shu yerda «Kodni olish» bosing.":"Once Telegram sends the code, tap “Get code” here.",
 "Kodni olish":"Get code",
-"Kod hali kelmadi — operator xabardor. Kerak bo'lsa yordamga yozing.":"No code yet — an operator has been notified. Contact support if needed.",
+"Kod hali kelmadi. Operator xabardor, kerak bo'lsa yordamga yozing.":"No code yet. An operator has been notified, contact support if needed.",
 "Kod hali kelmadi. Telegram'da raqamni kiritganingizga ishonch hosil qiling va birozdan keyin qayta bosing.":"No code yet. Make sure you entered the number in Telegram and tap again in a moment.",
 "Yangi kod yo'q":"No new code",
 "Bu raqamni bekor qilib bo'lmaydi":"This number can't be cancelled",
 "Tayyor Telegram akkaunt raqami. Raqamni Telegram'ga kiriting, so'ng ilovada «Kodni olish» bosing. Raqam olingach bekor qilinmaydi va pul qaytmaydi.":"A ready Telegram account number. Enter it in Telegram, then tap “Get code” in the app. Once bought, the number can't be cancelled or refunded.",
-"Tayyor Telegram akkaunt raqami — kod va parol shu yerda chiqadi. Balansingizdan to'lanadi.":"A ready Telegram account number — the code and password appear here. Paid from your balance."
+"Tayyor Telegram akkaunt raqami — kod va parol shu yerda chiqadi. Balansingizdan to'lanadi.":"A ready Telegram account number — the code and password appear here. Paid from your balance.",
+"Kod keldi":"Code received",
+"Kod kutilmoqda":"Waiting for code",
+"Tekshirilmoqda":"Checking",
+"Raqam":"Number",
+"olindi":"received",
+"darhol beriladi":"issued at once",
+"Kirish kodi":"Login code",
+"SMS kod":"SMS code",
+"keldi":"arrived",
+"kutilmoqda":"waiting",
+"shu oynada chiqadi":"shows up here",
+"Parol":"Password",
+"bor":"set",
+"yo'q":"none",
+"bo'lsa, kod bilan":"if set — with the code",
+"Kirish yo'li":"Login path",
+"Balansni to'ldirish":"Top up balance",
+"Balans":"Balance",
+"Raqam tekshirilmoqda":"Number is being checked",
+"Qanday ishlaydi":"How it works",
+"Tayyor Telegram akkaunt raqami":"A ready Telegram account number",
+"SMS qabul qiluvchi raqam":"A number that receives SMS",
+"Raqamni Telegram'ga kiritasiz, kod va parol shu oynada chiqadi. Raqam olingach bekor qilinmaydi.":"You enter the number in Telegram — the code and password show up here. Once bought, the number can't be cancelled.",
+"Raqamni Telegram'ga kiritasiz, SMS kod shu oynada chiqadi. Kod kelmasa pul avtomatik qaytadi.":"You enter the number in Telegram — the SMS code shows up here. If no code arrives, you get an automatic refund.",
+"Mamlakatlar":"Countries",
+"Saralash":"Sort",
+"Arzon":"Cheapest",
+"Ko'p":"Most stock",
+"SMS qabul qilish uchun raqam, balansingizdan to'lanadi.":"A number for receiving SMS, paid from your balance.",
+"Tayyor Telegram akkaunt raqami. Kod va parol shu yerda chiqadi.":"A ready Telegram account number. The code and password appear here.",
+"Balans yetmaydi: eng arzon raqam":"Not enough balance: the cheapest number is",
+"Balansingiz hamma mamlakatlarga yetadi.":"Your balance covers every country.",
+"Balansingiz {n} ta mamlakatga yetadi":"Your balance covers {n} countries",
+"eng arzoni":"cheapest",
+"ta mamlakat":"countries",
+"Kam qoldi":"Few left",
+"ta mavjud":"available",
+"balans yetmaydi":"not enough balance",
+"Ro'yxatni yuklab bo'lmadi.":"Couldn't load the list.",
+"Qayta urinish":"Try again",
+"Yuklanmoqda":"Loading",
+"«{q}» bo'yicha mamlakat topilmadi.":"No country matches “{q}”.",
+"Hozircha bo'sh raqam yo'q. Birozdan keyin qarang.":"No free numbers right now. Check back a little later.",
+"Boshqa mamlakatlar":"Other countries",
+"Hali raqam olmagansiz.":"You haven't bought a number yet.",
+"{c} raqami":"{c} number",
+"Telegram akkaunt":"Telegram account",
+"SMS uchun raqam":"Number for SMS",
+"Balansingiz":"Your balance",
+"Yetishmaydi":"Short by",
+"Xariddan keyin":"After purchase",
+"Nima olasiz":"What you get",
+"Raqam olingach bekor qilinmaydi va pul qaytmaydi.":"Once bought, the number can't be cancelled and isn't refunded.",
+"Kod {m} daqiqada kelmasa raqam bekor qilinadi va pul qaytadi.":"If no code arrives in {m} min, the number is cancelled and refunded.",
+"{p} to'lash":"Pay {p}",
+"Raqam olinmoqda…":"Getting a number…",
+"Bekor qilindi, pul balansga qaytarildi.":"Cancelled, the money is back on your balance.",
+"2 bosqichli parol":"Two-step password",
+"Telegram'da shu raqam bilan kiring. Telegram kod yuborgach, «Kodni olish» bosing.":"Log in to Telegram with this number. Once Telegram sends the code, tap “Get code”.",
+"Yangi kod yo'q. Telegram kod yuborgach qayta bosing.":"No new code. Tap again once Telegram sends one."
 }};
 function _x(s){var d=XT[S.lang];return d&&d[s]||s;}
 /* HTML bo'laklari (ichida teglar) — butun bo'lak tarjima qilinadi */
@@ -10355,89 +10564,185 @@ function bindSteam(){
 
 /* ===================== VIRTUAL RAQAM ===================== */
 var VN=null;
-function flagOf(iso){if(!iso||iso.length!==2)return "🌐";return String.fromCodePoint(127397+iso.charCodeAt(0),127397+iso.charCodeAt(1));}
+function flagOf(iso){if(!iso||iso.length!==2)return ic("globe",20);return String.fromCodePoint(127397+iso.charCodeAt(0),127397+iso.charCodeAt(1));}
 var VN_POP=["UZ","RU","KZ","US","GB","ID","PH","IN","VN","UA","KG","TJ","TR","DE","BR"];
-function loadVn(){api("/api/vnum/countries").then(function(r){VN=r;render();}).catch(function(){VN={enabled:false,list:[]};render();});}
+var VN_ERR=false,VN_LOADING=false;
+function loadVn(){if(VN_LOADING)return;VN_LOADING=true;VN_ERR=false;
+  api("/api/vnum/countries").then(function(r){VN=r;VN_LOADING=false;render();}).catch(function(){VN=null;VN_ERR=true;VN_LOADING=false;render();});}
+/* ===== Virtual raqam (v2): ekranning savoli — «qaysi mamlakat raqamini olaman, narxi qancha, balansim yetadimi?»
+   Uslub: yuzalar faqat yorug'lik bosqichi bilan ajraladi (chiziq/soya yo'q), rang faqat ma'lumotda (kod) va bitta
+   asosiy tugmada (teskari: oq tugma, qora yozuv). Mahsulotga xos element — «kirish yo'li»: Raqam → Kirish kodi → Parol. */
+function vnPh(p){var d=String(p||"").replace(/\D/g,"");if(!d)return "";
+  if(/^998\d{9}$/.test(d))return "+998 "+d.slice(3,5)+" "+d.slice(5,8)+" "+d.slice(8,10)+" "+d.slice(10);
+  if(/^7\d{10}$/.test(d))return "+7 "+d.slice(1,4)+" "+d.slice(4,7)+" "+d.slice(7,9)+" "+d.slice(9);
+  if(/^1\d{10}$/.test(d))return "+1 "+d.slice(1,4)+" "+d.slice(4,7)+" "+d.slice(7);
+  return "+"+d;}
+function vnRaw(p){return "+"+String(p||"").replace(/\D/g,"");}
+function vnSum(n){return '<span class="vn2-sum">'+esc(money(n).replace(/ so'm$/,""))+'<span class="vn2-cur"> so\'m</span></span>';}
+function vnCountry(o){var v=o.vnum||{},it=(VN&&VN.list||[]).filter(function(x){return x.key===v.country;})[0];
+  return {flag:flagOf(it?it.iso:String(v.country||"").length===2?String(v.country).toUpperCase():""),name:it?it.name:String(o.item||"").replace(/^[^(]*\(|\)$/g,"")||_x("Virtual raqam")};}
+function vnMine(){return (ME.orders||[]).filter(function(o){return o.vnum;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);});}
+function vnPill(o){var v=o.vnum||{};
+  if(o.status==="done")return '<span class="vn2-pill ok">'+esc(_x("Kod keldi"))+'</span>';
+  if(o.status==="cancelled")return '<span class="vn2-pill">'+esc(_x("Bekor qilindi"))+'</span>';
+  return '<span class="vn2-pill warn">'+esc(v.phone?_x("Kod kutilmoqda"):_x("Tekshirilmoqda"))+'</span>';}
+/* kirish yo'li: Raqam → Kirish kodi → (TG-Lion) Parol; har bosqich o'z qiymati bilan to'ladi */
+function vnPathHTML(o,tl){
+  var v=(o&&o.vnum)||{},got=!!v.phone,code=!!v.code;
+  var st=[{t:_x("Raqam"),s:got?_x("olindi"):_x("darhol beriladi"),on:got,cur:!got&&!!o},
+    {t:tl?_x("Kirish kodi"):_x("SMS kod"),s:code?_x("keldi"):o?_x("kutilmoqda"):_x("shu oynada chiqadi"),on:code,cur:got&&!code},
+  ];
+  if(tl)st.push({t:_x("Parol"),s:code?(v.pass?_x("bor"):_x("yo'q")):_x("bo'lsa, kod bilan"),on:code&&!!v.pass,cur:false});
+  return '<ol class="vn2-path'+(st.length===2?' two':'')+'" aria-label="'+esc(_x("Kirish yo'li"))+'">'+st.map(function(x){
+    return '<li class="'+(x.on?"on":x.cur?"cur":"")+'"><i aria-hidden="true"></i><b>'+esc(x.t)+'</b><span>'+esc(x.s)+'</span></li>';}).join("")+'</ol>';
+}
 function vnumHTML(){
   if(!S.vn)S.vn={q:"",sort:"pop",tab:"buy"};
-  var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Telegram</b>'+admPen("vnum")+'</button><div class="xpage">'
-    +'<div class="vn-head"><h2>'+esc(_x("Virtual raqam"))+' '+ic("card",22)+'</h2><p>'+esc(VN&&VN.noCancel?_x("Tayyor Telegram akkaunt raqami — kod va parol shu yerda chiqadi. Balansingizdan to'lanadi."):_x("SMS qabul qilish uchun raqam sotib oling — balansingizdan to'lanadi."))+'</p></div>'
-    +'<div class="vn-tabs"><button data-vnt="buy" class="'+(S.vn.tab==="buy"?"on":"")+'">'+esc(_x("Raqam olish"))+'</button><button data-vnt="my" class="'+(S.vn.tab==="my"?"on":"")+'">'+esc(_x("Mening raqamlarim"))+'</button></div>';
-  if(S.vn.tab==="my"){
-    var mine=(ME.orders||[]).filter(function(o){return o.vnum;});
-    if(!mine.length)h+='<div class="card" style="color:var(--mut);text-align:center;padding:18px">'+esc(_x("Hali raqam olmagansiz"))+'</div>';
-    mine.forEach(function(o){
-      var v=o.vnum,st=o.status==="done"?'<span style="color:var(--ok)">'+esc(_x("Kod:"))+' <b>'+esc(v.code)+'</b></span>':o.status==="cancelled"?'<span style="color:var(--mut)">'+esc(_x("Bekor qilindi"))+'</span>':'<span style="color:var(--warn)">'+esc(v.prov==="tglion"?_x("Kod olinmagan"):_x("Kutilmoqda…"))+'</span>';
-      h+='<button class="vn-row" data-vnopen="'+esc(o.id)+'"><span class="fl">📱</span><span><div class="nm">'+(v.phone?"+"+esc(String(v.phone).replace(/^\+/,"")):esc(o.item))+'</div><div class="sb">'+st+' · '+esc(fmtDate(o.ts))+'</div></span></button>';
-    });
-    return h+'</div>';
+  if(!VN&&!VN_ERR)loadVn();
+  var bal=typeof ME.balance==="number"?ME.balance:null,mine=vnMine(),pend=mine.filter(function(o){return o.status==="pending";});
+  var tl=!VN||VN.prov!=="5sim";
+  var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Telegram</b>'+admPen("vnum")+'</button><div class="xpage vn2">';
+  // sarlavha qatori: nom + balans (bosilsa — to'ldirish)
+  h+='<div class="vn2-title"><div class="vn2-tl"><h1>'+esc(_x("Virtual raqam"))+'</h1><p id="vnFind">'+vnFinding(bal)+'</p></div>'
+    +'<button class="vn2-bal" data-gotopay="1" aria-label="'+esc(_x("Balansni to'ldirish"))+'"><span>'+esc(_x("Balans"))+'</span><b>'+(bal===null?"—":vnSum(bal))+'</b></button></div>';
+  // vaqtga bog'liq blok birinchi: kodi kutilayotgan raqamlar
+  if(pend.length){
+    h+='<section class="vn2-panel vn2-pend" aria-label="'+esc(_x("Kod kutilmoqda"))+'"><h2>'+esc(_x("Kod kutilmoqda"))+'</h2>'
+      +pend.slice(0,3).map(function(o){var c=vnCountry(o);return '<button class="vn2-prow" data-vnopen="'+esc(o.id)+'"><span class="vn2-fl" aria-hidden="true">'+c.flag+'</span>'
+        +'<span class="vn2-mid"><b class="num">'+esc(o.vnum.phone?vnPh(o.vnum.phone):_x("Raqam tekshirilmoqda"))+'</b><span>'+esc(c.name)+'</span></span>'
+        +'<span class="vn2-act">'+esc(_x("Kodni olish"))+' '+ic("arrowRight",13)+'</span></button>';}).join("")+'</section>';
   }
-  if(!VN){loadVn();return h+'<div class="vn-spin" style="margin:30px auto"></div></div>';}
-  if(!VN.enabled)return h+'<div class="card" style="margin:0;text-align:center;color:var(--mut);padding:20px">'+esc(_x("Virtual raqam xizmati hozircha mavjud emas"))+'</div></div>';
-  h+='<div class="searchbar" style="margin:6px 0"><span class="sic">'+ic("search",16)+'</span><input id="vnQ" placeholder="'+esc(_x("Mamlakat qidirish..."))+'" value="'+esc(S.vn.q)+'"></div>'
-    +'<div class="vn-seg"><button data-vns="pop" class="'+(S.vn.sort==="pop"?"on":"")+'">'+esc(_x("Ommabop"))+'</button><button data-vns="price" class="'+(S.vn.sort==="price"?"on":"")+'">'+esc(_x("Narx"))+'</button></div>'
-    +'<div id="vnList">'+vnListHTML()+'</div>';
-  return h+'</div>';
+  h+='<div class="vn2-tabs" role="tablist"><button role="tab" data-vnt="buy" aria-selected="'+(S.vn.tab==="buy")+'" class="'+(S.vn.tab==="buy"?"on":"")+'">'+esc(_x("Raqam olish"))+'</button>'
+    +'<button role="tab" data-vnt="my" aria-selected="'+(S.vn.tab==="my")+'" class="'+(S.vn.tab==="my"?"on":"")+'">'+esc(_x("Mening raqamlarim"))+(mine.length?' <span class="vn2-cnt num">'+mine.length+'</span>':'')+'</button></div>';
+  if(S.vn.tab==="my")return h+vnMineHTML(mine)+'</div>';
+  // birinchi marta: nima olishini kirish yo'li bilan ko'rsatamiz (ro'yxatdan keyin — ro'yxat birinchi o'qiladi)
+  var how=mine.length?'':'<section class="vn2-how" aria-label="'+esc(_x("Qanday ishlaydi"))+'"><h2>'+esc(tl?_x("Tayyor Telegram akkaunt raqami"):_x("SMS qabul qiluvchi raqam"))+'</h2>'+vnPathHTML(null,tl)
+    +'<p>'+esc(tl?_x("Raqamni Telegram'ga kiritasiz, kod va parol shu oynada chiqadi. Raqam olingach bekor qilinmaydi."):_x("Raqamni Telegram'ga kiritasiz, SMS kod shu oynada chiqadi. Kod kelmasa pul avtomatik qaytadi."))+'</p></section>';
+  h+='<div class="searchbar vn2-search"><span class="sic">'+ic("search",16)+'</span><input id="vnQ" type="search" autocomplete="off" placeholder="'+esc(_x("Mamlakat qidirish..."))+'" value="'+esc(S.vn.q)+'" aria-label="'+esc(_x("Mamlakat qidirish..."))+'"></div>';
+  h+='<section class="vn2-panel" aria-label="'+esc(_x("Mamlakatlar"))+'"><div class="vn2-lh"><span id="vnCount" class="num">'+(VN&&VN.enabled?esc(vnCountTxt()):"")+'</span>'
+    +'<div class="vn2-seg" role="radiogroup" aria-label="'+esc(_x("Saralash"))+'">'+[["pop",_x("Ommabop")],["price",_x("Arzon")],["count",_x("Ko'p")]].map(function(x){
+      return '<button role="radio" aria-checked="'+(S.vn.sort===x[0])+'" data-vns="'+x[0]+'" class="'+(S.vn.sort===x[0]?"on":"")+'">'+esc(x[1])+'</button>';}).join("")+'</div></div>'
+    +'<div id="vnList">'+vnListHTML()+'</div></section>';
+  return h+how+'</div>';
+}
+function vnFinding(bal){
+  if(!VN||!VN.enabled||!(VN.list||[]).length||bal===null)return esc(VN&&VN.noCancel===false?_x("SMS qabul qilish uchun raqam, balansingizdan to'lanadi."):_x("Tayyor Telegram akkaunt raqami. Kod va parol shu yerda chiqadi."));
+  var L=VN.list,n=L.filter(function(x){return x.price<=bal;}).length,min=Math.min.apply(null,L.map(function(x){return x.price;}));
+  if(!n)return esc(_x("Balans yetmaydi: eng arzon raqam"))+' '+vnSum(min)+'.';
+  if(n===L.length)return esc(_x("Balansingiz hamma mamlakatlarga yetadi."));
+  return esc(_x("Balansingiz {n} ta mamlakatga yetadi").replace("{n}",n))+' · '+esc(_x("eng arzoni"))+' '+vnSum(min);
+}
+function vnCountTxt(){var n=vnFiltered().length;return n+" "+_x("ta mamlakat");}
+function vnFiltered(){
+  var q=String(S.vn.q||"").trim().toLowerCase();
+  return (VN&&VN.list||[]).filter(function(x){return !q||x.name.toLowerCase().indexOf(q)!==-1||x.key.indexOf(q)!==-1||(x.iso||"").toLowerCase()===q;});
+}
+function vnRowHTML(x,bal){
+  var low=x.count<30,can=bal===null||x.price<=bal;
+  return '<button class="vn2-row'+(can?"":" no")+'" data-vnc="'+esc(x.key)+'"><span class="vn2-fl" aria-hidden="true">'+flagOf(x.iso)+'</span>'
+    +'<span class="vn2-mid"><b>'+esc(x.name)+'</b><span>'+(low?'<span class="vn2-pill warn sm">'+esc(_x("Kam qoldi"))+'</span> ':'')+'<span class="num">'+esc(String(x.count).replace(/\B(?=(\d{3})+(?!\d))/g," "))+'</span> '+esc(_x("ta mavjud"))+'</span></span>'
+    +'<span class="vn2-pr">'+vnSum(x.price)+(can?'':'<span class="vn2-no">'+esc(_x("balans yetmaydi"))+'</span>')+'</span></button>';
 }
 function vnListHTML(){
-  var q=String(S.vn.q||"").trim().toLowerCase();
-  var l=(VN.list||[]).filter(function(x){return !q||x.name.toLowerCase().indexOf(q)!==-1||x.key.indexOf(q)!==-1||(x.iso||"").toLowerCase()===q;});
-  l=l.slice().sort(S.vn.sort==="price"?function(a,b){return a.price-b.price;}:function(a,b){
-    var ia=VN_POP.indexOf(a.iso),ib=VN_POP.indexOf(b.iso);ia=ia<0?999:ia;ib=ib<0?999:ib;return ia-ib||b.count-a.count;});
-  if(!l.length)return '<div class="card" style="text-align:center;color:var(--mut)">'+esc(_x("Topilmadi"))+'</div>';
-  return l.slice(0,150).map(function(x){
-    return '<button class="vn-row" data-vnc="'+esc(x.key)+'"><span class="fl">'+flagOf(x.iso)+'</span><span style="min-width:0"><div class="nm">'+esc(x.name)+'</div><div class="sb">'+esc(x.iso||"—")+' · '+x.count+' '+esc(_x("ta"))+'</div></span><span class="pr">'+esc(money(x.price))+'</span></button>';
-  }).join("");
+  if(!VN){
+    if(VN_ERR)return '<div class="vn2-empty">'+esc(_x("Ro'yxatni yuklab bo'lmadi."))+' <button class="vn2-link" id="vnRetry">'+esc(_x("Qayta urinish"))+'</button></div>';
+    var sk='';for(var i=0;i<6;i++)sk+='<div class="vn2-row sk" aria-hidden="true"><span class="vn2-fl"></span><span class="vn2-mid"><b></b><span></span></span><span class="vn2-pr"><b></b></span></div>';
+    return '<div aria-busy="true" aria-label="'+esc(_x("Yuklanmoqda"))+'">'+sk+'</div>';
+  }
+  if(!VN.enabled)return '<div class="vn2-empty">'+esc(_x("Virtual raqam xizmati hozircha mavjud emas"))+'</div>';
+  if(VN.error&&!(VN.list||[]).length)return '<div class="vn2-empty">'+esc(_x("Ro'yxatni yuklab bo'lmadi."))+' <button class="vn2-link" id="vnRetry">'+esc(_x("Qayta urinish"))+'</button></div>';
+  var bal=typeof ME.balance==="number"?ME.balance:null,l=vnFiltered(),q=String(S.vn.q||"").trim();
+  if(!l.length)return '<div class="vn2-empty">'+esc(q?_x("«{q}» bo'yicha mamlakat topilmadi.").replace("{q}",q):_x("Hozircha bo'sh raqam yo'q. Birozdan keyin qarang."))+'</div>';
+  var pi=function(x){var i=VN_POP.indexOf(x.iso);return i<0?999:i;};
+  if(S.vn.sort==="price")return l.slice().sort(function(a,b){return a.price-b.price||b.count-a.count;}).slice(0,200).map(function(x){return vnRowHTML(x,bal);}).join("");
+  if(S.vn.sort==="count")return l.slice().sort(function(a,b){return b.count-a.count;}).slice(0,200).map(function(x){return vnRowHTML(x,bal);}).join("");
+  var pop=l.filter(function(x){return pi(x)<999;}).sort(function(a,b){return pi(a)-pi(b);}),rest=l.filter(function(x){return pi(x)===999;}).sort(function(a,b){return b.count-a.count;});
+  if(q||!pop.length||!rest.length)return pop.concat(rest).slice(0,200).map(function(x){return vnRowHTML(x,bal);}).join("");
+  return '<h3 class="vn2-gh">'+esc(_x("Ommabop"))+'</h3>'+pop.map(function(x){return vnRowHTML(x,bal);}).join("")
+    +'<h3 class="vn2-gh">'+esc(_x("Boshqa mamlakatlar"))+'</h3>'+rest.slice(0,200).map(function(x){return vnRowHTML(x,bal);}).join("");
 }
+function vnMineHTML(mine){
+  if(!mine.length)return '<section class="vn2-panel"><div class="vn2-empty">'+esc(_x("Hali raqam olmagansiz."))+' <button class="vn2-link" data-vnt="buy">'+esc(_x("Raqam olish"))+'</button></div></section>';
+  return '<section class="vn2-panel" aria-label="'+esc(_x("Mening raqamlarim"))+'">'+mine.map(function(o){var v=o.vnum,c=vnCountry(o);
+    return '<button class="vn2-row" data-vnopen="'+esc(o.id)+'"><span class="vn2-fl" aria-hidden="true">'+c.flag+'</span>'
+      +'<span class="vn2-mid"><b class="num">'+esc(v.phone?vnPh(v.phone):_x("Raqam tekshirilmoqda"))+'</b><span>'+esc(c.name)+' · '+esc(fmtDate(o.ts))+'</span></span>'
+      +'<span class="vn2-pr">'+vnPill(o)+(o.status==="done"&&v.code?'<span class="vn2-code-sm num">'+esc(v.code)+'</span>':'')+'</span></button>';}).join("")+'</section>';
+}
+/* ---- xarid oynasi (confirm() o'rniga): narx, balans, xariddan keyin, kirish yo'li, ogohlantirish ---- */
+function vnBuySheet(x){
+  var bal=typeof ME.balance==="number"?ME.balance:0,tl=VN.noCancel!==false,need=x.price-bal;
+  var h='<div class="vn2-sheet"><div class="vn2-sh-h"><span class="vn2-fl lg" aria-hidden="true">'+flagOf(x.iso)+'</span><div><h2>'+esc(_x("{c} raqami").replace("{c}",x.name))+'</h2>'
+    +'<p>'+esc(tl?_x("Telegram akkaunt"):_x("SMS uchun raqam"))+' · <span class="num">'+esc(String(x.count).replace(/\B(?=(\d{3})+(?!\d))/g," "))+'</span> '+esc(_x("ta mavjud"))+'</p></div></div>'
+    +'<div class="vn2-big num">'+vnSum(x.price)+'</div>'
+    +'<dl class="vn2-kv"><div><dt>'+esc(_x("Balansingiz"))+'</dt><dd class="num">'+vnSum(bal)+'</dd></div>'
+    +(need>0?'<div class="bad"><dt>'+esc(_x("Yetishmaydi"))+'</dt><dd class="num">'+vnSum(need)+'</dd></div>'
+      :'<div><dt>'+esc(_x("Xariddan keyin"))+'</dt><dd class="num">'+vnSum(bal-x.price)+'</dd></div>')+'</dl>'
+    +'<h3 class="vn2-sub">'+esc(_x("Nima olasiz"))+'</h3>'+vnPathHTML(null,tl)
+    +'<p class="vn2-note'+(tl?' warn':'')+'">'+esc(tl?_x("Raqam olingach bekor qilinmaydi va pul qaytmaydi."):_x("Kod {m} daqiqada kelmasa raqam bekor qilinadi va pul qaytadi.").replace("{m}",VN.ttlMin||20))+'</p>'
+    +(need>0?'<button class="vn2-primary" id="vnBuyTop">'+esc(_x("Balansni to'ldirish"))+'</button>'
+      :'<button class="vn2-primary" id="vnBuyGo">'+esc(_x("{p} to'lash").replace("{p}",money(x.price)))+'</button>')
+    +'<button class="vn2-ghost" id="vnBuyNo">'+esc(_x("Bekor qilish"))+'</button></div>';
+  var sh=openSheet(h);
+  var no=sh.querySelector("#vnBuyNo");if(no)no.addEventListener("click",function(){haptic();closeSheet();});
+  var top=sh.querySelector("#vnBuyTop");if(top)top.addEventListener("click",function(){haptic();closeSheet(true);go("pay");});
+  var go2=sh.querySelector("#vnBuyGo");
+  if(go2)go2.addEventListener("click",function(){
+    var b=this;b.disabled=true;b.innerHTML='<span class="vn-spin" aria-hidden="true"></span> '+esc(_x("Raqam olinmoqda…"));haptic();
+    api("/api/vnum/buy","POST",{country:x.key}).then(function(r){if(typeof r.balance==="number")ME.balance=r.balance;loadMe();closeSheet(true);vnActive(r.order);})
+      .catch(function(e){var r=e&&e.resp||{};b.disabled=false;b.textContent=_x("{p} to'lash").replace("{p}",money(x.price));
+        if(r.error==="balance"){closeSheet(true);toast(_x("Balans yetarli emas — to'ldiring")+": "+money(r.need||0),true);go("pay");return;}
+        toast(r.message||t("srv_off"),true);if(r.error==="no_country"||/qolmadi|narx/i.test(r.message||"")){closeSheet(true);VN=null;render();}});
+  });
+}
+/* ---- faol raqam oynasi: raqam, kirish yo'li, kod va parol ---- */
 var VN_T=null;
 function vnActive(o){
   clearInterval(VN_T);
-  var busy=false;
-  function ph(v){return "+"+String(v.phone||"").replace(/^\+/,"");}
-  function codeBox(v){
-    return '<div class="d" style="margin-top:14px">'+esc(v.prov==="tglion"?_x("Kirish kodi:"):_x("SMS kod:"))+'</div><div class="code">'+esc(v.code)+'</div>'
-      +'<button class="btn" data-xcopy="'+esc(v.code)+'">'+ic("clipboard",14)+' '+esc(_x("Kodni nusxalash"))+'</button>'
-      +(v.pass?'<div class="d" style="margin-top:14px">'+esc(_x("2 bosqichli parol:"))+'</div><div class="code vn-pass">'+esc(v.pass)+'</div>'
-        +'<button class="btn gray" data-xcopy="'+esc(v.pass)+'">'+ic("clipboard",14)+' '+esc(_x("Parolni nusxalash"))+'</button>':'');
-  }
+  var busy=false,msg="";
+  function copyBtn(val,label){return '<button class="vn2-copy" data-xcopy="'+esc(val)+'" aria-label="'+esc(label)+'">'+ic("clipboard",14)+' <span>'+esc(_x("Nusxa"))+'</span></button>';}
   function inner(){
-    var v=o.vnum||{},tl=v.prov==="tglion",left=Math.max(0,Math.round(((v.until||0)-Date.now())/1000));
-    var mm=Math.floor(left/60),ss=("0"+(left%60)).slice(-2);
-    var h='<div class="vn-act"><div class="d" style="color:var(--mut2)">'+esc(tl?_x("Telegram akkaunt raqami"):_x("Telegram uchun raqam"))+'</div>'
-      +(v.phone?'<div class="ph">'+esc(ph(v))+'</div><button class="btn sm gray" data-xcopy="'+esc(ph(v))+'" style="width:auto;margin:0 auto">'+ic("clipboard",13)+' '+esc(_x("Raqamni nusxalash"))+'</button>':'<div class="wait">'+esc(_x("Raqam tayyorlanmoqda…"))+'</div>');
-    if(o.status==="cancelled")return h+'<div class="paynote" style="margin-top:14px">'+esc(_x("❌ Bekor qilindi, pul balansga qaytarildi"))+'</div></div>';
-    if(tl){
-      if(o.status==="done")return h+codeBox(v)
-        +(Date.now()-(o.doneTs||0)<864e5?'<div class="d" style="font-size:11.5px;color:var(--mut);margin-top:10px">'+esc(_x("Telegram yangi kod yuborsa — «Kodni yangilash» bosing (24 soat ichida)."))+'</div>'
-          +'<button class="btn gray" id="vnGet" style="margin-top:8px"'+(busy?" disabled":"")+'>'+ic("history",14)+' '+esc(_x("Kodni yangilash"))+'</button>':'')+'</div>';
-      if(!v.phone)return h+'<div class="d" style="margin-top:12px;color:var(--mut)">'+esc(_x("Raqam tekshirilmoqda — operator tez orada yuboradi."))+'</div></div>';
-      return h+'<ol class="vn-steps"><li>'+esc(_x("Telegram ilovasini oching va shu raqam bilan kiring."))+'</li><li>'+esc(_x("Telegram kod yuborgach, shu yerda «Kodni olish» bosing."))+'</li></ol>'
-        +'<button class="btn" id="vnGet"'+(busy?" disabled":"")+'>'+(busy?'<span class="vn-spin"></span> ':'')+esc(_x("Kodni olish"))+'</button>'
-        +'<div class="d" id="vnGetMsg" style="font-size:12px;color:var(--mut);margin-top:8px;text-align:center"></div>'
-        +(v.late?'<div class="paynote" style="margin-top:10px">'+esc(_x("Kod hali kelmadi — operator xabardor. Kerak bo'lsa yordamga yozing."))+'</div>':'')
-        +'</div>';
+    var v=o.vnum||{},tl=v.prov==="tglion",c=vnCountry(o),left=Math.max(0,Math.round(((v.until||0)-Date.now())/1000));
+    var h='<div class="vn2-sheet" id="vnAct"><div class="vn2-sh-h"><span class="vn2-fl lg" aria-hidden="true">'+c.flag+'</span><div><div class="vn2-sh-t"><h2>'+esc(c.name)+'</h2>'+vnPill(o)+'</div><p><span class="num">'+esc(fmtDate(o.ts))+'</span> · <span class="num nowrap">'+esc(money(o.price||0))+'</span></p></div></div>';
+    if(v.phone)h+='<div class="vn2-num"><span class="vn2-ph num">'+esc(vnPh(v.phone))+'</span>'+copyBtn(vnRaw(v.phone),_x("Raqamni nusxalash"))+'</div>';
+    else h+='<p class="vn2-note">'+esc(_x("Raqam tekshirilmoqda, operator tez orada yuboradi."))+'</p>';
+    if(o.status==="cancelled")return h+'<p class="vn2-note">'+esc(_x("Bekor qilindi, pul balansga qaytarildi."))+'</p></div>';
+    h+=vnPathHTML(o,tl);
+    if(o.status==="done"){
+      h+='<div class="vn2-codebox" aria-live="polite"><span class="vn2-lbl">'+esc(tl?_x("Kirish kodi"):_x("SMS kod"))+'</span><div class="vn2-codeln"><b class="vn2-code num">'+esc(v.code)+'</b>'+copyBtn(v.code,_x("Kodni nusxalash"))+'</div>'
+        +(v.pass?'<span class="vn2-lbl">'+esc(_x("2 bosqichli parol"))+'</span><div class="vn2-codeln"><b class="vn2-pass num">'+esc(v.pass)+'</b>'+copyBtn(v.pass,_x("Parolni nusxalash"))+'</div>':'')+'</div>';
+      if(tl&&Date.now()-(o.doneTs||0)<864e5)h+='<p class="vn2-hint">'+esc(_x("Telegram yangi kod yuborsa, «Kodni yangilash» bosing (24 soat ichida)."))+'</p>'
+        +'<button class="vn2-ghost bordered" id="vnGet"'+(busy?" disabled":"")+'>'+(busy?'<span class="vn-spin" aria-hidden="true"></span> ':ic("history",14)+' ')+esc(_x("Kodni yangilash"))+'</button>';
+      return h+'<p class="vn2-hint" id="vnGetMsg" aria-live="polite">'+esc(msg)+'</p></div>';
     }
-    return h+(o.status==="done"?codeBox(v)
-        :'<div class="wait" style="margin-top:16px"><span class="vn-spin"></span> '+esc(_x("SMS kod kutilmoqda…"))+' '+mm+':'+ss+'</div>'
-          +'<div class="d" style="font-size:11.5px;color:var(--mut)">'+esc(_x("Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa — pul avtomatik qaytadi."))+'</div>'
-          +'<div style="height:10px"></div><button class="btn red" id="vnCancel">'+esc(_x("Bekor qilish"))+'</button>')
-      +'</div>';
+    if(tl){
+      if(!v.phone)return h+'</div>';
+      return h+'<p class="vn2-hint">'+esc(_x("Telegram'da shu raqam bilan kiring. Telegram kod yuborgach, «Kodni olish» bosing."))+'</p>'
+        +'<button class="vn2-primary" id="vnGet"'+(busy?" disabled":"")+'>'+(busy?'<span class="vn-spin" aria-hidden="true"></span> ':'')+esc(_x("Kodni olish"))+'</button>'
+        +'<p class="vn2-hint" id="vnGetMsg" aria-live="polite">'+esc(msg)+'</p>'
+        +(v.late?'<p class="vn2-note warn">'+esc(_x("Kod hali kelmadi. Operator xabardor, kerak bo'lsa yordamga yozing."))+'</p>':'')+'</div>';
+    }
+    var total=Math.max(60,(VN&&VN.ttlMin||20)*60),mm=Math.floor(left/60),ss=("0"+(left%60)).slice(-2);
+    return h+'<div class="vn2-timer"><span>'+esc(_x("SMS kod kutilmoqda…"))+'</span><b class="num">'+mm+':'+ss+'</b></div>'
+      +'<div class="vn2-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+total+'" aria-valuenow="'+left+'"><i style="width:'+Math.min(100,left/total*100).toFixed(1)+'%"></i></div>'
+      +'<p class="vn2-hint">'+esc(_x("Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa, pul avtomatik qaytadi."))+'</p>'
+      +'<button class="vn2-ghost danger" id="vnCancel">'+esc(_x("Bekor qilish"))+'</button></div>';
   }
-  var sh=openSheet('<div id="vnAct">'+inner()+'</div><div style="height:12px"></div>',function(){clearInterval(VN_T);});
-  function draw(){var b=sh.querySelector("#vnAct");if(!b){clearInterval(VN_T);return;}b.innerHTML=inner();bindAct();}
+  var sh=openSheet('<div id="vnActWrap">'+inner()+'</div>',function(){clearInterval(VN_T);});
+  function draw(){var b=sh.querySelector("#vnActWrap");if(!b){clearInterval(VN_T);return;}b.innerHTML=inner();bindAct();}
   function check(refresh,manual){
-    if(busy)return;busy=manual;if(manual)draw();
+    if(busy)return;busy=manual;if(manual){msg="";draw();}
     var was=o.status,oldCode=(o.vnum||{}).code;
     api("/api/vnum/check?id="+encodeURIComponent(o.id)+(refresh?"&refresh=1":"")).then(function(r){
       o=r.order||o;busy=false;
       var got=o.status==="done"&&(was!=="done"||o.vnum.code!==oldCode);
+      if(got)msg="";
+      if(manual&&!got)msg=refresh?_x("Yangi kod yo'q. Telegram kod yuborgach qayta bosing."):_x("Kod hali kelmadi. Telegram'da raqamni kiritganingizga ishonch hosil qiling va birozdan keyin qayta bosing.");
       draw();
       if(got){loadMe();haptic("ok");}
-      else if(manual){var m=sh.querySelector("#vnGetMsg");if(m)m.textContent=_x("Kod hali kelmadi. Telegram'da raqamni kiritganingizga ishonch hosil qiling va birozdan keyin qayta bosing.");if(refresh)toast(_x("Yangi kod yo'q"));}
-    }).catch(function(){busy=false;draw();if(manual)toast(t("srv_off"),true);});
+    }).catch(function(){busy=false;if(manual)msg=t("srv_off");draw();});
   }
   function bindAct(){
-    sh.querySelectorAll("[data-xcopy]").forEach(function(b){b.addEventListener("click",function(){copyText(this.getAttribute("data-xcopy"));});});
+    sh.querySelectorAll("[data-xcopy]").forEach(function(b){b.addEventListener("click",function(){haptic();copyText(this.getAttribute("data-xcopy"));});});
     var g=sh.querySelector("#vnGet");
     if(g)g.addEventListener("click",function(){haptic();check(o.status==="done",true);});
     var c=sh.querySelector("#vnCancel");
@@ -10451,36 +10756,31 @@ function vnActive(o){
   bindAct();
   var n=0;
   VN_T=setInterval(function(){
-    if(!document.getElementById("vnAct")){clearInterval(VN_T);return;}
+    if(!document.getElementById("vnActWrap")){clearInterval(VN_T);return;}
     if(o.status!=="pending"){clearInterval(VN_T);return;}
     var tl=(o.vnum||{}).prov==="tglion";
-    if(!tl)draw();
     // TG-Lion: kod kutish vaqtida o'zi ham har 6 soniyada so'raydi (mijoz tugmani bosmasa ham kod chiqadi)
     if(tl){if(!(o.vnum||{}).late&&++n%6===0)check(false,false);return;}
+    draw();
     if(++n%4===0)api("/api/vnum/check?id="+encodeURIComponent(o.id)).then(function(r){o=r.order||o;if(o.status!=="pending"){draw();loadMe();haptic("ok");}}).catch(function(){});
   },1000);
 }
 function bindVnum(){
   document.querySelectorAll("[data-vnt]").forEach(function(b){b.addEventListener("click",function(){S.vn.tab=this.getAttribute("data-vnt");haptic();render();});});
-  document.querySelectorAll("[data-vns]").forEach(function(b){b.addEventListener("click",function(){S.vn.sort=this.getAttribute("data-vns");haptic();render();});});
+  document.querySelectorAll("[data-vns]").forEach(function(b){b.addEventListener("click",function(){S.vn.sort=this.getAttribute("data-vns");haptic();
+    document.querySelectorAll("[data-vns]").forEach(function(x){var on=x.getAttribute("data-vns")===S.vn.sort;x.classList.toggle("on",on);x.setAttribute("aria-checked",on);});
+    var l=document.getElementById("vnList");if(l){l.innerHTML=vnListHTML();bindVnRows();}});});
   var q=document.getElementById("vnQ");
-  if(q)q.addEventListener("input",function(){S.vn.q=this.value;var l=document.getElementById("vnList");if(l){l.innerHTML=vnListHTML();bindVnRows();}});
+  if(q)q.addEventListener("input",function(){S.vn.q=this.value;var l=document.getElementById("vnList");if(l){l.innerHTML=vnListHTML();bindVnRows();}var cn=document.getElementById("vnCount");if(cn)cn.textContent=vnCountTxt();});
   bindVnRows();
   document.querySelectorAll("[data-vnopen]").forEach(function(b){b.addEventListener("click",function(){
-    var id=this.getAttribute("data-vnopen"),o=(ME.orders||[]).filter(function(x){return x.id===id;})[0];if(o)vnActive(o);});});
+    var id=this.getAttribute("data-vnopen"),o=(ME.orders||[]).filter(function(x){return x.id===id;})[0];if(o){haptic();vnActive(o);}});});
 }
 function bindVnRows(){
+  var rt=document.getElementById("vnRetry");if(rt)rt.addEventListener("click",function(){haptic();VN=null;VN_ERR=false;render();});
   document.querySelectorAll("[data-vnc]").forEach(function(b){b.addEventListener("click",function(){
-    var k=this.getAttribute("data-vnc"),x=(VN.list||[]).filter(function(y){return y.key===k;})[0];if(!x)return;
-    haptic();
-    var warn=VN.noCancel?_x("Tayyor Telegram akkaunt raqami. Raqamni Telegram'ga kiriting, so'ng ilovada «Kodni olish» bosing. Raqam olingach bekor qilinmaydi va pul qaytmaydi.")
-      :_x("Telegram uchun SMS kod kutiladi. Kod kelmasa pul qaytadi.")+" ("+(VN.ttlMin||20)+" "+_x("daqiqa")+")";
-    if(!confirm(flagOf(x.iso)+" "+x.name+" — "+_x("raqami")+": "+money(x.price)+"\n"+warn+"\n\n"+_x("Sotib olasizmi?")))return;
-    toast(_x("⏳ Raqam olinmoqda…"));
-    api("/api/vnum/buy","POST",{country:k}).then(function(r){if(typeof r.balance==="number")ME.balance=r.balance;loadMe();vnActive(r.order);})
-      .catch(function(e){var r=e&&e.resp||{};
-        if(r.error==="balance"){toast(_x("Balans yetarli emas — to'ldiring")+": "+money(r.need||0),true);go("pay");return;}
-        toast(r.message||t("srv_off"),true);VN=null;render();});
+    var k=this.getAttribute("data-vnc"),x=(VN&&VN.list||[]).filter(function(y){return y.key===k;})[0];if(!x)return;
+    haptic();vnBuySheet(x);
   });});
 }
 var EXTRAS=null;

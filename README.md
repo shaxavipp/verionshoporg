@@ -335,6 +335,16 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 - Balans «Virtual raqam» sahifasida («Saqlash va sinash»), «Mahsulotlar» → Ulanish kartasida va liniyalar kuzatuvida (har 20 daqiqa) ko'rinadi.
 - Kalit va YourID faqat serverda; admin panelga faqat «o'rnatilgan» va ID ning oxirgi 3 raqami qaytadi.
 
+*Mijoz oynasi (v3.13, taste-skill «true-black-flat» uslubi brend ranglariga moslab):*
+- **Sarlavha qatori:** «Virtual raqam» (h1), o'ng tomonda balans (bosilsa — To'lov), ostida topilma: «Balansingiz N ta mamlakatga yetadi · eng arzoni X so'm» yoki «Balans yetmaydi: eng arzon raqam X so'm».
+- **Kod kutilayotgan raqamlar** — ro'yxatdan oldin (vaqtga bog'liq blok birinchi), «Kodni olish» bilan.
+- **Ro'yxat:** bitta panel, qatorlar orasida 1px chiziq; bayroq, nom, «6 450 ta mavjud» (30 tadan kam bo'lsa «Kam qoldi»), narx o'ngda (balans yetmasa kulrang va «balans yetmaydi»). Saralash: Ommabop (guruhlangan) · Arzon · Ko'p; qidiruv; yuklanish (tekis kulrang bloklar), xato («Qayta urinish»), bo'sh va «topilmadi» holatlari.
+- **Xarid oynasi** (avvalgi `confirm()` o'rniga): narx (eng katta raqam), «Balansingiz» va «Xariddan keyin» (yetmasa — «Yetishmaydi» qizilda va «Balansni to'ldirish»), «Nima olasiz» — kirish yo'li, TG-Lion uchun «bekor qilinmaydi» ogohlantirishi, bitta asosiy tugma «14 000 so'm to'lash».
+- **Kirish yo'li** — mahsulotga xos element: Raqam → Kirish kodi → Parol (5sim: Raqam → SMS kod); har bosqich o'z qiymati bilan to'ladi, joriy bosqich ko'k.
+- **Raqam oynasi:** bayroq, nom va holat belgisi; raqam (+998 90 111 22 33 ko'rinishida) va «Nusxa»; kirish yo'li; «Kodni olish»; kod (yagona ko'k element, 36px) va 2 bosqichli parol — har biri «Nusxa» bilan; 24 soat ichida «Kodni yangilash». 5sim: taymer va qolgan vaqt chizig'i, «Bekor qilish».
+- **Mening raqamlarim:** raqam, mamlakat va sana, holat (Kod keldi / Kod kutilmoqda / Bekor qilindi) va kod.
+- Rang faqat ma'lumot va holatda; yuzalar chiziqsiz-soyasiz yorug'lik bosqichi bilan; asosiy tugma teskari (qorong'ida oq, yorug'da qora). Uch tilda; `lint.mjs --app` — 0 FAIL, 0 WARN.
+
 *5sim.net — zaxira.* SMS qabul qiluvchi raqam: kod kelmasa yoki mijoz bekor qilsa, raqam 5sim'da bekor qilinadi va pul qaytadi. Narx = eng arzon operator narxi × kurs (1 coin = so'm) × (1 + ustama).
 
 **Sozlash:** Admin → «Do'kon» bo'limida ikkita alohida plita:
