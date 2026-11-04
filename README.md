@@ -543,6 +543,14 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 - **Yengil rejim (`html.lite`).** Telegram Android telefon kuchini xabar qiladi (User-Agent oxirida `LOW` / `AVERAGE` / `HIGH`). `LOW` yoki `AVERAGE` bo'lsa yoki zaif Android bo'lsa (≤3 GB xotira yoki ≤4 yadro), faqat og'ir effektlar o'chiriladi: xiralashtirish (`backdrop-filter`) va fon nuri. Animatsiyalar (faqat `transform`/`opacity`) yengil rejimda ham ishlaydi (v3.10) — ularni faqat "Kamroq harakat" sozlamasi va `prefers-reduced-motion` o'chiradi.
 - **O'lchov (protsessor 4× sekinlashtirilgan):** bosh sahifani aylantirish — eng sekin kadr 17 ms, tushib qolgan kadr yo'q. Ekranni chizish 1–1.5 ms.
 
+## Uzun yozuvlar sig'ishi (v3.11)
+
+- **Summalar va ismlar (`fitText`, `FIT_MIN`).** Bir qatorli raqam/ism joylari (profil statistikasi, balans kartasi, admin moliya va KPI, buyurtma summasi, mahsulot va sovg'a narxi, to'lov usuli nomi, sarlavhadagi ism) sig'masa, shrift avtomatik kichrayadi (har joyning o'z minimal o'lchami bor). Summa minimal o'lchamda ham sig'masa, qisqa ko'rinishga o'tadi: «1,55 mlrd so'm», «448 mln so'm» (RU: млн/млрд, EN: M/B); to'liq qiymat `title`da qoladi. DOM o'zgarganda (MutationObserver) va ekran o'lchami o'zgarganda qayta o'lchanadi.
+- **«so'm» keyingi qatorga o'tadi.** Statistika kartalari va buyurtma summasida raqam bir qatorda turadi, «so'm» joy yetmasa pastga tushadi. Balans kartasida esa hammasi bitta qatorda (shrift kichrayadi).
+- **Nomlar va izohlar 2 qatorgacha:** buyurtma nomi, bo'lim kartasi izohi, to'lov usuli izohi, sovg'a nomi, admin «Mahsulotlar» qatorlari — bitta qatorga qirqilmaydi, 2 qatorgacha ko'rinadi.
+- **Tor ekran (≤374 px):** sarlavhadagi «Admin» tugmasi faqat ikonka (≤430 px), to'lov usuli kartasi ixchamlashadi; ≤340 px da to'lov usullari bitta ustunda. Profildagi «Til» tanlovi joy yetmasa pastki qatorga o'tadi.
+- **Tekshirish:** brauzerda har bir matn o'zini "kesadigan" ota-elementdan chiqib ketmaganini o'lchaydigan audit (uz/ru/en × 320/360/390 px, katta summalar bilan, admin panelning hamma bo'limlari) — qolgan topilmalar faqat «…» bilan qisqargan juda uzun ism (320 px).
+
 ## Ranglar va animatsiya (v3.5)
 
 **Ranglar**
