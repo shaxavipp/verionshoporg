@@ -650,6 +650,36 @@ Testlar (`sup-test`, 48 tekshiruv; soxta teleproto `TGS_TEST=1 TGS_FAKE_LIB=...`
 - kiruvchi/chiquvchi xabarlar, xizmat xabarlari filtri, AI o'chiq rejimi;
 - SMS lentasi va badge'lar.
 
+## Obuna API orqali va admin «Mahsulotlar» (v3.9)
+
+**Obuna bo'limi — sayt API orqali sotuv.** O'yinlar mexanizmiga (games.js) `obuna` bo'limi qo'shildi: Netflix, Spotify, YouTube, ChatGPT, Google Play kodi va boshqalar paketlari bilan.
+- **Yetkazish:** paket sayt liniyalari orqali avtomatik yetkaziladi (MooGold, G2Bulk, Smile.one, Ludovex, Universal API). Biri ishlamasa keyingisi oladi; hammasi rad etsa, pul mijoz balansiga qaytadi.
+- **Akkaunt maydoni ixtiyoriy:**
+  - bo'lmasa, mijozdan hech narsa so'ralmaydi va sayt bergan kod/vaucher buyurtmada chiqadi;
+  - bo'lsa (kalit `email`), email yoki login kiritiladi.
+- **Admin:** Mahsulotlar → «Yangi mahsulot» → «Obuna (sayt API orqali)», yoki «Saytdan import» → bo'lim «Obunalar».
+- **Mijoz:** «Obuna» kategoriyasida katalogdagi obunalar bilan birga chiqadi; «Mahsulotlar» sahifasida ham ko'rinadi. AI ham obunalarni biladi (`search_products`, `prepare_order`).
+
+**Admin «Mahsulotlar» — do'kondagi hamma narsa bitta joyda** (Admin panel → Do'kon → Mahsulotlar):
+- **Nima kiradi:** katalog mahsulotlari, o'yinlar, API obunalar, Telegram sovg'alar, Steam hamyon, virtual raqam, skinlar do'koni, nakrutka.
+- **Guruhlar bitta qator:** ichida mahsuloti bor narsa — katalog guruhi, o'yin donatlari, sovg'alar — bitta qator bo'lib turadi. Bosilganda ichidagi mahsulotlar va paketlar chiqadi va shu yerda tahrirlanadi: narx, yoqish, rasm, paket, liniya. Ichidan yangi mahsulot ham qo'shiladi (tur va guruh oldindan tanlangan).
+- **Qatorda:**
+  - narx oralig'i;
+  - «N/M paket sotuvda»;
+  - ulanish chipi: yashil — ishlayapti, sariq — liniya xatoda, qizil — ulanmagan;
+  - «do'konda yo'q» yoki «qoralama»;
+  - 30 kunda nechta sotilgani.
+- **Ichida «Ulanish» kartasi** — qaysi server/API orqali yetkaziladi:
+  - **o'yin va obuna:** liniyalar tartib bilan, har birining holati, xatosi va saytdagi **qolgan balans**, nechta paketda ishlatilgani;
+  - **katalog mahsuloti:** Fragment API (kalit va balans), Gift bot, zaxira (necha dona qolgani) yoki qo'lda;
+  - **Steam:** Ludovex (balans) yoki qo'lda;
+  - **virtual raqam:** 5sim («Sinash» balansni ko'rsatadi);
+  - **skinlar:** lis-skins balansi;
+  - **nakrutka:** har SMM panel holati va balansi;
+  - pastida: 30 kunlik sotuv soni va tushum.
+- **Yuqorida** hamma provayderlar balansi chip ko'rinishida. «↻» bosilsa jonli tekshiruv qilinadi; «⚙» — eski katalog vositalari (nashr, eksport, import).
+- **Endpoint:** `GET /api/admin/products/overview` (faqat admin; kalitlar qaytmaydi, faqat «bor/yo'q»).
+
 ## Rasmiy ochilishdan oldin (faqat egasi qila oladi)
 
 Admin panel → «🚀 Tayyorlik» bo'limida hammasi yashil bo'lsin. Majburiy bandlar:

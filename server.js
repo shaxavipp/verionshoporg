@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-03.8";
+const BUILD = "2026-11-04.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -3253,6 +3253,40 @@ function handleRequest(req, res) {
     // manzili. Shu bilan bot webhook'i hech qanday sozlamasiz ulanadi.
     rememberPublicBase(req);
 
+    /* ----- Admin «Mahsulotlar»: hamma mahsulot va ularning ulanishi (qaysi sayt/API, holati, balansi) -----
+       Mijozga hech narsa qaytmaydi — faqat admin. Kalitlar qaytarilmaydi, faqat «bor/yo'q». */
+    if (url === "/api/admin/products/overview" && m === "GET") {
+      const since = Date.now() - 30 * 86400000, sales = {};
+      const add = (k, p) => { if (!k) return; const b = sales[k] || (sales[k] = { n: 0, sum: 0 }); b.n++; b.sum += Number(p) || 0; };
+      for (let i = DB.orders.length - 1; i >= 0; i--) {
+        const o = DB.orders[i];
+        if ((Number(o.ts) || 0) < since) break;
+        if (o.status !== "done") continue;
+        if (o.game) { add("pkg:" + o.game.packageId, o.price); add("game:" + o.game.gameId, o.price); }
+        else if (o.steam) add("svc:steam", o.price);
+        else if (o.vnum) add("svc:vnum", o.price);
+        else if (o.cs2) add("svc:skins:" + (o.cs2.game || "cs2"), o.price);
+        else if (o.japOrderId || String(o.itemId || "").indexOf("nk_") === 0) add("svc:nakrutka", o.price);
+        else if (o.itemId) add("item:" + o.itemId, o.price);
+      }
+      const st = EXTRA.steamCfg(), vn = EXTRA.vnCfg(), c2 = CS2.cfg(), GS = GAMES.store();
+      const lvx = GS.lines.find(l => l.type === "ludovex");
+      const stock = {};
+      for (const k of Object.keys(DB.stock || {})) if (Array.isArray(DB.stock[k])) stock[k] = DB.stock[k].length;
+      return withTimeout(allLineBalances(q.get("force") === "1"), 9000, []).then(bals => send(res, 200, {
+        providers: (bals || []).map(b => ({ id: b.id, name: String(b.name || b.id).replace(/^📈\s*/, ""), ok: !!b.ok, message: coinWords(b.message || "").slice(0, 200) })),
+        lines: GS.lines.map(l => ({ id: l.id, name: l.name, type: l.type, enabled: !!l.enabled, priority: Number(l.priority) || 0,
+          used: GS.packages.filter(p => (p.routes || []).some(r => r.lineId === l.id)).length })),
+        smm: SMM.store().lines.map(l => ({ id: l.id, name: l.name, enabled: !!l.enabled, ready: !!SMM.ready(l) })),
+        services: {
+          fragment: !!FRAGMENT_API_KEY, giftBot: !!(GIFT_BOT_URL && GIFT_BOT_SECRET),
+          steam: { enabled: !!st.enabled, mode: st.mode, rate: st.rate, min: st.min, max: st.max, line: lvx ? { id: lvx.id, name: lvx.name, enabled: !!lvx.enabled } : null },
+          vnum: { enabled: !!vn.enabled, keySet: !!vn.apiKey, rate: vn.rate, markup: vn.markup, ttlMin: vn.ttlMin },
+          skins: { enabled: !!c2.enabled, keySet: !!c2.apiKey, games: CS2.games(), rate: c2.rate, markup: c2.markup }
+        },
+        stock, sales
+      }));
+    }
     /* ----- Support inbox: hamma mijoz suhbatlari (ilova, bot, support akkaunt) ----- */
     if (url === "/api/admin/badges" && m === "GET") {
       const ib = AI ? AI.inboxBadge() : { want: 0, unread: 0 };

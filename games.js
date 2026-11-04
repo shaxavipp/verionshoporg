@@ -24,6 +24,11 @@ const MAX_IMG = 1.5 * 1024 * 1024;
 
 module.exports = function createGames(ctx) {
   const DBx = () => ctx.getDB();
+  /* Bo'limlar: "games" — o'yin donatlari (Player ID), "obuna" — obunalar va kodlar (Netflix, Spotify,
+     YouTube, ChatGPT, Google Play kodi...). Ikkalasi bir xil mexanizm: paketlar, sayt liniyalari (API),
+     zaxira liniya, avtomatik yetkazish, rad etilsa pul qaytishi. Obunada akkaunt maydoni ixtiyoriy:
+     bo'lmasa sayt kod/vaucher qaytaradi va u mijozga buyurtmada ko'rsatiladi. */
+  const secOf = v => (v === "obuna" ? "obuna" : "games");
   const IMG_DIR = path.join(ctx.DATA_DIR, "game-img");
   try { fs.mkdirSync(IMG_DIR, { recursive: true }); } catch (e) {}
 
@@ -377,10 +382,11 @@ module.exports = function createGames(ctx) {
   function cleanAccount(game, raw) {
     const out = {};
     for (const f of game.fields || []) {
-      const email = f.type === "email";
-      const v = str(raw && raw[f.key], email ? 80 : 32).trim();
+      // Obuna akkaunti ("email" kalitli maydon) — email yoki login: @ va + belgilari ruxsat, qat'iy email tekshiruvi yo'q.
+      const email = f.type === "email", loose = email || f.key === "email";
+      const v = str(raw && raw[f.key], loose ? 80 : 32).trim();
       if (!v) return { error: "required", field: f.key, label: f.label };
-      if (!(email ? /^[A-Za-z0-9_.+@-]+$/ : /^[A-Za-z0-9_.-]+$/).test(v)) return { error: "format", field: f.key, label: f.label };
+      if (!(loose ? /^[A-Za-z0-9_.+@-]+$/ : /^[A-Za-z0-9_.-]+$/).test(v)) return { error: "format", field: f.key, label: f.label };
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return { error: "format", field: f.key, label: f.label };
       if (f.re) { let ok = false; try { ok = new RegExp(f.re).test(v); } catch (e) { ok = true; } if (!ok) return { error: "format", field: f.key, label: f.label }; }
       out[f.key] = v;
@@ -410,7 +416,7 @@ module.exports = function createGames(ctx) {
     const pk = s.packages.filter(p => p.active && p.price > 0 && s.games.some(g => g.id === p.gameId && g.active && !g.draft));
     const gids = new Set(pk.map(p => p.gameId));
     const games = s.games.filter(g => g.active && !g.draft && gids.has(g.id)).sort((a, b) => (a.sort || 0) - (b.sort || 0))
-      .map(g => ({ id: g.id, name: g.name, section: g.section === "ai" ? "ai" : "games", img: g.img || "", banner: g.banner || "", color: g.color || "",
+      .map(g => ({ id: g.id, name: g.name, section: secOf(g.section), img: g.img || "", banner: g.banner || "", color: g.color || "",
         fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
         regions: g.regions || [], tabs: g.tabs || [],
         canCheck: !!checkLineFor(g), status: g.status === "maint" || g.status === "na" ? g.status : "" }));
@@ -449,7 +455,7 @@ module.exports = function createGames(ctx) {
     if (o.status !== "pending") return;
     o.status = "done"; o.doneTs = Date.now();
     { const gm = gameById(pkg0(o)); if (gm && gm.statusAuto) { gm.status = ""; gm.statusAuto = false; } }
-    o.delivered = res.message || ("✅ " + o.item + " — " + (o.game && o.game.accountText ? "ID " + o.game.accountText : "") + " hisobiga tushirildi");
+    o.delivered = res.message || (o.game && o.game.accountText ? "✅ " + o.item + " — " + o.game.accountText + " hisobiga tushirildi" : "✅ " + o.item + " yetkazildi");
     o.line = { id: line.id, name: line.name, ref: res.ref || "", state: "done" };
     ctx.save();
     try { ctx.creditReferralOnOrder(o); ctx.creditLoyaltyOnOrder(o); } catch (e) {}
@@ -746,7 +752,7 @@ module.exports = function createGames(ctx) {
         }
         const list = (arr, n) => (Array.isArray(arr) ? arr : []).slice(0, n)
           .map(r => ({ key: slug(r.key, 16), label: str(r.label, 24) })).filter(r => r.key && r.label);
-        const g = { id, name, section: "games", img: imgUrl(x.img), banner: imgUrl(x.banner),
+        const g = { id, name, section: secOf(x.section), img: imgUrl(x.img), banner: imgUrl(x.banner),
           color: /^#[0-9a-f]{6}$/i.test(String(x.color || "")) ? x.color : "",
           fields, regions: list(x.regions, 15), tabs: list(x.tabs, 8),
           active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft, status: x.status === "maint" || x.status === "na" ? x.status : "", statusAuto: false };
@@ -995,7 +1001,7 @@ module.exports = function createGames(ctx) {
         const l = lineById(str(b.lineId, 40)), T = l && LINE_TYPES[l.type];
         if (!l || !T || typeof T.games !== "function") return sendJSON(res, 400, { error: "Bu liniyada katalog yo'q" });
         if (importJob && importJob.running) return sendJSON(res, 409, { error: "Yuklash allaqachon ketyapti", job: jobView() });
-        startImportAll(l, T, { section: b.section === "ai" ? "ai" : "games", limit: Math.max(1, Math.min(300, Number(b.limit) || 60)),
+        startImportAll(l, T, { section: secOf(b.section), limit: Math.max(1, Math.min(300, Number(b.limit) || 60)),
           query: str(b.query, 60).toLowerCase(), images: b.images !== false });
         sendJSON(res, 200, { ok: true, job: jobView() });
       });
@@ -1042,10 +1048,11 @@ module.exports = function createGames(ctx) {
       g = s.games.find(z => gameKey(z.name) === gameKey(sr.base)) || null;
     }
     if (!g) {
-      const ng = b.newGame || {}, isAi = false, sr = splitRegion(ng.name || pk.name || "");
+      const ng = b.newGame || {}, isSub = ng.section === "obuna", sr = splitRegion(ng.name || pk.name || "");
       const id = slug(String(ng.id || "").toLowerCase(), 40);
-      g = { id, name: str(sr.base || ng.name || pk.name || id, 60), section: "games", img: "", banner: "", color: "#2f8fff",
-        fields: isAi ? [{ key: "email", label: "Akkaunt email", ph: "siz@gmail.com", re: EMAIL_RE, type: "email" }]
+      // Obuna: saytda akkaunt maydoni bo'lsa — email so'raladi, bo'lmasa (kod/vaucher) — maydonsiz.
+      g = { id, name: str(sr.base || ng.name || pk.name || id, 60), section: secOf(ng.section), img: "", banner: "", color: "#2f8fff",
+        fields: isSub ? (pk.fields && pk.fields.length ? [{ key: "email", label: "Akkaunt (email yoki login)", ph: "siz@gmail.com", re: "" }] : [])
           : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
         regions: [], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: popRank(sr.base || ng.name),
         draft: !!ng.draft };
@@ -1095,7 +1102,7 @@ module.exports = function createGames(ctx) {
         updated++;
       } else {
         p = { id: g.id + "-" + crypto.randomBytes(4).toString("hex"), gameId: g.id, region, tab, name: nm.name, sub: nm.sub,
-          icon: g.section === "ai" ? "ai" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
+          icon: g.section === "obuna" ? "pass" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
           routes: [{ lineId: l.id, sku: String(it.sku), cost: it.cost, meta }].concat(manual ? [{ lineId: "manual", sku: "", cost: 0 }] : []) };
         s.packages.push(p);
         added++;
@@ -1192,7 +1199,7 @@ module.exports = function createGames(ctx) {
         if (gameById(id)) id = slug(id + "-" + String(x.code).toLowerCase(), 40);
         if (gameById(id)) id = slug(id + "-" + crypto.randomBytes(2).toString("hex"), 40);
         try {
-          const r = await importGame(l, T, x.code, { newGame: { id, name: x.name, section: "games", draft: true }, activate: false, images: opt.images });
+          const r = await importGame(l, T, x.code, { newGame: { id, name: x.name, section: secOf(opt.section), draft: true }, activate: false, images: opt.images });
           if (r.error) importJob.errors.push(str(x.name, 40) + ": " + r.error);
           else {
             importJob.games++; importJob.packages += r.added;
@@ -1223,7 +1230,7 @@ module.exports = function createGames(ctx) {
   function previewCatalog() {
     const s = store();
     const vis = p => { const g = gameById(p.gameId); return !!(g && g.active && !g.draft && p.active && p.price > 0); };
-    const games = s.games.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(g => ({ id: g.id, name: g.name, section: g.section === "ai" ? "ai" : "games",
+    const games = s.games.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(g => ({ id: g.id, name: g.name, section: secOf(g.section),
       img: g.img || "", banner: g.banner || "", color: g.color || "",
       fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
       regions: g.regions || [], tabs: g.tabs || [], canCheck: !!checkLineFor(g),
