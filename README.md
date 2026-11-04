@@ -540,7 +540,7 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 - **Ekrandan tashqaridagi mahsulot kartochkalari** chizilmaydi (`content-visibility:auto`).
 - **Logo soyasi** (`drop-shadow`) faqat katta rasmda qoladi.
 - **Video va lottie** faqat ekranda ko'rinib turganda o'ynaydi (`watchMedia()`, IntersectionObserver). To'rdagi videolar avtomatik o'ynamaydi.
-- **Yengil rejim (`html.lite`).** Telegram Android telefon kuchini xabar qiladi (User-Agent oxirida `LOW` / `AVERAGE` / `HIGH`). `LOW` yoki `AVERAGE` bo'lsa yoki zaif Android bo'lsa (≤3 GB xotira yoki ≤4 yadro), quyidagilar o'chiriladi: xiralashtirish, fon nuri, bezak animatsiyalari (yorug'lik o'tishi, suzish, halqa) va mahsulot kartochkalarining ketma-ket kirishi.
+- **Yengil rejim (`html.lite`).** Telegram Android telefon kuchini xabar qiladi (User-Agent oxirida `LOW` / `AVERAGE` / `HIGH`). `LOW` yoki `AVERAGE` bo'lsa yoki zaif Android bo'lsa (≤3 GB xotira yoki ≤4 yadro), faqat og'ir effektlar o'chiriladi: xiralashtirish (`backdrop-filter`) va fon nuri. Animatsiyalar (faqat `transform`/`opacity`) yengil rejimda ham ishlaydi (v3.10) — ularni faqat "Kamroq harakat" sozlamasi va `prefers-reduced-motion` o'chiradi.
 - **O'lchov (protsessor 4× sekinlashtirilgan):** bosh sahifani aylantirish — eng sekin kadr 17 ms, tushib qolgan kadr yo'q. Ekranni chizish 1–1.5 ms.
 
 ## Ranglar va animatsiya (v3.5)
@@ -556,9 +556,19 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 **Animatsiyalar** (uzunroq, faqat `transform` va `opacity`)
 - **Ekran kirishi:** 0.65 s, bloklar ketma-ket chiqadi. Yo'nalish: bo'lim ichiga kirilsa o'ngdan, orqaga qaytilsa chapdan, pastki menyu orqali o'tilsa pastdan. Mahsulot kartochkalari ham bittadan chiqadi (birinchi 12 tasi).
 - **Bosh kartalar:** balans, to'lov va profil kartalari bo'ylab har 7 soniyada sekin yorug'lik o'tadi.
-- **Bo'lim ikonkalari** sekin "suzadi", atrofidagi halqa "nafas oladi".
+- **Jonli bo'lim ikonkalari (v3.10, `ANI_ICON` + `aic()`).** Bosh sahifadagi har bo'limning o'z harakati bor, atrofidagi halqa "nafas oladi":
+  - Obuna — olmos chayqaladi, yuzasidan yaltirash o'tadi, atrofida uchqunlar chaqnaydi;
+  - O'yinlar — joystik silkinadi, krestovina bosiladi, tugmalar navbat bilan yonadi;
+  - Telegram — samolyot uchib ketadi va iz qoldirib qaytadi;
+  - Nakrutka — grafik chizig'i o'zi chiziladi, ustunlar o'sadi, cho'qqida nuqta pulslanadi;
+  - AI — yulduz "nafas oladi", kichik yulduzchalar chaqnaydi;
+  - Sovg'a (`gift`) — qopqoq sakrab ochiladi, uchqunlar otiladi (bo'lim kartasida ishlatilsa).
+  Admin bo'limga rasm qo'ysa, rasm ko'rsatiladi (animatsiyasiz).
+- **Pastki menyu:** har ikonkaning o'z bosilish animatsiyasi — uy "sakraydi", to'rtta katak navbat bilan chiqadi, hamyon tebranadi, chek yuqoriga chiqib qatorlari yoziladi, profil boshi ko'tariladi.
+- **Mahsulotlar segmenti:** Barchasi / Obuna / O'yinlar / Telegram tugmalarida bo'lim ikonkasi; bosilganda ikonka "sakraydi" (qidiruvda qayta chizilganda takrorlanmaydi).
+- **Ikonka nishonlari:** profil qatorlari va admin plitalaridagi rangli ikonkalar ekranga kirishda "otilib" chiqadi, bosilganda biroz buriladi.
 - **Pastki oyna:** ochilganda ichidagi bloklar ketma-ket chiqadi.
-- **O'chirish:** "Kamroq harakat" sozlamasi, tizimdagi `prefers-reduced-motion` va yengil rejim bezak animatsiyalarini o'chiradi.
+- **O'chirish:** "Kamroq harakat" sozlamasi va tizimdagi `prefers-reduced-motion` hamma animatsiyani o'chiradi; ikonkalar to'liq, harakatsiz holida qoladi.
 
 ## Xavfsizlik (v3.5 tekshiruvi)
 

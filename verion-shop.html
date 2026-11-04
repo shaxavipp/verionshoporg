@@ -148,7 +148,6 @@ img{max-width:100%}
 .lite header,.lite .adm-head,.lite .sup-head{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--bg)}
 .lite .toast{backdrop-filter:none;-webkit-backdrop-filter:none;background:#1c2340}
 .lite[data-theme="light"] .toast{background:#fff}
-.lite .giftGlow::before,.lite .giftFloat{animation:none}
 /* Ekran almashganda bloklar ketma-ket ko'tarilib chiqadi; oddiy qayta chizishda animatsiya yo'q */
 /* Ekran kirishi: ichkariga kirganda o'ngdan, orqaga qaytganda chapdan, bo'limlar orasida pastdan — 0.65 s, ketma-ket */
 @keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
@@ -188,9 +187,101 @@ img{max-width:100%}
 [data-reduce-motion="1"] .balcard::before,[data-reduce-motion="1"] .pbal::before,[data-reduce-motion="1"] .profhero::before,
 [data-reduce-motion="1"] .homecats .pcard .ptile .isvg,[data-reduce-motion="1"] .homecats .pcard .ptile::before,
 [data-reduce-motion="1"] .profhero .avatar::before,[data-reduce-motion="1"] .sheet.intro .sheet-body>*,
-.lite .balcard::before,.lite .pbal::before,.lite .profhero::before,.lite .homecats .pcard .ptile .isvg,.lite .homecats .pcard .ptile::before,.lite .profhero .avatar::before{animation:none}
-.lite .screen.enter .grid>*{animation:none}
 @media (prefers-reduced-motion:reduce){.balcard::before,.pbal::before,.profhero::before,.homecats .pcard .ptile .isvg,.homecats .pcard .ptile::before,.profhero .avatar::before,.sheet.intro .sheet-body>*{animation:none}}
+/* ===== jonli bo'lim ikonkalari — har bir bo'limning o'z harakati =====
+   faqat transform/opacity/dashoffset; kamroq harakat rejimida to'liq o'chadi */
+.homecats .pcard .ptile .isvg.ani{animation:none;overflow:visible}
+.isvg.ani *{transform-box:fill-box;transform-origin:center}
+/* Obuna — olmos chayqaladi, yuzasidan yaltirash o'tadi, atrofida uchqunlar chaqnaydi */
+@keyframes aDmGem{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-2.5px) rotate(-7deg)}50%{transform:translateY(0) rotate(0)}75%{transform:translateY(-1.5px) rotate(5deg)}}
+@keyframes aDmSweep{0%,50%{transform:translateX(0) skewX(-22deg)}80%,100%{transform:translateX(36px) skewX(-22deg)}}
+@keyframes aTw{0%,100%{transform:scale(0) rotate(0);opacity:0}40%{transform:scale(1.15) rotate(45deg);opacity:1}70%{transform:scale(.8) rotate(90deg);opacity:.8}}
+.ani-diamond .a-gem{animation:aDmGem 4s ease-in-out infinite}
+.ani-diamond .a-sweep{animation:aDmSweep 4s ease-in-out infinite}
+.ani-diamond .a-tw{animation:aTw 2.6s ease-in-out infinite}
+.ani-diamond .a-tw2{animation-delay:.9s}.ani-diamond .a-tw3{animation-delay:1.7s}
+/* O'yinlar — joystik "o'ynaladi": silkinadi, krestovina bosiladi, tugmalar navbat bilan yonadi */
+@keyframes aPad{0%,56%,100%{transform:rotate(0) translateY(0)}61%{transform:rotate(-9deg) translateY(-1.5px)}66%{transform:rotate(8deg) translateY(-1.5px)}71%{transform:rotate(-5deg)}76%{transform:rotate(3deg)}81%{transform:rotate(0)}}
+@keyframes aDpad{0%,56%,100%{transform:scale(1)}62%{transform:scale(.72)}69%{transform:scale(1.12)}76%{transform:scale(1)}}
+@keyframes aBtn{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.6);opacity:1}}
+@keyframes aVibL{0%,58%,84%,100%{opacity:0;transform:translateX(0)}64%,76%{opacity:.9;transform:translateX(-1.2px)}}
+@keyframes aVibR{0%,58%,84%,100%{opacity:0;transform:translateX(0)}64%,76%{opacity:.9;transform:translateX(1.2px)}}
+.ani-gamepad .a-pad{animation:aPad 3.4s ease-in-out infinite}
+.ani-gamepad .a-dpad{animation:aDpad 3.4s ease-in-out infinite}
+.ani-gamepad .a-b1{animation:aBtn 1.7s ease-in-out infinite}
+.ani-gamepad .a-b2{animation:aBtn 1.7s .85s ease-in-out infinite}
+.ani-gamepad .a-vib{opacity:0}
+.ani-gamepad .a-vibL{animation:aVibL 3.4s ease-in-out infinite}.ani-gamepad .a-vibR{animation:aVibR 3.4s ease-in-out infinite}
+/* Telegram — samolyot uchib ketadi va iz qoldirib qaytib keladi */
+@keyframes aPlane{0%,100%{transform:translate(0,0);opacity:1}14%{transform:translate(-1.5px,1.5px);opacity:1}34%{transform:translate(17px,-17px);opacity:0}35%{transform:translate(-17px,17px);opacity:0}56%{transform:translate(.8px,-.8px);opacity:1}64%{transform:translate(0,0)}}
+@keyframes aTrail{0%,14%{opacity:0;transform:translate(0,0)}22%{opacity:.85;transform:translate(2px,-2px)}33%{opacity:0;transform:translate(9px,-9px)}34%{opacity:0;transform:translate(-15px,15px)}47%{opacity:.6;transform:translate(-7px,7px)}57%,100%{opacity:0;transform:translate(-3px,3px)}}
+.ani-send .a-plane{animation:aPlane 3.8s cubic-bezier(.45,0,.3,1) infinite}
+.ani-send .a-trail{opacity:0;animation:aTrail 3.8s ease-out infinite}
+/* Nakrutka — o'sish grafigi o'zi chiziladi, ustunlar o'sadi, cho'qqida nuqta "pulslanadi" */
+@keyframes aLine{0%{stroke-dashoffset:30;opacity:1}42%{stroke-dashoffset:0}88%{stroke-dashoffset:0;opacity:1}97%{stroke-dashoffset:0;opacity:0}100%{stroke-dashoffset:30;opacity:0}}
+@keyframes aArrow{0%,36%{stroke-dashoffset:13;opacity:1}52%{stroke-dashoffset:0}88%{stroke-dashoffset:0;opacity:1}97%{stroke-dashoffset:0;opacity:0}100%{stroke-dashoffset:13;opacity:0}}
+@keyframes aBars{0%{transform:scaleY(.25);opacity:1}45%{transform:scaleY(1)}88%{transform:scaleY(1);opacity:1}97%{opacity:0}100%{transform:scaleY(.25);opacity:0}}
+@keyframes aPing{0%,50%{transform:scale(.4);opacity:0}54%{opacity:.6}78%,100%{transform:scale(2.4);opacity:0}}
+.ani-trendUp .a-line{stroke-dasharray:30;animation:aLine 4.2s ease-in-out infinite}
+.ani-trendUp .a-arrow{stroke-dasharray:13;animation:aArrow 4.2s ease-in-out infinite}
+.ani-trendUp .a-bars{transform-origin:50% 100%;animation:aBars 4.2s cubic-bezier(.3,1.35,.5,1) infinite}
+.ani-trendUp .a-ping{animation:aPing 4.2s ease-out infinite}
+/* Sovg'a — qopqoq sakrab ochiladi, ichidan uchqunlar otilib chiqadi */
+@keyframes aLid{0%,48%,100%{transform:translateY(0) rotate(0)}56%{transform:translateY(-4.5px) rotate(-12deg)}64%{transform:translateY(-3.5px) rotate(7deg)}72%{transform:translateY(0) rotate(0)}77%{transform:translateY(-1px)}82%{transform:translateY(0)}}
+@keyframes aBox{0%,44%,100%{transform:scale(1)}50%{transform:scale(1.06,.9)}58%{transform:scale(.97,1.04)}66%{transform:scale(1)}}
+@keyframes aPop{0%,52%{transform:scale(0) rotate(0);opacity:0}64%{transform:scale(1.2) rotate(60deg);opacity:1}82%,100%{transform:scale(.4) rotate(120deg);opacity:0}}
+.ani-gift .a-lid{transform-origin:50% 100%;animation:aLid 3.6s ease-in-out infinite}
+.ani-gift .a-box{transform-origin:50% 100%;animation:aBox 3.6s ease-in-out infinite}
+.ani-gift .a-pop{opacity:0;animation:aPop 3.6s ease-out infinite}
+.ani-gift .a-p2{animation-delay:.08s}.ani-gift .a-p3{animation-delay:.16s}
+/* AI — yulduz "nafas oladi", kichik yulduzchalar navbat bilan chaqnaydi */
+@keyframes aStar{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(.84) rotate(-10deg)}55%{transform:scale(1.1) rotate(6deg)}75%{transform:scale(.98) rotate(0)}}
+@keyframes aTwk{0%,100%{transform:scale(.4) rotate(0);opacity:.35}50%{transform:scale(1.2) rotate(90deg);opacity:1}}
+.ani-sparkles .a-star{animation:aStar 3.2s ease-in-out infinite}
+.ani-sparkles .a-tw{animation:aTwk 1.6s ease-in-out infinite}
+.ani-sparkles .a-tw2{animation-delay:.8s}
+/* ===== pastki menyu: har bir ikonkaning o'z bosilish animatsiyasi ===== */
+nav svg.nv *{transform-box:fill-box;transform-origin:center}
+@keyframes nvHome{0%{transform:translateY(0) scale(1)}22%{transform:translateY(1.5px) scale(1.14,.82)}50%{transform:translateY(-4px) scale(.92,1.1)}75%{transform:translateY(0) scale(1.04,.96)}100%{transform:none}}
+@keyframes nvRise{0%,30%{transform:scaleY(0)}70%{transform:scaleY(1.15)}100%{transform:scaleY(1)}}
+@keyframes nvCell{0%{transform:scale(.3);opacity:.2}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes nvWallet{0%{transform:rotate(0) scale(.85)}20%{transform:rotate(-14deg) scale(1.08)}42%{transform:rotate(11deg) scale(1)}62%{transform:rotate(-6deg)}82%{transform:rotate(2deg)}100%{transform:none}}
+@keyframes nvReceipt{0%{transform:translateY(7px);opacity:.3}55%{transform:translateY(-2px);opacity:1}100%{transform:none;opacity:1}}
+@keyframes nvLine{0%,35%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes nvHead{0%{transform:translateY(3px) scale(.7)}55%{transform:translateY(-2px) scale(1.12)}100%{transform:none}}
+@keyframes nvRing{0%{transform:scale(.6);opacity:.2}60%{transform:scale(1.08);opacity:1}100%{transform:none;opacity:1}}
+nav button.on svg.nv-home{animation:nvHome .62s var(--spring)}
+nav button.on svg.nv-home path:first-child{transform-origin:50% 100%;animation:nvRise .62s var(--spring) backwards}
+nav button.on svg.nv-products rect{animation:nvCell .5s var(--spring) backwards}
+nav button.on svg.nv-products rect:nth-child(2){animation-delay:.06s}nav button.on svg.nv-products rect:nth-child(3){animation-delay:.12s}
+nav button.on svg.nv-products rect:nth-child(4){animation-delay:.18s}
+nav button.on svg.nv-pay{animation:nvWallet .7s ease-out}
+nav button.on svg.nv-orders{animation:nvReceipt .55s var(--spring)}
+nav button.on svg.nv-orders path:not(:first-child){transform-origin:0 50%;animation:nvLine .55s ease-out backwards}
+nav button.on svg.nv-orders path:nth-child(3){animation-delay:.07s}nav button.on svg.nv-orders path:nth-child(4){animation-delay:.14s}
+nav button.on svg.nv-user circle:nth-of-type(1){animation:nvHead .6s var(--spring) backwards}
+nav button.on svg.nv-user circle:nth-of-type(2){animation:nvRing .55s var(--spring) backwards}
+nav button.on svg.nv-user path{transform-origin:50% 100%;animation:nvRise .6s var(--spring) backwards}
+/* ===== ikonka nishonlari ekranga kirishda "otilib" chiqadi (profil qatorlari, admin plitalari) ===== */
+@keyframes icPop{0%{transform:scale(.4) rotate(-14deg);opacity:0}60%{transform:scale(1.12) rotate(4deg);opacity:1}100%{transform:none;opacity:1}}
+.screen.enter .ibadge{animation:icPop .55s .1s var(--spring) backwards}
+.adm-tile .adm-ic{animation:icPop .55s var(--spring) backwards}
+.adm-grid .adm-tile:nth-child(2) .adm-ic{animation-delay:.04s}.adm-grid .adm-tile:nth-child(3) .adm-ic{animation-delay:.08s}
+.adm-grid .adm-tile:nth-child(4) .adm-ic{animation-delay:.12s}.adm-grid .adm-tile:nth-child(n+5) .adm-ic{animation-delay:.16s}
+.ibadge svg,.adm-ic svg{transition:transform .25s var(--spring)}
+.row:active .ibadge svg,.adm-tile:active .adm-ic svg{transform:rotate(-8deg) scale(.92)}
+/* Mahsulotlar segmenti: har bo'lim tugmasida ikonka, bosilganda "sakraydi" */
+.seg.segic-row button{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.segic{display:inline-flex;flex:0 0 auto;opacity:.75;transition:opacity .2s ease}
+.segic svg{width:15px;height:15px;vertical-align:0!important}
+.seg button.on .segic{opacity:1;color:var(--acc2)}
+[data-theme="light"] .seg button.on .segic{color:var(--acc)}
+@keyframes segPop{0%{transform:scale(.5) rotate(-18deg)}55%{transform:scale(1.25) rotate(8deg)}100%{transform:none}}
+.seg button.pop .segic{animation:segPop .5s var(--spring)}
+/* kamroq harakat: hammasi o'chadi */
+[data-reduce-motion="1"] .isvg.ani,[data-reduce-motion="1"] .isvg.ani *,[data-reduce-motion="1"] nav svg.nv,[data-reduce-motion="1"] nav svg.nv *,
+[data-reduce-motion="1"] .ibadge,[data-reduce-motion="1"] .adm-ic,[data-reduce-motion="1"] .segic{animation:none!important}
+@media (prefers-reduced-motion:reduce){.isvg.ani,.isvg.ani *,nav svg.nv,nav svg.nv *,.ibadge,.adm-ic,.segic{animation:none!important}}
 /* balans o'zgarganda raqam yuqoriga "aylanib" chiqadi (matn darhol yangi qiymatda) */
 @keyframes balRoll{from{opacity:0;transform:translateY(45%);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 .bump{display:inline-block;animation:balRoll .55s var(--spring)}
@@ -1797,7 +1888,8 @@ body.sinb-open{overflow:hidden}
 })();
 
 /* ===== Yengil rejim: Telegram Android telefon kuchini xabar qiladi (LOW/AVERAGE/HIGH).
-   Zaif telefonda xiralashtirish, fon nuri va doimiy bezak animatsiyalari o'chiriladi — qotmasin. ===== */
+   Zaif/o'rtacha telefonda faqat og'ir effektlar — xiralashtirish (blur) va fon nuri — o'chadi, qotmasin.
+   Animatsiyalar (yengil transform/opacity) hamma telefonda ishlaydi; faqat "kamroq harakat" rejimi o'chiradi. ===== */
 var LITE=(function(){try{var ua=navigator.userAgent||"",m=/Telegram-Android\/[\d.]+ \([^)]*;\s*(LOW|AVERAGE|HIGH)\)/i.exec(ua);
   if(m)return m[1].toUpperCase()!=="HIGH";
   var dm=navigator.deviceMemory,hc=navigator.hardwareConcurrency;return /Android/i.test(ua)&&((dm&&dm<=3)||(hc&&hc<=4));}catch(e){return false;}})();
@@ -1837,7 +1929,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-04.1";
+var CLIENT_BUILD="2026-11-04.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2577,6 +2669,37 @@ function ic(name,size,cls){
   return svg.replace("<svg ",'<svg aria-hidden="true" focusable="false" class="isvg'+(cls?" "+cls:"")+'" width="'+size+'" height="'+size+'" style="vertical-align:-'+(Math.round(size*0.18))+'px;flex:0 0 auto" ');
 }
 
+/* ===== jonli bo'lim ikonkalari: har bir bo'limning o'z harakati (CSS .ani-*) =====
+   Ichki qismlar alohida <g>/<path> — CSS faqat transform/opacity/dashoffset bilan harakatlantiradi.
+   "Kamroq harakat" rejimida animatsiya o'chadi va ikonka oddiy (to'liq) holida turadi. */
+function _spk(x,y,s,cls){return '<g transform="translate('+x+' '+y+') scale('+s+')"><path class="'+cls+'" fill="currentColor" stroke="none" d="M0-4C.4-1.2 1.2-.4 4 0 1.2.4.4 1.2 0 4-.4 1.2-1.2.4-4 0-1.2-.4-.4-1.2 0-4Z"/></g>';}
+var ANI_ICON={
+  diamond:'<defs><clipPath id="aniDmClip"><path d="M6 3h12l4 6-10 13L2 9Z"/></clipPath></defs>'
+    +'<g class="a-gem"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>'
+    +'<g clip-path="url(#aniDmClip)"><rect class="a-sweep" x="-7" y="-3" width="3.2" height="30" fill="currentColor" stroke="none" opacity=".55"/></g></g>'
+    +_spk(21.6,1.8,.7,"a-tw a-tw1")+_spk(2.2,3.6,.5,"a-tw a-tw2")+_spk(21,17.5,.45,"a-tw a-tw3"),
+  gamepad:'<g class="a-pad"><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>'
+    +'<g class="a-dpad"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/></g>'
+    +'<circle class="a-b1" cx="15" cy="12" r="1.15" fill="currentColor" stroke="none"/><circle class="a-b2" cx="18" cy="10" r="1.15" fill="currentColor" stroke="none"/></g>'
+    +'<path class="a-vib a-vibL" d="M.6 6.2 1.4 8M.2 10.4h1.2"/><path class="a-vib a-vibR" d="M23.4 6.2 22.6 8M23.8 10.4h-1.2"/>',
+  send:'<path class="a-trail" d="M7.2 17.8 3.6 21.4M4 14.6l-2.4 2.4M10.4 20.6l-1.8 1.8"/>'
+    +'<g class="a-plane"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></g>',
+  trendUp:'<path class="a-bars" d="M5 21v-3M10 21v-5M15 21v-4M20 21v-8" stroke-opacity=".5"/>'
+    +'<path class="a-line" d="M2 17 8.5 10.5 13.5 15.5 22 7"/><path class="a-arrow" d="M16 7h6v6"/>'
+    +'<circle class="a-ping" cx="22" cy="7" r="2.4" fill="currentColor" stroke="none" opacity="0"/>',
+  gift:'<g class="a-box"><path d="M12 12v9"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/></g>'
+    +'<g class="a-lid"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v4"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></g>'
+    +_spk(3,4.6,.55,"a-pop a-p1")+_spk(21.2,3.6,.6,"a-pop a-p2")+_spk(12,.4,.45,"a-pop a-p3"),
+  sparkles:'<path class="a-star" d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>'
+    +'<g class="a-tw a-tw1"><path d="M20 3v4"/><path d="M22 5h-4"/></g><g class="a-tw a-tw2"><path d="M4 17v2"/><path d="M5 18H3"/></g>'
+};
+// Jonli ikonka (bo'lim kartalari uchun); jonli varianti bo'lmasa — oddiy ikonka.
+function aic(name,size){
+  if(!ANI_ICON[name])return ic(name,size);
+  size=size||32;
+  return '<svg aria-hidden="true" focusable="false" class="isvg ani ani-'+name+'" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto">'+ANI_ICON[name]+'</svg>';
+}
+
 /* ===== shell ===== */
 function applyTGChrome(){
   try{
@@ -2748,7 +2871,7 @@ function headerHTML(){
     +'</div></header>';
 }
 function navHTML(){
-  function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon].replace("<svg ",'<svg aria-hidden="true" ')+'<span>'+esc(label)+'</span></button>';}
+  function b(id,icon,label){return '<button data-nav="'+id+'" class="'+(S.screen===id?"on":"")+'">'+IC[icon].replace("<svg ",'<svg aria-hidden="true" class="nv nv-'+icon+'" ')+'<span>'+esc(label)+'</span></button>';}
   var idx=["home","products","pay","orders","profile"].indexOf(S.screen);
   return '<nav id="mainNav" style="--ni:'+(idx<0?0:idx)+'"><span class="navind" aria-hidden="true"></span>'+b("home","home",t("nav_home"))+b("products","products",t("nav_products"))+b("pay","pay",t("nav_pay"))+b("orders","orders",t("nav_orders"))+b("profile","user",t("nav_profile"))+'</nav>';
 }
@@ -2778,6 +2901,12 @@ try{var _a11yT=null;new MutationObserver(function(ms){for(var i=0;i<ms.length;i+
 
 /* ===== Mahsulotlar (qidiruv + filtr) ===== */
 var PRODUCTS_ALL_PILL=["all","tab_all"];
+var _segPop="";
+// Mahsulotlar segmentidagi bo'lim ikonkasi (Barchasi — to'r, qolganlari — bo'lim ikonkasi)
+function segIcon(k){
+  var svg=k==="all"?IC.products.replace("<svg ",'<svg aria-hidden="true" class="isvg" width="15" height="15" '):ic(CAT_ICON[k]||"star",15);
+  return '<span class="segic">'+svg+'</span>';
+}
 var PRODUCTS_PILLS=[["obuna","tab_obuna"],["games","tab_games"],["telegram","tab_telegram"]];
 // Qidiruv natijalariga nakrutka xizmatlarini ham qo'shish uchun — index bo'yicha
 // xizmat obyektiga qaytib borish imkonini beradi (data-nk-search-svc="idx").
@@ -2810,11 +2939,12 @@ function productsScreenHTML(){
   var html='<div class="searchbar"><span class="sic">'+ic("search",16)+'</span>'
     +'<input id="prodSearch" placeholder="'+esc(t("search_ph"))+'" value="'+esc(S.products.search||"")+'"></div>';
   // Bitta iOS segment: Barchasi | Obuna | O'yinlar | Telegram
-  html+='<div class="seg" id="prodPills">'
-    +'<button data-pfilter="'+PRODUCTS_ALL_PILL[0]+'" class="'+(filter===PRODUCTS_ALL_PILL[0]?"on":"")+'">'+esc(t(PRODUCTS_ALL_PILL[1]))+'</button>';
+  function segCls(k){return (filter===k?"on":"")+(filter===k&&_segPop===k?" pop":"");}
+  html+='<div class="seg segic-row" id="prodPills">'
+    +'<button data-pfilter="'+PRODUCTS_ALL_PILL[0]+'" class="'+segCls(PRODUCTS_ALL_PILL[0])+'">'+segIcon(PRODUCTS_ALL_PILL[0])+esc(t(PRODUCTS_ALL_PILL[1]))+'</button>';
   for(var i=0;i<PRODUCTS_PILLS.length;i++){
     var p=PRODUCTS_PILLS[i];
-    html+='<button data-pfilter="'+p[0]+'" class="'+(filter===p[0]?"on":"")+'">'+esc(t(p[1]))+'</button>';
+    html+='<button data-pfilter="'+p[0]+'" class="'+segCls(p[0])+'">'+segIcon(p[0])+esc(t(p[1]))+'</button>';
   }
   html+='</div>';
   // O'yinlar ham oddiy mahsulot sifatida shu ro'yxatda ("Barchasi" va "O'yinlar").
@@ -3102,7 +3232,7 @@ function categoryCardsHTML(){
     any=true;
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
-    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic(CAT_ICON[kind]||"star",32);
+    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic(CAT_ICON[kind]||"star",32);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
@@ -3116,7 +3246,7 @@ function categoryCardsHTML(){
   var aiList=gamesOf("ai"),aiMeta=CatMeta.ai||{};
   if(aiList.length&&aiMeta.enabled!==false){
     any=true;
-    var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("sparkles",32);
+    var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("sparkles",32);
     html+='<button class="pcard" data-opencat="ai" style="--cc:'+CAT_COLOR.ai+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+aiTile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(categoryLabel("ai"))+'</div>'
@@ -3126,7 +3256,7 @@ function categoryCardsHTML(){
   if(nkMeta.enabled!==false){
     any=true;
     ensureNkLoadedForHome(); // hali yuklanmagan bo'lsa fonda yuklaydi, tayyor bo'lgach son yangilanadi
-    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':ic("trendUp",32);
+    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):esc(t("nakrutka_sub"));
     html+='<button class="pcard" data-opencat="nakrutka" style="--cc:'+CAT_COLOR.nakrutka+'">'
@@ -10662,7 +10792,8 @@ function bind(){
   els=document.querySelectorAll("[data-pfilter]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     S.products.filter=this.getAttribute("data-pfilter");
-    haptic();render();
+    _segPop=S.products.filter; // ikonka faqat bosilganda "sakraydi" (qidiruvda qayta chizilganda emas)
+    haptic();render();_segPop="";
   });
   els=document.querySelectorAll("[data-gotopay]");
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){go("pay");});
