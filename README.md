@@ -564,7 +564,13 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
   - AI — yulduz "nafas oladi", kichik yulduzchalar chaqnaydi;
   - Sovg'a (`gift`) — qopqoq sakrab ochiladi, uchqunlar otiladi (bo'lim kartasida ishlatilsa).
   Admin bo'limga rasm qo'ysa, rasm ko'rsatiladi (animatsiyasiz).
-- **Pastki menyu:** har ikonkaning o'z bosilish animatsiyasi — uy "sakraydi", to'rtta katak navbat bilan chiqadi, hamyon tebranadi, chek yuqoriga chiqib qatorlari yoziladi, profil boshi ko'tariladi.
+- **Pastki menyu (jonli ikonkalar).** Bo'lim tanlanganda ikonka o'z animatsiyasini o'ynaydi va ichi rang bilan to'ladi (iOS/Telegram kabi):
+  - Asosiy — uy tushib "o'tiradi" (cho'kib-cho'ziladi), eshigi ochiladi;
+  - Mahsulotlar — to'r aylanib ochiladi, kataklar markazdan navbat bilan otilib chiqadi;
+  - To'lov — hamyonga tanga tushadi, hamyon cho'kib tebranadi;
+  - Buyurtmalar — chek pastdan chiqadi, qatorlari bittadan yoziladi;
+  - Profil — halqa o'zi chiziladi, bosh chiqib keladi, yelkalar ko'tariladi.
+  Yozuv ham yengil ko'tariladi; barmoq tegib turganda ikonka biroz cho'kadi. Ikonka qismlari `IC` ichida klasslar bilan (`nv-*`, to'ladigan qismi `nf`).
 - **Mahsulotlar segmenti:** Barchasi / Obuna / O'yinlar / Telegram tugmalarida bo'lim ikonkasi; bosilganda ikonka "sakraydi" (qidiruvda qayta chizilganda takrorlanmaydi).
 - **Ikonka nishonlari:** profil qatorlari va admin plitalaridagi rangli ikonkalar ekranga kirishda "otilib" chiqadi, bosilganda biroz buriladi.
 - **Pastki oyna:** ochilganda ichidagi bloklar ketma-ket chiqadi.

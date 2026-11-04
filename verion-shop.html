@@ -240,28 +240,53 @@ img{max-width:100%}
 .ani-sparkles .a-star{animation:aStar 3.2s ease-in-out infinite}
 .ani-sparkles .a-tw{animation:aTwk 1.6s ease-in-out infinite}
 .ani-sparkles .a-tw2{animation-delay:.8s}
-/* ===== pastki menyu: har bir ikonkaning o'z bosilish animatsiyasi ===== */
+/* ===== pastki menyu: jonli ikonkalar =====
+   Bo'lim tanlanganda ikonka o'z animatsiyasini o'ynaydi va ichi rang bilan to'ladi (iOS/Telegram kabi). */
+nav svg.nv{overflow:visible}
 nav svg.nv *{transform-box:fill-box;transform-origin:center}
-@keyframes nvHome{0%{transform:translateY(0) scale(1)}22%{transform:translateY(1.5px) scale(1.14,.82)}50%{transform:translateY(-4px) scale(.92,1.1)}75%{transform:translateY(0) scale(1.04,.96)}100%{transform:none}}
-@keyframes nvRise{0%,30%{transform:scaleY(0)}70%{transform:scaleY(1.15)}100%{transform:scaleY(1)}}
-@keyframes nvCell{0%{transform:scale(.3);opacity:.2}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}
-@keyframes nvWallet{0%{transform:rotate(0) scale(.85)}20%{transform:rotate(-14deg) scale(1.08)}42%{transform:rotate(11deg) scale(1)}62%{transform:rotate(-6deg)}82%{transform:rotate(2deg)}100%{transform:none}}
-@keyframes nvReceipt{0%{transform:translateY(7px);opacity:.3}55%{transform:translateY(-2px);opacity:1}100%{transform:none;opacity:1}}
-@keyframes nvLine{0%,35%{transform:scaleX(0)}100%{transform:scaleX(1)}}
-@keyframes nvHead{0%{transform:translateY(3px) scale(.7)}55%{transform:translateY(-2px) scale(1.12)}100%{transform:none}}
-@keyframes nvRing{0%{transform:scale(.6);opacity:.2}60%{transform:scale(1.08);opacity:1}100%{transform:none;opacity:1}}
-nav button.on svg.nv-home{animation:nvHome .62s var(--spring)}
-nav button.on svg.nv-home path:first-child{transform-origin:50% 100%;animation:nvRise .62s var(--spring) backwards}
-nav button.on svg.nv-products rect{animation:nvCell .5s var(--spring) backwards}
-nav button.on svg.nv-products rect:nth-child(2){animation-delay:.06s}nav button.on svg.nv-products rect:nth-child(3){animation-delay:.12s}
-nav button.on svg.nv-products rect:nth-child(4){animation-delay:.18s}
-nav button.on svg.nv-pay{animation:nvWallet .7s ease-out}
-nav button.on svg.nv-orders{animation:nvReceipt .55s var(--spring)}
-nav button.on svg.nv-orders path:not(:first-child){transform-origin:0 50%;animation:nvLine .55s ease-out backwards}
-nav button.on svg.nv-orders path:nth-child(3){animation-delay:.07s}nav button.on svg.nv-orders path:nth-child(4){animation-delay:.14s}
-nav button.on svg.nv-user circle:nth-of-type(1){animation:nvHead .6s var(--spring) backwards}
-nav button.on svg.nv-user circle:nth-of-type(2){animation:nvRing .55s var(--spring) backwards}
-nav button.on svg.nv-user path{transform-origin:50% 100%;animation:nvRise .6s var(--spring) backwards}
+nav svg.nv .nf{fill:currentColor;fill-opacity:0;transition:fill-opacity .35s ease .15s}
+nav button.on svg.nv .nf{fill-opacity:.32}
+nav svg.nv .nv-coin{fill:currentColor;stroke:none}
+/* Asosiy — uy tushib "o'tiradi" (cho'kib-cho'ziladi), eshik ochiladi */
+@keyframes nvHome{0%{transform:translateY(-7px) scale(.9)}32%{transform:translateY(1px) scale(1.18,.8)}52%{transform:translateY(-3px) scale(.93,1.1)}72%{transform:translateY(0) scale(1.04,.96)}100%{transform:none}}
+@keyframes nvDoor{0%,35%{transform:scaleY(0)}70%{transform:scaleY(1.2)}100%{transform:scaleY(1)}}
+nav button.on svg.nv-home{animation:nvHome .75s var(--spring)}
+nav button.on svg.nv-home .nv-door{transform-origin:50% 100%;animation:nvDoor .75s var(--spring) backwards}
+/* Mahsulotlar — to'r aylanib ochiladi, kataklar markazdan navbat bilan otilib chiqadi */
+@keyframes nvGrid{0%{transform:rotate(-90deg) scale(.6)}60%{transform:rotate(10deg) scale(1.08)}100%{transform:none}}
+@keyframes nvC1{0%{transform:translate(3px,3px) scale(.2);opacity:0}65%{transform:translate(-1px,-1px) scale(1.12);opacity:1}100%{transform:none;opacity:1}}
+@keyframes nvC2{0%{transform:translate(-3px,3px) scale(.2);opacity:0}65%{transform:translate(1px,-1px) scale(1.12);opacity:1}100%{transform:none;opacity:1}}
+@keyframes nvC3{0%{transform:translate(-3px,-3px) scale(.2);opacity:0}65%{transform:translate(1px,1px) scale(1.12);opacity:1}100%{transform:none;opacity:1}}
+@keyframes nvC4{0%{transform:translate(3px,-3px) scale(.2);opacity:0}65%{transform:translate(-1px,1px) scale(1.12);opacity:1}100%{transform:none;opacity:1}}
+nav button.on svg.nv-products{animation:nvGrid .7s var(--spring)}
+nav button.on svg.nv-products .nv-c1{animation:nvC1 .55s var(--spring) backwards}
+nav button.on svg.nv-products .nv-c2{animation:nvC2 .55s .07s var(--spring) backwards}
+nav button.on svg.nv-products .nv-c3{animation:nvC3 .55s .14s var(--spring) backwards}
+nav button.on svg.nv-products .nv-c4{animation:nvC4 .55s .21s var(--spring) backwards}
+/* To'lov — tanga tushadi, hamyon uni "yutib" cho'kadi va tebranadi */
+@keyframes nvCoin{0%{transform:translateY(-10px) scale(.6);opacity:0}15%{opacity:1}45%{transform:translateY(1px) scale(1);opacity:1}58%{transform:translateY(4px) scale(.7);opacity:0}100%{transform:translateY(4px);opacity:0}}
+@keyframes nvWal{0%,42%{transform:none}55%{transform:scale(1.12,.84)}68%{transform:scale(.94,1.08) rotate(-6deg)}82%{transform:scale(1.02,.98) rotate(3deg)}100%{transform:none}}
+nav button.on svg.nv-pay .nv-coin{animation:nvCoin .9s cubic-bezier(.3,0,.5,1)}
+nav button.on svg.nv-pay .nv-wal{transform-origin:50% 100%;animation:nvWal .9s ease-out}
+/* Buyurtmalar — chek pastdan "chiqadi", qatorlari bittadan yoziladi */
+@keyframes nvPaper{0%{transform:translateY(8px) scaleY(.55);opacity:.3}55%{transform:translateY(-2px) scaleY(1.06);opacity:1}100%{transform:none;opacity:1}}
+@keyframes nvLn{0%,30%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+nav button.on svg.nv-orders .nv-paper{transform-origin:50% 100%;animation:nvPaper .6s var(--spring)}
+nav button.on svg.nv-orders .nv-ln{transform-origin:0 50%;animation:nvLn .55s .1s ease-out backwards}
+nav button.on svg.nv-orders .nv-ln:nth-child(3){animation-delay:.2s}nav button.on svg.nv-orders .nv-ln:nth-child(4){animation-delay:.3s}
+/* Profil — halqa o'zi chiziladi, bosh "chiqib" keladi, yelkalar ko'tariladi */
+@keyframes nvRing{0%{stroke-dashoffset:63;transform:rotate(-90deg)}100%{stroke-dashoffset:0;transform:rotate(0)}}
+@keyframes nvHead{0%,20%{transform:translateY(5px) scale(.4);opacity:0}65%{transform:translateY(-2px) scale(1.15);opacity:1}100%{transform:none;opacity:1}}
+@keyframes nvRise{0%,30%{transform:scaleY(0)}70%{transform:scaleY(1.2)}100%{transform:scaleY(1)}}
+nav button.on svg.nv-user .nv-ring{stroke-dasharray:63;animation:nvRing .7s cubic-bezier(.4,0,.2,1)}
+nav button.on svg.nv-user .nv-head{animation:nvHead .65s var(--spring) backwards}
+nav button.on svg.nv-user .nv-body{transform-origin:50% 100%;animation:nvRise .6s .1s var(--spring) backwards}
+/* yozuv ham yengil ko'tariladi */
+@keyframes nvLabel{0%{transform:translateY(3px);opacity:.4}100%{transform:none;opacity:1}}
+nav button.on span{animation:nvLabel .4s var(--spring)}
+/* barmoq tegib turganda ikonka biroz cho'kadi */
+nav button svg.nv{transition:scale .3s var(--spring)}
+nav button:active svg.nv{scale:.86;transition:scale .12s ease}
 /* ===== ikonka nishonlari ekranga kirishda "otilib" chiqadi (profil qatorlari, admin plitalari) ===== */
 @keyframes icPop{0%{transform:scale(.4) rotate(-14deg);opacity:0}60%{transform:scale(1.12) rotate(4deg);opacity:1}100%{transform:none;opacity:1}}
 .screen.enter .ibadge{animation:icPop .55s .1s var(--spring) backwards}
@@ -280,8 +305,8 @@ nav button.on svg.nv-user path{transform-origin:50% 100%;animation:nvRise .6s va
 .seg button.pop .segic{animation:segPop .5s var(--spring)}
 /* kamroq harakat: hammasi o'chadi */
 [data-reduce-motion="1"] .isvg.ani,[data-reduce-motion="1"] .isvg.ani *,[data-reduce-motion="1"] nav svg.nv,[data-reduce-motion="1"] nav svg.nv *,
-[data-reduce-motion="1"] .ibadge,[data-reduce-motion="1"] .adm-ic,[data-reduce-motion="1"] .segic{animation:none!important}
-@media (prefers-reduced-motion:reduce){.isvg.ani,.isvg.ani *,nav svg.nv,nav svg.nv *,.ibadge,.adm-ic,.segic{animation:none!important}}
+[data-reduce-motion="1"] .ibadge,[data-reduce-motion="1"] .adm-ic,[data-reduce-motion="1"] .segic,[data-reduce-motion="1"] nav button.on span{animation:none!important}
+@media (prefers-reduced-motion:reduce){.isvg.ani,.isvg.ani *,nav svg.nv,nav svg.nv *,.ibadge,.adm-ic,.segic,nav button.on span{animation:none!important}}
 /* balans o'zgarganda raqam yuqoriga "aylanib" chiqadi (matn darhol yangi qiymatda) */
 @keyframes balRoll{from{opacity:0;transform:translateY(45%);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 .bump{display:inline-block;animation:balRoll .55s var(--spring)}
@@ -576,7 +601,7 @@ nav button:active{transform:scale(.94)}
 nav button.on{color:var(--acc2)}
 [data-theme="light"] nav button.on{color:var(--acc)}
 @keyframes navPop{0%{transform:scale(.82)}55%{transform:scale(1.1)}100%{transform:scale(1)}}
-nav button.on svg{animation:navPop .5s var(--spring)}
+nav button.on svg:not(.nv){animation:navPop .5s var(--spring)}
 [data-reduce-motion="1"] nav button.on svg{animation:none}
 [data-reduce-motion="1"] .navind{transition:none}
 nav button svg{width:24px;height:24px}
@@ -2598,11 +2623,11 @@ function avatarHTML(){
 
 /* Ikonkalar: Lucide (ISC litsenziya, lucide.dev) — bitta uslub, 1.75 chiziq */
 var IC={
-  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
-  orders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M14 8H8"/><path d="M16 12H8"/><path d="M13 16H8"/></svg>',
-  pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>',
-  products:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>',
-  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>'
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="nf nv-house" d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path class="nv-door" d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/></svg>',
+  orders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="nf nv-paper" d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path class="nv-ln" d="M8 8h6"/><path class="nv-ln" d="M8 12h8"/><path class="nv-ln" d="M8 16h5"/></svg>',
+  pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle class="nv-coin" cx="12.5" cy="3.2" r="2.7" opacity="0"/><g class="nv-wal"><path class="nf" d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2z" stroke="none"/><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></g></svg>',
+  products:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect class="nf nv-c1" width="7" height="7" x="3" y="3" rx="1"/><rect class="nf nv-c2" width="7" height="7" x="14" y="3" rx="1"/><rect class="nf nv-c3" width="7" height="7" x="14" y="14" rx="1"/><rect class="nf nv-c4" width="7" height="7" x="3" y="14" rx="1"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="nv-body" d="M18 20a6 6 0 0 0-12 0"/><circle class="nf nv-head" cx="12" cy="10" r="4"/><circle class="nv-ring" cx="12" cy="12" r="10"/></svg>'
 };
 
 /* ===== premium SVG icons (emoji o'rniga — har doim bir xil va tekis ko'rinadi) ===== */
