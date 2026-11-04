@@ -335,15 +335,14 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 - Balans «Virtual raqam» sahifasida («Saqlash va sinash»), «Mahsulotlar» → Ulanish kartasida va liniyalar kuzatuvida (har 20 daqiqa) ko'rinadi.
 - Kalit va YourID faqat serverda; admin panelga faqat «o'rnatilgan» va ID ning oxirgi 3 raqami qaytadi.
 
-*Mijoz oynasi (v3.13, taste-skill «true-black-flat» uslubi brend ranglariga moslab):*
-- **Sarlavha qatori:** «Virtual raqam» (h1), o'ng tomonda balans (bosilsa — To'lov), ostida topilma: «Balansingiz N ta mamlakatga yetadi · eng arzoni X so'm» yoki «Balans yetmaydi: eng arzon raqam X so'm».
-- **Kod kutilayotgan raqamlar** — ro'yxatdan oldin (vaqtga bog'liq blok birinchi), «Kodni olish» bilan.
-- **Ro'yxat:** bitta panel, qatorlar orasida 1px chiziq; bayroq, nom, «6 450 ta mavjud» (30 tadan kam bo'lsa «Kam qoldi»), narx o'ngda (balans yetmasa kulrang va «balans yetmaydi»). Saralash: Ommabop (guruhlangan) · Arzon · Ko'p; qidiruv; yuklanish (tekis kulrang bloklar), xato («Qayta urinish»), bo'sh va «topilmadi» holatlari.
-- **Xarid oynasi** (avvalgi `confirm()` o'rniga): narx (eng katta raqam), «Balansingiz» va «Xariddan keyin» (yetmasa — «Yetishmaydi» qizilda va «Balansni to'ldirish»), «Nima olasiz» — kirish yo'li, TG-Lion uchun «bekor qilinmaydi» ogohlantirishi, bitta asosiy tugma «14 000 so'm to'lash».
-- **Kirish yo'li** — mahsulotga xos element: Raqam → Kirish kodi → Parol (5sim: Raqam → SMS kod); har bosqich o'z qiymati bilan to'ladi, joriy bosqich ko'k.
-- **Raqam oynasi:** bayroq, nom va holat belgisi; raqam (+998 90 111 22 33 ko'rinishida) va «Nusxa»; kirish yo'li; «Kodni olish»; kod (yagona ko'k element, 36px) va 2 bosqichli parol — har biri «Nusxa» bilan; 24 soat ichida «Kodni yangilash». 5sim: taymer va qolgan vaqt chizig'i, «Bekor qilish».
-- **Mening raqamlarim:** raqam, mamlakat va sana, holat (Kod keldi / Kod kutilmoqda / Bekor qilindi) va kod.
-- Rang faqat ma'lumot va holatda; yuzalar chiziqsiz-soyasiz yorug'lik bosqichi bilan; asosiy tugma teskari (qorong'ida oq, yorug'da qora). Uch tilda; `lint.mjs --app` — 0 FAIL, 0 WARN.
+*Mijoz oynasi (v3.14 — mashhur virtual raqam saytlari darajasida, ilova brend ranglarida):*
+- **Bosh qism (kartochka):** Telegram belgisi (ko'k plitka), «Virtual raqam» (h1), topilma: «Balansingiz N ta mamlakatga yetadi · eng arzoni X so'm» yoki «Balans yetmaydi: eng arzon raqam X so'm»; o'ngda balans (bosilsa — To'lov); ostida belgilar: «⚡ Darhol», «Kod va parol» (5sim: «SMS kod»), «N ta mamlakat». Fon — ko'k nur va nuqtali tekstura (yorug' mavzuda ham).
+- **Kod kutilayotgan raqamlar** — ro'yxatdan oldin, sariq «pulslanuvchi» nuqta bilan, «Kodni olish».
+- **Ro'yxat:** bitta panel; har qatorda bayroq plitkasi, nom, yashil nuqta va «6 450 ta mavjud» (30 tadan kam bo'lsa «Kam qoldi»), narx va dumaloq «+» tugma (balans yetmasa — hamyon belgisi, narx kulrang, «balans yetmaydi»). Saralash: Ommabop (guruhlangan) · Arzon · Ko'p; qidiruv; yuklanish, xato («Qayta urinish»), bo'sh va «topilmadi» holatlari.
+- **Xarid oynasi:** katta bayroq, «Telegram akkaunt» belgisi, narx kartochkasi (narx + mavjud soni), «Balansingiz» / «Xariddan keyin» (yetmasa — «Yetishmaydi» qizilda va «Balansni to'ldirish»), «Nima olasiz» — kirish yo'li, TG-Lion uchun «bekor qilinmaydi» ogohlantirishi, ilovaning ko'k asosiy tugmasi «14 000 so'm to'lash».
+- **Kirish yo'li:** Raqam → Kirish kodi → Parol (5sim: Raqam → SMS kod); har bosqich belgili doirada (telefon, xabar, kalit), bajarilgani yashil ✓, joriysi ko'k halqa bilan.
+- **Raqam oynasi:** bayroq, nom va holat; raqam (+998 90 111 22 33) ko'k nurli kartochkada «Nusxa» bilan; kirish yo'li; «Kodni olish»; kod — har raqam alohida katakda (yashil chiziqli), 2 bosqichli parol, har biri «Nusxa»; 24 soat ichida «Kodni yangilash». 5sim: taymer va ko'k chiziq, «Bekor qilish».
+- **Mening raqamlarim:** raqam, mamlakat va sana, holat (Kod keldi / Kod kutilmoqda / Bekor qilindi) va kod. Uch tilda.
 
 *5sim.net — zaxira.* SMS qabul qiluvchi raqam: kod kelmasa yoki mijoz bekor qilsa, raqam 5sim'da bekor qilinadi va pul qaytadi. Narx = eng arzon operator narxi × kurs (1 coin = so'm) × (1 + ustama).
 
@@ -357,14 +356,16 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 
 Ilova ichidagi alohida do'kon. Mahsulotlar → O'yinlar bo'limidagi «CS2 skinlar», «Dota 2 skinlar» yoki «Rust skinlar» kartochkasi bosilganda do'kon shu kartochkadan butun ekranga kengayib ochiladi (logotip bilan qisqa animatsiya; «kamroq harakat» sozlamasida animatsiyasiz). Kartochka faqat o'sha o'yin yoqilganda ko'rinadi.
 
-Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, to'r teksturasi, iliq nur va uchqunlar, Unbounded (sarlavhalar) + Inter Tight (matn) shriftlari, o'zimizning sariq-amber urg'u rangi va yashil narxlar. skinsavdo.uz faqat namuna sifatida o'rganilgan — ularning nomi, logotipi, rangi va matnlari olinmagan.
+Ko'rinishi ilova mavzusidan qat'i nazar doim to'q: grafit fon, Unbounded (sarlavhalar) + Inter Tight (matn) shriftlari, o'zimizning sariq-amber urg'u rangi va yashil narxlar. skinsavdo.uz faqat namuna sifatida o'rganilgan (tuzilish va tekstura darajasi) — ularning nomi, logotipi, rangi va matnlari olinmagan.
+
+**Fon va teksturalar (v3.14):** tepada keng iliq nur, 40px to'r (yuqoridan pastga so'nadi), mayda don (grain, past quvvatli Android'da o'chadi), suzuvchi uchqunlar — bosh sahifa, bozor, buyurtmalar, profil va skin sahifasida bir xil. Statistika qorong'i lentada, yakuniy chaqiriqda alohida nur va to'r. Kartochkalarda: noyoblik rangidagi nur rasm hududining pastidan ko'tariladi, ustida shu rangdagi nuqtali tekstura, pastda to'liq kenglikdagi noyoblik chizig'i (bosilganda nuqtalar yorishadi). Skin sahifasi sahnasi: tepada noyoblik chizig'i, skin atrofida nuqtalar, ostida soya, rasm sekin suzadi. «Kamroq harakat» sozlamasi yoki tizimdagi reduced-motion — hamma harakat to'xtaydi.
 
 **Logo va rasmlar:** sarlavhada, kirish animatsiyasida va kartochkalar orqasidagi xira belgida ilovaning haqiqiy logotipi (VER⚡ON), pastki yozuvi «SKINS» — asl «SHOP» bilan bir xil uslubda (ko'k gradient, keng harflar); boshqa qo'shimcha belgisiz. O'yin plitkalari, tablar va asosiy ilovadagi kartochkalarda o'yinning rasmiy Steam sarlavha rasmi (`steam/apps/<appid>/header.jpg`); yuklanmasa harfli belgi qoladi.
 
 **Til:** do'kon ilovadagi tanlangan tilga (O'zbek / Русский / English) moslashadi. O'zbekcha matnlar kodda; rus va ingliz tarjimalari `SK_L` lug'ati va `SK_TRX` qoliplarida (son, sana, summa bo'lgan matnlar uchun). Tayyor sahifa matnlari `MutationObserver` orqali do'kon ochiq turganda tarjima qilinadi (do'kon oynasi, uning pastki oynalari va xabarlar). Skin nomlari va holatlari (Factory New, Covert…) — asl inglizcha. Admin paneli o'zbekcha qoladi.
 
 **Do'kon tuzilishi** — o'z sarlavhasi (orqaga, logo, balans → to'ldirish, avatar → profil) va pastki menyusi bor:
-- **Bosh sahifa:** katta sarlavha «Skinlar so'mda — CS2 / DOTA 2 / RUST» (yoqilgan o'yin nomlari aylanib turadi), «Bozorga o'tish» va trade havola tugmalari, ishonch belgilari, statistika, o'yin plitkalari, «Top skinlar» lentasi, «Yaqinda sotib olindi», «Qanday ishlaydi», Steam hamyon ($5/$10/$20/$50 — Steam sahifasini shu summa bilan ochadi), to'lov usullari, savollar va yakuniy chaqiriq.
+- **Bosh sahifa:** katta sarlavha «Skinlar so'mda — CS2 / DOTA 2 / RUST» (yoqilgan o'yin nomlari aylanib turadi), «Bozorga o'tish» va trade havola tugmalari, ishonch belgilari, **3D aylanuvchi top skinlar halqasi** (8 tagacha, noyoblik rangidagi chiziq va nur bilan; bosilsa skin ochiladi, bosib turilsa to'xtaydi), statistika lentasi, **yugurib turuvchi lenta** (yaqinda sotilganlar — 3 tadan kam bo'lsa top skinlar narxi bilan), o'yin plitkalari, «Top skinlar» lentasi, «Yaqinda sotib olindi», «Qanday ishlaydi», Steam hamyon ($5/$10/$20/$50 — Steam sahifasini shu summa bilan ochadi), to'lov usullari (admin yuklagan Humo/Uzcard rasmlari, bo'lmasa rangli yozuv), savollar va yakuniy chaqiriq.
 - **Bozor:** o'yin tablari (CS2 / Dota 2 / Rust; yopiq o'yin «tez orada»), filtr + qidiruv, tartib, «Trade URL» holati, toifalar qatori (CS2: o'yindagi standart qurol rasmlari — Karambit, Sport Gloves, AK-47, AWP, Desert Eagle, P90, Nova — `base_weapons.json` dan; Dota 2 / Rust: toifadagi eng noyob predmet rasmi; qo'lda chizilgan belgi yo'q), kartochkalar (❤, katta rasm, xira logo, lotlar soni, noyoblik rangidagi chiziq, «…so'mdan», «N ta taklif →»). CS2 toifalarida ▾ — bosilsa qurol turlari menyusi ochiladi: «Hammasi · <toifa>» va har qurol o'zining eng ommabop skini rasmi, nomi va soni bilan (lis-skins / skinsavdo kabi); tanlangan qurol toifa tugmasida ko'rinadi.
 - **Skin sahifasi** (o'ngdan suriladi): rasm sahnasi va noyoblik nuri, «Mavjud: N», «O'yinda ko'rish», float oralig'i (CS2), katta nom, noyoblik belgisi, nuqtali jadval (o'yin, qurol/turi, noyoblik, StatTrak™, yetkazish, kafolat), katta yashil narx, «⚡ Sotib olish», «Barcha takliflar»: holat plitkalari (FN/MW/FT/WW/BS — soni va eng arzon narxi) va taklif kartochkalari, «So'nggi sotuvlar» — shu skinning bizdagi oxirgi 8 ta yetkazilgan xaridi (holat, float, qachon, narx; xaridor ko'rsatilmaydi).
 - **Xaridni tasdiqlash** — markazdagi oyna: skin qatori, trade havola (kiritilmagan bo'lsa), JAMI, balans; pul yetmasa «Balansni to'ldirish». Natija oynasi: «Steam'da qabul qilish», «Buyurtmalarim», «Xaridni davom ettirish».
@@ -573,6 +574,17 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
   - mahsulotlar (katalog nomi → tahrirlash oynasi) va o'yin/obunalar (→ «Mahsulotlar» shu so'z bilan);
   - raqam yozilsa — buyurtma/mijoz qidiruvi; har doim oxirida «Mijozlardan qidirish».
   Enter — birinchi natija ochiladi.
+
+## Web Interface Guidelines tekshiruvi (v3.14)
+
+Vercel'ning Web Interface Guidelines qoidalari bo'yicha butun mijoz qismi ko'rib chiqildi va tuzatildi:
+- `color-scheme` mavzuga mos (`dark` / yorug' mavzuda `light`; skinlar do'koni doim `dark`) — aylantirish chizig'i, ochiladigan ro'yxatlar va tizim maydonlari to'g'ri rangda.
+- Tugma, havola, `summary`, `label`, `select` — `touch-action: manipulation` (ikki marta bosishda kattalashmaydi, bosish kechikmaydi).
+- Yuklanish va qidiruv matnlarida «...» o'rniga «…» (uch tilda).
+- Fokus: skinlar bozoridagi tartiblash ro'yxatiga ko'rinadigan fokus halqasi qo'shildi (qolgan maydonlarda bor edi).
+- Skinlar do'konidagi tasdiqlash oynasi va qurollar menyusida `overscroll-behavior: contain` (ichki aylantirish orqa sahifani surmaydi).
+- Uzluksiz harakat (3D halqa, lenta, uchqunlar, suzuvchi skin) «Kamroq harakat» sozlamasi va tizimdagi reduced-motion bilan to'xtaydi; bosib turilsa halqa va lenta to'xtaydi.
+- Ataylab qoldirildi: `user-scalable=no` — Telegram Mini App ilova kabi ishlashi uchun (sahifani chimchilab kattalashtirish maketni buzadi); ko'rish qiyin foydalanuvchilar uchun tizimning kattalashtirish vositasi baribir ishlaydi.
 
 ## Uzun yozuvlar sig'ishi (v3.11)
 

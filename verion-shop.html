@@ -115,6 +115,9 @@ label{display:block;font-size:var(--fs-sm);font-weight:500;color:var(--mut);marg
 .hide{display:none!important}
 img{max-width:100%}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* tizim boshqaruvlari (aylantirish chizig'i, ro'yxatlar) mavzuga mos; tugmalarda ikki marta bosish kattalashtirmaydi */
+html{color-scheme:dark}html[data-theme="light"]{color-scheme:light}
+button,a,[role="button"],summary,label,select{touch-action:manipulation}
 
 /* xato oynasi */
 #errbox{position:fixed;inset:auto 12px calc(var(--navh) + 12px) 12px;z-index:9999;background:#2a1414;border:1px solid var(--err);
@@ -837,42 +840,57 @@ nav button svg{width:24px;height:24px}
 .vn2{padding-bottom:8px}
 .vn2 .num,.vn2-sum{font-variant-numeric:tabular-nums}
 .vn2-cur{color:var(--mut);font-weight:500;font-size:.82em}
-.vn2-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:4px 0 16px}
+.vn2-title{position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px 12px;margin:4px 0 16px;padding:16px;border-radius:var(--r-xl);
+  border:1px solid rgba(47,143,255,.24);background:radial-gradient(120% 130% at 0% 0%,rgba(42,171,238,.30),transparent 55%),radial-gradient(90% 100% at 100% 100%,rgba(47,143,255,.16),transparent 62%),var(--card)}
+.vn2-title::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(143,194,255,.16) 1px,transparent 1.3px);background-size:14px 14px;
+  -webkit-mask-image:linear-gradient(105deg,transparent 35%,#000 100%);mask-image:linear-gradient(105deg,transparent 35%,#000 100%)}
+.vn2-title>*{position:relative}
+.vn2-logo{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(145deg,#3bb4ec,#1c8fd0);box-shadow:0 8px 22px rgba(42,171,238,.38)}
+.vn2-logo svg{margin:0 2px 0 -2px}
 .vn2-tl{min-width:0}
 .vn2-title h1{margin:0;font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.02em;line-height:1.15}
-.vn2-title p{margin:6px 0 0;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
-.vn2-bal{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;border:none;background:var(--card);border-radius:var(--r);padding:8px 12px;color:var(--txt);min-height:44px}
+.vn2-title p{margin:4px 0 0;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
+.vn2-bal{flex:0 0 auto;align-self:start;display:flex;flex-direction:column;align-items:flex-end;gap:2px;border:1px solid var(--line);background:var(--card2);border-radius:var(--r);padding:8px 12px;color:var(--txt);min-height:44px}
 .vn2-bal span{font-size:var(--fs-xs);color:var(--mut)}
 .vn2-bal b{font-size:var(--fs-md);font-weight:600;white-space:nowrap}
-.vn2-bal:active{background:var(--card2)}
-.vn2-panel{background:var(--card);border-radius:var(--r-lg);padding:4px 0;margin:0 0 12px}
+.vn2-bal:active{background:var(--card3)}
+.vn2-feats{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
+.vn2-feats span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:var(--fs-xs);font-weight:600;color:var(--txt);white-space:nowrap}
+.vn2-feats svg{color:var(--acc2)}
+.vn2-panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:4px 0;margin:0 0 12px;overflow:hidden}
 .vn2-panel h2,.vn2-how h2{margin:0;padding:12px 16px 4px;font-size:var(--fs-sm);font-weight:600;color:var(--mut2)}
-.vn2-pend{padding-bottom:6px}
+.vn2-pend{padding-bottom:6px;border-color:rgba(245,180,60,.35);background:radial-gradient(120% 80% at 0 0,rgba(245,180,60,.12),transparent 60%),var(--card)}
+.vn2-pend h2{display:flex;align-items:center;gap:8px;color:var(--warn)}
+.vn2-pend h2::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 0 rgba(245,180,60,.6);animation:vn2pulse 1.8s ease-out infinite}
+@keyframes vn2pulse{0%{box-shadow:0 0 0 0 rgba(245,180,60,.55)}100%{box-shadow:0 0 0 9px rgba(245,180,60,0)}}
 .vn2-tabs{display:flex;gap:22px;margin:4px 0 14px;border-bottom:1px solid var(--line)}
 .vn2-tabs button{position:relative;border:none;background:none;padding:10px 0 12px;font-size:var(--fs-md);font-weight:500;color:var(--mut);display:inline-flex;align-items:center;gap:6px;min-height:44px}
 .vn2-tabs button.on{color:var(--txt);font-weight:600}
-.vn2-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--txt)}
-.vn2-cnt{font-size:var(--fs-2xs);font-weight:600;background:var(--card2);color:var(--mut2);border-radius:999px;padding:2px 7px;line-height:1.3}
-.vn2-how{background:var(--card);border-radius:var(--r-lg);padding:2px 0 14px;margin:4px 0 12px}
+.vn2-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--acc)}
+.vn2-cnt{font-size:var(--fs-2xs);font-weight:600;background:var(--acc-soft);color:var(--acc2);border-radius:999px;padding:2px 7px;line-height:1.3}
+.vn2-how{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:2px 0 14px;margin:4px 0 12px}
 .vn2-how p{margin:10px 16px 0;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
 .vn2-search{margin:0 0 12px;height:44px}
 .vn2-lh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 6px 16px}
 .vn2-lh>span{font-size:var(--fs-xs);color:var(--mut)}
 .vn2-seg{display:inline-flex;background:var(--card2);border-radius:999px;padding:2px;gap:2px}
 .vn2-seg button{border:none;background:none;color:var(--mut2);font-size:var(--fs-xs);font-weight:500;border-radius:999px;padding:0 11px;height:30px}
-.vn2-seg button.on{background:var(--card3);color:var(--txt);font-weight:600}
+.vn2-seg button.on{background:var(--acc-soft);color:var(--acc2);font-weight:600}
 .vn2-gh{margin:0;padding:12px 16px 4px;font-size:var(--fs-xs);font-weight:600;color:var(--mut)}
-.vn2-row,.vn2-prow{display:flex;align-items:center;gap:12px;width:100%;border:none;background:none;text-align:left;color:var(--txt);padding:10px 16px;min-height:60px;transition:background-color .15s ease}
+.vn2-row,.vn2-prow{display:flex;align-items:center;gap:12px;width:100%;border:none;background:none;text-align:left;color:var(--txt);padding:10px 12px 10px 14px;min-height:64px;transition:background-color .15s ease}
 .vn2-row+.vn2-row{border-top:1px solid var(--line)}
 .vn2-row:active,.vn2-prow:active{background:var(--card2)}
 @media (hover:hover){.vn2-row:hover,.vn2-prow:hover{background:var(--card2)}}
-.vn2-fl{flex:0 0 32px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1}
-.vn2-fl.lg{flex-basis:44px;width:44px;height:44px;font-size:36px}
+.vn2-fl{flex:0 0 42px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:26px;line-height:1;border-radius:13px;background:var(--card2);border:1px solid var(--line)}
+.vn2-fl.lg{flex-basis:56px;width:56px;height:56px;font-size:36px;border-radius:17px}
 .vn2-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .vn2-mid>b{font-size:var(--fs-md);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vn2-mid>span{font-size:var(--fs-xs);color:var(--mut);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.vn2-dot{flex:0 0 6px;width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok);margin-right:2px}
+.vn2-go{flex:0 0 32px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--acc-soft);color:var(--acc2)}
+.vn2-row.no .vn2-go{background:var(--card2);color:var(--mut)}
 .vn2-pr{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
-.vn2-pr .vn2-sum{font-size:var(--fs-md);font-weight:600;white-space:nowrap}
+.vn2-pr .vn2-sum{font-size:var(--fs-md);font-weight:700;white-space:nowrap}
 .vn2-row.no .vn2-pr .vn2-sum{color:var(--mut)}
 .vn2-no{font-size:var(--fs-2xs);color:var(--mut)}
 .vn2-act{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:600;color:var(--txt)}
@@ -880,11 +898,12 @@ nav button svg{width:24px;height:24px}
 .vn2-pill.sm{padding:3px 6px}
 .vn2-pill.ok{background:var(--ok-soft);color:var(--ok)}
 .vn2-pill.warn{background:var(--warn-soft);color:var(--warn)}
+.vn2-tg{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;background:rgba(42,171,238,.14);color:#38b0ea;font-size:var(--fs-2xs);font-weight:600}
 .vn2-code-sm{font-size:var(--fs-sm);font-weight:600;letter-spacing:.06em}
 .vn2-empty{padding:18px 16px;color:var(--mut2);font-size:var(--fs-sm);line-height:1.45}
 .vn2-link{border:none;background:none;padding:0;color:var(--txt);font-weight:600;text-decoration:underline;text-underline-offset:3px;font-size:inherit}
 /* yuklanish: oxirgi joylashuv, qiymatlar o'rnida tekis kulrang bloklar (miltillashsiz) */
-.vn2-row.sk .vn2-fl{background:var(--card2);border-radius:8px}
+.vn2-row.sk .vn2-fl{background:var(--card2)}
 .vn2-row.sk .vn2-mid b{display:block;width:46%;height:14px;border-radius:4px;background:var(--card2)}
 .vn2-row.sk .vn2-mid span{display:block;width:28%;height:10px;border-radius:4px;background:var(--card2)}
 .vn2-row.sk .vn2-pr b{display:block;width:72px;height:14px;border-radius:4px;background:var(--card2)}
@@ -892,13 +911,13 @@ nav button svg{width:24px;height:24px}
 .vn2-path{list-style:none;margin:6px 16px 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
 .vn2-path.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .vn2-sheet .vn2-path{margin:6px 0 0}
-.vn2-path li{position:relative;display:flex;flex-direction:column;gap:3px;padding-top:20px;min-width:0}
-.vn2-path li i{position:absolute;top:2px;left:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--mut);background:transparent;box-sizing:border-box}
-.vn2-path li::before{content:"";position:absolute;top:7px;left:16px;right:4px;height:2px;border-radius:2px;background:var(--line2)}
+.vn2-path li{position:relative;display:flex;flex-direction:column;gap:3px;padding-top:40px;min-width:0}
+.vn2-path li i{position:absolute;top:0;left:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card2);border:1px solid var(--line2);color:var(--mut);box-sizing:border-box}
+.vn2-path li::before{content:"";position:absolute;top:15px;left:38px;right:6px;height:2px;border-radius:2px;background:var(--line2)}
 .vn2-path li:last-child::before{display:none}
-.vn2-path li.on i{background:var(--txt);border-color:var(--txt)}
-.vn2-path li.on::before{background:var(--txt)}
-.vn2-path li.cur i{border-color:var(--acc2);background:transparent}
+.vn2-path li.on i{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.vn2-path li.on::before{background:var(--ok)}
+.vn2-path li.cur i{background:var(--acc-soft);border-color:var(--acc);color:var(--acc2);box-shadow:0 0 0 4px var(--acc-soft)}
 .vn2-path b{font-size:var(--fs-sm);font-weight:600;color:var(--txt);padding-right:6px}
 .vn2-path span{font-size:var(--fs-xs);color:var(--mut);padding-right:6px}
 .vn2-path li.cur span{color:var(--acc2)}
@@ -911,6 +930,9 @@ nav button svg{width:24px;height:24px}
 .vn2 .nowrap,.vn2-sheet .nowrap{white-space:nowrap}
 .vn2-sh-h p{margin:3px 0 0;color:var(--mut);font-size:var(--fs-xs)}
 .vn2-big{font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:2px}
+.vn2-pricebox{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:14px 16px;border-radius:var(--r-lg);border:1px solid var(--line);background:radial-gradient(120% 140% at 100% 0,rgba(47,143,255,.14),transparent 60%),var(--card2)}
+.vn2-pricebox small{display:block;font-size:var(--fs-xs);color:var(--mut);margin-bottom:4px}
+.vn2-pricebox .vn2-avail{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--mut2);white-space:nowrap;padding-bottom:4px}
 .vn2-kv{margin:0;background:var(--card2);border-radius:var(--r);padding:4px 14px}
 .vn2-kv>div{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px}
 .vn2-kv>div+div{border-top:1px solid var(--line)}
@@ -922,26 +944,30 @@ nav button svg{width:24px;height:24px}
 .vn2-note.warn{background:var(--warn-soft);color:var(--warn)}
 .vn2-hint{margin:0;font-size:var(--fs-sm);line-height:1.45;color:var(--mut2)}
 .vn2-hint:empty{display:none}
-.vn2-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:none;border-radius:999px;background:var(--txt);color:var(--bg);font-size:var(--fs-md);font-weight:600;transition:transform .15s var(--spring),opacity .15s ease}
+.vn2-primary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:none;border-radius:var(--r);background:var(--grad-btn);color:var(--on-acc);box-shadow:var(--shadow-acc);font-size:var(--fs-md);font-weight:600;transition:transform .15s var(--spring),opacity .15s ease}
 .vn2-primary:active{transform:scale(.98)}
 .vn2-primary:disabled{opacity:.7}
-.vn2-ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:none;border-radius:999px;background:none;color:var(--mut2);font-size:var(--fs-md);font-weight:500}
+.vn2-ghost{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:none;border-radius:var(--r);background:none;color:var(--mut2);font-size:var(--fs-md);font-weight:500}
 .vn2-ghost.bordered{border:1px solid var(--line2);color:var(--txt)}
 .vn2-ghost.danger{border:1px solid var(--line2);color:var(--err)}
 .vn2-ghost:active{background:var(--card2)}
-.vn2-num{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border-radius:var(--r);padding:12px 12px 12px 16px}
+.vn2-num{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:var(--r-lg);padding:14px 12px 14px 16px;border:1px solid rgba(47,143,255,.3);
+  background:radial-gradient(120% 140% at 0 0,rgba(47,143,255,.16),transparent 60%),var(--card2)}
 .vn2-num .vn2-ph{font-size:var(--fs-2xl);font-weight:700;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.vn2-copy{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--card3);color:var(--txt);font-size:var(--fs-xs);font-weight:600;min-height:36px;padding:0 12px}
+.vn2-copy{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;background:var(--acc-soft);color:var(--acc2);font-size:var(--fs-xs);font-weight:600;min-height:36px;padding:0 12px}
 .vn2-copy:active{transform:scale(.96)}
-.vn2-codebox{display:flex;flex-direction:column;gap:6px;background:var(--card2);border-radius:var(--r);padding:12px 12px 14px 16px;animation:vn2in .25s var(--spring)}
+.vn2-codebox{display:flex;flex-direction:column;gap:8px;border-radius:var(--r-lg);padding:14px 12px 16px 16px;animation:vn2in .25s var(--spring);border:1px solid rgba(53,194,123,.35);
+  background:radial-gradient(120% 120% at 100% 0,rgba(53,194,123,.16),transparent 60%),var(--card2)}
 .vn2-lbl{font-size:var(--fs-xs);color:var(--mut)}
 .vn2-codeln{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
-.vn2-code{font-size:36px;font-weight:700;letter-spacing:.14em;color:var(--acc2);line-height:1.1}
+.vn2-code{display:flex;gap:6px;font-size:28px;font-weight:700;color:var(--txt);line-height:1}
+.vn2-code span{display:flex;align-items:center;justify-content:center;width:40px;height:50px;border-radius:12px;background:var(--card);border:1px solid var(--line2);box-shadow:inset 0 -2px 0 var(--ok)}
+@media (max-width:370px){.vn2-code span{width:34px;height:44px;font-size:24px}}
 .vn2-pass{font-size:var(--fs-xl);font-weight:600;letter-spacing:.04em;overflow-wrap:anywhere;min-width:0}
 .vn2-timer{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:var(--fs-sm);color:var(--mut2)}
 .vn2-timer b{font-size:var(--fs-lg);color:var(--txt)}
 .vn2-bar{height:6px;border-radius:999px;background:var(--card2);overflow:hidden}
-.vn2-bar i{display:block;height:100%;border-radius:999px;background:var(--txt);transition:width 1s linear}
+.vn2-bar i{display:block;height:100%;border-radius:999px;background:var(--grad-btn);transition:width 1s linear}
 @keyframes vn2in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.vn2-codebox{animation:none}.vn2-bar i{transition:none}}
 [data-reduce-motion="1"] .vn2-codebox{animation:none}
@@ -1109,7 +1135,7 @@ nav button svg{width:24px;height:24px}
 /* ================= Skinlar do'koni (CS2 · Dota 2 · Rust) — alohida do'kon =================
    O'z sarlavhasi, pastki menyusi (Bosh sahifa / Bozor / Buyurtmalar / Profil), uchqunli fon,
    Unbounded (sarlavhalar) + Inter Tight (matn). Ilova mavzusidan qat'i nazar doim to'q. */
-.sk{--skbg:#0f1013;--skp:#18191e;--skp2:#1e2027;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skt:#fff;--skm:#7d8999;--skm2:#a3adbb;
+.sk{color-scheme:dark;--skbg:#0f1013;--skp:#18191e;--skp2:#1e2027;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skt:#fff;--skm:#7d8999;--skm2:#a3adbb;
   --ska:#ffb81c;--ska2:#ffd36b;--skg:#30d158;--skr:#ef5350;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;--skb:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   position:fixed;inset:0;z-index:92;display:flex;flex-direction:column;background:var(--skbg);color:var(--skt);font-family:var(--skb);overflow:hidden;-webkit-font-smoothing:antialiased;
   opacity:0;transform:scale(1.015);transition:opacity .3s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
@@ -1120,12 +1146,15 @@ nav button svg{width:24px;height:24px}
 .sk button,.sks button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sk [hidden],.sks [hidden]{display:none!important}
 body.sk-open{overflow:hidden}
-/* fon: nur, to'r, uchqunlar */
+/* fon: tepada iliq nur, to'r, mayda don (grain), uchqunlar — skinsavdo darajasidagi "tirik" fon, o'z rangimizda */
 .sk-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
-  background:radial-gradient(600px 420px at 110% -5%,rgba(255,184,28,.16),transparent 70%),radial-gradient(520px 420px at -25% 40%,rgba(70,90,255,.10),transparent 70%),
-    radial-gradient(500px 380px at 120% 95%,rgba(255,184,28,.08),transparent 70%)}
-.sk-bg:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
-  background-size:36px 36px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 20%,#000 30%,transparent 80%);mask-image:radial-gradient(ellipse 80% 60% at 50% 20%,#000 30%,transparent 80%)}
+  background:radial-gradient(130% 58% at 50% -14%,rgba(255,184,28,.22),rgba(255,184,28,.07) 45%,transparent 72%),
+    radial-gradient(70% 38% at 108% 46%,rgba(255,150,20,.07),transparent 70%),radial-gradient(80% 40% at -12% 88%,rgba(255,184,28,.06),transparent 70%),var(--skbg)}
+.sk-bg:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.046) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.046) 1px,transparent 1px);
+  background-size:40px 40px;background-position:center -1px;-webkit-mask-image:radial-gradient(ellipse 110% 72% at 50% 0,#000 22%,rgba(0,0,0,.35) 58%,transparent 88%);mask-image:radial-gradient(ellipse 110% 72% at 50% 0,#000 22%,rgba(0,0,0,.35) 58%,transparent 88%)}
+.sk-bg:after{content:"";position:absolute;inset:0;opacity:.055;background-size:180px 180px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.lite .sk-bg:after{display:none}
 .sk-bg i{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--ska);box-shadow:0 0 14px 5px rgba(255,184,28,.45);opacity:.7;animation:skFloat 7s ease-in-out infinite}
 .sk-bg i:nth-child(3n){width:3px;height:3px;opacity:.5;animation-duration:9s}
 .sk-bg i:nth-child(4n){filter:blur(1px);animation-duration:11s}
@@ -1182,7 +1211,9 @@ body.sk-open{overflow:hidden}
 .sk-in{animation:skIn .5s cubic-bezier(.2,.8,.2,1) both}
 .sk-in:nth-child(2){animation-delay:.05s}.sk-in:nth-child(3){animation-delay:.1s}.sk-in:nth-child(4){animation-delay:.15s}.sk-in:nth-child(5){animation-delay:.2s}.sk-in:nth-child(n+6){animation-delay:.25s}
 @keyframes skIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.sk-bg i,.sk-in{animation:none}.sk-fx{transition:none}}
+@media (prefers-reduced-motion:reduce){.sk-bg i,.sk-in,.sk-ring,.sk-tick .tr,.sk-stage .im img{animation:none}.sk-fx{transition:none}.sk-tick{overflow-x:auto;scrollbar-width:none}}
+[data-reduce-motion="1"] .sk-bg i,[data-reduce-motion="1"] .sk-ring,[data-reduce-motion="1"] .sk-tick .tr,[data-reduce-motion="1"] .sk-stage .im img{animation:none}
+[data-reduce-motion="1"] .sk-tick{overflow-x:auto;scrollbar-width:none}
 /* umumiy */
 .sk-sec{padding:0 16px;margin-top:26px}
 .sk-lbl{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--ska)}
@@ -1201,6 +1232,37 @@ body.sk-open{overflow:hidden}
 @keyframes skSh{from{background-position:200% 0}to{background-position:-200% 0}}
 /* ---- Bosh sahifa ---- */
 .sk-hero{position:relative;padding:26px 16px 6px;overflow:hidden}
+.sk-hero:before{content:"";position:absolute;left:-30%;top:-120px;width:160%;height:520px;pointer-events:none;
+  background:radial-gradient(50% 50% at 30% 42%,rgba(255,184,28,.17),transparent 70%),radial-gradient(40% 40% at 88% 70%,rgba(255,120,20,.08),transparent 70%)}
+/* 3D aylanuvchi top skinlar halqasi (bosh sahifa) */
+.sk-orb{position:relative;height:262px;margin:22px -16px 0;perspective:1000px;-webkit-perspective:1000px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sk-orb .fl{position:absolute;left:50%;bottom:4px;width:78%;height:60px;margin-left:-39%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,184,28,.32),rgba(255,184,28,.08) 60%,transparent);pointer-events:none}
+.sk-ring{position:relative;width:134px;height:184px;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform:rotateX(-7deg);animation:skSpin 42s linear infinite}
+.sk-orb:active .sk-ring{animation-play-state:paused}
+@keyframes skSpin{from{transform:rotateX(-7deg) rotateY(0)}to{transform:rotateX(-7deg) rotateY(-360deg)}}
+.sk-o3{position:absolute;inset:0;display:flex;flex-direction:column;padding:10px 11px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);border-top:2px solid var(--rc);outline:1px solid transparent;
+  background:radial-gradient(circle at 50% 34%,var(--rg),transparent 66%),linear-gradient(180deg,#1d2027,#14161b);color:#fff;text-align:left;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;transform:rotateY(calc(var(--i) * 360deg / var(--n))) translateZ(var(--rz))}
+.sk-o3 .im{position:relative;height:96px;display:flex;align-items:center;justify-content:center;margin:2px 0 10px}
+.sk-o3 .im .wm{width:92%}
+.sk-o3 img{position:relative;max-width:100%;max-height:92px;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+.sk-o3 .nm{font-size:11.5px;font-weight:600;color:#c9cfd9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-o3 .pr{margin-top:auto;font-size:14px;font-weight:800;color:var(--ska);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sk-o3 .pr small{font-size:10.5px;font-weight:600;color:var(--skm);margin-left:3px}
+.lite .sk-ring{animation:none}
+/* yugurib turuvchi lenta: yaqinda sotilgan (yoki top) skinlar */
+.sk-tick{position:relative;overflow:hidden;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.18);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.sk-tick .tr{display:flex;width:max-content;animation:skTick var(--d,48s) linear infinite}
+.sk-tick:active .tr{animation-play-state:paused}
+@keyframes skTick{to{transform:translateX(-50%)}}
+.sk-tick button{flex:0 0 auto;display:inline-flex;align-items:center;gap:9px;height:44px;margin-right:10px;padding:0 15px 0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:#fff}
+.sk-tick .d{flex:0 0 6px;height:6px;border-radius:50%;background:var(--rc);box-shadow:0 0 8px var(--rc)}
+.sk-tick img{width:40px;height:28px;object-fit:contain}
+.sk-tick .n{max-width:168px;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-tick .p{font-size:12.5px;font-weight:800;color:var(--ska);white-space:nowrap;font-variant-numeric:tabular-nums}
+.lite .sk-tick .tr{animation:none}
+.lite .sk-tick{overflow-x:auto;scrollbar-width:none}
 .sk-pill{display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;border:1px solid var(--skl2);background:rgba(255,255,255,.03);font-size:13px;font-weight:700;color:#cfd5df}
 .sk-pill i{width:9px;height:9px;border-radius:50%;background:var(--skg);box-shadow:0 0 0 4px rgba(48,209,88,.18),0 0 12px rgba(48,209,88,.7)}
 .sk-hero h1{margin:18px 0 0;font-family:var(--skd);font-weight:800;font-size:40px;line-height:1.02;letter-spacing:-1px}
@@ -1211,13 +1273,15 @@ body.sk-open{overflow:hidden}
 .sk-hero p b{color:var(--ska);font-weight:800}
 .sk-hero .cta{display:flex;flex-direction:column;gap:10px;margin-top:22px}
 .sk-hero .cta .sk-btn{width:100%}
-.sk-trust{display:grid;gap:12px;margin-top:22px}
-.sk-trust div{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--skm2);font-weight:500}
-.sk-trust svg{flex:0 0 22px;color:var(--ska)}
-.sk-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin:28px 0 0;border-top:1px solid var(--skl);border-bottom:1px solid var(--skl);background:var(--skl)}
-.sk-stats div{padding:20px 10px;text-align:center;background:var(--skbg)}
-.sk-stats b{display:block;font-family:var(--skd);font-weight:800;font-size:28px;letter-spacing:-.6px}
-.sk-stats span{display:block;font-size:13px;color:var(--skm);margin-top:4px}
+.sk-trust{display:flex;flex-wrap:wrap;gap:12px 20px;margin-top:22px}
+.sk-trust div{display:flex;align-items:center;gap:9px;font-size:13.5px;line-height:1.35;color:var(--skm2);font-weight:500}
+.sk-trust svg{flex:0 0 18px;width:18px;height:18px;color:var(--ska)}
+/* statistika — qorong'i lenta (bo'lim chegarasi) */
+.sk-stats{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px;margin:24px 0 0;padding:24px 16px;
+  background:rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
+.sk-stats div{text-align:center;min-width:0}
+.sk-stats b{display:block;font-family:var(--skd);font-weight:700;font-size:26px;letter-spacing:-.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sk-stats span{display:block;font-size:12.5px;color:var(--skm);margin-top:5px}
 .sk-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
 .sk-gt{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:118px;padding:14px 12px;border-radius:20px;border:1px solid var(--skl);overflow:hidden;color:#fff;text-align:left;background:var(--skp)}
 .sk-gt:before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:var(--gc);opacity:.22;filter:blur(18px)}
@@ -1246,7 +1310,10 @@ body.sk-open{overflow:hidden}
 .sk-amts{display:flex;gap:8px;margin-top:16px}
 .sk-amts button{height:46px;min-width:62px;padding:0 14px;border-radius:13px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.4);color:#fff;font-weight:800;font-size:15px}
 .sk-pay{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
-.sk-pay span{display:inline-flex;align-items:center;justify-content:center;height:52px;min-width:130px;padding:0 20px;border-radius:999px;border:1px solid var(--skl);background:var(--skp);font-weight:800;font-size:17px;letter-spacing:.06em}
+.sk-pay span{display:inline-flex;align-items:center;justify-content:center;height:56px;min-width:138px;padding:0 22px;border-radius:16px;border:1px solid #2c2f38;
+  background:linear-gradient(180deg,#1c1e24,#15161a);font-weight:800;font-size:17px;letter-spacing:.08em}
+.sk-pay span b{font-weight:800}
+.sk-pay span img{display:block;height:26px;width:auto;max-width:112px;object-fit:contain}
 .sk-faq{margin-top:20px;display:grid;gap:10px}
 .sk-faq details{border-radius:20px;background:#121317;border:1px solid var(--skl);padding:0 20px;transition:border-color .2s}
 .sk-faq details[open]{border-color:rgba(255,184,28,.6)}
@@ -1255,7 +1322,11 @@ body.sk-open{overflow:hidden}
 .sk-faq summary:after{content:"+";font-size:24px;line-height:18px;font-weight:300;color:#fff}
 .sk-faq details[open] summary:after{content:"–"}
 .sk-faq p{margin:0 0 20px;font-size:15px;line-height:1.6;color:var(--skm)}
-.sk-final{margin-top:30px;padding:46px 20px;text-align:center;background:radial-gradient(400px 220px at 50% 50%,rgba(255,184,28,.16),transparent 70%),linear-gradient(180deg,#1a1912,#131310)}
+.sk-final{position:relative;overflow:hidden;margin-top:30px;padding:54px 20px 50px;text-align:center;border-top:1px solid rgba(255,184,28,.14);
+  background:radial-gradient(70% 62% at 50% 56%,rgba(255,184,28,.22),transparent 72%),linear-gradient(180deg,#1a1912,#111110)}
+.sk-final:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:40px 40px;background-position:center;-webkit-mask-image:radial-gradient(62% 70% at 50% 50%,#000,transparent 82%);mask-image:radial-gradient(62% 70% at 50% 50%,#000,transparent 82%)}
+.sk-final>*{position:relative}
 .sk-final p{margin:12px 0 22px;font-size:16px;color:var(--skm2)}
 /* yaqinda sotilganlar */
 .sk-rec{display:flex;gap:10px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}
@@ -1291,6 +1362,7 @@ body.sk-open{overflow:hidden}
 .sk-sel select{appearance:none;-webkit-appearance:none;border:none;outline:none;background:none;color:inherit;font:inherit;font-size:15px;font-weight:600;padding-right:18px}
 .sk-sel select option{background:#1e2027;color:#fff}
 .sk-sel .dn{position:absolute;right:12px;pointer-events:none;color:var(--skm)}
+.sk-sel:focus-within{box-shadow:0 0 0 2px var(--ska)}
 .sk-tu{display:inline-flex;align-items:center;gap:8px;border:none;background:none;color:var(--ska);font-size:15px;font-weight:800;padding:8px 2px}
 .sk-tu.ok{color:var(--skg)}
 .sk-cats{display:flex;gap:8px;margin:12px 16px 0;padding:8px;border-radius:20px;border:1px solid var(--skl);background:rgba(24,25,30,.92);overflow-x:auto;scrollbar-width:none}
@@ -1300,7 +1372,7 @@ body.sk-open{overflow:hidden}
 .sk-cat.on{background:var(--ska);color:#141414}
 .sk-cat.on svg{color:#141414}
 /* toifa ostida ochiluvchi qurollar menyusi */
-.sk-wpn{display:flex;flex-direction:column;gap:2px;margin:8px 16px 0;padding:8px;border-radius:18px;border:1px solid var(--skl2);background:#16171c;box-shadow:0 18px 40px rgba(0,0,0,.45);max-height:min(62vh,560px);overflow-y:auto;animation:skPop .22s cubic-bezier(.2,1.2,.4,1) both}
+.sk-wpn{display:flex;flex-direction:column;gap:2px;margin:8px 16px 0;padding:8px;border-radius:18px;border:1px solid var(--skl2);background:#16171c;box-shadow:0 18px 40px rgba(0,0,0,.45);max-height:min(62vh,560px);overflow-y:auto;overscroll-behavior:contain;animation:skPop .22s cubic-bezier(.2,1.2,.4,1) both}
 .sk-wpn button{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px;min-width:0;min-height:54px;padding:4px 14px 4px 8px;border-radius:12px;border:none;background:transparent;color:#d8dde5;font-weight:700;font-size:15px;text-align:left}
 .sk-wpn button i{display:flex;align-items:center;justify-content:center;width:72px;height:46px}
 .sk-wpn button i img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
@@ -1327,11 +1399,17 @@ body.sk-open{overflow:hidden}
 .sk-bar{display:flex;align-items:baseline;justify-content:space-between;padding:22px 16px 12px}
 .sk-bar b{font-family:var(--skd);font-weight:800;font-size:19px;letter-spacing:-.3px}
 .sk-bar span{font-size:13px;color:var(--skm);font-weight:600}
-.sk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 16px}
-.sk-card{position:relative;display:flex;flex-direction:column;width:100%;padding:0;text-align:left;color:#fff;border-radius:22px;overflow:hidden;background:var(--skp);border:1px solid var(--skl);transition:transform .14s,border-color .14s}
-.sk-card:active{transform:scale(.97)}
-.sk-card:focus-visible,.sk-card:hover{border-color:rgba(255,184,28,.55);background-image:radial-gradient(rgba(255,184,28,.16) 1.2px,transparent 1.3px);background-size:14px 14px}
-.sk-cim{position:relative;height:150px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side at 50% 55%,var(--rg,rgba(176,195,217,.18)),transparent 100%)}
+.sk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 16px}
+.sk-card{position:relative;display:flex;flex-direction:column;width:100%;padding:0;text-align:left;color:#fff;border-radius:18px;overflow:hidden;background:#17181d;border:1px solid #25272e;transition:transform .14s,border-color .14s}
+.sk-card:active{transform:scale(.97);border-color:rgba(255,184,28,.5)}
+.sk-card:focus-visible,.sk-card:hover{border-color:#3d424e}
+/* rasm hududi: noyoblik rangidagi nur pastdan ko'tariladi + nuqtali tekstura + to'liq kenglikdagi chiziq */
+.sk-cim{position:relative;height:140px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(0deg,var(--rg,rgba(176,195,217,.2)) 0%,transparent 66%)}
+.sk-cim:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,var(--rd,rgba(176,195,217,.4)) 1px,transparent 1.4px);
+  background-size:12px 12px;background-position:center bottom;opacity:.7;transition:opacity .2s;
+  -webkit-mask-image:linear-gradient(0deg,#000,transparent 72%);mask-image:linear-gradient(0deg,#000,transparent 72%)}
+.sk-card:hover .sk-cim:before,.sk-card:active .sk-cim:before,.sk-card:focus-visible .sk-cim:before{opacity:1}
 /* xira Verion belgisi — har rasm orqasida (rasm yuklanmasa ham kartochka bo'sh ko'rinmaydi) */
 .sk .wm{position:absolute;left:50%;top:50%;width:80%;max-width:190px;aspect-ratio:300/69;transform:translate(-50%,-50%);background:var(--sklogo) center/contain no-repeat;opacity:.13;pointer-events:none}
 .sk-stage .im .wm{width:72%;max-width:290px;opacity:.09}
@@ -1339,9 +1417,9 @@ body.sk-open{overflow:hidden}
 .sk-cim img,.sk-oc .im img,.sk-stage .im img,.sk-rc .im img{position:relative}
 .sk-lots{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);color:#cfd5df;font-size:11.5px;font-weight:800}
 .sk-lots svg{width:13px;height:13px}
-.sk-cim img{position:relative;max-width:84%;max-height:118px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55));transition:transform .25s}
+.sk-cim img{position:relative;max-width:86%;max-height:112px;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55));transition:transform .25s}
 .sk-card:active .sk-cim img{transform:scale(1.05)}
-.sk-cim:after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:3px;border-radius:3px;background:var(--rc,#b0c3d9)}
+.sk-cim:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--rc,#b0c3d9);box-shadow:0 -3px 16px var(--rg,rgba(176,195,217,.3))}
 .sk-ct{position:absolute;top:12px;left:12px;display:flex;gap:5px}
 .sk-ct span{padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);font-size:11px;font-weight:800;color:#d5dae2}
 .sk-ct .st{color:#ff8a4c}.sk-ct .sv{color:#f3d36a}.sk-ct .st2{color:#ffc94d}
@@ -1349,12 +1427,13 @@ body.sk-open{overflow:hidden}
 .sk-fav svg{fill:inherit;stroke:inherit}
 .sk-fav.on{color:#ff5d6c;fill:#ff5d6c}
 .sk-fav:active{transform:scale(.85)}
-.sk-cb{padding:12px 14px 14px}
-.sk-cp{font-weight:800;font-size:17px;letter-spacing:-.2px;white-space:nowrap}
-.sk-cp small{font-size:12px;color:var(--skm);font-weight:600;margin-left:4px}.sk-cp small.pre{margin:0 4px 0 0}
-.sk-cp.na{font-size:13.5px;color:var(--skm);font-weight:600}
-.sk-cn{font-size:13.5px;color:var(--skm);font-weight:500;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sk-cg{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;margin-top:12px;border-radius:13px;background:var(--skp3);color:#fff;font-weight:700;font-size:14.5px;transition:background .15s,color .15s}
+.sk-cb{padding:11px 12px 12px}
+.sk-cp{font-weight:800;font-size:15.5px;letter-spacing:-.2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sk-cp small{font-size:11px;color:var(--skm);font-weight:600;margin-left:4px}.sk-cp small.pre{margin:0 4px 0 0}
+.sk-cp.na{font-size:13px;color:var(--skm);font-weight:600}
+.sk-cn{font-size:12.5px;color:#9da6b8;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-cg{display:flex;align-items:center;justify-content:center;gap:7px;height:40px;margin-top:11px;border-radius:11px;background:#262a32;color:#fff;font-weight:700;font-size:13.5px;transition:background .15s,color .15s}
+.sk-cg svg{width:16px;height:16px}
 .sk-card:hover .sk-cg,.sk-card:focus-visible .sk-cg{background:var(--ska);color:#141414}
 .sk-more{display:block;width:calc(100% - 32px);margin:14px 16px 0;height:52px;border-radius:16px;border:1.5px solid var(--skl2);background:var(--skp);color:#fff;font-weight:800;font-size:15px}
 .sk-x{display:flex;align-items:center;gap:14px;width:calc(100% - 32px);margin:16px 16px 0;padding:16px;border-radius:20px;border:1px solid rgba(86,150,220,.35);background:linear-gradient(135deg,#1a2738,#15181e 70%);color:#fff;text-align:left}
@@ -1368,14 +1447,22 @@ body.sk-open{overflow:hidden}
 .sk-page .sk-main{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .sk-crumb{flex:1;min-width:0;font-size:14px;color:var(--skm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-crumb b{color:#d8dde5;font-weight:600}
-.sk-stage{position:relative;margin:14px 16px 0;padding:16px;border-radius:26px;border:1px solid var(--skl);background:var(--skp);overflow:hidden}
+.sk-stage{position:relative;margin:14px 16px 0;padding:16px;border-radius:24px;border:1px solid #2a2d35;overflow:hidden;
+  background:linear-gradient(0deg,var(--rb,rgba(120,140,190,.16)) 0%,transparent 58%),linear-gradient(180deg,#1a1c22,#141519)}
+/* sahna teksturasi: skin atrofida noyoblik rangidagi nuqtalar, tepada noyoblik chizig'i, rasm ostida soya; rasm sekin suzadi */
+.sk-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,var(--rd,rgba(176,195,217,.35)) 1px,transparent 1.4px);
+  background-size:14px 14px;background-position:center;opacity:.6;-webkit-mask-image:radial-gradient(62% 52% at 50% 50%,#000 20%,transparent 78%);mask-image:radial-gradient(62% 52% at 50% 50%,#000 20%,transparent 78%)}
+.sk-stage:after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--rc,#b0c3d9);box-shadow:0 0 18px var(--rc,#b0c3d9)}
+.sk-stage .im:after{content:"";position:absolute;left:50%;bottom:4px;width:62%;height:26px;margin-left:-31%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);pointer-events:none}
+@keyframes skBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .sk-stage .glow{position:absolute;left:50%;top:48%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(closest-side,var(--rg,rgba(120,140,190,.3)),transparent);pointer-events:none}
 .sk-stage .bd{position:relative;display:flex;gap:10px;align-items:center}
 .sk-badge{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 16px;border-radius:14px;font-weight:800;font-size:15px}
 .sk-badge.bolt{width:46px;padding:0;border:1.5px solid rgba(255,184,28,.6);background:rgba(255,184,28,.12);color:var(--ska)}
 .sk-badge.av{border:1.5px dashed rgba(48,209,88,.6);background:rgba(48,209,88,.08);color:#4fe07a}
 .sk-stage .im{position:relative;height:230px;display:flex;align-items:center;justify-content:center}
-.sk-stage .im img{max-width:92%;max-height:210px;object-fit:contain;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+.sk-stage .im img{max-width:92%;max-height:210px;object-fit:contain;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6));animation:skBob 5.5s ease-in-out infinite}
+.lite .sk-stage .im img{animation:none}
 .sk-stk{position:absolute;right:4px;top:6px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .sk-stk span{max-width:130px;padding:3px 8px;border-radius:7px;background:rgba(0,0,0,.5);font-size:10.5px;font-weight:700;color:#d5dae2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-stage .ft{position:relative;display:flex;gap:10px;align-items:center}
@@ -1424,7 +1511,7 @@ body.sk-open{overflow:hidden}
 /* ---- Tasdiqlash oynasi ---- */
 .sk-modal{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,8,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:skFade .2s both}
 @keyframes skFade{from{opacity:0}to{opacity:1}}
-.sk-mb{width:100%;max-width:440px;max-height:calc(100% - 20px);overflow-y:auto;border-radius:26px;border:1px solid var(--skl);background:#18191e;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:skPop .28s cubic-bezier(.2,1.3,.4,1) both}
+.sk-mb{width:100%;max-width:440px;max-height:calc(100% - 20px);overflow-y:auto;overscroll-behavior:contain;border-radius:26px;border:1px solid var(--skl);background:radial-gradient(120% 34% at 50% 0,rgba(255,184,28,.09),transparent 70%),#18191e;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:skPop .28s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes skPop{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
 .sk-mh{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px}
 .sk-mh b{font-family:var(--skd);font-weight:800;font-size:20px;letter-spacing:-.4px}
@@ -1499,7 +1586,7 @@ body.sk-open{overflow:hidden}
 .sk-list .ar{color:var(--skm)}
 /* pastdan chiqadigan oynalar (filtr, trade havola, yordam) */
 .sheet.sks{--skp:#18191e;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skm:#7d8999;--skm2:#a3adbb;--ska:#ffb81c;--skg:#30d158;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;
-  font-family:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;background:#141519;border-top-color:#2a2d35}
+  font-family:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;background:radial-gradient(120% 30% at 50% 0,rgba(255,184,28,.08),transparent 70%),#141519;border-top-color:#2a2d35}
 .sheet.sks .grab{background:#353a45}
 .sheet.sks .sheet-x,.sheet.sks .sheet-back{background:#262931;color:#c8ced8;border-color:#353a45}
 .sks h3.t{margin:4px 0 0;font-family:var(--skd);font-weight:800;font-size:22px;letter-spacing:-.4px}
@@ -1529,9 +1616,6 @@ body.sk-open{overflow:hidden}
 .sks .stp b{flex:0 0 34px;height:34px;border-radius:11px;background:var(--ska);color:#141414;font-family:var(--skd);display:flex;align-items:center;justify-content:center;font-weight:800}
 /* qo'shimcha: bosh sahifa lentalari, skin sahifasi, kafolat */
 .sk-hero>*{position:relative}
-.sk-hero .art{position:absolute;right:-34px;top:54px;width:220px;height:160px;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.5;transform:rotate(-16deg);animation:skArt 6s ease-in-out infinite}
-.sk-hero .art img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 18px 40px rgba(255,170,0,.4))}
-@keyframes skArt{0%,100%{transform:rotate(-16deg) translateY(0)}50%{transform:rotate(-13deg) translateY(-10px)}}
 .sk-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .sk-all{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;height:40px;padding:0 6px 0 14px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#fff;font-weight:700;font-size:14px}
 .sk-rail{display:flex;gap:12px;overflow-x:auto;margin:14px -16px 0;padding:0 16px 4px;scrollbar-width:none;scroll-snap-type:x proximity}
@@ -2070,7 +2154,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-04.5";
+var CLIENT_BUILD="2026-11-04.6";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2154,8 +2238,8 @@ en:{
   st_pending:"Awaiting payment",st_checking:"Payment being checked",st_cancelled:"Cancelled", delivered_view:"View",
   goto_pay:"Pay",resend:"Resend receipt",
   profile_title:"Profile",guest:"Guest",tg_user:"Telegram user",language:"Language",owner:"Owner", bank_support_msg:"Hello! I want to top up my balance via terminal (ATM), amount: {amount}", contact_support_btn:"Contact support",
-  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light",theme_switch_to_light:"Switch to light mode",theme_switch_to_dark:"Switch to dark mode",reduce_motion:"Reduce animations",reduce_motion_sub:"Turn off icon animations for speed",notif_title:"Notifications",notif_sub:"Get notified when favorites are back in stock or cheaper",leaderboard_row:"Top spenders",leaderboard_row_sub:"See the leaderboard", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"Username",check_btn:"Check",amount_optional:"Enter amount",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing...",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
-  nakrutka_title:"Boost services",nakrutka_sub:"Followers, likes, views",nakrutka_panel_title:"Boost services",nakrutka_app_label:"Choose app",nakrutka_loading:"Loading services...",nakrutka_load_err:"Failed to load, try again",nakrutka_soon_note:"Ordering will be added soon \u2014 for now you can only view prices and services.",
+  support:"Support",support_sub:"Contact the operator", invite_title:"Invite friends",invite_sub:"Share the app, earn bonuses",theme_title:"Appearance",theme_dark:"Dark",theme_light:"Light",theme_switch_to_light:"Switch to light mode",theme_switch_to_dark:"Switch to dark mode",reduce_motion:"Reduce animations",reduce_motion_sub:"Turn off icon animations for speed",notif_title:"Notifications",notif_sub:"Get notified when favorites are back in stock or cheaper",leaderboard_row:"Top spenders",leaderboard_row_sub:"See the leaderboard", invite_share_text:"Join this shop and get bonuses!", invite_soon:"Coming soon",soon_badge:"Soon", lang_tap_hint:"Tap to switch language",theme_tap_hint:"Tap to switch appearance", video_guide:"How to top up?",video_guide_sub:"Watch video guide", stars_unit:"Telegram Stars",username_label:"Username",check_btn:"Check",amount_optional:"Enter amount",stars_amount_label:"Amount",price_label:"Price",min_amount_note:"Minimum amount",checking:"Checking",user_not_found:"User not found",processing:"Processing…",need_username:"Set a Telegram username in settings first",fragment_err:"Fragment error, try again later",stars_hint_check:"Check the @username above first",stars_hint_min:"Minimum amount is {n} Stars",group_other:"Other",group_count_unit:"items",group_new:"+ New group",group_none:"No group",group_label:"Group",group_name_ph:"Group name (e.g. Netflix)",group_img:"Group logo",
+  nakrutka_title:"Boost services",nakrutka_sub:"Followers, likes, views",nakrutka_panel_title:"Boost services",nakrutka_app_label:"Choose app",nakrutka_loading:"Loading services…",nakrutka_load_err:"Failed to load, try again",nakrutka_soon_note:"Ordering will be added soon \u2014 for now you can only view prices and services.",
   nakrutka_link_label:"Link",nakrutka_link_ph:"https://t.me/... or profile link",nakrutka_qty_label:"Quantity",nakrutka_qty_unit:"pcs",nakrutka_total_label:"Total price",nakrutka_qty_range:"Quantity must be between {min} and {max}",nakrutka_order_soon:"Order \u2014 coming soon",nakrutka_order_btn:"Submit Order",nakrutka_order_ok:"Order accepted! Processing \u2014 check Orders.",nakrutka_link_needed:"Enter the link",nakrutka_refresh_btn:"Refresh status",nakrutka_remains:"remaining",nakrutka_refreshed:"Status updated",nakrutka_choose_app:"Choose a platform",nakrutka_min_max:"min {min} \u2013 max {max}",
   nk_st_pending:"Pending",nk_st_inprogress:"In progress",nk_st_processing:"Processing",nk_st_completed:"Completed",nk_st_partial:"Partially completed",nk_st_canceled:"Canceled",nk_st_refunded:"Refunded",
   nk_svc_count:"services",
@@ -2163,7 +2247,7 @@ en:{
   a_nk_rate_label:"USD \u2192 sum rate",a_nk_rate_hint:"Leave empty to use the default rate",a_nk_markup_label:"Markup, %",a_nk_markup_hint:"Added on top of the JAP price",
   a_nk_filter_processing:"Pending",a_nk_filter_done:"Completed",a_nk_filter_cancelled:"Cancelled",a_nk_filter_all:"All",
   a_nk_refresh:"Refresh",a_nk_cancel_refund:"Cancel & refund",a_nk_none:"No orders",a_nk_hide:"Hide",a_nk_unhide:"Unhide",a_nk_hidden_badge:"Hidden",
-  a_nk_search_ph:"Search service...",a_nk_saved:"Saved",
+  a_nk_search_ph:"Search service…",a_nk_saved:"Saved",
   a_nk_apps_title:"Networks",a_nk_apps_hint:"Hide an entire network to remove it and all its services from the app.",a_nk_groups_title:"Sub-groups",a_nk_card_title:"Nakrutka card (main tile)",a_nk_card_hint:"Picture and name shown on the home screen tile.",
   period_today:"Today",period_week:"Week",period_month:"Month",period_all:"All time",
   fav_add:"Add to favorites",fav_remove:"Remove from favorites",fav_title:"Favorites",fav_empty:"No favorites yet — tap the heart on any product.",
@@ -2186,8 +2270,8 @@ en:{
   a_section:"Section",a_title:"Title",a_category:"Category",a_price:"Price (sum)",a_stock:"Stock",
   a_label:"Tile label",a_sublabel:"Tile subtitle",a_bg:"Background",a_fg:"Text color",
   a_img:"Image from gallery",a_active:"Active (visible in store)",a_video_label:"Animation (video) link",a_video_hint:"Optional: paste a .webm/.mp4 link — it will replace the emoji/photo with a looping animated preview",
-  a_desc_en:"Description — English",a_desc_uz:"Description",a_desc_ru:"Description — Russian",a_desc_autotr:"Automatically translated to Russian and English when saved",a_title_autotr:"Automatically translated to Russian and English when saved",a_translating:"Translating...", a_note:"Delivery instructions (shown to buyer)",a_note_ph:"e.g. login and password format, or activation steps",a_stock_title:"Inventory",a_stock_count:"Available in stock",a_stock_unit:"pcs",a_stock_add:"Add new stock (one per line)",a_stock_ph:"login1:pass1\nlogin2:pass2\nor promo codes, one per line",a_stock_addbtn:"Add",a_stock_clear:"Clear all",a_stock_added:"Stock added",a_stock_cleared:"Stock cleared",
-  a_fulfill:"Fulfillment",a_fulfill_normal:"Manual / stock",a_fulfill_fragstars:"Auto-Stars (Fragment)",a_fulfill_fragpremium:"Auto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — any amount (Fragment)",a_fulfill_telegramgift:"Telegram gift (auto)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Gifts menu (hub card)",a_gift_kind_label:"Gift type",gift_unit:"Telegram gift",gift_message_label:"Message (optional)",gift_message_ph:"e.g. Thanks for your purchase!",gift_anon_label:"Send anonymously",gift_send_title:"Enter username:",gift_self_btn:"To myself",gift_username_ph:"User @username",gift_processing_title:"Sending gift...",gift_processing_sub:"Please wait",gift_success_title:"Sent!",gift_close:"Close",gift_tab_limited:"Limited",gift_tab_oddiy:"Regular",gift_choose_product:"Choose a product",gift_hit_badge:"HIT",
+  a_desc_en:"Description — English",a_desc_uz:"Description",a_desc_ru:"Description — Russian",a_desc_autotr:"Automatically translated to Russian and English when saved",a_title_autotr:"Automatically translated to Russian and English when saved",a_translating:"Translating…", a_note:"Delivery instructions (shown to buyer)",a_note_ph:"e.g. login and password format, or activation steps",a_stock_title:"Inventory",a_stock_count:"Available in stock",a_stock_unit:"pcs",a_stock_add:"Add new stock (one per line)",a_stock_ph:"login1:pass1\nlogin2:pass2\nor promo codes, one per line",a_stock_addbtn:"Add",a_stock_clear:"Clear all",a_stock_added:"Stock added",a_stock_cleared:"Stock cleared",
+  a_fulfill:"Fulfillment",a_fulfill_normal:"Manual / stock",a_fulfill_fragstars:"Auto-Stars (Fragment)",a_fulfill_fragpremium:"Auto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — any amount (Fragment)",a_fulfill_telegramgift:"Telegram gift (auto)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Gifts menu (hub card)",a_gift_kind_label:"Gift type",gift_unit:"Telegram gift",gift_message_label:"Message (optional)",gift_message_ph:"e.g. Thanks for your purchase!",gift_anon_label:"Send anonymously",gift_send_title:"Enter username:",gift_self_btn:"To myself",gift_username_ph:"User @username",gift_processing_title:"Sending gift…",gift_processing_sub:"Please wait",gift_success_title:"Sent!",gift_close:"Close",gift_tab_limited:"Limited",gift_tab_oddiy:"Regular",gift_choose_product:"Choose a product",gift_hit_badge:"HIT",
   a_months:"Months",a_stars_amount:"Stars amount",a_price_per_star:"Price per Star (sum)",a_min_stars:"Minimum Stars",a_fulfill_note:"Delivered automatically to the buyer's own Telegram account — no manual delivery needed.",a_fulfill_note_custom:"Buyer enters any @username and amount themselves — delivered automatically via Fragment.",
   a_preview:"Preview",a_save:"Save",a_add:"Add product",a_added:"Added ✓",a_saved:"Saved ✓",
   a_need:"Fill in title and price",a_del:"Delete",a_del_done:"Deleted",a_edit:"Edit",
@@ -2252,8 +2336,8 @@ uz:{
   st_pending:"To'lov kutilmoqda",st_checking:"To'lov tekshirilmoqda",st_cancelled:"Bekor qilindi", delivered_view:"Ko'rish",
   goto_pay:"To'lash",resend:"Chekni qayta yuborish",
   profile_title:"Profil",guest:"Mehmon",tg_user:"Telegram foydalanuvchi",language:"Til",owner:"Egasi", bank_support_msg:"Salom! Men balansimni bankomat (terminal) orqali to'ldirmoqchiman, summa: {amount}", contact_support_btn:"Support bilan bog'lanish",
-  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",theme_switch_to_light:"Yorug' rejimga o'tkazish",theme_switch_to_dark:"Qorong'u rejimga o'tkazish",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",notif_title:"Bildirishnomalar",notif_sub:"Sevimli mahsulot qaytsa yoki narxi tushsa xabar kelsin",leaderboard_row:"Top xaridorlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"Username",check_btn:"Tekshirish",amount_optional:"Summani kiriting",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda...",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
-  nakrutka_title:"Nakrutka xizmatlari",nakrutka_sub:"Obunachi, layk, ko'rishlar",nakrutka_panel_title:"Nakrutka xizmatlari",nakrutka_app_label:"Ilovani tanlang",nakrutka_loading:"Xizmatlar yuklanmoqda...",nakrutka_load_err:"Yuklab bo'lmadi, qayta urinib ko'ring",nakrutka_soon_note:"Buyurtma tizimi tez orada qo'shiladi \u2014 hozircha faqat narxlar va xizmatlar ro'yxatini ko'rishingiz mumkin.",
+  support:"Texnik yordam",support_sub:"Operator bilan bog'lanish", invite_title:"Do'stlarni taklif qiling",invite_sub:"Ilovani ulashing, bonus oling",theme_title:"Ko'rinish",theme_dark:"Tungi",theme_light:"Kunduzgi",theme_switch_to_light:"Yorug' rejimga o'tkazish",theme_switch_to_dark:"Qorong'u rejimga o'tkazish",reduce_motion:"Animatsiyalarni kamaytirish",reduce_motion_sub:"Tezroq ishlashi uchun ikonka animatsiyasini o'chiring",notif_title:"Bildirishnomalar",notif_sub:"Sevimli mahsulot qaytsa yoki narxi tushsa xabar kelsin",leaderboard_row:"Top xaridorlar",leaderboard_row_sub:"Reytingni ko'rish", invite_share_text:"Shu do'konga qo'shiling va bonus oling!", invite_soon:"Tez orada",soon_badge:"Tez orada", lang_tap_hint:"Tilni almashtirish uchun bosing",theme_tap_hint:"Rejimni almashtirish uchun bosing", video_guide:"Balansni qanday to'ldirish?",video_guide_sub:"Video qo'llanma \u2014 ko'rish", stars_unit:"Telegram Stars",username_label:"Username",check_btn:"Tekshirish",amount_optional:"Summani kiriting",stars_amount_label:"Miqdor",price_label:"Narx",min_amount_note:"Minimal summa",checking:"Tekshirilmoqda",user_not_found:"Foydalanuvchi topilmadi",processing:"Bajarilmoqda…",need_username:"Avval Telegram sozlamalarida username o'rnating",fragment_err:"Fragment xatosi, keyinroq urinib ko'ring",stars_hint_check:"Avval yuqorida @username ni tekshiring",stars_hint_min:"Eng kam miqdor: {n} Stars",group_other:"Boshqa",group_count_unit:"ta mahsulot",group_new:"+ Yangi guruh",group_none:"Guruhsiz",group_label:"Guruh",group_name_ph:"Guruh nomi (masalan Netflix)",group_img:"Guruh logotipi",
+  nakrutka_title:"Nakrutka xizmatlari",nakrutka_sub:"Obunachi, layk, ko'rishlar",nakrutka_panel_title:"Nakrutka xizmatlari",nakrutka_app_label:"Ilovani tanlang",nakrutka_loading:"Xizmatlar yuklanmoqda…",nakrutka_load_err:"Yuklab bo'lmadi, qayta urinib ko'ring",nakrutka_soon_note:"Buyurtma tizimi tez orada qo'shiladi \u2014 hozircha faqat narxlar va xizmatlar ro'yxatini ko'rishingiz mumkin.",
   nakrutka_link_label:"Havola",nakrutka_link_ph:"https://t.me/... yoki profil havolasi",nakrutka_qty_label:"Miqdor",nakrutka_qty_unit:"ta",nakrutka_total_label:"Jami narx",nakrutka_qty_range:"Miqdor {min} dan {max} gacha bo'lishi kerak",nakrutka_order_soon:"Buyurtma berish \u2014 tez orada",nakrutka_order_btn:"Yuborish",nakrutka_order_ok:"Buyurtma qabul qilindi! Amalga oshirilmoqda \u2014 Buyurtmalarda ko'ring.",nakrutka_link_needed:"Havolani kiriting",nakrutka_refresh_btn:"Holatni yangilash",nakrutka_remains:"qoldi",nakrutka_refreshed:"Holat yangilandi",nakrutka_choose_app:"Ilovani tanlang",nakrutka_min_max:"min {min} \u2013 max {max}",
   nk_st_pending:"Navbatda",nk_st_inprogress:"Bajarilmoqda",nk_st_processing:"Ishlanmoqda",nk_st_completed:"Bajarildi",nk_st_partial:"Qisman bajarildi",nk_st_canceled:"Bekor qilindi",nk_st_refunded:"Pul qaytarildi",
   nk_svc_count:"ta xizmat",
@@ -2261,7 +2345,7 @@ uz:{
   a_nk_rate_label:"USD \u2192 so'm kursi",a_nk_rate_hint:"Bo'sh qoldirsangiz standart kurs ishlatiladi",a_nk_markup_label:"Ustama, %",a_nk_markup_hint:"JAP narxi ustiga qo'shiladi",
   a_nk_filter_processing:"Kutilmoqda",a_nk_filter_done:"Bajarilgan",a_nk_filter_cancelled:"Bekor qilingan",a_nk_filter_all:"Barchasi",
   a_nk_refresh:"Yangilash",a_nk_cancel_refund:"Bekor qilish va qaytarish",a_nk_none:"Buyurtmalar yo'q",a_nk_hide:"Yashirish",a_nk_unhide:"Qaytarish",a_nk_hidden_badge:"Yashirilgan",
-  a_nk_search_ph:"Xizmat qidirish...",a_nk_saved:"Saqlandi",
+  a_nk_search_ph:"Xizmat qidirish…",a_nk_saved:"Saqlandi",
   a_nk_apps_title:"Tarmoqlar",a_nk_apps_hint:"Butun tarmoqni yashirsangiz, u va undagi barcha xizmatlar ilovadan olib tashlanadi.",a_nk_groups_title:"Ichki guruhlar",a_nk_card_title:"Nakrutka kartochkasi (bosh sahifada)",a_nk_card_hint:"Bosh sahifadagi kartochkada ko'rinadigan rasm va nom.",
   period_today:"Bugun",period_week:"Hafta",period_month:"Oy",period_all:"Hammasi",
   fav_add:"Sevimlilarga qo'shish",fav_remove:"Sevimlilardan olib tashlash",fav_title:"Sevimlilar",fav_empty:"Hozircha sevimli mahsulot yo'q — istalgan mahsulotdagi yurak belgisini bosing.",
@@ -2284,8 +2368,8 @@ uz:{
   a_section:"Bo'lim",a_title:"Nomi",a_category:"Kategoriya",a_price:"Narx (so'm)",a_stock:"Soni",
   a_label:"Kartochka yozuvi",a_sublabel:"Pastki yozuv",a_bg:"Fon rangi",a_fg:"Matn rangi",
   a_img:"Galereyadan rasm",a_active:"Aktiv (do'konda ko'rinadi)",a_video_label:"Animatsiya (video) havolasi",a_video_hint:"Ixtiyoriy: .webm/.mp4 havolasini qo'ysangiz, emoji/rasm o'rniga aylanib turuvchi animatsiya ko'rsatiladi",
-  a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif (o'zbekcha yozing)",a_desc_ru:"Tavsif — Ruscha",a_desc_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_title_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_translating:"Tarjima qilinmoqda...", a_note:"Yetkazish yo'riqnomasi (xaridorga ko'rsatiladi)",a_note_ph:"masalan login-parol formati, yoki faollashtirish qadamlari",a_stock_title:"Zaxira (inventar)",a_stock_count:"Mavjud zaxira",a_stock_unit:"dona",a_stock_add:"Yangi zaxira qo'shish (har biri alohida qatorda)",a_stock_ph:"login1:parol1\nlogin2:parol2\nyoki promokodlar, har biri alohida qatorda",a_stock_addbtn:"Qo'shish",a_stock_clear:"Hammasini tozalash",a_stock_added:"Zaxira qo'shildi",a_stock_cleared:"Zaxira tozalandi",
-  a_fulfill:"Yetkazish turi",a_fulfill_normal:"Qo'lda / zaxiradan",a_fulfill_fragstars:"Avto-Stars (Fragment)",a_fulfill_fragpremium:"Avto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — istalgan miqdor (Fragment)",a_fulfill_telegramgift:"Telegram gift (avtomatik)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Sovg'alar menyusi (bosh kartochka)",a_gift_kind_label:"Gift turi",gift_unit:"Telegram sovg'a",gift_message_label:"Sharh (ixtiyoriy)",gift_message_ph:"Masalan: Xaridingiz uchun rahmat!",gift_anon_label:"Anonim yuborish",gift_send_title:"Username kiriting:",gift_self_btn:"O'zimga",gift_username_ph:"Foydalanuvchi @username",gift_processing_title:"Sovg'a yuborilmoqda...",gift_processing_sub:"Iltimos kuting",gift_success_title:"Yuborildi!",gift_close:"Yopish",gift_tab_limited:"Limited",gift_tab_oddiy:"Oddiy",gift_choose_product:"Mahsulotni tanlang",gift_hit_badge:"HIT",
+  a_desc_en:"Tavsif — Inglizcha",a_desc_uz:"Tavsif (o'zbekcha yozing)",a_desc_ru:"Tavsif — Ruscha",a_desc_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_title_autotr:"Saqlaganda ruscha va inglizchaga avtomatik tarjima qilinadi",a_translating:"Tarjima qilinmoqda…", a_note:"Yetkazish yo'riqnomasi (xaridorga ko'rsatiladi)",a_note_ph:"masalan login-parol formati, yoki faollashtirish qadamlari",a_stock_title:"Zaxira (inventar)",a_stock_count:"Mavjud zaxira",a_stock_unit:"dona",a_stock_add:"Yangi zaxira qo'shish (har biri alohida qatorda)",a_stock_ph:"login1:parol1\nlogin2:parol2\nyoki promokodlar, har biri alohida qatorda",a_stock_addbtn:"Qo'shish",a_stock_clear:"Hammasini tozalash",a_stock_added:"Zaxira qo'shildi",a_stock_cleared:"Zaxira tozalandi",
+  a_fulfill:"Yetkazish turi",a_fulfill_normal:"Qo'lda / zaxiradan",a_fulfill_fragstars:"Avto-Stars (Fragment)",a_fulfill_fragpremium:"Avto-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — istalgan miqdor (Fragment)",a_fulfill_telegramgift:"Telegram gift (avtomatik)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Telegram Sovg'alar menyusi (bosh kartochka)",a_gift_kind_label:"Gift turi",gift_unit:"Telegram sovg'a",gift_message_label:"Sharh (ixtiyoriy)",gift_message_ph:"Masalan: Xaridingiz uchun rahmat!",gift_anon_label:"Anonim yuborish",gift_send_title:"Username kiriting:",gift_self_btn:"O'zimga",gift_username_ph:"Foydalanuvchi @username",gift_processing_title:"Sovg'a yuborilmoqda…",gift_processing_sub:"Iltimos kuting",gift_success_title:"Yuborildi!",gift_close:"Yopish",gift_tab_limited:"Limited",gift_tab_oddiy:"Oddiy",gift_choose_product:"Mahsulotni tanlang",gift_hit_badge:"HIT",
   a_months:"Oy soni",a_stars_amount:"Stars miqdori",a_price_per_star:"1 Star narxi (so'm)",a_min_stars:"Eng kam Stars",a_fulfill_note:"Xaridorning o'z Telegram akkauntiga avtomatik yetkaziladi — qo'lda berish shart emas.",a_fulfill_note_custom:"Xaridor o'zi @username va miqdorni kiritadi — Fragment orqali avtomatik yetkaziladi.",
   a_preview:"Ko'rinish",a_save:"Saqlash",a_add:"Qo'shish",a_added:"Qo'shildi ✓",a_saved:"Saqlandi ✓",
   a_need:"Nomi va narxini kiriting",a_del:"O'chirish",a_del_done:"O'chirildi",a_edit:"Tahrirlash",
@@ -2350,8 +2434,8 @@ ru:{
   st_pending:"Ожидает оплаты",st_checking:"Платёж проверяется",st_cancelled:"Отменён", delivered_view:"Просмотр",
   goto_pay:"Оплатить",resend:"Отправить чек ещё раз",
   profile_title:"Профиль",guest:"Гость",tg_user:"Пользователь Telegram",language:"Язык",owner:"Владелец", bank_support_msg:"Здравствуйте! Хочу пополнить баланс через терминал, сумма: {amount}", contact_support_btn:"Связаться с поддержкой",
-  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая",theme_switch_to_light:"Переключить на светлую тему",theme_switch_to_dark:"Переключить на тёмную тему",reduce_motion:"Уменьшить анимации",reduce_motion_sub:"Отключить анимацию иконок для скорости",notif_title:"Уведомления",notif_sub:"Сообщать, когда избранное снова в наличии или подешевело",leaderboard_row:"Топ покупателей",leaderboard_row_sub:"Смотреть рейтинг", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"Username",check_btn:"Проверить",amount_optional:"Введите сумму",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка...",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
-  nakrutka_title:"Накрутка",nakrutka_sub:"Подписчики, лайки, просмотры",nakrutka_panel_title:"Услуги накрутки",nakrutka_app_label:"Выберите приложение",nakrutka_loading:"Загрузка услуг...",nakrutka_load_err:"Не удалось загрузить, попробуйте снова",nakrutka_soon_note:"Система заказа будет добавлена позже \u2014 пока доступен только просмотр цен и услуг.",
+  support:"Поддержка",support_sub:"Связаться с оператором", invite_title:"Пригласить друзей",invite_sub:"Поделитесь приложением, получите бонус",theme_title:"Оформление",theme_dark:"Тёмная",theme_light:"Светлая",theme_switch_to_light:"Переключить на светлую тему",theme_switch_to_dark:"Переключить на тёмную тему",reduce_motion:"Уменьшить анимации",reduce_motion_sub:"Отключить анимацию иконок для скорости",notif_title:"Уведомления",notif_sub:"Сообщать, когда избранное снова в наличии или подешевело",leaderboard_row:"Топ покупателей",leaderboard_row_sub:"Смотреть рейтинг", invite_share_text:"Присоединяйся к магазину и получи бонус!", invite_soon:"Скоро",soon_badge:"Скоро", lang_tap_hint:"Нажмите, чтобы сменить язык",theme_tap_hint:"Нажмите, чтобы сменить тему", video_guide:"Как пополнить?",video_guide_sub:"Смотреть видео-инструкцию", stars_unit:"Telegram Stars",username_label:"Username",check_btn:"Проверить",amount_optional:"Введите сумму",stars_amount_label:"Количество",price_label:"Цена",min_amount_note:"Минимальная сумма",checking:"Проверка",user_not_found:"Пользователь не найден",processing:"Обработка…",need_username:"Сначала установите username в настройках Telegram",fragment_err:"Ошибка Fragment, попробуйте позже",stars_hint_check:"Сначала проверьте @username выше",stars_hint_min:"Минимальное количество: {n} Stars",group_other:"Другое",group_count_unit:"товаров",group_new:"+ Новая группа",group_none:"Без группы",group_label:"Группа",group_name_ph:"Название группы (напр. Netflix)",group_img:"Логотип группы",
+  nakrutka_title:"Накрутка",nakrutka_sub:"Подписчики, лайки, просмотры",nakrutka_panel_title:"Услуги накрутки",nakrutka_app_label:"Выберите приложение",nakrutka_loading:"Загрузка услуг…",nakrutka_load_err:"Не удалось загрузить, попробуйте снова",nakrutka_soon_note:"Система заказа будет добавлена позже \u2014 пока доступен только просмотр цен и услуг.",
   nakrutka_link_label:"Ссылка",nakrutka_link_ph:"https://t.me/... или ссылка на профиль",nakrutka_qty_label:"Количество",nakrutka_qty_unit:"шт",nakrutka_total_label:"Итоговая цена",nakrutka_qty_range:"Количество должно быть от {min} до {max}",nakrutka_order_soon:"Заказать \u2014 скоро",nakrutka_order_btn:"Отправить",nakrutka_order_ok:"Заказ принят! Выполняется \u2014 смотрите в Заказах.",nakrutka_link_needed:"Введите ссылку",nakrutka_refresh_btn:"Обновить статус",nakrutka_remains:"осталось",nakrutka_refreshed:"Статус обновлён",nakrutka_choose_app:"Выберите платформу",nakrutka_min_max:"мин {min} \u2013 макс {max}",
   nk_st_pending:"В очереди",nk_st_inprogress:"Выполняется",nk_st_processing:"В обработке",nk_st_completed:"Завершено",nk_st_partial:"Частично выполнено",nk_st_canceled:"Отменено",nk_st_refunded:"Возвращено",
   nk_svc_count:"услуг",
@@ -2359,7 +2443,7 @@ ru:{
   a_nk_rate_label:"Курс USD \u2192 сум",a_nk_rate_hint:"Оставьте пустым для стандартного курса",a_nk_markup_label:"Наценка, %",a_nk_markup_hint:"Добавляется к цене JAP",
   a_nk_filter_processing:"В ожидании",a_nk_filter_done:"Завершённые",a_nk_filter_cancelled:"Отменённые",a_nk_filter_all:"Все",
   a_nk_refresh:"Обновить",a_nk_cancel_refund:"Отменить и вернуть",a_nk_none:"Заказов нет",a_nk_hide:"Скрыть",a_nk_unhide:"Показать",a_nk_hidden_badge:"Скрыто",
-  a_nk_search_ph:"Поиск услуги...",a_nk_saved:"Сохранено",
+  a_nk_search_ph:"Поиск услуги…",a_nk_saved:"Сохранено",
   a_nk_apps_title:"Сети",a_nk_apps_hint:"Скрытая сеть целиком убирается из приложения вместе со всеми её услугами.",a_nk_groups_title:"Подгруппы",a_nk_card_title:"Карточка Nakrutka (на главной)",a_nk_card_hint:"Картинка и название, отображаемые на плитке главного экрана.",
   period_today:"Сегодня",period_week:"Неделя",period_month:"Месяц",period_all:"Всё время",
   fav_add:"В избранное",fav_remove:"Убрать из избранного",fav_title:"Избранное",fav_empty:"Пока нет избранного — нажмите на сердечко у товара.",
@@ -2382,8 +2466,8 @@ ru:{
   a_section:"Раздел",a_title:"Название",a_category:"Категория",a_price:"Цена (сум)",a_stock:"Кол-во",
   a_label:"Надпись на карточке",a_sublabel:"Подпись",a_bg:"Цвет фона",a_fg:"Цвет текста",
   a_img:"Фото из галереи",a_active:"Активен (виден в магазине)",a_video_label:"Ссылка на анимацию (видео)",a_video_hint:"Необязательно: вставьте ссылку .webm/.mp4 — вместо эмодзи/фото покажется зацикленная анимация",
-  a_desc_en:"Описание — Английский",a_desc_uz:"Описание",a_desc_ru:"Описание — Русский",a_desc_autotr:"При сохранении автоматически переводится на русский и английский",a_title_autotr:"При сохранении автоматически переводится на русский и английский",a_translating:"Перевод...", a_note:"Инструкция по выдаче (видна покупателю)",a_note_ph:"например формат логина и пароля, или шаги активации",a_stock_title:"Запас (инвентарь)",a_stock_count:"Доступно на складе",a_stock_unit:"шт",a_stock_add:"Добавить новый запас (по одному в строке)",a_stock_ph:"логин1:пароль1\nлогин2:пароль2\nили промокоды, по одному в строке",a_stock_addbtn:"Добавить",a_stock_clear:"Очистить всё",a_stock_added:"Запас добавлен",a_stock_cleared:"Запас очищен",
-  a_fulfill:"Способ выдачи",a_fulfill_normal:"Вручную / со склада",a_fulfill_fragstars:"Авто-Stars (Fragment)",a_fulfill_fragpremium:"Авто-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — любое количество (Fragment)",a_fulfill_telegramgift:"Telegram gift (авто)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Меню Telegram Подарков (карточка-раздел)",a_gift_kind_label:"Тип подарка",gift_unit:"Telegram подарок",gift_message_label:"Комментарий (необязательно)",gift_message_ph:"Например: Спасибо за покупку!",gift_anon_label:"Отправить анонимно",gift_send_title:"Введите username:",gift_self_btn:"Себе",gift_username_ph:"Пользователь @username",gift_processing_title:"Отправка подарка...",gift_processing_sub:"Пожалуйста, подождите",gift_success_title:"Отправлено!",gift_close:"Закрыть",gift_tab_limited:"Limited",gift_tab_oddiy:"Обычные",gift_choose_product:"Выберите товар",gift_hit_badge:"ХИТ",
+  a_desc_en:"Описание — Английский",a_desc_uz:"Описание",a_desc_ru:"Описание — Русский",a_desc_autotr:"При сохранении автоматически переводится на русский и английский",a_title_autotr:"При сохранении автоматически переводится на русский и английский",a_translating:"Перевод…", a_note:"Инструкция по выдаче (видна покупателю)",a_note_ph:"например формат логина и пароля, или шаги активации",a_stock_title:"Запас (инвентарь)",a_stock_count:"Доступно на складе",a_stock_unit:"шт",a_stock_add:"Добавить новый запас (по одному в строке)",a_stock_ph:"логин1:пароль1\nлогин2:пароль2\nили промокоды, по одному в строке",a_stock_addbtn:"Добавить",a_stock_clear:"Очистить всё",a_stock_added:"Запас добавлен",a_stock_cleared:"Запас очищен",
+  a_fulfill:"Способ выдачи",a_fulfill_normal:"Вручную / со склада",a_fulfill_fragstars:"Авто-Stars (Fragment)",a_fulfill_fragpremium:"Авто-Premium (Fragment)",a_fulfill_fragstarscustom:"Stars — любое количество (Fragment)",a_fulfill_telegramgift:"Telegram gift (авто)",a_gift_id_label:"Telegram gift ID",a_fulfill_gifthub:"Меню Telegram Подарков (карточка-раздел)",a_gift_kind_label:"Тип подарка",gift_unit:"Telegram подарок",gift_message_label:"Комментарий (необязательно)",gift_message_ph:"Например: Спасибо за покупку!",gift_anon_label:"Отправить анонимно",gift_send_title:"Введите username:",gift_self_btn:"Себе",gift_username_ph:"Пользователь @username",gift_processing_title:"Отправка подарка…",gift_processing_sub:"Пожалуйста, подождите",gift_success_title:"Отправлено!",gift_close:"Закрыть",gift_tab_limited:"Limited",gift_tab_oddiy:"Обычные",gift_choose_product:"Выберите товар",gift_hit_badge:"ХИТ",
   a_months:"Кол-во месяцев",a_stars_amount:"Кол-во Stars",a_price_per_star:"Цена за 1 Star (сум)",a_min_stars:"Минимум Stars",a_fulfill_note:"Доставляется автоматически на аккаунт покупателя — ручная выдача не нужна.",a_fulfill_note_custom:"Покупатель сам вводит @username и количество — доставка автоматическая через Fragment.",
   a_preview:"Предпросмотр",a_save:"Сохранить",a_add:"Добавить",a_added:"Добавлено ✓",a_saved:"Сохранено ✓",
   a_need:"Укажите название и цену",a_del:"Удалить",a_del_done:"Удалено",a_edit:"Изменить",
@@ -6086,16 +6170,19 @@ function skHome(){
   var I=SK.info||{},on=SK_GK.filter(skOn),d=SK.delivered||0,has=!!SK.tradeUrl;
   var words=(on.length?on:["cs2"]).map(function(g){return SK_G[g].n.toUpperCase();});
   var cat=Number(I.catalog)||0;
-  m.innerHTML='<section class="sk-hero sk-in"><div class="art" id="skArt" aria-hidden="true"></div>'+admPen("skins","","sk")
+  m.innerHTML='<section class="sk-hero sk-in">'+admPen("skins","","sk")
     +'<span class="sk-pill"><i></i>Steam\'ga ~1 daqiqada</span>'
     +'<h1>Skinlar<br>so\'mda —<span class="rot"><span id="skRot">'+words.concat(words.length>1?[words[0]]:[]).map(function(w){return '<i>'+esc(w)+'</i>';}).join("")+'</span></span></h1>'
     +'<p>Skin to\'g\'ridan-to\'g\'ri <b>Steam hisobingizga</b> keladi. Parol so\'ralmaydi, yetkazilmasa — pul balansga qaytadi.</p>'
     +'<div class="cta"><button class="sk-btn" data-skgo="market">'+SK_I.bolt+' Bozorga o\'tish</button>'
     +(has?'':'<button class="sk-btn gh" data-skact="trade">'+SK_I.link+' Trade havolani kiritish</button>')+'</div>'
-    +'<div class="sk-trust"><div>'+SK_I.shield+'Akkauntingizga kirmaymiz — faqat trade havola</div><div>'+SK_I.clock24+'Avtomatik yetkazish, 24/7</div><div>'+SK_I.card+'Humo va Uzcard bilan to\'lov</div></div></section>'
+    +'<div class="sk-trust"><div>'+SK_I.shield+'Akkauntingizga kirmaymiz — faqat trade havola</div><div>'+SK_I.clock24+'Avtomatik yetkazish, 24/7</div><div>'+SK_I.card+'Humo va Uzcard bilan to\'lov</div></div>'
+    // 3D aylanuvchi top skinlar (rasmlar kelgach to'ladi; 5 tadan kam bo'lsa ko'rinmaydi)
+    +'<div class="sk-orb" id="skOrb" aria-hidden="true" hidden></div></section>'
     +'<div class="sk-stats sk-in"><div><b>~1 daq</b><span>yetkazish vaqti</span></div><div><b>24/7</b><span>avtomatik</span></div>'
     +'<div><b>'+(cat>=1000?skNum(Math.floor(cat/1000)*1000)+'+':(on.length||1)+' ta')+'</b><span>'+(cat>=1000?'skin turlari':'o\'yin')+'</span></div>'
     +'<div><b>'+(d>=20?skNum(d):'100%')+'</b><span>'+(d>=20?'yetkazildi':'pul kafolati')+'</span></div></div>'
+    +'<div class="sk-tick" id="skTick" hidden></div>'
     +'<section class="sk-sec sk-in"><div class="sk-lbl">O\'yinlar</div><h2 class="sk-h2">O\'yiningizni tanlang</h2><div class="sk-games">'
     +SK_GK.map(function(g){var G=SK_G[g],o=skOn(g);return '<button class="sk-gt'+(o?'':' off')+'" data-skgame="'+g+'" style="--gc:'+G.c+'">'+skGimg(g)+'<b>'+G.n+'</b><small>'+(o?'Bozorga →':'Tez orada')+'</small></button>';}).join("")+'</div></section>'
     +'<section class="sk-sec sk-in"><div class="sk-hd"><div><div class="sk-lbl">Ommabop · '+esc(SK_G[SK.game].n)+'</div><h2 class="sk-h2">Top skinlar</h2></div><button class="sk-all" data-skgo="market">Hammasi '+SK_I.arr+'</button></div>'
@@ -6109,7 +6196,8 @@ function skHome(){
     +'<h3>Steam balansni so\'mda to\'ldiring</h3><p>Login orqali, karta kerak emas. Summani tanlang:</p>'
     +'<div class="sk-amts">'+[5,10,20,50].map(function(a){return '<button data-skamt="'+a+'">$'+a+'</button>';}).join("")+'</div></div></section>'
     +'<section class="sk-sec sk-in" style="text-align:center"><div class="sk-lbl">To\'lov</div><h2 class="sk-h2 c">To\'lov usullari</h2>'
-    +'<div class="sk-pay"><span>HUMO</span><span>UZCARD</span></div></section>'
+    +'<div class="sk-pay">'+[["humo","HUMO","#19c0b5"],["uzcard","UZCARD","#4f8bff"]].map(function(c){var im=EXTRAS&&EXTRAS.payImgs&&EXTRAS.payImgs[c[0]];
+      return '<span>'+(im&&/^(https:\/\/|data:image\/|\/)/.test(im)?'<img src="'+esc(im)+'" alt="'+c[1]+'">':'<b style="color:'+c[2]+'">'+c[1]+'</b>')+'</span>';}).join("")+'</div></section>'
     +'<section class="sk-sec sk-in"><div class="sk-lbl" style="text-align:center">FAQ</div><h2 class="sk-h2 c">Ko\'p so\'raladigan<br>savollar</h2><div class="sk-faq">'
     +SK_FAQ.slice(0,5).map(function(q){return '<details><summary>'+esc(q[0])+'</summary><p>'+esc(q[1])+'</p></details>';}).join("")+'</div></section>'
     +'<section class="sk-final sk-in"><h2 class="sk-h2 c">Birinchi skiningiz —<br>bir daqiqada</h2><p>Narxlar so\'mda, yetkazish avtomatik.</p><button class="sk-btn" data-skgo="market">'+SK_I.bolt+' Bozorga o\'tish</button></section>';
@@ -6126,17 +6214,44 @@ function skHome(){
 function skHomePop(){
   var g=SK.game;
   var paint=function(){
-    var box=skEl("skPop"),art=skEl("skArt");if(!box)return;
-    var L=(SK.pop||[]).filter(function(x){return x.img;}).slice(0,10);
+    var box=skEl("skPop");if(!box)return;
+    var all=(SK.pop||[]).filter(function(x){return x.img;});
+    // halqa — birinchi 8 ta; lenta — keyingilari (kam bo'lsa — hammasi)
+    skOrbPaint(all.slice(0,8));skTickPaint();
+    var L=(all.length>=14?all.slice(8):all).slice(0,10);
     if(!L.length){var sec=box.closest("section");if(sec&&SK.pop)sec.hidden=true;return;}
     box.innerHTML=L.map(function(x){return skCard(x);}).join("");
-    if(art&&!art.innerHTML)art.innerHTML=skImg(L[0].img);
   };
   if(SK.pop&&SK.popGame===g)return paint();
   if(!skOn(g)&&SK.games){SK.pop=[];SK.popGame=g;return paint();}
   api("/api/cs2/catalog?game="+g+(g==="cs2"?"&cat=knife":"")).then(function(r){SK.pop=r.items||[];SK.popGame=g;paint();}).catch(function(){SK.pop=[];paint();});
 }
+// 3D halqa: kartochkalar markazdan teng masofada (translateZ = yarim kenglik / tan(π/n)), sekin aylanadi
+function skOrbPaint(A){
+  var box=skEl("skOrb");if(!box)return;
+  if(A.length<5){box.hidden=true;box.innerHTML="";return;}
+  var n=A.length,rz=Math.round(67/Math.tan(Math.PI/n)+18);
+  box.innerHTML='<i class="fl"></i><div class="sk-ring" style="--n:'+n+';--rz:'+rz+'px">'+A.map(function(x,i){var rc=skRc(x),g=x.game||SK.game;
+    return '<button class="sk-o3" tabindex="-1" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'" style="--i:'+i+';--rc:'+rc+';--rg:'+skRg(rc,.34)+'"><span class="im"><span class="wm"></span>'+skImg(x.img)+'</span>'
+      +'<span class="nm">'+esc(skTitle(x))+'</span><span class="pr">'+(x.from?esc(skNum(x.from))+'<small>so\'m</small>':'')+'</span></button>';}).join("")+'</div>';
+  box.hidden=false;
+}
+// Yugurib turuvchi lenta: yaqinda sotilganlar (3 tadan ko'p bo'lsa), aks holda top skinlar narxi bilan.
+// Ro'yxat ikki marta qo'yiladi — translateX(-50%) bilan uzluksiz aylanadi.
+function skTickPaint(){
+  var box=skEl("skTick");if(!box)return;
+  var R=(SK.recent||[]).filter(function(x){return x.img;}),P=(SK.pop||[]).filter(function(x){return x.img&&x.from;});
+  var L=R.length>=3?R.map(function(x){return {b:x.b,g:x.game||"cs2",n:x.s||x.b,p:x.price,rc:skRc(x),img:x.img};})
+    :P.slice(0,12).map(function(x){return {b:x.b,g:x.game||SK.game,n:skTitle(x),p:x.from,rc:skRc(x),img:x.img};});
+  if(L.length<3){box.hidden=true;box.innerHTML="";return;}
+  while(L.length<8)L=L.concat(L);
+  var one=L.map(function(x){return '<button data-skb="'+esc(x.b)+'" data-skg="'+esc(x.g)+'" style="--rc:'+x.rc+'"><i class="d"></i>'+skImg(x.img)
+    +'<span class="n">'+esc(x.n)+'</span><span class="p">'+esc(skNum(x.p))+' '+esc(_t("so'm"))+'</span></button>';}).join("");
+  box.innerHTML='<div class="tr" style="--d:'+Math.max(30,L.length*5)+'s">'+one+one.replace(/<button /g,'<button tabindex="-1" aria-hidden="true" ')+'</div>';
+  box.hidden=false;
+}
 function skHomeRec(){
+  skTickPaint();
   var box=skEl("skRecBox");if(!box)return;
   var L=SK.recent||[];if(!L.length){box.innerHTML="";return;}
   box.innerHTML='<section class="sk-sec"><div class="sk-hd"><div><div class="sk-lbl">Jonli</div><h2 class="sk-h2">Yaqinda sotib olindi</h2></div></div></section>'
@@ -6147,7 +6262,7 @@ function skHomeRec(){
 /* ---- kartochkalar ---- */
 function skCard(x){
   var g=x.game||SK.game,rc=skRc(x),fav=skIsFav(g,x.b),star=x.cat==="knife"||x.cat==="gloves";
-  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+'"><span class="wm"></span>'+skImg(x.img)+(x.cnt>1?'<span class="sk-lots">'+SK_I.cart+Number(x.cnt)+'</span>':'')
+  return '<button class="sk-card" data-skb="'+esc(x.b)+'" data-skg="'+esc(g)+'"><div class="sk-cim" style="--rc:'+rc+';--rg:'+skRg(rc,.3)+';--rd:'+skRg(rc,.45)+'"><span class="wm"></span>'+skImg(x.img)+(x.cnt>1?'<span class="sk-lots">'+SK_I.cart+Number(x.cnt)+'</span>':'')
     +'<div class="sk-ct">'+(star?'<span class="st2">★</span>':'')+(x.st?'<span class="st">ST™</span>':x.sv?'<span class="sv">SV</span>':'')+'</div>'
     +'<span class="sk-fav'+(fav?' on':'')+'" data-skfav="'+esc(x.b)+'" data-skg="'+esc(g)+'" role="button" aria-label="Sevimli">'+SK_I.heart+'</span></div>'
     +'<div class="sk-cb">'+(x.from?'<div class="sk-cp">'+skFromH(x.from,"","small")+'</div>':'<div class="sk-cp na">Narxi ichkarida</div>')
@@ -6290,7 +6405,7 @@ function skOpenItem(b,g){
   var old=el.querySelector(".sk-page");if(old)old.remove();
   var md=el.querySelector(".sk-modal");if(md)md.remove();
   var p=document.createElement("div");p.className="sk-page";
-  p.innerHTML='<header class="sk-top"><button class="sk-ib" data-skpg="back" aria-label="Orqaga">'+SK_I.back+'</button>'
+  p.innerHTML='<div class="sk-bg" aria-hidden="true"></div><header class="sk-top"><button class="sk-ib" data-skpg="back" aria-label="Orqaga">'+SK_I.back+'</button>'
     +'<div class="sk-crumb">'+esc(SK_G[g].n)+' / <b>'+esc(b)+'</b></div>'
     +'<button class="sk-ib sk-fv'+(skIsFav(g,b)?' on':'')+'" data-skfav="'+esc(b)+'" data-skg="'+g+'" aria-label="Sevimli">'+SK_I.heart+'</button></header>'
     +'<div class="sk-main" id="skPm"><div class="sk-sk" style="margin:14px 16px 0;height:330px;border-radius:26px"></div><div class="sk-sk" style="margin:22px 16px 0;height:34px;width:70%"></div><div class="sk-sk" style="margin:14px 16px 0;height:120px"></div></div>';
@@ -6326,7 +6441,7 @@ function skItemPaint(p){
   // Holatlar (FN, MW…): soni va eng arzon narxi — bosilsa takliflar shu holatga saralanadi
   var wt=[];
   Object.keys(C2_WEAR).forEach(function(k){var L=offs.filter(function(o){return o.wear===k;});if(L.length)wt.push([k,L.length,Math.min.apply(null,L.map(function(o){return o.price;}))]);});
-  m.innerHTML='<div class="sk-stage sk-in" style="--rg:'+skRg(rc,.42)+'"><div class="glow"></div>'
+  m.innerHTML='<div class="sk-stage sk-in" style="--rg:'+skRg(rc,.42)+';--rc:'+rc+';--rb:'+skRg(rc,.2)+';--rd:'+skRg(rc,.4)+'"><div class="glow"></div>'
     +'<div class="bd"><span class="sk-badge bolt">'+SK_I.bolt+'</span>'+(offs.length?'<span class="sk-badge av">'+SK_I.check+' Mavjud: '+offs.length+'</span>':'<span class="sk-badge av" style="border-color:#4a505c;color:#9aa3b2;background:none">Sotuvda yo\'q</span>')+'</div>'
     +'<div class="im"><span class="wm"></span>'+skImg(it.img)+stk+'</div>'
     +'<div class="ft">'+(insp?'<a href="#" class="sk-insp" data-insp="'+esc(insp.id)+'">'+SK_I.eye+' O\'yinda ko\'rish</a>':'')+(it.st&&g==="cs2"?'<span class="sk-badge" style="height:50px;border:1px solid rgba(255,138,76,.45);color:#ff8a4c;background:rgba(255,138,76,.08)">StatTrak™</span>':'')+'</div>'+fl+'</div>'
@@ -8977,7 +9092,7 @@ function openAdminAutomation(){
       .catch(function(){toast(t("srv_off"),true);btn.disabled=false;});
   });
   sh.querySelector("#atRunBtn").addEventListener("click",function(){
-    var btn=this;btn.disabled=true;btn.textContent="Ishlamoqda...";
+    var btn=this;btn.disabled=true;btn.textContent="Ishlamoqda…";
     api("/api/admin/automation/run-winback","POST",{}).then(function(r){
       btn.disabled=false;btn.textContent="Hozir ishga tushirish";
       haptic("ok");toast((r.sent||0)+" ta mijozga xabar yuborildi");load();
@@ -9150,8 +9265,8 @@ function openAdminUiEmoji(){
     if(fetchBtn)fetchBtn.addEventListener("click",function(){
       var eid=idw?idw.value.trim():"";
       if(!/^\d+$/.test(eid)){toast("ID noto'g'ri — faqat raqamlardan iborat bo'lishi kerak");return;}
-      fetchBtn.disabled=true;fetchBtn.textContent="Yuklanmoqda...";
-      if(statusEl)statusEl.textContent="Telegramdan olinmoqda...";
+      fetchBtn.disabled=true;fetchBtn.textContent="Yuklanmoqda…";
+      if(statusEl)statusEl.textContent="Telegramdan olinmoqda…";
       api("/api/admin/premium-emoji?id="+encodeURIComponent(eid),"GET").then(function(r){
         var val={id:eid};
         val.kind=r.kind;val.url=r.url;
@@ -9896,7 +10011,7 @@ function openAdminUsers(){
 function openAdminDeliveries(){
   var html='<h2>'+ic("key",18)+' Sotilganlar qidiruvi</h2>'
     +'<div class="paynote" style="margin-top:0">Har qanday mijozga yuborilgan login/parol, obuna linki, gmail va h.k. shu yerdan qidiriladi — mahsulot nomi, xaridor ID/@username, buyurtma raqami yoki yetkazilgan matnning o\'zi bo\'yicha.</div>'
-    +'<div class="arow"><input id="dlvQ" placeholder="Qidirish: gmail, login, @user, ID, #buyurtma..."><button class="btn sm" id="dlvFind">'+ic("search",14)+'</button></div>'
+    +'<div class="arow"><input id="dlvQ" placeholder="Qidirish: gmail, login, @user, ID, #buyurtma…"><button class="btn sm" id="dlvFind">'+ic("search",14)+'</button></div>'
     +'<div id="dlvRes" style="margin-top:12px">…</div>'
     +'<div style="height:20px"></div>';
   var sh=openSheet(html,openAdmin);
@@ -9949,7 +10064,7 @@ function openAdminBroadcast(){
     +'<span id="bcFileInfo" style="margin-left:10px;font-size:12px;color:var(--mut)"></span>'
     +'</div>'
     +'<div class="sect" style="margin:16px 0 6px">Matn</div>'
-    +'<textarea id="bcText" class="exta" style="min-height:120px" placeholder="Xabar matni..."></textarea>'
+    +'<textarea id="bcText" class="exta" style="min-height:120px" placeholder="Xabar matni…"></textarea>'
     +'<div style="display:flex;justify-content:space-between;margin-top:4px">'
     +'<span style="font-size:11px;color:var(--mut)" id="bcCharCount">0 / 4096</span>'
     +'</div>'
@@ -10038,7 +10153,7 @@ function openAdminBroadcast(){
     var body={text:text,mediaType:B.mediaType,mediaData:B.mediaData||null,test:!!test};
     var btn=sh.querySelector(test?"#bcTestBtn":"#bcSendBtn");
     var origHTML=btn.innerHTML;
-    btn.disabled=true;btn.textContent=test?"Yuborilmoqda...":"Boshlanmoqda...";
+    btn.disabled=true;btn.textContent=test?"Yuborilmoqda…":"Boshlanmoqda…";
     api("/api/admin/broadcast","POST",body).then(function(r){
       if(test){
         btn.disabled=false;btn.innerHTML=origHTML;
@@ -10281,7 +10396,7 @@ var XT={ru:{
 "⏳ Buyurtma qabul qilindi, tez orada bajariladi":"⏳ Заказ принят, скоро будет выполнен","Balans yetarli emas — to'ldiring":"Недостаточно средств — пополните",
 "Virtual raqam":"Виртуальный номер","Virtual raqam xizmati hozircha mavjud emas":"Сервис виртуальных номеров временно недоступен","SMS qabul qilish uchun raqam sotib oling — balansingizdan to'lanadi.":"Купите номер для приёма SMS — оплата с баланса.",
 "Raqam olish":"Купить номер","Mening raqamlarim":"Мои номера","Hali raqam olmagansiz":"У вас пока нет номеров","Kod:":"Код:","Bekor qilindi":"Отменено",
-"Kutilmoqda…":"Ожидание…","Mamlakat qidirish...":"Поиск страны...","Ommabop":"Популярные","Narx":"Цена","Topilmadi":"Не найдено","ta":"шт",
+"Kutilmoqda…":"Ожидание…","Mamlakat qidirish…":"Поиск страны…","Ommabop":"Популярные","Narx":"Цена","Topilmadi":"Не найдено","ta":"шт",
 "Telegram uchun raqam":"Номер для Telegram","Raqamni nusxalash":"Скопировать номер","Raqam tayyorlanmoqda…":"Номер готовится…","SMS kod:":"SMS-код:",
 "Kodni nusxalash":"Скопировать код","❌ Bekor qilindi, pul balansga qaytarildi":"❌ Отменено, деньги возвращены на баланс","SMS kod kutilmoqda…":"Ожидание SMS-кода…",
 "Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa, pul avtomatik qaytadi.":"Введите этот номер в Telegram, код придёт сюда. Если код не придёт, деньги вернутся автоматически.",
@@ -10313,7 +10428,7 @@ var XT={ru:{
 "Tekshirilmoqda":"Проверяется",
 "Raqam":"Номер",
 "olindi":"получен",
-"darhol beriladi":"выдаётся сразу",
+"darhol beriladi":"выдаётся сразу","Darhol":"Сразу","Kod va parol":"Код и пароль","Narxi":"Цена",
 "Kirish kodi":"Код входа",
 "SMS kod":"SMS-код",
 "keldi":"пришёл",
@@ -10380,7 +10495,7 @@ var XT={ru:{
 "⏳ Buyurtma qabul qilindi, tez orada bajariladi":"⏳ Order accepted, it will be completed soon","Balans yetarli emas — to'ldiring":"Not enough balance — top up",
 "Virtual raqam":"Virtual number","Virtual raqam xizmati hozircha mavjud emas":"The virtual number service is unavailable right now","SMS qabul qilish uchun raqam sotib oling — balansingizdan to'lanadi.":"Buy a number to receive SMS — paid from your balance.",
 "Raqam olish":"Get a number","Mening raqamlarim":"My numbers","Hali raqam olmagansiz":"No numbers yet","Kod:":"Code:","Bekor qilindi":"Cancelled",
-"Kutilmoqda…":"Waiting…","Mamlakat qidirish...":"Search country...","Ommabop":"Popular","Narx":"Price","Topilmadi":"Not found","ta":"pcs",
+"Kutilmoqda…":"Waiting…","Mamlakat qidirish…":"Search country…","Ommabop":"Popular","Narx":"Price","Topilmadi":"Not found","ta":"pcs",
 "Telegram uchun raqam":"Number for Telegram","Raqamni nusxalash":"Copy number","Raqam tayyorlanmoqda…":"Preparing number…","SMS kod:":"SMS code:",
 "Kodni nusxalash":"Copy code","❌ Bekor qilindi, pul balansga qaytarildi":"❌ Cancelled, money returned to your balance","SMS kod kutilmoqda…":"Waiting for SMS code…",
 "Telegram'da shu raqamni kiriting, kod shu yerga keladi. Kod kelmasa, pul avtomatik qaytadi.":"Enter this number in Telegram, the code comes here. If it doesn't, you get an automatic refund.",
@@ -10412,7 +10527,7 @@ var XT={ru:{
 "Tekshirilmoqda":"Checking",
 "Raqam":"Number",
 "olindi":"received",
-"darhol beriladi":"issued at once",
+"darhol beriladi":"issued at once","Darhol":"Instant","Kod va parol":"Code and password","Narxi":"Price",
 "Kirish kodi":"Login code",
 "SMS kod":"SMS code",
 "keldi":"arrived",
@@ -10589,12 +10704,12 @@ function vnPill(o){var v=o.vnum||{};
 /* kirish yo'li: Raqam → Kirish kodi → (TG-Lion) Parol; har bosqich o'z qiymati bilan to'ladi */
 function vnPathHTML(o,tl){
   var v=(o&&o.vnum)||{},got=!!v.phone,code=!!v.code;
-  var st=[{t:_x("Raqam"),s:got?_x("olindi"):_x("darhol beriladi"),on:got,cur:!got&&!!o},
-    {t:tl?_x("Kirish kodi"):_x("SMS kod"),s:code?_x("keldi"):o?_x("kutilmoqda"):_x("shu oynada chiqadi"),on:code,cur:got&&!code},
+  var st=[{t:_x("Raqam"),s:got?_x("olindi"):_x("darhol beriladi"),on:got,cur:!got&&!!o,ic:"phone"},
+    {t:tl?_x("Kirish kodi"):_x("SMS kod"),s:code?_x("keldi"):o?_x("kutilmoqda"):_x("shu oynada chiqadi"),on:code,cur:got&&!code,ic:"msg"},
   ];
-  if(tl)st.push({t:_x("Parol"),s:code?(v.pass?_x("bor"):_x("yo'q")):_x("bo'lsa, kod bilan"),on:code&&!!v.pass,cur:false});
+  if(tl)st.push({t:_x("Parol"),s:code?(v.pass?_x("bor"):_x("yo'q")):_x("bo'lsa, kod bilan"),on:code&&!!v.pass,cur:false,ic:"key"});
   return '<ol class="vn2-path'+(st.length===2?' two':'')+'" aria-label="'+esc(_x("Kirish yo'li"))+'">'+st.map(function(x){
-    return '<li class="'+(x.on?"on":x.cur?"cur":"")+'"><i aria-hidden="true"></i><b>'+esc(x.t)+'</b><span>'+esc(x.s)+'</span></li>';}).join("")+'</ol>';
+    return '<li class="'+(x.on?"on":x.cur?"cur":"")+'"><i aria-hidden="true">'+ic(x.on?"check":x.ic,15)+'</i><b>'+esc(x.t)+'</b><span>'+esc(x.s)+'</span></li>';}).join("")+'</ol>';
 }
 function vnumHTML(){
   if(!S.vn)S.vn={q:"",sort:"pop",tab:"buy"};
@@ -10603,8 +10718,11 @@ function vnumHTML(){
   var tl=!VN||VN.prov!=="5sim";
   var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Telegram</b>'+admPen("vnum")+'</button><div class="xpage vn2">';
   // sarlavha qatori: nom + balans (bosilsa — to'ldirish)
-  h+='<div class="vn2-title"><div class="vn2-tl"><h1>'+esc(_x("Virtual raqam"))+'</h1><p id="vnFind">'+vnFinding(bal)+'</p></div>'
-    +'<button class="vn2-bal" data-gotopay="1" aria-label="'+esc(_x("Balansni to'ldirish"))+'"><span>'+esc(_x("Balans"))+'</span><b>'+(bal===null?"—":vnSum(bal))+'</b></button></div>';
+  var nC=VN&&VN.enabled?(VN.list||[]).length:0;
+  h+='<div class="vn2-title"><span class="vn2-logo" aria-hidden="true">'+ic("send",22)+'</span><div class="vn2-tl"><h1>'+esc(_x("Virtual raqam"))+'</h1><p id="vnFind">'+vnFinding(bal)+'</p></div>'
+    +'<button class="vn2-bal" data-gotopay="1" aria-label="'+esc(_x("Balansni to'ldirish"))+'"><span>'+esc(_x("Balans"))+'</span><b>'+(bal===null?"—":vnSum(bal))+'</b></button>'
+    +'<div class="vn2-feats"><span>'+ic("bolt",13)+esc(_x("Darhol"))+'</span><span>'+ic("key",13)+esc(tl?_x("Kod va parol"):_x("SMS kod"))+'</span>'
+    +(nC?'<span>'+ic("globe",13)+'<b class="num">'+nC+'</b> '+esc(_x("ta mamlakat"))+'</span>':'')+'</div></div>';
   // vaqtga bog'liq blok birinchi: kodi kutilayotgan raqamlar
   if(pend.length){
     h+='<section class="vn2-panel vn2-pend" aria-label="'+esc(_x("Kod kutilmoqda"))+'"><h2>'+esc(_x("Kod kutilmoqda"))+'</h2>'
@@ -10618,7 +10736,7 @@ function vnumHTML(){
   // birinchi marta: nima olishini kirish yo'li bilan ko'rsatamiz (ro'yxatdan keyin — ro'yxat birinchi o'qiladi)
   var how=mine.length?'':'<section class="vn2-how" aria-label="'+esc(_x("Qanday ishlaydi"))+'"><h2>'+esc(tl?_x("Tayyor Telegram akkaunt raqami"):_x("SMS qabul qiluvchi raqam"))+'</h2>'+vnPathHTML(null,tl)
     +'<p>'+esc(tl?_x("Raqamni Telegram'ga kiritasiz, kod va parol shu oynada chiqadi. Raqam olingach bekor qilinmaydi."):_x("Raqamni Telegram'ga kiritasiz, SMS kod shu oynada chiqadi. Kod kelmasa pul avtomatik qaytadi."))+'</p></section>';
-  h+='<div class="searchbar vn2-search"><span class="sic">'+ic("search",16)+'</span><input id="vnQ" type="search" autocomplete="off" placeholder="'+esc(_x("Mamlakat qidirish..."))+'" value="'+esc(S.vn.q)+'" aria-label="'+esc(_x("Mamlakat qidirish..."))+'"></div>';
+  h+='<div class="searchbar vn2-search"><span class="sic">'+ic("search",16)+'</span><input id="vnQ" type="search" autocomplete="off" placeholder="'+esc(_x("Mamlakat qidirish…"))+'" value="'+esc(S.vn.q)+'" aria-label="'+esc(_x("Mamlakat qidirish…"))+'"></div>';
   h+='<section class="vn2-panel" aria-label="'+esc(_x("Mamlakatlar"))+'"><div class="vn2-lh"><span id="vnCount" class="num">'+(VN&&VN.enabled?esc(vnCountTxt()):"")+'</span>'
     +'<div class="vn2-seg" role="radiogroup" aria-label="'+esc(_x("Saralash"))+'">'+[["pop",_x("Ommabop")],["price",_x("Arzon")],["count",_x("Ko'p")]].map(function(x){
       return '<button role="radio" aria-checked="'+(S.vn.sort===x[0])+'" data-vns="'+x[0]+'" class="'+(S.vn.sort===x[0]?"on":"")+'">'+esc(x[1])+'</button>';}).join("")+'</div></div>'
@@ -10640,8 +10758,8 @@ function vnFiltered(){
 function vnRowHTML(x,bal){
   var low=x.count<30,can=bal===null||x.price<=bal;
   return '<button class="vn2-row'+(can?"":" no")+'" data-vnc="'+esc(x.key)+'"><span class="vn2-fl" aria-hidden="true">'+flagOf(x.iso)+'</span>'
-    +'<span class="vn2-mid"><b>'+esc(x.name)+'</b><span>'+(low?'<span class="vn2-pill warn sm">'+esc(_x("Kam qoldi"))+'</span> ':'')+'<span class="num">'+esc(String(x.count).replace(/\B(?=(\d{3})+(?!\d))/g," "))+'</span> '+esc(_x("ta mavjud"))+'</span></span>'
-    +'<span class="vn2-pr">'+vnSum(x.price)+(can?'':'<span class="vn2-no">'+esc(_x("balans yetmaydi"))+'</span>')+'</span></button>';
+    +'<span class="vn2-mid"><b>'+esc(x.name)+'</b><span>'+(low?'<span class="vn2-pill warn sm">'+esc(_x("Kam qoldi"))+'</span> ':'<i class="vn2-dot" aria-hidden="true"></i>')+'<span class="num">'+esc(String(x.count).replace(/\B(?=(\d{3})+(?!\d))/g," "))+'</span> '+esc(_x("ta mavjud"))+'</span></span>'
+    +'<span class="vn2-pr">'+vnSum(x.price)+(can?'':'<span class="vn2-no">'+esc(_x("balans yetmaydi"))+'</span>')+'</span><span class="vn2-go" aria-hidden="true">'+ic(can?"plus":"wallet",15)+'</span></button>';
 }
 function vnListHTML(){
   if(!VN){
@@ -10672,8 +10790,9 @@ function vnMineHTML(mine){
 function vnBuySheet(x){
   var bal=typeof ME.balance==="number"?ME.balance:0,tl=VN.noCancel!==false,need=x.price-bal;
   var h='<div class="vn2-sheet"><div class="vn2-sh-h"><span class="vn2-fl lg" aria-hidden="true">'+flagOf(x.iso)+'</span><div><h2>'+esc(_x("{c} raqami").replace("{c}",x.name))+'</h2>'
-    +'<p>'+esc(tl?_x("Telegram akkaunt"):_x("SMS uchun raqam"))+' · <span class="num">'+esc(String(x.count).replace(/\B(?=(\d{3})+(?!\d))/g," "))+'</span> '+esc(_x("ta mavjud"))+'</p></div></div>'
-    +'<div class="vn2-big num">'+vnSum(x.price)+'</div>'
+    +'<p><span class="vn2-tg">'+ic("send",11)+esc(tl?_x("Telegram akkaunt"):_x("SMS uchun raqam"))+'</span></p></div></div>'
+    +'<div class="vn2-pricebox"><div><small>'+esc(_x("Narxi"))+'</small><div class="vn2-big num">'+vnSum(x.price)+'</div></div>'
+    +'<span class="vn2-avail"><i class="vn2-dot" aria-hidden="true"></i><span class="num">'+esc(String(x.count).replace(/\B(?=(\d{3})+(?!\d))/g," "))+'</span> '+esc(_x("ta mavjud"))+'</span></div>'
     +'<dl class="vn2-kv"><div><dt>'+esc(_x("Balansingiz"))+'</dt><dd class="num">'+vnSum(bal)+'</dd></div>'
     +(need>0?'<div class="bad"><dt>'+esc(_x("Yetishmaydi"))+'</dt><dd class="num">'+vnSum(need)+'</dd></div>'
       :'<div><dt>'+esc(_x("Xariddan keyin"))+'</dt><dd class="num">'+vnSum(bal-x.price)+'</dd></div>')+'</dl>'
@@ -10708,7 +10827,8 @@ function vnActive(o){
     if(o.status==="cancelled")return h+'<p class="vn2-note">'+esc(_x("Bekor qilindi, pul balansga qaytarildi."))+'</p></div>';
     h+=vnPathHTML(o,tl);
     if(o.status==="done"){
-      h+='<div class="vn2-codebox" aria-live="polite"><span class="vn2-lbl">'+esc(tl?_x("Kirish kodi"):_x("SMS kod"))+'</span><div class="vn2-codeln"><b class="vn2-code num">'+esc(v.code)+'</b>'+copyBtn(v.code,_x("Kodni nusxalash"))+'</div>'
+      var cd=String(v.code||""),digits=/^\d{3,8}$/.test(cd)?cd.split("").map(function(d){return '<span>'+d+'</span>';}).join(""):esc(cd);
+      h+='<div class="vn2-codebox" aria-live="polite"><span class="vn2-lbl">'+esc(tl?_x("Kirish kodi"):_x("SMS kod"))+'</span><div class="vn2-codeln"><b class="vn2-code num" aria-label="'+esc(cd)+'">'+digits+'</b>'+copyBtn(v.code,_x("Kodni nusxalash"))+'</div>'
         +(v.pass?'<span class="vn2-lbl">'+esc(_x("2 bosqichli parol"))+'</span><div class="vn2-codeln"><b class="vn2-pass num">'+esc(v.pass)+'</b>'+copyBtn(v.pass,_x("Parolni nusxalash"))+'</div>':'')+'</div>';
       if(tl&&Date.now()-(o.doneTs||0)<864e5)h+='<p class="vn2-hint">'+esc(_x("Telegram yangi kod yuborsa, «Kodni yangilash» bosing (24 soat ichida)."))+'</p>'
         +'<button class="vn2-ghost bordered" id="vnGet"'+(busy?" disabled":"")+'>'+(busy?'<span class="vn-spin" aria-hidden="true"></span> ':ic("history",14)+' ')+esc(_x("Kodni yangilash"))+'</button>';
@@ -11212,8 +11332,8 @@ function openAdminForm(editId,preset){
     var statusEl=g("#f_premEmojiStatus");
     var id=idw?idw.value.trim():"";
     if(!/^\d+$/.test(id)){toast("ID noto'g'ri — faqat raqamlardan iborat bo'lishi kerak");return;}
-    premBtn.disabled=true;premBtn.textContent="Yuklanmoqda...";
-    if(statusEl)statusEl.textContent="Telegramdan olinmoqda...";
+    premBtn.disabled=true;premBtn.textContent="Yuklanmoqda…";
+    if(statusEl)statusEl.textContent="Telegramdan olinmoqda…";
     api("/api/admin/premium-emoji?id="+encodeURIComponent(id),"GET").then(function(r){
       var ew=g("#f_emoji"),vw=g("#f_video");
       if(r.kind==="video"){
