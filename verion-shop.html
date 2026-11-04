@@ -1556,16 +1556,11 @@ body.adm-open{overflow:hidden}
 .adm-mini b{color:var(--txt);font-weight:600}
 .adm-search{display:flex;gap:8px;margin:0 0 12px}
 .adm-sr{margin:-4px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:4px;box-shadow:0 12px 30px rgba(2,4,12,.35)}
-.adm-sr-row,.api-row{display:flex;align-items:center;gap:11px;width:100%;padding:9px 8px;border:none;background:none;text-align:left;color:var(--txt);border-radius:var(--r-sm)}
-.adm-sr-row:active,.api-row:active{background:var(--card2)}
-.api-row{background:var(--card);border:1px solid var(--line);margin:0 0 8px;padding:11px}
+.adm-sr-row{display:flex;align-items:center;gap:11px;width:100%;padding:9px 8px;border:none;background:none;text-align:left;color:var(--txt);border-radius:var(--r-sm)}
+.adm-sr-row:active{background:var(--card2)}
 .api-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .api-mid b{font-size:var(--fs-md);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .api-mid span{font-size:var(--fs-xs);color:var(--mut);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.api-st{flex:0 0 auto;max-width:42%;font-size:var(--fs-xs);font-weight:600;padding:4px 9px;border-radius:999px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.api-st.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
-.api-st.err{color:var(--err);background:color-mix(in srgb,var(--err) 14%,transparent)}
-.api-st.mut{color:var(--mut);background:var(--card2)}
 .vn-arow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
 .vn-arow .fl{font-size:20px}
 .vn-arow .nm{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -5319,6 +5314,8 @@ var ADM_TILES=[
     ["games","gamepad","#ef4444","O'yinlar va liniyalar","MooGold, G2Bulk, Smile"],
     ["nakrutka","trendUp","#10b981","Nakrutka","Xizmatlar, buyurtmalar"],
     ["cs2","gamepad","#f0a030","Skinlar do'koni","CS2 · Dota 2 · Rust"],
+    ["vnum","phone","#22c55e","Virtual raqam","TG-Lion API: kalit, kurs, ustama"],
+    ["steam","wallet","#3b82f6","Steam hamyon","Ludovex API: kurs, chegaralar"],
     ["cats","clipboard","#6366f1","Kategoriyalar","Bo'limlar ko'rinishi"],
     ["deliveries","key","#14b8a6","Yetkazilganlar","Sotilganlar qidiruvi"],
     ["reviews","star","#eab308","Sharhlar","Tasdiqlash, tahrirlash"]]],
@@ -5328,10 +5325,6 @@ var ADM_TILES=[
     ["loyalty","trophy","#f59e0b","Sodiqlik","Bosqichlar, bonus"],
     ["referral","gift","#8b5cf6","Referal","Taklif bonusi"],
     ["broadcast","send","#06b6d4","Ommaviy xabar","Hammaga yuborish"]]],
-  ["API ulanishlar",[
-    ["apis","globe","#0ea5e9","Hamma API'lar","Holat, balans — bitta joyda"],
-    ["vnum","phone","#22c55e","Virtual raqam","TG-Lion: kalit, kurs, ustama"],
-    ["steam","wallet","#3b82f6","Steam hamyon","Ludovex: kurs, chegaralar"]]],
   ["Sozlamalar",[
     ["bot","bolt","#3b82f6","Bot va /start","Ilova manzili, ulanish"],
     ["channels","send","#0ea5e9","Kanallar","Buyurtma, to'lov kanali"],
@@ -5343,7 +5336,7 @@ var ADM_TILES=[
 function admTileAction(k){
   var m={ready:openAdminReadiness,money:function(){openAdminMoney();},finance:function(){openAdminFinance(openAdmin);},users:openAdminUsers,adminbot:function(){openAdminAdminBot(openAdmin);},support:function(){openAdminSupport();},notices:openAdminNotices,tgsupport:function(){openAdminTgSupport(openAdmin);},aibot:function(){openAdminAi(openAdmin);},
     catalog:openAdminProducts,games:function(){openAdminGames("");},ai:function(){openAdminGames("ai");},nakrutka:openAdminNakrutka,cs2:openAdminCs2,cats:openAdminCategories,deliveries:openAdminDeliveries,reviews:openAdminReviews,
-    promo:openAdminPromo,extras:openAdminExtras,steamvn:openAdminApis,apis:openAdminApis,vnum:openAdminVnum,steam:openAdminSteam,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
+    promo:openAdminPromo,extras:openAdminExtras,steamvn:openAdminSteam,vnum:openAdminVnum,steam:openAdminSteam,loyalty:openAdminLoyalty,referral:openAdminReferral,broadcast:openAdminBroadcast,
     bot:openAdminBot,channels:openAdminChannels,automation:openAdminAutomation,dash:openAdminDashboard,emoji:openAdminUiEmoji,
     backup:function(){
       if(!confirm("Zaxira nusxa olib, bot orqali yuborilsinmi?"))return;
@@ -6716,7 +6709,7 @@ function openAdminSteam(backFn){
     var S1=c.steam;
     var html='<h2>'+ic("wallet",18)+' Steam hamyon</h2>'
       +admSw("svOn","Mijozlarga ochiq",S1.enabled)
-      +'<div class="paynote" style="margin:6px 0">'+(c.ludovex?'✅ Ludovex liniyasi yoqilgan — Steam avtomatik to\'ldiriladi (narx himoyasi bilan).':'⚠️ Ludovex liniyasi yoqilmagan — Steam buyurtmalari sizga qo\'lda bajarish uchun keladi. Liniya: API ulanishlar → O\'yin liniyalari.')+'</div>'
+      +'<div class="paynote" style="margin:6px 0">'+(c.ludovex?'✅ Ludovex liniyasi yoqilgan — Steam avtomatik to\'ldiriladi (narx himoyasi bilan).':'⚠️ Ludovex liniyasi yoqilmagan — Steam buyurtmalari sizga qo\'lda bajarish uchun keladi. Liniya: O\'yinlar va liniyalar → Ludovex.')+'</div>'
       +'<label>Rejim</label><select id="svMode"><option value="auto"'+(S1.mode!=="manual"?" selected":"")+'>Avtomatik (Ludovex)</option><option value="manual"'+(S1.mode==="manual"?" selected":"")+'>Qo\'lda (admin bajaradi)</option></select>'
       +'<label>Kurs: 1$ = necha so\'m</label><input id="svRate" type="number" value="'+S1.rate+'">'
       +'<div class="arow"><div style="flex:1"><label>Eng kam, $</label><input id="svMin" type="number" step="0.5" value="'+S1.min+'"></div><div style="flex:1"><label>Eng ko\'p, $</label><input id="svMax" type="number" value="'+S1.max+'"></div></div>'
@@ -6796,87 +6789,6 @@ function openAdminVnum(backFn){
     });
   }).catch(function(){toast(t("srv_off"),true);});
 }
-/* ===== API ulanishlar — har bir tashqi xizmat alohida: nima uchun, qaysi API, holati va balansi ===== */
-var APIS={q:""};
-function openAdminApis(){
-  var html='<h2>'+ic("globe",18)+' API ulanishlar</h2>'
-    +'<div class="d" style="margin:-4px 0 10px">Har bir xizmat alohida: qaysi sayt (API) bilan ishlaydi, holati va qolgan balansi. Bosing — sozlamasi ochiladi.</div>'
-    +'<div class="searchbar" style="margin:0 0 10px"><span class="sic">'+ic("search",16)+'</span><input id="apiQ" type="search" placeholder="Qidirish: TG-Lion, Steam, MooGold…" value="'+esc(APIS.q)+'" autocomplete="off"></div>'
-    +'<div id="apiList"><div class="d">⏳ Yuklanmoqda…</div></div>'
-    +'<button class="btn gray" id="apiRef" style="margin-top:12px">↻ Balanslarni yangilash</button><div style="height:20px"></div>';
-  var sh=openSheet(html,openAdmin),D={};
-  function prov(id){var p=null;((D.ov&&D.ov.providers)||[]).forEach(function(x){if(x.id===id)p=x;});return p;}
-  function provBy(re){var p=null;((D.ov&&D.ov.providers)||[]).forEach(function(x){if(!p&&re.test(x.id+" "+x.name))p=x;});return p;}
-  function st(cls,txt){return '<span class="api-st '+cls+'">'+esc(txt)+'</span>';}
-  function balTxt(p){var m=p&&/Balans:\s*([^·\n]+)/i.exec(p.message||"");return m?m[1].trim():"";}
-  function rows(){
-    var ov=D.ov||{},sv=ov.services||{},R=[];
-    var vn=sv.vnum||{},vp=prov("vnum"),vnName=vn.provider==="5sim"?"5sim":"TG-Lion";
-    R.push({g:"Sotuv xizmatlari",k:"vnum",ic:"phone",c:"#22c55e",t:"Virtual raqam",s:vnName+" API · Telegram raqamlari",
-      st:!vn.enabled?["mut","O'chiq"]:!vn.keySet?["err","Kalit yo'q"]:vp?(vp.ok?["ok",balTxt(vp)||"Ulangan"]:["err","Xato"]):["ok","Yoqilgan"],kw:"tglion tg-lion 5sim raqam nomer virtual sms akkaunt"});
-    var s=sv.steam||{},sp=s.line?prov(s.line.id):null;
-    R.push({g:"Sotuv xizmatlari",k:"steam",ic:"wallet",c:"#3b82f6",t:"Steam hamyon",s:(s.mode==="manual"?"Qo'lda":"Ludovex API")+" · kurs "+(s.rate||"")+" so'm/$",
-      st:!s.enabled?["mut","O'chiq"]:s.mode==="manual"?["ok","Qo'lda"]:!s.line||!s.line.enabled?["err","Liniya yo'q"]:sp?(sp.ok?["ok",balTxt(sp)||"Ulangan"]:["err","Xato"]):["ok","Yoqilgan"],kw:"steam ludovex hamyon"});
-    R.push({g:"Sotuv xizmatlari",k:"fragment",ic:"star",c:"#f59e0b",t:"Telegram Stars va Premium",s:"Fragment API · avtomatik yetkazish",st:sv.fragment?["ok","Ulangan"]:["mut","Kalit yo'q"],kw:"fragment stars premium yulduz"});
-    R.push({g:"Sotuv xizmatlari",k:"giftbot",ic:"gift",c:"#ec4899",t:"Telegram sovg'alar",s:"Gift bot API",st:sv.giftBot?["ok","Ulangan"]:["mut","Sozlanmagan"],kw:"gift sovga podarok bot"});
-    var sk=sv.skins||{},kp=provBy(/lis|skin|cs2/i);
-    R.push({g:"Sotuv xizmatlari",k:"cs2",ic:"gamepad",c:"#f0a030",t:"Skinlar do'koni",s:"lis-skins API · CS2, Dota 2, Rust",
-      st:!sk.enabled?["mut","O'chiq"]:!sk.keySet?["err","Kalit yo'q"]:kp?(kp.ok?["ok",balTxt(kp)||"Ulangan"]:["err","Xato"]):["ok","Yoqilgan"],kw:"lis-skins lis skins cs2 dota rust"});
-    (ov.lines||[]).slice().sort(function(a,b){return (a.priority||0)-(b.priority||0);}).forEach(function(l){var p=prov(l.id);
-      R.push({g:"O'yin va obuna liniyalari",k:"games",ic:"gamepad",c:"#ef4444",t:l.name,s:String(l.type||"")+" API · "+(l.used||0)+" ta paketda",
-        st:!l.enabled?["mut","O'chiq"]:p?(p.ok?["ok",balTxt(p)||"Ulangan"]:["err","Xato"]):["ok","Yoqilgan"],kw:"liniya o'yin obuna "+l.type});});
-    (ov.smm||[]).forEach(function(l){var p=prov(l.id);
-      R.push({g:"Nakrutka panellari",k:"nakrutka",ic:"trendUp",c:"#10b981",t:l.name,s:"SMM panel API",
-        st:!l.enabled?["mut","O'chiq"]:!l.ready?["err","Kalit yo'q"]:p?(p.ok?["ok",balTxt(p)||"Ulangan"]:["err","Xato"]):["ok","Yoqilgan"],kw:"smm nakrutka jap panel"});});
-    var ai=D.ai||{};
-    R.push({g:"Bot va AI",k:"aibot",ic:"sparkles",c:"#8b5cf6",t:"AI yordamchi",s:(ai.provider?String(ai.provider):"Claude / Gemini")+" API",st:ai.ready?["ok","Ulangan"]:["mut","Kalit yo'q"],kw:"ai claude gemini anthropic"});
-    var tg=D.tgs||{};
-    R.push({g:"Bot va AI",k:"tgsupport",ic:"send",c:"#0ea5e9",t:"Support akkaunt",s:"Telegram API (sessiya)"+(tg.me&&tg.me.username?" · @"+tg.me.username:""),st:tg.connected?["ok","Ulangan"]:tg.hasSession?["err","Uzilgan"]:["mut","Ulanmagan"],kw:"support akkaunt sessiya telegram api_id"});
-    var ab=D.ab||{};
-    R.push({g:"Bot va AI",k:"adminbot",ic:"bolt",c:"#f59e0b",t:"Admin bot",s:"Telegram Bot API",st:ab.tokenSet?(ab.running===false?["err","To'xtagan"]:["ok","Ulangan"]):["mut","Token yo'q"],kw:"admin bot token"});
-    return R;
-  }
-  function paint(){
-    var q=String(APIS.q||"").trim().toLowerCase().replace(/['’ʻ`]/g,""),R=rows(),g="",h="";
-    R=R.filter(function(r){return !q||(r.t+" "+r.s+" "+r.kw+" "+r.g).toLowerCase().replace(/['’ʻ`]/g,"").indexOf(q)!==-1;});
-    R.forEach(function(r){
-      if(r.g!==g){g=r.g;h+='<div class="sect" style="margin:12px 0 6px">'+esc(g)+'</div>';}
-      h+='<button class="api-row" data-api="'+esc(r.k)+'"><span class="adm-ic" style="--ib:'+r.c+';width:36px;height:36px">'+ic(r.ic,18)+'</span>'
-        +'<span class="api-mid"><b>'+esc(r.t)+'</b><span>'+esc(r.s)+'</span></span>'+st(r.st[0],r.st[1])+'</button>';
-    });
-    var box=sh.querySelector("#apiList");if(!box)return;
-    box.innerHTML=h||'<div class="d">Topilmadi</div>';
-    box.querySelectorAll("[data-api]").forEach(function(b){b.addEventListener("click",function(){haptic();apiOpen(this.getAttribute("data-api"));});});
-  }
-  function load(force){
-    var done=0,fin=function(){if(++done>=4)paint();};
-    api("/api/admin/products/overview"+(force?"?force=1":"")).then(function(r){D.ov=r;}).catch(function(){}).then(fin);
-    api("/api/admin/ai").then(function(r){D.ai=r;}).catch(function(){}).then(fin);
-    api("/api/admin/tgsupport").then(function(r){D.tgs=r;}).catch(function(){}).then(fin);
-    api("/api/admin/adminbot").then(function(r){D.ab=r;}).catch(function(){}).then(fin);
-  }
-  sh.querySelector("#apiQ").addEventListener("input",function(){APIS.q=this.value;paint();});
-  sh.querySelector("#apiRef").addEventListener("click",function(){haptic();sh.querySelector("#apiList").innerHTML='<div class="d">⏳ Yangilanmoqda…</div>';load(true);});
-  load(false);
-}
-function apiOpen(k){
-  var back=openAdminApis;
-  if(k==="vnum")return openAdminVnum(back);
-  if(k==="steam")return openAdminSteam(back);
-  if(k==="games")return openAdminGames("");
-  if(k==="nakrutka")return openAdminNakrutka();
-  if(k==="cs2")return openAdminCs2();
-  if(k==="aibot")return openAdminAi(back);
-  if(k==="tgsupport")return openAdminTgSupport(back);
-  if(k==="adminbot")return openAdminAdminBot(back);
-  if(k==="fragment"){
-    var sh=openSheet('<h2>'+ic("star",18)+' Telegram Stars va Premium</h2><div class="paynote">Fragment API kaliti Railway Variables\'da (<code>FRAGMENT_API_KEY</code>) saqlanadi — xavfsizlik uchun ilovada ko\'rsatilmaydi.</div><div class="d" id="frBal" style="margin-top:10px">⏳ Balans tekshirilmoqda…</div><div style="height:16px"></div>',back);
-    api("/api/admin/fragment-balance").then(function(r){var o=sh.querySelector("#frBal");if(!o)return;var b=r&&(r.balance!=null?r.balance:r.data&&r.data.balance);
-      o.textContent=b!=null?"✅ Balans: "+String(b).replace(/\b(TON|USDT)\b/gi,"coin"):"❌ "+(r&&(r.message||r.error)||"Ulanmagan");}).catch(function(){var o=sh.querySelector("#frBal");if(o)o.textContent="❌ "+t("srv_off");});
-    return;
-  }
-  if(k==="giftbot")return openSheet('<h2>'+ic("gift",18)+' Telegram sovg\'alar</h2><div class="paynote">Gift bot manzili va maxfiy kaliti Railway Variables\'da (<code>GIFT_BOT_URL</code>, <code>GIFT_BOT_SECRET</code>) saqlanadi.</div><div style="height:16px"></div>',back);
-}
 /* ===== Admin qidiruv: bo'lim/sozlama, mahsulot, o'yin, mijoz va buyurtma — bitta qatordan ===== */
 var ADM_KW={ready:"tayyorlik ishga tushirish launch",support:"support chat yozishma operator inbox",notices:"xabarlar sms bildirishnoma",
   money:"to'lov buyurtma tasdiqlash bekor payment order chek",finance:"moliya kirim foyda sotuv daromad hisobot",users:"mijoz foydalanuvchi user balans",
@@ -6884,7 +6796,7 @@ var ADM_KW={ready:"tayyorlik ishga tushirish launch",support:"support chat yozis
   catalog:"mahsulot narx katalog product",games:"o'yin liniya moogold g2bulk smile ludovex pubg free fire mlbb obuna api",nakrutka:"smm jap panel obunachi layk ko'rish nakrutka api",
   cs2:"lis-skins lis skin cs2 dota rust trade api",cats:"kategoriya bo'lim ko'rinish",deliveries:"yetkazilgan sotilgan kod",reviews:"sharh izoh baho",
   promo:"promo kod chegirma",extras:"banner faq tarmoq bezak rasm",loyalty:"sodiqlik keshbek bosqich",referral:"referal taklif bonus",broadcast:"ommaviy xabar rassilka",
-  apis:"api ulanish kalit key token balans provider sayt",vnum:"virtual raqam nomer tglion tg-lion tg lion 5sim sms akkaunt api kalit",steam:"steam hamyon ludovex kurs api",
+  vnum:"virtual raqam nomer tglion tg-lion tg lion 5sim sms akkaunt api kalit",steam:"steam hamyon ludovex kurs api",
   bot:"bot start webhook mini app manzil token",channels:"kanal channel guruh",automation:"avtomatlashtirish eslatma ogohlantirish",dash:"statistika grafik",emoji:"premium emoji",backup:"zaxira backup nusxa"};
 function admNorm(x){return String(x||"").toLowerCase().replace(/['’ʻ`]/g,"").replace(/\s+/g," ").trim();}
 function admSearchResults(q){
@@ -10496,8 +10408,8 @@ function vnActive(o){
     if(o.status==="cancelled")return h+'<div class="paynote" style="margin-top:14px">'+esc(_x("❌ Bekor qilindi, pul balansga qaytarildi"))+'</div></div>';
     if(tl){
       if(o.status==="done")return h+codeBox(v)
-        +'<div class="d" style="font-size:11.5px;color:var(--mut);margin-top:10px">'+esc(_x("Telegram yangi kod yuborsa — «Kodni yangilash» bosing (24 soat ichida)."))+'</div>'
-        +'<button class="btn gray" id="vnGet" style="margin-top:8px"'+(busy?" disabled":"")+'>'+ic("history",14)+' '+esc(_x("Kodni yangilash"))+'</button></div>';
+        +(Date.now()-(o.doneTs||0)<864e5?'<div class="d" style="font-size:11.5px;color:var(--mut);margin-top:10px">'+esc(_x("Telegram yangi kod yuborsa — «Kodni yangilash» bosing (24 soat ichida)."))+'</div>'
+          +'<button class="btn gray" id="vnGet" style="margin-top:8px"'+(busy?" disabled":"")+'>'+ic("history",14)+' '+esc(_x("Kodni yangilash"))+'</button>':'')+'</div>';
       if(!v.phone)return h+'<div class="d" style="margin-top:12px;color:var(--mut)">'+esc(_x("Raqam tekshirilmoqda — operator tez orada yuboradi."))+'</div></div>';
       return h+'<ol class="vn-steps"><li>'+esc(_x("Telegram ilovasini oching va shu raqam bilan kiring."))+'</li><li>'+esc(_x("Telegram kod yuborgach, shu yerda «Kodni olish» bosing."))+'</li></ol>'
         +'<button class="btn" id="vnGet"'+(busy?" disabled":"")+'>'+(busy?'<span class="vn-spin"></span> ':'')+esc(_x("Kodni olish"))+'</button>'

@@ -192,7 +192,9 @@ module.exports = function (ctx) {
     return call(TLB(), "?" + q.toString(), { timeout: action === "getNumber" ? 40000 : 25000 });
   }
   const tlOk = j => !!(j && String(j.status || "").toLowerCase() === "ok");
-  const tlMsg = r => str((r.json && (r.json.message || r.json.msg || r.json.error || r.json.status)) || r.text || r.error || ("HTTP " + r.status), 300);
+  // Sayt xato matnida kalit/ID qaytsa ham — adminga ketadigan xabarlarda yashiriladi
+  const tlScrub = t => { const c = vnCfg(); let x = String(t || ""); for (const v of [c.tl.apiKey, c.tl.yourId]) if (v && String(v).length >= 3) x = x.split(String(v)).join("***"); return x; };
+  const tlMsg = r => str(tlScrub((r.json && (r.json.message || r.json.msg || r.json.error || r.json.status)) || r.text || r.error || ("HTTP " + r.status)), 300);
   const roundUp = x => Math.ceil(x / 500) * 500;
   function vnPrice(cost) {
     const c = vnCfg();
@@ -262,7 +264,7 @@ module.exports = function (ctx) {
     const noNum = /no number|not available|out of stock|no stock|unavailable|sold out|qty|كمية|لا يوجد/.test(low);
     const priceUp = /price|سعر/.test(low) && !noNum;
     if (/balance|fund|money|رصيد/.test(low)) alertOnce("vn-bal", "🚨 Virtual raqam ishlamayapti — TG-Lion hisobida mablag' yetarli emas. Hisobni to'ldiring.");
-    else if (r.status === 401 || r.status === 403 || /api ?key|apikey|unauthori|invalid (key|id)|yourid|wrong (key|id)/.test(low)) alertOnce("vn-auth", "⛔ Virtual raqam: TG-Lion API kalit yoki ID noto'g'ri. Admin → API ulanishlar → Virtual raqam.");
+    else if (r.status === 401 || r.status === 403 || /api ?key|apikey|unauthori|invalid (key|id)|yourid|wrong (key|id)/.test(low)) alertOnce("vn-auth", "⛔ Virtual raqam: TG-Lion API kalit yoki ID noto'g'ri. Admin → Do'kon → Virtual raqam.");
     else if (!noNum) alertOnce("vn-err", "⚠️ Virtual raqam olishda xato (TG-Lion): " + msg.slice(0, 200));
     if (priceUp || noNum) PRICES = { at: 0, prov: "", list: [] };
     // So'rov yetmagan, yoki sayt aniq rad etgan (4xx / status ≠ ok) — raqam berilmagan, pul qaytadi.
@@ -286,7 +288,7 @@ module.exports = function (ctx) {
     const t = (r.text || "").toLowerCase();
     const known = /no free phones|not enough|bad country|bad operator|no product|server offline/.test(t);
     if (/not enough|balance/.test(t)) alertOnce("vn-bal", "🚨 Virtual raqam ishlamayapti — 5sim hamyonida coin yetarli emas. Hamyonni to'ldiring.");
-    else if (r.status === 401) alertOnce("vn-auth", "⛔ Virtual raqam: 5sim API kaliti noto'g'ri (401). Admin → API ulanishlar → Virtual raqam.");
+    else if (r.status === 401) alertOnce("vn-auth", "⛔ Virtual raqam: 5sim API kaliti noto'g'ri (401). Admin → Do'kon → Virtual raqam.");
     else if (!/no free phones/.test(t)) alertOnce("vn-err", "⚠️ Virtual raqam olishda xato: " + str(r.text || r.error, 200));
     if (!r.sent || known || (r.status >= 400 && r.status < 500)) {
       refund(o, "");
@@ -359,7 +361,7 @@ module.exports = function (ctx) {
       try { await vnCheck(o); } catch (e) {}
     }
   }
-  // Provayder balansi (admin: API ulanishlar, liniyalar kuzatuvi). Faqat yoqilgan va kaliti bor bo'lsa.
+  // Provayder balansi (admin: Virtual raqam sahifasi, Mahsulotlar, liniyalar kuzatuvi). Faqat yoqilgan va kaliti bor bo'lsa.
   async function vnBalance() {
     const c = vnCfg(), prov = vnProv(), name = "Virtual raqam (" + PROV_NAME[prov] + ")";
     if (prov === "tglion") {

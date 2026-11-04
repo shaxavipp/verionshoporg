@@ -323,7 +323,7 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
   - holati har 20 soniyada tekshiriladi.
 - **Ludovex yoqilmagan bo'lsa**, buyurtma adminga qo'lda bajarish uchun keladi.
 
-**Virtual raqam** (Telegram bo'limi → «Virtual raqam»). Ikki provayder bor, admin tanlaydi (Admin → API ulanishlar → «Virtual raqam»):
+**Virtual raqam** (Telegram bo'limi → «Virtual raqam»). Ikki provayder bor, admin tanlaydi (Admin → Do'kon → «Virtual raqam»):
 
 *TG-Lion (tg-lion.net) — asosiy.* Tayyor Telegram akkaunt raqamlari:
 - Davlatlar: `available_countries` (nom, ISO, soni, narx $). Narx = TG-Lion narxi × kurs (1$ = so'm) × (1 + ustama), 500 so'mga yaxlitlanadi. Soni 0 bo'lgan davlat ko'rinmaydi, mijozga tannarx ko'rsatilmaydi.
@@ -332,12 +332,12 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
 - **«Kodni yangilash»** — 24 soat ichida Telegram yangi kod yuborsa, qayta olinadi. Bitta buyurtma uchun 5 soniyada bir martadan ko'p so'ralmaydi.
 - Kod kutish vaqti (sukut bo'yicha 20 daqiqa) o'tsa: server so'rashni to'xtatadi, adminga xabar boradi («TG-Lion'da bekor qilib bo'lmaydi — mijoz bilan bog'laning»); kerak bo'lsa admin «Bekor qilish» bosadi va pul qaytadi.
 - Xatolar: raqam qolmagan → «boshqa davlatni tanlang», pul qaytadi; TG-Lion hisobida mablag' yo'q yoki kalit/ID noto'g'ri → mijozga «keyinroq», adminga darhol xabar; javob noaniq (vaqt tugadi, 5xx) → pul band qoladi, admin TG-Lion kabinetidan tekshiradi (ikki marta yechilmaydi). TG-Lion balansi 3$ dan kam qolsa ogohlantirish.
-- Balans «API ulanishlar» sahifasida va liniyalar kuzatuvida (har 20 daqiqa) ko'rinadi.
+- Balans «Virtual raqam» sahifasida («Saqlash va sinash»), «Mahsulotlar» → Ulanish kartasida va liniyalar kuzatuvida (har 20 daqiqa) ko'rinadi.
 - Kalit va YourID faqat serverda; admin panelga faqat «o'rnatilgan» va ID ning oxirgi 3 raqami qaytadi.
 
 *5sim.net — zaxira.* SMS qabul qiluvchi raqam: kod kelmasa yoki mijoz bekor qilsa, raqam 5sim'da bekor qilinadi va pul qaytadi. Narx = eng arzon operator narxi × kurs (1 coin = so'm) × (1 + ustama).
 
-**Sozlash:** Admin → «API ulanishlar» bo'limi:
+**Sozlash:** Admin → «Do'kon» bo'limida ikkita alohida plita:
 - **Virtual raqam** — yoqish, provayder (TG-Lion / 5sim), TG-Lion API kalit va YourID (yoki 5sim kaliti), kurs, ustama, kod kutish vaqti; «Saqlash va sinash» (balansni ko'rsatadi), «Davlatlar va narxlar» (tannarx → sotuv narxi).
 - **Steam hamyon** — alohida: yoqish, rejim, kurs, chegaralar, tez tugmalar.
 
@@ -554,10 +554,10 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 - **Yengil rejim (`html.lite`).** Telegram Android telefon kuchini xabar qiladi (User-Agent oxirida `LOW` / `AVERAGE` / `HIGH`). `LOW` yoki `AVERAGE` bo'lsa yoki zaif Android bo'lsa (≤3 GB xotira yoki ≤4 yadro), faqat og'ir effektlar o'chiriladi: xiralashtirish (`backdrop-filter`) va fon nuri. Animatsiyalar (faqat `transform`/`opacity`) yengil rejimda ham ishlaydi (v3.10) — ularni faqat "Kamroq harakat" sozlamasi va `prefers-reduced-motion` o'chiradi.
 - **O'lchov (protsessor 4× sekinlashtirilgan):** bosh sahifani aylantirish — eng sekin kadr 17 ms, tushib qolgan kadr yo'q. Ekranni chizish 1–1.5 ms.
 
-## API ulanishlar va admin qidiruv (v3.12)
+## Har bir API alohida va admin qidiruv (v3.12)
 
-- **«API ulanishlar» bo'limi** (admin bosh sahifasida alohida bo'lim): «Hamma API'lar», «Virtual raqam» (TG-Lion), «Steam hamyon». Steam va virtual raqam endi alohida sozlanadi (avvalgi «Steam va virtual raqam» birlashgan sahifa olib tashlandi).
-- **«Hamma API'lar»** — har bir tashqi xizmat alohida qatorda: nomi, qaysi API (TG-Lion, Ludovex, Fragment, Gift bot, lis-skins, har bir o'yin liniyasi, har bir SMM panel, Claude/Gemini, Telegram sessiya, admin bot), holati (ulangan / kalit yo'q / o'chiq / xato) va balansi. Qator bosilsa — o'sha xizmat sozlamasi ochiladi. Sahifada o'z qidiruvi va «Balanslarni yangilash» tugmasi bor.
+- **API'lar bitta bo'limga yig'ilmaydi — har biri o'z nomi bilan alohida plita.** Admin → «Do'kon» bo'limida: «O'yinlar va liniyalar» (MooGold, G2Bulk, Smile, Ludovex), «Nakrutka» (SMM panellar), «Skinlar do'koni» (lis-skins), **«Virtual raqam»** (TG-Lion) va **«Steam hamyon»** (Ludovex). Avvalgi birlashgan «Steam va virtual raqam» sahifasi ikkiga bo'lindi: har biri faqat o'z sozlamasini ko'rsatadi. AI yordamchi, Support akkaunt va Admin bot — «Asosiy» bo'limida o'z plitalari bilan.
+- Har bir API'ning holati va balansi «Mahsulotlar» sahifasidagi «Ulanish» kartasida ham ko'rinadi; TG-Lion balansi liniyalar kuzatuviga (har 20 daqiqa, kam qolsa ogohlantirish) qo'shildi.
 - **Admin qidiruv** (bosh sahifadagi qidiruv qatori): yozish bilan natijalar chiqadi —
   - bo'lim va sozlamalar (nomi, izohi va kalit so'zlari bo'yicha: «tglion», «5sim», «kurs», «moogold», «token», «kanal»...);
   - mahsulotlar (katalog nomi → tahrirlash oynasi) va o'yin/obunalar (→ «Mahsulotlar» shu so'z bilan);
