@@ -312,7 +312,7 @@ Butun kod qayta o'qib chiqildi va hujumchi sifatida sinab ko'rildi (test skriptl
 
 Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzosiz, soxta imzo — hammasi 401/403), begona buyurtma/to'lovga kirish, manfiy/katta summalar, parallel xaridlar va promo-kod, path traversal, webhook kalitlari, mijoz ilovasida XSS (barcha foydalanuvchi matnlari ekranlanadi).
 
-## Steam hamyon va virtual raqam (extra.js)
+## Steam hamyon va virtual raqam (extra.js) — alohida sozlamalar
 
 **Steam hamyon** (O'yinlar → «Steam hamyon» kartasi):
 - Mijoz Steam loginini va dollar summasini kiritadi. Tez tugmalar bor: $5, $10, $20, $50, $100. «Qayerdan olaman?» tugmasi kompyuter va telefon uchun yo'riqnomani ochadi.
@@ -323,12 +323,23 @@ Tekshirilgan va muammo topilmagan: 97 ta admin yo'li (oddiy foydalanuvchi, imzos
   - holati har 20 soniyada tekshiriladi.
 - **Ludovex yoqilmagan bo'lsa**, buyurtma adminga qo'lda bajarish uchun keladi.
 
-**Virtual raqam** (Telegram bo'limi → «Virtual raqam»), 5sim.net orqali ishlaydi:
-- Mijozga davlatlar ro'yxati, qidiruv va «Ommabop» / «Narx» bo'yicha saralash ko'rinadi. Narx = eng arzon operator narxi × kurs × (1 + ustama).
-- Raqam berilgach, SMS kod kutiladi (sukut bo'yicha 20 daqiqa) va kod oynada chiqadi.
-- Kod kelmasa yoki mijoz bekor qilsa, raqam 5sim'da bekor qilinadi va pul qaytadi.
+**Virtual raqam** (Telegram bo'limi → «Virtual raqam»). Ikki provayder bor, admin tanlaydi (Admin → API ulanishlar → «Virtual raqam»):
 
-**Sozlash:** Admin → «Steam va virtual raqam». U yerda kurs, chegaralar, rejim, 5sim API kaliti va ustama sozlanadi, «Sinash» tugmasi ham bor.
+*TG-Lion (tg-lion.net) — asosiy.* Tayyor Telegram akkaunt raqamlari:
+- Davlatlar: `available_countries` (nom, ISO, soni, narx $). Narx = TG-Lion narxi × kurs (1$ = so'm) × (1 + ustama), 500 so'mga yaxlitlanadi. Soni 0 bo'lgan davlat ko'rinmaydi, mijozga tannarx ko'rsatilmaydi.
+- Sotib olish: avval pul band qilinadi, keyin `getNumber` (`country_code`, `maxPrice` = biz ko'rsatgan tannarx — narx oshib ketsa raqam berilmaydi). Sotib olishdan oldin mijozga aytiladi: **raqam olingach bekor qilinmaydi va pul qaytmaydi** (TG-Lion'da bekor qilish yo'q).
+- Kod: mijoz raqamni Telegram'ga kiritadi va ilovada **«Kodni olish»** bosadi → `getCode` → login kodi va (bo'lsa) **2 bosqichli parol** chiqadi, nusxalash tugmalari bilan. Kod kutish vaqtida server ham o'zi so'rab turadi; kod kelgach buyurtma «Bajarildi», kod va parol botga ham yuboriladi.
+- **«Kodni yangilash»** — 24 soat ichida Telegram yangi kod yuborsa, qayta olinadi. Bitta buyurtma uchun 5 soniyada bir martadan ko'p so'ralmaydi.
+- Kod kutish vaqti (sukut bo'yicha 20 daqiqa) o'tsa: server so'rashni to'xtatadi, adminga xabar boradi («TG-Lion'da bekor qilib bo'lmaydi — mijoz bilan bog'laning»); kerak bo'lsa admin «Bekor qilish» bosadi va pul qaytadi.
+- Xatolar: raqam qolmagan → «boshqa davlatni tanlang», pul qaytadi; TG-Lion hisobida mablag' yo'q yoki kalit/ID noto'g'ri → mijozga «keyinroq», adminga darhol xabar; javob noaniq (vaqt tugadi, 5xx) → pul band qoladi, admin TG-Lion kabinetidan tekshiradi (ikki marta yechilmaydi). TG-Lion balansi 3$ dan kam qolsa ogohlantirish.
+- Balans «API ulanishlar» sahifasida va liniyalar kuzatuvida (har 20 daqiqa) ko'rinadi.
+- Kalit va YourID faqat serverda; admin panelga faqat «o'rnatilgan» va ID ning oxirgi 3 raqami qaytadi.
+
+*5sim.net — zaxira.* SMS qabul qiluvchi raqam: kod kelmasa yoki mijoz bekor qilsa, raqam 5sim'da bekor qilinadi va pul qaytadi. Narx = eng arzon operator narxi × kurs (1 coin = so'm) × (1 + ustama).
+
+**Sozlash:** Admin → «API ulanishlar» bo'limi:
+- **Virtual raqam** — yoqish, provayder (TG-Lion / 5sim), TG-Lion API kalit va YourID (yoki 5sim kaliti), kurs, ustama, kod kutish vaqti; «Saqlash va sinash» (balansni ko'rsatadi), «Davlatlar va narxlar» (tannarx → sotuv narxi).
+- **Steam hamyon** — alohida: yoqish, rejim, kurs, chegaralar, tez tugmalar.
 
 **Xatolar:** sayt puli tugasa, mijozga «keyinroq urinib ko'ring» chiqadi, adminga esa darhol xabar boradi.
 
@@ -543,6 +554,16 @@ ui-skills katalogida 623 ta ko'nikma bor. Bular eng mosi sifatida tanlandi. Yana
 - **Yengil rejim (`html.lite`).** Telegram Android telefon kuchini xabar qiladi (User-Agent oxirida `LOW` / `AVERAGE` / `HIGH`). `LOW` yoki `AVERAGE` bo'lsa yoki zaif Android bo'lsa (≤3 GB xotira yoki ≤4 yadro), faqat og'ir effektlar o'chiriladi: xiralashtirish (`backdrop-filter`) va fon nuri. Animatsiyalar (faqat `transform`/`opacity`) yengil rejimda ham ishlaydi (v3.10) — ularni faqat "Kamroq harakat" sozlamasi va `prefers-reduced-motion` o'chiradi.
 - **O'lchov (protsessor 4× sekinlashtirilgan):** bosh sahifani aylantirish — eng sekin kadr 17 ms, tushib qolgan kadr yo'q. Ekranni chizish 1–1.5 ms.
 
+## API ulanishlar va admin qidiruv (v3.12)
+
+- **«API ulanishlar» bo'limi** (admin bosh sahifasida alohida bo'lim): «Hamma API'lar», «Virtual raqam» (TG-Lion), «Steam hamyon». Steam va virtual raqam endi alohida sozlanadi (avvalgi «Steam va virtual raqam» birlashgan sahifa olib tashlandi).
+- **«Hamma API'lar»** — har bir tashqi xizmat alohida qatorda: nomi, qaysi API (TG-Lion, Ludovex, Fragment, Gift bot, lis-skins, har bir o'yin liniyasi, har bir SMM panel, Claude/Gemini, Telegram sessiya, admin bot), holati (ulangan / kalit yo'q / o'chiq / xato) va balansi. Qator bosilsa — o'sha xizmat sozlamasi ochiladi. Sahifada o'z qidiruvi va «Balanslarni yangilash» tugmasi bor.
+- **Admin qidiruv** (bosh sahifadagi qidiruv qatori): yozish bilan natijalar chiqadi —
+  - bo'lim va sozlamalar (nomi, izohi va kalit so'zlari bo'yicha: «tglion», «5sim», «kurs», «moogold», «token», «kanal»...);
+  - mahsulotlar (katalog nomi → tahrirlash oynasi) va o'yin/obunalar (→ «Mahsulotlar» shu so'z bilan);
+  - raqam yozilsa — buyurtma/mijoz qidiruvi; har doim oxirida «Mijozlardan qidirish».
+  Enter — birinchi natija ochiladi.
+
 ## Uzun yozuvlar sig'ishi (v3.11)
 
 - **Summalar va ismlar (`fitText`, `FIT_MIN`).** Bir qatorli raqam/ism joylari (profil statistikasi, balans kartasi, admin moliya va KPI, buyurtma summasi, mahsulot va sovg'a narxi, to'lov usuli nomi, sarlavhadagi ism) sig'masa, shrift avtomatik kichrayadi (har joyning o'z minimal o'lchami bor). Summa minimal o'lchamda ham sig'masa, qisqa ko'rinishga o'tadi: «1,55 mlrd so'm», «448 mln so'm» (RU: млн/млрд, EN: M/B); to'liq qiymat `title`da qoladi. DOM o'zgarganda (MutationObserver) va ekran o'lchami o'zgarganda qayta o'lchanadi.
@@ -697,7 +718,7 @@ Testlar (`sup-test`, 48 tekshiruv; soxta teleproto `TGS_TEST=1 TGS_FAKE_LIB=...`
   - **o'yin va obuna:** liniyalar tartib bilan, har birining holati, xatosi va saytdagi **qolgan balans**, nechta paketda ishlatilgani;
   - **katalog mahsuloti:** Fragment API (kalit va balans), Gift bot, zaxira (necha dona qolgani) yoki qo'lda;
   - **Steam:** Ludovex (balans) yoki qo'lda;
-  - **virtual raqam:** 5sim («Sinash» balansni ko'rsatadi);
+  - **virtual raqam:** TG-Lion yoki 5sim («Sinash» balansni ko'rsatadi);
   - **skinlar:** lis-skins balansi;
   - **nakrutka:** har SMM panel holati va balansi;
   - pastida: 30 kunlik sotuv soni va tushum.

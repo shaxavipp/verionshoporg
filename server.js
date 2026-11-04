@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-04.3";
+const BUILD = "2026-11-04.4";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -572,8 +572,9 @@ async function computeReadiness() {
   const st = EXTRA.steamCfg(), vn = EXTRA.vnCfg();
   const lvx = GAMES.store().lines.some(l => l.type === "ludovex" && l.enabled && l.config && l.config.apiKey);
   add("should", "steam", "Steam to'ldirish", !!st.enabled && (st.mode === "manual" || lvx),
-    !st.enabled ? "O'chiq" : st.mode === "manual" ? "Qo'lda (admin bajaradi)" : lvx ? "Avtomatik (Ludovex)" : "Ludovex liniyasi yoqilmagan", "steamvn");
-  add("should", "vnum", "Virtual raqamlar (5sim)", !!(vn.enabled && vn.apiKey), vn.enabled ? (vn.apiKey ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "steamvn");
+    !st.enabled ? "O'chiq" : st.mode === "manual" ? "Qo'lda (admin bajaradi)" : lvx ? "Avtomatik (Ludovex)" : "Ludovex liniyasi yoqilmagan", "steam");
+  const vnOk = !!(vn.enabled && EXTRA.vnReady()), vnProvName = EXTRA.vnProv() === "tglion" ? "TG-Lion" : "5sim";
+  add("should", "vnum", "Virtual raqamlar (" + vnProvName + ")", vnOk, vn.enabled ? (EXTRA.vnReady() ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "vnum");
   const c2 = CS2.cfg();
   add("should", "cs2", "CS2 skinlar (lis-skins)", CS2.ready(), c2.enabled ? (c2.apiKey ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "cs2");
   // — Ishonch va qo'llab-quvvatlash —
@@ -603,8 +604,8 @@ async function computeReadiness() {
   tested("test", "stars", "Telegram Stars/Premium yuborildi", stars, o => !!o.fragment, "");
   tested("test", "gift", "Telegram Gift yuborildi", gifts, o => !!o.giftRecipient, "");
   tested("test", "smm", "Nakrutka buyurtmasi bajarildi", smmReady.length > 0, o => String(o.itemId || "").indexOf("nk_") === 0, "nakrutka");
-  tested("test", "steam", "Steam hamyon to'ldirildi", !!st.enabled && (st.mode === "manual" || lvx), o => !!o.steam, "steamvn");
-  tested("test", "vnum", "Virtual raqam berildi va kod keldi", !!(vn.enabled && vn.apiKey), o => !!o.vnum, "steamvn");
+  tested("test", "steam", "Steam hamyon to'ldirildi", !!st.enabled && (st.mode === "manual" || lvx), o => !!o.steam, "steam");
+  tested("test", "vnum", "Virtual raqam berildi va kod keldi", vnOk, o => !!o.vnum, "vnum");
   tested("test", "cs2", "CS2 skin sotib olindi va Steam'ga tushdi", CS2.ready(), o => !!o.cs2, "cs2");
   // — Hisob —
   const W = { must: 3, test: 2, should: 1 };
@@ -2196,7 +2197,9 @@ function pubOrder(o) {
   for (const k of ORDER_PUB) if (o[k] !== undefined) out[k] = o[k];
   if (o.game) out.game = { gameId: o.game.gameId, gameName: o.game.gameName, packageId: o.game.packageId, region: o.game.region,
     account: o.game.account, accountText: o.game.accountText, fields: o.game.fields };
-  if (o.vnum) out.vnum = { country: o.vnum.country, phone: o.vnum.phone, code: o.vnum.code, until: o.vnum.until };
+  // pass — TG-Lion akkauntining 2 bosqichli paroli (xaridorning o'z mahsuloti); prov — bekor qilish mumkinmi
+  if (o.vnum) out.vnum = { country: o.vnum.country, phone: o.vnum.phone, code: o.vnum.code, pass: o.vnum.pass || "", until: o.vnum.until,
+    prov: o.vnum.prov || "5sim", late: !!o.vnum.late };
   if (o.steam) out.steam = { login: o.steam.login, usd: o.steam.usd };
   if (o.cs2) {
     const c = o.cs2;
@@ -2274,8 +2277,10 @@ const SMM = require("./smm.js")({
 });
 // Moliya hisobotidagi "saytlardagi balans": o'yin liniyalari + SMM panellar.
 function allLineBalances(force) {
+  const vn = EXTRA.vnCfg();
   return Promise.all([GAMES.lineBalances(force).catch(() => []), SMM.balances().catch(() => []),
-    CS2.ready() ? CS2.balance().then(x => [x]).catch(() => []) : []]).then(([a, b, c]) => a.concat(b, c));
+    CS2.ready() ? CS2.balance().then(x => [x]).catch(() => []) : [],
+    vn.enabled && EXTRA.vnReady() ? EXTRA.vnBalance().then(x => [x]).catch(() => []) : []]).then(([a, b, c, d]) => a.concat(b, c, d));
 }
 /* ---------- Sayt liniyalari kuzatuvi va ertalabki hisobot ----------
    Har 20 daqiqada yoqilgan liniyalar (o'yin saytlari, SMM panellar) tekshiriladi: biri ishlamay
@@ -2385,7 +2390,7 @@ var AI = require("./ai.js")({
     const r = DB.settings.referral || {}, l = DB.settings.loyalty || {};
     let steam = null, vnum = null, skins = {}, extras = {}, shop = {};
     try { steam = EXTRA.steamPublic(); } catch (e) {}
-    try { const v = EXTRA.vnCfg(); vnum = { enabled: !!(v.enabled && v.apiKey), ttlMin: v.ttlMin }; } catch (e) {}
+    try { const v = EXTRA.vnCfg(); vnum = { enabled: !!(v.enabled && EXTRA.vnReady()), ttlMin: v.ttlMin, prov: EXTRA.vnProv() }; } catch (e) {}
     try { skins = CS2.games(); } catch (e) {}
     try { extras = publicExtras(); } catch (e) {}
     try {
@@ -3281,7 +3286,7 @@ function handleRequest(req, res) {
         services: {
           fragment: !!FRAGMENT_API_KEY, giftBot: !!(GIFT_BOT_URL && GIFT_BOT_SECRET),
           steam: { enabled: !!st.enabled, mode: st.mode, rate: st.rate, min: st.min, max: st.max, line: lvx ? { id: lvx.id, name: lvx.name, enabled: !!lvx.enabled } : null },
-          vnum: { enabled: !!vn.enabled, keySet: !!vn.apiKey, rate: vn.rate, markup: vn.markup, ttlMin: vn.ttlMin },
+          vnum: { enabled: !!vn.enabled, keySet: EXTRA.vnReady(), provider: EXTRA.vnProv(), rate: EXTRA.vnProv() === "tglion" ? vn.tl.rate : vn.rate, markup: vn.markup, ttlMin: vn.ttlMin },
           skins: { enabled: !!c2.enabled, keySet: !!c2.apiKey, games: CS2.games(), rate: c2.rate, markup: c2.markup }
         },
         stock, sales

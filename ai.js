@@ -343,7 +343,8 @@ module.exports = function createAi(ctx) {
     if (s && s.enabled) L.push("• Steam hamyonini to'ldirish (Asosiy → Steam hamyon): Steam LOGIN kiritiladi (nickname yoki email EMAS — Steam'ga kirishda yoziladigan login), summa $" + s.min + "–$" + s.max +
       ", kurs 1$ ≈ " + sm(s.rate) + " so'm. " + (s.auto ? "Avtomatik, odatda bir necha daqiqada tushadi." : "Operator bajaradi, odatda 1 soat ichida.") + " Login noto'g'ri bo'lsa pul boshqa akkauntga ketadi — tekshirishni so'rang.");
     const v = k.vnum;
-    if (v && v.enabled) L.push("• Virtual raqam (Telegram uchun SMS qabul qilish): mamlakat tanlanadi, raqam beriladi, Telegram'ga shu raqam kiritiladi, kod ilovada chiqadi. Kod " + v.ttlMin + " daqiqada kelmasa pul avtomatik balansga qaytadi. Kod kelguncha mijoz o'zi bekor qilishi ham mumkin.");
+    if (v && v.enabled && v.prov === "tglion") L.push("• Virtual raqam (tayyor Telegram akkaunt raqami): Asosiy → Telegram → «Virtual raqam» → mamlakat tanlanadi, raqam beriladi. Mijoz shu raqamni Telegram ilovasiga kiritadi, so'ng ilovada «Kodni olish» bosadi — login kodi va (bo'lsa) 2 bosqichli parol chiqadi. Raqam berilgach bekor qilinmaydi va pul qaytmaydi (sotib olishdan oldin ogohlantiriladi). Kod 24 soat ichida qayta olinadi. Kod kelmasa — operator tekshiradi.");
+    else if (v && v.enabled) L.push("• Virtual raqam (Telegram uchun SMS qabul qilish): mamlakat tanlanadi, raqam beriladi, Telegram'ga shu raqam kiritiladi, kod ilovada chiqadi. Kod " + v.ttlMin + " daqiqada kelmasa pul avtomatik balansga qaytadi. Kod kelguncha mijoz o'zi bekor qilishi ham mumkin.");
     const sk = k.skins || {};
     const skOn = ["cs2", "dota2", "rust"].filter(g => sk[g]).map(g => ({ cs2: "CS2", dota2: "Dota 2", rust: "Rust" })[g]);
     if (skOn.length) L.push("• Skinlar do'koni (" + skOn.join(", ") + "): ilovada alohida do'kon. Mijoz Steam TRADE havolasini kiritadi (Steam → Inventar → Savdo takliflari → «Kim menga savdo taklifi yubora oladi?»), skin tanlaydi, balansdan to'laydi. Skin Steam'ga savdo taklifi bo'lib keladi (odatda ~1 daqiqa); taklifni Steam'da qabul qilish kerak. Inventar ochiq va Steam Guard 7 kundan beri yoqilgan bo'lishi kerak. Yetkazib bo'lmasa pul balansga qaytadi.");
@@ -520,7 +521,8 @@ module.exports = function createAi(ctx) {
       noPrice: "Bu nom bo'yicha hozir narx topilmadi — ilovadagi «Mahsulotlar» bo'limida ko'ring yoki aniqroq yozing (masalan «PUBG 60 UC»).",
       steam: (s) => "Steam hamyonini to'ldirish: ilovada Asosiy → «Steam hamyon». Steam LOGIN kiriting (nickname yoki email emas), summa $" + s.min + "–$" + s.max + ", 1$ ≈ " + s.rate + " so'm. Pul balansdan yechiladi" + (s.auto ? ", hamyonga odatda bir necha daqiqada tushadi." : ", operator 1 soat ichida to'ldiradi."),
       skins: "Skinlar do'koni (CS2, Dota 2, Rust): ilovada «O'yinlar» → «Skinlar». Steam trade havolangizni kiriting, skinni tanlang — u Steam'ga savdo taklifi bo'lib keladi (odatda ~1 daqiqa). Yetkazib bo'lmasa pul balansga qaytadi.",
-      vnum: (m) => "Virtual raqam (Telegram uchun SMS): ilovada Asosiy → «Virtual raqam» → mamlakat. Raqamni Telegram'ga kiriting, kod ilovada chiqadi. Kod " + m + " daqiqada kelmasa pul avtomatik qaytadi.",
+      vnum: (m, tl) => tl ? "Virtual raqam (tayyor Telegram akkaunt): ilovada Asosiy → Telegram → «Virtual raqam» → mamlakat. Raqamni Telegram'ga kiriting, keyin ilovada «Kodni olish» bosing — kod va (bo'lsa) parol chiqadi. Raqam olingach bekor qilinmaydi."
+        : "Virtual raqam (Telegram uchun SMS): ilovada Asosiy → «Virtual raqam» → mamlakat. Raqamni Telegram'ga kiriting, kod ilovada chiqadi. Kod " + m + " daqiqada kelmasa pul avtomatik qaytadi.",
       tg: "Telegram Stars, Premium va sovg'alar: ilovada «Telegram» bo'limi → @username kiriting. Avtomatik yuboriladi.",
       smm: "Nakrutka (obunachi, layk, ko'rish): ilovada «Nakrutka» bo'limi → xizmat → havola → miqdor. Akkaunt yoki kanal ochiq bo'lishi kerak.",
       st: { done: "bajarildi", pending: "kutilmoqda", processing: "bajarilmoqda", cancelled: "bekor qilindi, pul balansga qaytdi" } },
@@ -535,7 +537,8 @@ module.exports = function createAi(ctx) {
       noPrice: "Цену по этому названию сейчас не нашёл — посмотрите раздел «Товары» в приложении или уточните (например «PUBG 60 UC»).",
       steam: (s) => "Пополнение Steam: в приложении Главная → «Steam кошелёк». Введите ЛОГИН Steam (не никнейм и не email), сумма $" + s.min + "–$" + s.max + ", 1$ ≈ " + s.rate + " сум. Оплата с баланса" + (s.auto ? ", обычно зачисляется за несколько минут." : ", оператор пополнит в течение часа."),
       skins: "Магазин скинов (CS2, Dota 2, Rust): в приложении «Игры» → «Скины». Укажите трейд-ссылку Steam, выберите скин — он придёт обменом в Steam (обычно ~1 минута). Если доставка не удастся, деньги вернутся на баланс.",
-      vnum: (m) => "Виртуальный номер (SMS для Telegram): в приложении Главная → «Виртуальный номер» → страна. Введите номер в Telegram, код появится в приложении. Если код не придёт за " + m + " мин, деньги вернутся автоматически.",
+      vnum: (m, tl) => tl ? "Виртуальный номер (готовый аккаунт Telegram): Главная → Telegram → «Виртуальный номер» → страна. Введите номер в Telegram, затем в приложении нажмите «Получить код» — появятся код и (если есть) пароль. После покупки номер не отменяется."
+        : "Виртуальный номер (SMS для Telegram): в приложении Главная → «Виртуальный номер» → страна. Введите номер в Telegram, код появится в приложении. Если код не придёт за " + m + " мин, деньги вернутся автоматически.",
       tg: "Telegram Stars, Premium и подарки: раздел «Telegram» в приложении → укажите @username. Отправляется автоматически.",
       smm: "Накрутка (подписчики, лайки, просмотры): раздел «Накрутка» → услуга → ссылка → количество. Аккаунт или канал должен быть открытым.",
       st: { done: "выполнен", pending: "в ожидании", processing: "выполняется", cancelled: "отменён, деньги вернулись на баланс" } },
@@ -550,7 +553,8 @@ module.exports = function createAi(ctx) {
       noPrice: "I couldn't find a price for that name — check «Products» in the app or be more specific (e.g. «PUBG 60 UC»).",
       steam: (s) => "Steam wallet top-up: in the app Home → «Steam wallet». Enter your Steam LOGIN (not nickname or email), amount $" + s.min + "–$" + s.max + ", $1 ≈ " + s.rate + " UZS. Paid from balance" + (s.auto ? ", usually arrives in a few minutes." : ", an operator tops it up within an hour."),
       skins: "Skins store (CS2, Dota 2, Rust): in the app «Games» → «Skins». Add your Steam trade link, pick a skin — it arrives as a Steam trade offer (usually ~1 minute). If delivery fails, the money returns to your balance.",
-      vnum: (m) => "Virtual number (SMS for Telegram): in the app Home → «Virtual number» → country. Enter the number in Telegram, the code shows up in the app. If no code in " + m + " min, you get an automatic refund.",
+      vnum: (m, tl) => tl ? "Virtual number (ready Telegram account): Home → Telegram → «Virtual number» → country. Enter the number in Telegram, then tap «Get code» in the app — the code and (if set) the password appear. The number can't be cancelled after purchase."
+        : "Virtual number (SMS for Telegram): in the app Home → «Virtual number» → country. Enter the number in Telegram, the code shows up in the app. If no code in " + m + " min, you get an automatic refund.",
       tg: "Telegram Stars, Premium and gifts: «Telegram» section in the app → enter @username. Sent automatically.",
       smm: "Social boosting (followers, likes, views): «Nakrutka» section → service → link → quantity. The account or channel must be public.",
       st: { done: "completed", pending: "pending", processing: "in progress", cancelled: "cancelled, refunded to balance" } }
@@ -579,7 +583,7 @@ module.exports = function createAi(ctx) {
     const topics = [];
     if (/steam\s*(hamyon|wallet|кошел|balans|пополн|to.?ldir|top)|hamyon|кошел[её]к стим|steam\s*\$/i.test(t) && kn.steam && kn.steam.enabled) topics.push(L.steam({ min: kn.steam.min, max: kn.steam.max, rate: money(kn.steam.rate).replace(" so'm", ""), auto: kn.steam.auto }));
     if (/skin|скин|cs ?2|cs:?go|dota|дота|rust|раст|trade/i.test(t) && kn.skins && (kn.skins.cs2 || kn.skins.dota2 || kn.skins.rust)) topics.push(L.skins);
-    if (/virtual|виртуал|nomer|номер|raqam ol|sms kod|смс/i.test(t) && kn.vnum && kn.vnum.enabled) topics.push(L.vnum(kn.vnum.ttlMin || 20));
+    if (/virtual|виртуал|nomer|номер|raqam ol|sms kod|смс/i.test(t) && kn.vnum && kn.vnum.enabled) topics.push(L.vnum(kn.vnum.ttlMin || 20, kn.vnum.prov === "tglion"));
     if (/stars|yulduz|звёзд|звезд|premium|премиум|gift|sovg.?a|подар/i.test(t)) topics.push(L.tg);
     if (/nakrutka|накрут|obunachi|подписчик|layk|лайк|follower|views|ko.?rish/i.test(t)) topics.push(L.smm);
     if (wantOp) {

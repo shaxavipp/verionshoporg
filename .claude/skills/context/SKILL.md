@@ -50,7 +50,7 @@ Node 22 with no framework and almost no dependencies. Railway runs `node server.
 | `db.js` | Storage in `node:sqlite` with diff-based save into `DATA_DIR` (a Railway volume at `/data`). |
 | `games.js` | Games shop: games, packages, supplier "lines", fulfilment with an `INFLIGHT` lock and status polling. |
 | `lines.js` | Supplier adapters: MooGold, G2Bulk, Smile.one, Ludovex and others. |
-| `extra.js` | Steam wallet (via Ludovex, or manual) and virtual numbers (5sim). |
+| `extra.js` | Steam wallet (via Ludovex, or manual) and virtual numbers: TG-Lion (default; `?action=` API, getNumber/getCode, no cancel, code+2FA password, refresh 24h) or 5sim (SMS, cancel+refund). Admin `/api/admin/vnum`, `/vnum/test`, `/vnum/countries`. |
 | `smm.js` | SMM panels (JAP and others) for nakrutka. |
 | `ai.js` | AI support assistant (Claude or Gemini). Has operator hours and a queue. |
 | `adminbot.js` | Separate Telegram admin bot: alerts, finance, actions. |

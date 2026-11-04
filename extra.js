@@ -159,7 +159,13 @@ module.exports = function (ctx) {
     }
   }
 
-  /* ======================= VIRTUAL RAQAM (5sim) ======================= */
+  /* ======================= VIRTUAL RAQAM =======================
+     Ikki provayder (admin tanlaydi):
+     • TG-Lion (tg-lion.net) — tayyor Telegram akkaunt raqami. getNumber → raqam; mijoz raqamni Telegram'ga
+       kiritadi → getCode → login kodi va (bo'lsa) 2 bosqichli parol. TG-Lion'da bekor qilish YO'Q: raqam
+       olingach pul qaytmaydi (mijozga oldindan aytiladi); kod kelmasa — admin qaror qiladi.
+     • 5sim.net — SMS qabul qiluvchi raqam; kod kelmasa saytda bekor qilinadi va pul qaytadi.
+     Kalit, ID va ichki raqamlar mijozga hech qachon ketmaydi (pubOrder faqat raqam, kod, parol). */
   function vnCfg() {
     const s = DBx().settings;
     const c = s.vnum || (s.vnum = {});
@@ -168,44 +174,109 @@ module.exports = function (ctx) {
     if (!(c.markup >= 0)) c.markup = 30;      // ustama, %
     if (!c.product) c.product = "telegram";
     if (!(c.ttlMin > 0)) c.ttlMin = 20;
+    const t = c.tl || (c.tl = {});
+    if (!(t.rate > 0)) t.rate = 12900;        // TG-Lion narxi ($) → so'm
     return c;
   }
+  // Provayder tanlanmagan eski sozlama: 5sim kaliti bor bo'lsa — 5sim, aks holda TG-Lion.
+  const vnProv = () => { const c = vnCfg(); return c.provider === "5sim" || c.provider === "tglion" ? c.provider : (c.apiKey ? "5sim" : "tglion"); };
+  const vnReady = () => { const c = vnCfg(); return vnProv() === "tglion" ? !!(c.tl.apiKey && c.tl.yourId) : !!c.apiKey; };
+  const PROV_NAME = { tglion: "TG-Lion", "5sim": "5sim" };
   const FIVE = () => process.env.FIVESIM_BASE || "https://5sim.net/v1/";
   const fiveH = () => ({ Authorization: "Bearer " + String(vnCfg().apiKey || "") });
-  const vnPrice = cost => Math.ceil(cost * vnCfg().rate * (1 + vnCfg().markup / 100) / 500) * 500;
-  let PRICES = { at: 0, list: [] };
-  async function vnCountries(force) {
+  const TLB = () => process.env.TGLION_BASE || "https://tg-lion.net/";
+  // TG-Lion: hamma amal bitta manzilda, ?action=...&apiKey=...&YourID=... (kalit faqat so'rovda, hech qayerda yozilmaydi)
+  function tl(action, params) {
     const c = vnCfg();
-    if (!force && PRICES.list.length && Date.now() - PRICES.at < 5 * 60 * 1000) return PRICES.list;
-    const r = await call(FIVE(), "guest/prices?product=" + encodeURIComponent(c.product));
-    const data = r.json && (r.json[c.product] || r.json);
-    if (!data || typeof data !== "object") throw new Error("Sayt narxlarni bermadi (" + (r.error || r.status) + ")");
+    const q = new URLSearchParams(Object.assign({ action, apiKey: String(c.tl.apiKey || ""), YourID: String(c.tl.yourId || "") }, params || {}));
+    return call(TLB(), "?" + q.toString(), { timeout: action === "getNumber" ? 40000 : 25000 });
+  }
+  const tlOk = j => !!(j && String(j.status || "").toLowerCase() === "ok");
+  const tlMsg = r => str((r.json && (r.json.message || r.json.msg || r.json.error || r.json.status)) || r.text || r.error || ("HTTP " + r.status), 300);
+  const roundUp = x => Math.ceil(x / 500) * 500;
+  function vnPrice(cost) {
+    const c = vnCfg();
+    return roundUp(cost * (vnProv() === "tglion" ? c.tl.rate : c.rate) * (1 + c.markup / 100));
+  }
+  let PRICES = { at: 0, prov: "", list: [] };
+  async function vnCountries(force) {
+    const c = vnCfg(), prov = vnProv();
+    if (!force && PRICES.prov === prov && PRICES.list.length && Date.now() - PRICES.at < 5 * 60 * 1000) return PRICES.list;
     const list = [];
-    for (const country of Object.keys(data)) {
-      const ops = data[country] || {};
-      let cost = 0, count = 0;
-      for (const op of Object.keys(ops)) {
-        const x = ops[op] || {};
-        if (!(x.count > 0) || !(x.cost > 0)) continue;
-        count += x.count;
-        if (!cost || x.cost < cost) cost = x.cost;
+    if (prov === "tglion") {
+      const r = await tl("available_countries");
+      const cs = r.json && tlOk(r.json) && r.json.countries;
+      if (!cs || typeof cs !== "object") throw new Error("TG-Lion davlatlarni bermadi (" + tlMsg(r) + ")");
+      for (const k of Object.keys(cs)) {
+        const x = cs[k] || {}, iso = String(x.code || k).toUpperCase().slice(0, 2), cost = Number(x.price), count = Number(x.qty) || 0;
+        if (!/^[A-Z]{2}$/.test(iso) || !(cost > 0) || !(count > 0)) continue;
+        list.push({ key: iso.toLowerCase(), iso, name: isoName(iso, x.name), cost, count, price: vnPrice(cost) });
       }
-      if (count > 0 && cost > 0) list.push({ key: country, cost, count, price: vnPrice(cost) });
+    } else {
+      const r = await call(FIVE(), "guest/prices?product=" + encodeURIComponent(c.product));
+      const data = r.json && (r.json[c.product] || r.json);
+      if (!data || typeof data !== "object") throw new Error("Sayt narxlarni bermadi (" + (r.error || r.status) + ")");
+      for (const country of Object.keys(data)) {
+        const ops = data[country] || {};
+        let cost = 0, count = 0;
+        for (const op of Object.keys(ops)) {
+          const x = ops[op] || {};
+          if (!(x.count > 0) || !(x.cost > 0)) continue;
+          count += x.count;
+          if (!cost || x.cost < cost) cost = x.cost;
+        }
+        if (count > 0 && cost > 0) list.push({ key: country, iso: countryIso(country), name: countryName(country), cost, count, price: vnPrice(cost) });
+      }
     }
-    PRICES = { at: Date.now(), list };
+    PRICES = { at: Date.now(), prov, list };
     return list;
   }
+  const OFF = { code: 503, body: { error: "off", message: "Hozircha ishlamayapti, keyinroq urinib ko'ring" } };
   async function vnBuy(u, country) {
-    const c = vnCfg();
-    if (!c.enabled || !c.apiKey) return { code: 503, body: { error: "off", message: "Virtual raqam xizmati hozircha o'chiq" } };
-    let list; try { list = await vnCountries(); } catch (e) { return { code: 503, body: { error: "off", message: "Hozircha ishlamayapti, keyinroq urinib ko'ring" } }; }
+    const c = vnCfg(), prov = vnProv();
+    if (!c.enabled || !vnReady()) return { code: 503, body: { error: "off", message: "Virtual raqam xizmati hozircha o'chiq" } };
+    let list; try { list = await vnCountries(); } catch (e) { return OFF; }
     const it = list.find(x => x.key === country);
     if (!it) return { code: 404, body: { error: "no_country", message: "Bu davlatda bo'sh raqam yo'q" } };
     const acc = ctx.user(u);
     if (!(acc.balance >= it.price)) return { code: 402, body: { error: "balance", need: it.price - acc.balance } };
     acc.balance -= it.price; ctx.save();
-    const o = newOrder(u, "📱 Virtual raqam (" + countryName(country) + ")", it.price, { vnum: { country, phone: "", ext: "", code: "", until: 0 } });
-    const r = await call(FIVE(), "user/buy/activation/" + encodeURIComponent(country) + "/any/" + encodeURIComponent(c.product), { headers: fiveH() });
+    const o = newOrder(u, "📱 Virtual raqam (" + it.name + ")", it.price, { vnum: { prov, country, phone: "", ext: "", code: "", pass: "", until: 0 } });
+    return prov === "tglion" ? tlBuy(o, it, acc) : fiveBuy(o, it, acc, c);
+  }
+  async function tlBuy(o, it, acc) {
+    const c = vnCfg();
+    // maxPrice — sayt narxi biz ko'rsatgandan oshib ketsa raqam berilmaydi (zarar himoyasi)
+    const r = await tl("getNumber", { country_code: it.key, maxPrice: String(it.cost) });
+    const j = r.json;
+    if (tlOk(j) && j.Number) {
+      o.vnum.phone = String(j.Number).replace(/[^\d+]/g, "").slice(0, 20); o.vnum.ext = o.vnum.phone;
+      o.vnum.until = Date.now() + c.ttlMin * 60 * 1000;
+      const cost = Number(j.price) > 0 ? Number(j.price) : it.cost;
+      o.costUzs = Math.round(cost * c.tl.rate); ctx.save();
+      const nb = Number(j.new_balance);
+      if (isFinite(nb) && nb < 3) alertOnce("vn-low", "⚠️ Virtual raqam: TG-Lion hisobida " + nb + " $ qoldi. Hisobni to'ldiring, aks holda raqam berilmay qoladi.");
+      return { code: 200, body: { ok: true, order: ctx.pubOrder(o), balance: acc.balance } };
+    }
+    const msg = tlMsg(r), low = msg.toLowerCase();
+    const noNum = /no number|not available|out of stock|no stock|unavailable|sold out|qty|كمية|لا يوجد/.test(low);
+    const priceUp = /price|سعر/.test(low) && !noNum;
+    if (/balance|fund|money|رصيد/.test(low)) alertOnce("vn-bal", "🚨 Virtual raqam ishlamayapti — TG-Lion hisobida mablag' yetarli emas. Hisobni to'ldiring.");
+    else if (r.status === 401 || r.status === 403 || /api ?key|apikey|unauthori|invalid (key|id)|yourid|wrong (key|id)/.test(low)) alertOnce("vn-auth", "⛔ Virtual raqam: TG-Lion API kalit yoki ID noto'g'ri. Admin → API ulanishlar → Virtual raqam.");
+    else if (!noNum) alertOnce("vn-err", "⚠️ Virtual raqam olishda xato (TG-Lion): " + msg.slice(0, 200));
+    if (priceUp || noNum) PRICES = { at: 0, prov: "", list: [] };
+    // So'rov yetmagan, yoki sayt aniq rad etgan (4xx / status ≠ ok) — raqam berilmagan, pul qaytadi.
+    if (!r.sent || (r.status >= 400 && r.status < 500) || (j && j.status && !tlOk(j))) {
+      refund(o, "");
+      return { code: 503, body: { error: "fail", balance: acc.balance,
+        message: noNum ? "Bu davlatda bo'sh raqam qolmadi, boshqasini tanlang" : priceUp ? "Narx o'zgardi — ro'yxatni yangilab, qayta urinib ko'ring" : "Hozircha ishlamayapti, keyinroq urinib ko'ring" } };
+    }
+    // Javob noaniq (vaqt tugadi / 5xx) — raqam olingan bo'lishi mumkin: pul band, admin tekshiradi.
+    ctx.notifyAdmins("❓ #" + o.seq + " Virtual raqam: TG-Lion javobi noaniq (" + msg.slice(0, 120) + "). TG-Lion kabinetidan tekshiring: raqam berilgan bo'lsa mijozga yuboring, bo'lmasa «Bekor qilish» bosing.", { order: o });
+    return { code: 200, body: { ok: true, order: ctx.pubOrder(o), balance: acc.balance, pending: true } };
+  }
+  async function fiveBuy(o, it, acc, c) {
+    const r = await call(FIVE(), "user/buy/activation/" + encodeURIComponent(it.key) + "/any/" + encodeURIComponent(c.product), { headers: fiveH() });
     const j = r.json;
     if (j && j.id && j.phone) {
       o.vnum.ext = String(j.id); o.vnum.phone = String(j.phone); o.vnum.until = Date.now() + c.ttlMin * 60 * 1000;
@@ -215,9 +286,8 @@ module.exports = function (ctx) {
     const t = (r.text || "").toLowerCase();
     const known = /no free phones|not enough|bad country|bad operator|no product|server offline/.test(t);
     if (/not enough|balance/.test(t)) alertOnce("vn-bal", "🚨 Virtual raqam ishlamayapti — 5sim hamyonida coin yetarli emas. Hamyonni to'ldiring.");
-    else if (r.status === 401) alertOnce("vn-auth", "⛔ Virtual raqam: 5sim API kaliti noto'g'ri (401). Admin → Steam va raqamlar.");
+    else if (r.status === 401) alertOnce("vn-auth", "⛔ Virtual raqam: 5sim API kaliti noto'g'ri (401). Admin → API ulanishlar → Virtual raqam.");
     else if (!/no free phones/.test(t)) alertOnce("vn-err", "⚠️ Virtual raqam olishda xato: " + str(r.text || r.error, 200));
-    // So'rov yetmagan, yoki sayt aniq rad etgan (4xx / ma'lum xato matni) — raqam berilmagan, pul qaytadi.
     if (!r.sent || known || (r.status >= 400 && r.status < 500)) {
       refund(o, "");
       return { code: 503, body: { error: "fail", message: /no free phones/.test(t) ? "Bu davlatda bo'sh raqam qolmadi, boshqasini tanlang" : "Hozircha ishlamayapti, keyinroq urinib ko'ring", balance: acc.balance } };
@@ -225,8 +295,33 @@ module.exports = function (ctx) {
     ctx.notifyAdmins("❓ #" + o.seq + " Virtual raqam: 5sim javobi noaniq (" + str(r.text || r.error, 120) + "). Tekshirib, kerak bo'lsa «Bekor qilish» bosing.", { order: o });
     return { code: 200, body: { ok: true, order: ctx.pubOrder(o), balance: acc.balance, pending: true } };
   }
-  async function vnCheck(o) {
-    if (!o.vnum || !o.vnum.ext || o.status !== "pending") return o;
+  const vnDelivered = v => "📱 Raqam: +" + String(v.phone).replace(/^\+/, "") + "\n🔑 Kod: " + v.code + (v.pass ? "\n🔐 2 bosqichli parol: " + v.pass : "");
+  const REFRESH_MS = 24 * 3600 * 1000;
+  // opts.refresh — bajarilgan TG-Lion raqami uchun kodni qayta olish (24 soat ichida, masalan qayta kirishda)
+  async function vnCheck(o, opts) {
+    opts = opts || {};
+    if (!o.vnum || !o.vnum.ext) return o;
+    const prov = o.vnum.prov || "5sim";
+    if (prov === "tglion") {
+      const again = o.status === "done" && opts.refresh && Date.now() - (o.doneTs || 0) < REFRESH_MS;
+      if (o.status !== "pending" && !again) return o;
+      const r = await tl("getCode", { number: o.vnum.phone });
+      const j = r.json;
+      const code = tlOk(j) && j.code != null ? str(j.code, 20) : "";
+      if (code) {
+        const pass = j.pass ? str(j.pass, 64) : "";
+        const changed = code !== o.vnum.code || pass !== o.vnum.pass;
+        o.vnum.code = code; o.vnum.pass = pass; o.vnum.codeTs = Date.now();
+        if (o.status === "pending") markDone(o, vnDelivered(o.vnum));
+        else if (changed) { o.delivered = vnDelivered(o.vnum); ctx.save(); }
+        else ctx.save();
+      } else if (o.status === "pending" && Date.now() > o.vnum.until && !o.vnum.late) {
+        o.vnum.late = true; ctx.save();
+        ctx.notifyAdmins("⏳ #" + o.seq + " Virtual raqam +" + String(o.vnum.phone).replace(/^\+/, "") + ": " + vnCfg().ttlMin + " daqiqada kod olinmadi. TG-Lion'da bekor qilib bo'lmaydi — mijoz bilan bog'laning; kerak bo'lsa «Bekor qilish» (pul qaytadi).", { order: o });
+      }
+      return o;
+    }
+    if (o.status !== "pending") return o;
     const r = await call(FIVE(), "user/check/" + encodeURIComponent(o.vnum.ext), { headers: fiveH() });
     const j = r.json; if (!j) return o;
     const sms = Array.isArray(j.sms) ? j.sms : [];
@@ -246,6 +341,8 @@ module.exports = function (ctx) {
   async function vnCancel(o) {
     if (o.status !== "pending" || !o.vnum) return { ok: false, error: "state" };
     if (o.vnum.code) return { ok: false, error: "code_received" };
+    // TG-Lion'da raqam qaytarilmaydi — mijoz bekor qila olmaydi (admin qaror qiladi).
+    if ((o.vnum.prov || "5sim") === "tglion") return { ok: false, error: "no_cancel" };
     if (o.vnum.ext) {
       const r = await call(FIVE(), "user/cancel/" + encodeURIComponent(o.vnum.ext), { headers: fiveH() });
       // Sayt bekor qilmasa (masalan SMS allaqachon keldi) — tekshiramiz.
@@ -255,7 +352,38 @@ module.exports = function (ctx) {
     return { ok: true };
   }
   async function vnPoll() {
-    for (const o of DBx().orders) if (o.status === "pending" && o.vnum && o.vnum.ext) { try { await vnCheck(o); } catch (e) {} }
+    for (const o of DBx().orders) {
+      if (o.status !== "pending" || !o.vnum || !o.vnum.ext) continue;
+      // TG-Lion: kod kutish vaqti o'tgach server o'zi so'ramaydi (mijoz «Kodni olish» bosadi, admin xabardor)
+      if ((o.vnum.prov || "5sim") === "tglion" && o.vnum.late) continue;
+      try { await vnCheck(o); } catch (e) {}
+    }
+  }
+  // Provayder balansi (admin: API ulanishlar, liniyalar kuzatuvi). Faqat yoqilgan va kaliti bor bo'lsa.
+  async function vnBalance() {
+    const c = vnCfg(), prov = vnProv(), name = "Virtual raqam (" + PROV_NAME[prov] + ")";
+    if (prov === "tglion") {
+      const r = await tl("get_balance");
+      if (tlOk(r.json) && r.json.balance != null) {
+        const b = String(r.json.balance), n = Number(b.replace(/[^\d.,-]/g, "").replace(",", "."));
+        return { id: "vnum", name, ok: true, message: "Balans: " + (isFinite(n) ? n : b) + " $" };
+      }
+      return { id: "vnum", name, ok: false, message: r.status === 401 || r.status === 403 ? "API kalit yoki ID noto'g'ri" : tlMsg(r).slice(0, 160) };
+    }
+    const r = await call(FIVE(), "user/profile", { headers: fiveH() });
+    if (r.json && r.json.balance != null) return { id: "vnum", name, ok: true, message: "Balans: " + r.json.balance + " coin" };
+    return { id: "vnum", name, ok: false, message: r.status === 401 ? "API kalit noto'g'ri" : "Javob: " + (r.error || r.status) };
+  }
+  function vnAdminView() {
+    const c = vnCfg(), id = String(c.tl.yourId || "");
+    return { enabled: !!c.enabled, provider: vnProv(), ready: vnReady(), markup: c.markup, ttlMin: c.ttlMin,
+      tglion: { keySet: !!c.tl.apiKey, idSet: !!id, idHint: id ? "•••" + id.slice(-3) : "", rate: c.tl.rate },
+      fivesim: { keySet: !!c.apiKey, rate: c.rate } };
+  }
+  // ISO kod → davlat nomi (o'zbekcha); TG-Lion nomidan bayroqni olib tashlab zaxira sifatida
+  function isoName(iso, fallback) {
+    for (const k of Object.keys(C)) if (C[k][1] === iso) return C[k][0];
+    return str(String(fallback || iso).replace(/[\u{1F1E6}-\u{1F1FF}]/gu, "").trim(), 60) || iso;
   }
   // Davlat nomi va bayroq (5sim kalitlari bo'yicha)
   const C = { russia: ["Rossiya", "RU"], ukraine: ["Ukraina", "UA"], kazakhstan: ["Qozog'iston", "KZ"], uzbekistan: ["O'zbekiston", "UZ"], kyrgyzstan: ["Qirg'iziston", "KG"],
@@ -300,11 +428,13 @@ module.exports = function (ctx) {
       return true;
     }
     if (url === "/api/vnum/countries" && m === "GET") {
-      const c = vnCfg();
-      if (!c.enabled || !c.apiKey) { send(res, 200, { enabled: false, list: [] }); return true; }
-      vnCountries().then(list => send(res, 200, { enabled: true, ttlMin: c.ttlMin,
-        list: list.map(x => ({ key: x.key, name: countryName(x.key), iso: countryIso(x.key), count: x.count, price: x.price })) }))
-        .catch(() => send(res, 200, { enabled: true, list: [], error: "Hozircha ishlamayapti" }));
+      const c = vnCfg(), prov = vnProv();
+      if (!c.enabled || !vnReady()) { send(res, 200, { enabled: false, list: [] }); return true; }
+      // noCancel: TG-Lion raqami olingach bekor qilinmaydi — mijozga sotib olishdan oldin aytiladi
+      const head = { enabled: true, ttlMin: c.ttlMin, prov, noCancel: prov === "tglion" };
+      vnCountries().then(list => send(res, 200, Object.assign(head, {
+        list: list.map(x => ({ key: x.key, name: x.name, iso: x.iso, count: x.count, price: x.price })) })))
+        .catch(() => send(res, 200, Object.assign(head, { list: [], error: "Hozircha ishlamayapti" })));
       return true;
     }
     if (url === "/api/vnum/buy" && m === "POST") {
@@ -318,7 +448,7 @@ module.exports = function (ctx) {
         const o = DBx().orders.find(x => x.id === id && x.uid === u.id && x.vnum);
         if (!o) return send(res, 404, { error: "not found" });
         const p = url.endsWith("cancel") ? vnCancel(o).then(r => send(res, r.ok ? 200 : 409, Object.assign(r, { order: ctx.pubOrder(o), balance: (DBx().users[String(u.id)] || {}).balance })))
-          : vnCheck(o).then(() => send(res, 200, { order: ctx.pubOrder(o) }));
+          : vnCheckLimited(o, m === "GET" && q.get("refresh") === "1").then(() => send(res, 200, { order: ctx.pubOrder(o) }));
         p.catch(e => send(res, 500, { error: e.message }));
       };
       if (m === "GET") go(str(q.get("id"), 40)); else ctx.readBody(req, res, b => go(str(b.id, 40)));
@@ -328,7 +458,7 @@ module.exports = function (ctx) {
     if (url === "/api/admin/extra" && (m === "GET" || m === "POST")) {
       if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
       const view = () => { const v = vnCfg(); return { steam: steamCfg(), ludovex: !!lvxLine(),
-        vnum: { enabled: v.enabled, rate: v.rate, markup: v.markup, ttlMin: v.ttlMin, product: v.product, apiKeySet: !!v.apiKey } }; };
+        vnum: Object.assign(vnAdminView(), { rate: v.rate, product: v.product, apiKeySet: !!v.apiKey }) }; };
       if (m === "GET") { send(res, 200, view()); return true; }
       ctx.readBody(req, res, b => {
         const s = steamCfg(), v = vnCfg(), num = (x, lo, hi) => { const n = Number(x); return n >= lo && n <= hi ? n : null; };
@@ -345,23 +475,62 @@ module.exports = function (ctx) {
           const r = num(b.vnum.rate, 1, 100000); if (r) v.rate = r;
           const mk = num(b.vnum.markup, 0, 500); if (mk !== null) v.markup = mk;
           const t = num(b.vnum.ttlMin, 5, 60); if (t) v.ttlMin = t;
-          if (b.vnum.apiKey) v.apiKey = str(b.vnum.apiKey, 2000);
-          PRICES = { at: 0, list: [] };
+          // eski so'rov (5sim kaliti) — provayder aniq ko'rsatilmasa 5sim tanlanadi
+          if (b.vnum.apiKey) { v.apiKey = str(b.vnum.apiKey, 2000); if (!b.vnum.provider && !v.provider) v.provider = "5sim"; }
+          if (b.vnum.provider === "5sim" || b.vnum.provider === "tglion") v.provider = b.vnum.provider;
+          PRICES = { at: 0, prov: "", list: [] };
         }
         ctx.save();
         send(res, 200, Object.assign({ ok: true }, view()));
       });
       return true;
     }
+    /* Virtual raqam — alohida sozlama (Steam'dan ajratilgan): provayder, kalit, kurs, ustama */
+    if (url === "/api/admin/vnum" && (m === "GET" || m === "POST")) {
+      if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
+      if (m === "GET") { send(res, 200, vnAdminView()); return true; }
+      ctx.readBody(req, res, b => {
+        const v = vnCfg(), num = (x, lo, hi) => { const n = Number(x); return x !== "" && x != null && n >= lo && n <= hi ? n : null; };
+        if ("enabled" in b) v.enabled = !!b.enabled;
+        if (b.provider === "5sim" || b.provider === "tglion") v.provider = b.provider;
+        const mk = num(b.markup, 0, 500); if (mk !== null) v.markup = mk;
+        const t = num(b.ttlMin, 5, 120); if (t) v.ttlMin = t;
+        const T = b.tglion || {}, F = b.fivesim || {};
+        if (T.apiKey) v.tl.apiKey = str(T.apiKey, 300);
+        if (T.yourId) v.tl.yourId = str(T.yourId, 64);
+        const tr = num(T.rate, 1000, 100000); if (tr) v.tl.rate = tr;
+        if (F.apiKey) v.apiKey = str(F.apiKey, 2000);
+        const fr = num(F.rate, 1, 100000); if (fr) v.rate = fr;
+        PRICES = { at: 0, prov: "", list: [] };
+        ctx.save();
+        send(res, 200, Object.assign({ ok: true }, vnAdminView()));
+      });
+      return true;
+    }
+    if (url === "/api/admin/vnum/countries" && m === "GET") {
+      if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
+      if (!vnReady()) { send(res, 200, { ok: false, message: "API kalit kiritilmagan", list: [] }); return true; }
+      vnCountries(true).then(list => send(res, 200, { ok: true, prov: vnProv(), list: list.map(x => ({ key: x.key, iso: x.iso, name: x.name, count: x.count, cost: x.cost, price: x.price })) }))
+        .catch(e => send(res, 200, { ok: false, message: str(e.message, 200), list: [] }));
+      return true;
+    }
     if (url === "/api/admin/vnum/test" && m === "POST") {
       if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
-      call(FIVE(), "user/profile", { headers: fiveH() }).then(r => {
-        if (r.json && r.json.balance != null) send(res, 200, { ok: true, message: "Ulandi. Balans: " + r.json.balance + " coin" });
-        else send(res, 200, { ok: false, message: r.status === 401 ? "API kalit noto'g'ri" : "Javob: " + (r.error || r.status) });
-      });
+      if (!vnReady()) { send(res, 200, { ok: false, message: vnProv() === "tglion" ? "TG-Lion API kalit va ID kiriting" : "5sim API kalitini kiriting" }); return true; }
+      vnBalance().then(x => send(res, 200, { ok: x.ok, provider: vnProv(), message: (x.ok ? "Ulandi. " : "") + x.message }))
+        .catch(e => send(res, 200, { ok: false, message: str(e.message, 200) }));
       return true;
     }
     return false;
   }
-  return { handle, steamCfg, steamPublic, vnCfg, vnCountries, vnCheck };
+  // Mijoz «Kodni olish» bosganda — bitta buyurtma uchun 5 soniyada bir martadan ko'p emas
+  const LAST_CHECK = new Map();
+  function vnCheckLimited(o, refresh) {
+    const now = Date.now(), last = LAST_CHECK.get(o.id) || 0;
+    if (now - last < 5000) return Promise.resolve(o);
+    LAST_CHECK.set(o.id, now);
+    if (LAST_CHECK.size > 2000) LAST_CHECK.clear();
+    return vnCheck(o, { refresh });
+  }
+  return { handle, steamCfg, steamPublic, vnCfg, vnProv, vnReady, vnBalance, vnAdminView, vnCountries, vnCheck };
 };
