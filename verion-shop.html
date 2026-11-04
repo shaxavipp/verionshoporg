@@ -2028,6 +2028,167 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sks .fact .sk-btn.gh{flex:0 0 120px;background:#262a32;border:none}
 .sks .stp div{padding:12px;border-radius:10px;border:1px solid #26282b;background:#1a1e20;font-size:14px}
 .sks .stp b{flex:0 0 30px;height:30px;border-radius:8px}
+/* ================= v3.16 — skinsavdo 1:1: sarlavhadagi balans paneli, tartib menyusi, chap filtr paneli, toifa menyusi,
+   savat, profil (prof-*), buyurtmalar (pur-* / prof-status) ================= */
+.sk-bal{height:40px;padding:0 7px 0 10px;gap:6px;border:1.2px solid rgba(255,184,28,.5);border-radius:8px;background:linear-gradient(270deg,rgba(255,184,28,.2),rgba(255,184,28,.1));color:var(--ska);font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.sk-bal svg{width:15px;height:15px}
+.sk-bal .pl{width:24px;height:24px;border-radius:6px;background:var(--ska);color:#121314}
+.sk-tool{position:relative;z-index:6}
+.sk-sortw{position:relative;flex-shrink:0}
+.sk-sortt{display:inline-flex;align-items:center;gap:10px;height:38px;min-width:170px;padding:0 12px;border:1px solid transparent;border-radius:6px;background:#262a32;color:#fff;font-size:13px;font-weight:500;white-space:nowrap}
+.sk-sortt>svg{width:16px;height:16px;color:#9da6b8}
+.sk-sortt .lb{flex:1;text-align:left}
+.sk-sortt .chev{display:flex;color:#707c8c;transition:transform .15s}
+.sk-sortt .chev svg{width:12px;height:12px}
+.sk-sortt.open{background:#313742}
+.sk-sortt.open .chev{transform:rotate(180deg)}
+.sk-sortm{position:absolute;top:calc(100% + 6px);left:0;z-index:60;display:flex;flex-direction:column;gap:1px;min-width:100%;padding:4px;border-radius:6px;border:1px solid #26282b;background:#1a1b20;box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.sk-sortm button{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border:none;border-radius:5px;background:none;color:#9da6b8;font-size:13px;font-weight:500;white-space:nowrap;text-align:left}
+.sk-sortm button svg{width:14px;height:14px;opacity:0;color:var(--ska)}
+.sk-sortm button.on{color:#fff}
+.sk-sortm button.on svg{opacity:1}
+.sk-sortm button:active{background:#262a32}
+/* toifa paneli + qurollar ro'yxati */
+.sk-catbar{position:relative;margin:14px 12px 0;border-radius:8px;border:1px solid #26282b;background:#1a1b20}
+.sk-catbar:after{content:"";position:absolute;top:0;right:0;width:32px;height:48px;border-radius:0 8px 8px 0;background:linear-gradient(to left,#1a1b20 15%,rgba(26,27,32,0));pointer-events:none}
+.sk-catbar .sk-cats{margin:0;padding:6px 28px 6px 6px;border:none;border-radius:8px;background:none}
+.sk-catbar .sk-wpn{margin:0 6px 6px;padding:6px;max-height:none;border-radius:8px;border:1px solid #26282b;background:#1a1b20;box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.sk-wpn button{grid-template-columns:30px minmax(0,1fr) auto;gap:8px;min-height:36px;padding:4px 8px;border:1px solid transparent;border-radius:5px;color:#9da6b8;font-size:12px;font-weight:500}
+.sk-wpn button i{width:30px;height:30px}
+.sk-wpn button small{font-size:11px;color:#70758c}
+.sk-wpn button.all{display:flex;justify-content:center;min-height:0;margin:0 0 4px;padding:7px 10px;background:rgba(255,184,28,.1);color:var(--ska);font-size:12px;font-weight:600}
+.sk-wpn button.on{background:rgba(255,184,28,.1);border-color:var(--ska);color:var(--ska)}
+.sk-wpn button:active{background:#262a32}
+/* chap filtr paneli (skinsavdo mobil sidebar) */
+.sk-drawer{position:absolute;inset:0;z-index:20}
+.sk-dbg{position:absolute;inset:0;width:100%;border:none;padding:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity .25s}
+.sk-drawer.on .sk-dbg{opacity:1}
+.sk-dp{position:absolute;top:0;bottom:0;left:0;width:min(320px,88vw);overflow-y:auto;overscroll-behavior:contain;background:#1d2026;color:#fff;font-family:var(--skb);box-shadow:4px 0 24px rgba(0,0,0,.35);transform:translateX(-100%);transition:transform .32s cubic-bezier(.32,.72,0,1)}
+.sk-drawer.on .sk-dp{transform:none}
+.sk-dsh{padding:calc(14px + env(safe-area-inset-top)) 16px 0}
+.sk-dp h3.t{display:flex;align-items:center;justify-content:space-between;margin:0 0 4px;padding:0 0 14px;border-bottom:1px solid #26282b;font-size:14px;font-weight:600}
+.sk-dx{width:32px;height:32px;border:none;border-radius:50%;background:#262a32;color:#7d8999;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-dx svg{width:16px;height:16px}
+.sk-dp .sw{margin:4px 0 0;padding:12px 0;border:none;border-radius:0;background:none;font-size:13px;font-weight:600}
+.sk-dp .sw .tg{flex:0 0 36px;height:20px;border-radius:10px}
+.sk-dp .sw .tg:after{left:2px;top:2px;width:16px;height:16px}
+.sk-dp .sw.on .tg:after{transform:translateX(16px)}
+.sk-dp .sec{margin:0;padding:14px 0 10px;border-top:1px solid #26282b;font-family:var(--skb);font-size:13px;font-weight:500;letter-spacing:0;text-transform:none;color:#7d8999}
+.sk-dp .pr2 .sk-inp{height:36px;border-radius:6px;font-size:14px;padding:0 10px}
+.sk-dp .qp{margin:8px 0 10px}
+.sk-dp .qp button{height:30px;padding:0 10px;border-radius:6px;font-size:12px}
+.sk-dp .ck{gap:10px;padding:5px 0;font-size:12.5px;font-weight:500;color:#9da6b8}
+.sk-dp .ck .bx{flex:0 0 16px;height:16px;border-radius:4px;border:1.5px solid #353b46}
+.sk-dp .ck.on .bx:after{left:4px;top:0;width:5px;height:9px;border-width:0 2px 2px 0}
+.sk-dp .ck .dt{flex:0 0 8px;height:8px}
+.sk-dp .fact{margin:16px -16px 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(29,32,38,0),#1d2026 30%)}
+.sk-dp .fact .sk-btn{height:40px;min-height:40px;border-radius:6px;font-size:13px}
+.sk-dp .fact .sk-btn.gh{flex:0 0 112px;background:#262a32;font-size:12px;font-weight:500}
+/* savat oynasi */
+.sk-cl{gap:4px;margin:0 14px}
+.sk-cl .sk-mi{gap:12px;padding:10px 12px 10px 10px;border-radius:8px;background:#25272e;border:1px solid transparent}
+.sk-cl .sk-mi .w{width:26px;font-size:11px;font-weight:700;text-align:center}
+.sk-cl .sk-mi .th{flex:0 0 56px;height:48px;border-radius:6px;background:#1a1e20}
+.sk-cl .sk-mi .nm b{font-size:13px;font-weight:600}
+.sk-cl .sk-mi .nm span{font-size:11px}
+.sk-cl .sk-mi .pr{font-size:13px;font-weight:600}
+.sk-mi .rm{flex:0 0 28px;height:28px;border-radius:6px;background:none;color:#707c8c}
+/* profil (skinsavdo prof-sidebar + prof-main) */
+.sk-prof{display:grid;gap:14px;padding:20px 12px 0}
+.sk-pside{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:16px;border:1px solid #26282b;background:#1a1b20}
+.sk-pside .sk-me{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0;padding:6px 4px 14px;border:none;border-bottom:1px solid #26282b;border-radius:0;background:none;text-align:center}
+.sk-pside .sk-me .av{flex:0 0 80px;width:80px;height:80px;margin-bottom:4px;border:2px solid rgba(255,184,28,.5);font-size:28px}
+.sk-pside .sk-me b{font-family:var(--skd);font-size:16px;font-weight:700}
+.sk-pside .sk-me small{margin:0;font-size:11px;color:#70758c}
+.sk-pside .sk-wal{display:flex;flex-direction:column;gap:6px;margin:0;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,184,28,.28);background:linear-gradient(135deg,rgba(255,184,28,.1) 0%,rgba(255,184,28,.02) 100%)}
+.sk-pside .sk-wal small{font-family:var(--skd);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#70758c}
+.sk-pside .sk-wal b{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--ska);font-variant-numeric:tabular-nums}
+.sk-pside .sk-wal b .ccy{margin-left:4px;font-family:var(--skb);font-size:12px;font-weight:600;letter-spacing:0;color:#70758c}
+.sk-pside .sk-wal .sub{font-size:11.5px;line-height:1.5;color:#70758c}
+.sk-pact{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 18px;border:none;border-radius:10px;background:var(--ska);color:#121314;font-family:var(--skd);font-size:12px;font-weight:700;letter-spacing:.02em;white-space:nowrap;box-shadow:0 6px 18px rgba(255,184,28,.2)}
+.sk-pact.wd{width:100%;height:44px;margin-top:6px;font-size:13px}
+.sk-pact svg{width:16px;height:16px}
+.sk-pghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border:none;border-radius:10px;background:#262a32;color:#fff;font-family:var(--skd);font-size:12px;font-weight:700;white-space:nowrap}
+.sk-pghost.sm{flex:0 0 38px;width:38px;padding:0}
+.sk-pghost svg{width:16px;height:16px}
+.sk-pnav{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid #26282b}
+.sk-pni{display:flex;align-items:center;gap:12px;padding:12px 14px;border:none;border-radius:10px;background:none;color:#70758c;font-family:var(--skd);font-size:13px;font-weight:600;letter-spacing:.01em;text-align:left}
+.sk-pni .ico{display:flex;color:inherit}
+.sk-pni .ico svg{width:18px;height:18px}
+.sk-pni .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-pni i{flex:0 0 auto;padding:2px 8px;border-radius:999px;background:rgba(255,184,28,.14);color:var(--ska);font-family:var(--skb);font-size:11px;font-weight:700;font-style:normal}
+.sk-pni:active{background:#2e2f38;color:#fff}
+.sk-pni:first-child{background:var(--ska);color:#121314;box-shadow:0 4px 14px rgba(255,184,28,.2)}
+.sk-pni .hrt{display:flex;color:#ff5d6c;fill:#ff5d6c}
+.sk-pfoot{padding-top:10px;border-top:1px solid #26282b}
+.sk-plog{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 14px;border-radius:10px;border:1px solid #26282b;background:#262a32;color:#fff;font-family:var(--skd);font-size:12px;font-weight:700;letter-spacing:.02em}
+.sk-plog svg{width:16px;height:16px}
+.sk-pmain{display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:16px;border:1px solid #26282b;background:#1a1b20}
+.sk-pmain .sk-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.sk-pmain .sk-tiles div{display:flex;flex-direction:column;gap:4px;padding:14px 12px;border-radius:12px;border:1px solid #26282b;background:#25272e;text-align:left}
+.sk-pmain .sk-tiles span{margin:0;font-family:var(--skd);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#70758c}
+.sk-pmain .sk-tiles b{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.sk-pspent{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,184,28,.25);background:rgba(255,184,28,.08);font-size:12.5px;color:#9da6b8}
+.sk-pspent b{color:var(--ska);font-family:var(--skd)}
+.sk-pblk{display:flex;flex-direction:column;gap:10px;margin:0;padding:16px 18px;border-radius:12px;border:1px solid #26282b;background:#25272e}
+.sk-pblk .hd{font-family:var(--skd);font-size:13px;font-weight:700;letter-spacing:.01em}
+.sk-pfield{position:relative;display:flex;align-items:center}
+.sk-pinp{flex:1;min-width:0;height:42px;padding:0 44px 0 14px;border-radius:10px;border:1px solid #353b46;background:#1a1e20;color:#fff;font:inherit;font-size:13px;text-overflow:ellipsis;outline:none}
+.sk-pinp::placeholder{color:#70758c}
+.sk-pfield .cp{position:absolute;top:50%;right:6px;width:32px;height:32px;transform:translateY(-50%);border:none;border-radius:6px;background:none;color:#70758c;display:flex;align-items:center;justify-content:center;padding:0}
+.sk-pfield .cp svg{width:16px;height:16px}
+.sk-pblk .hint{display:flex;gap:6px;font-size:12px;line-height:1.5;color:#70758c}
+.sk-pblk .hint i{font-style:normal;font-size:14px;font-weight:700;line-height:1.3;color:var(--ska)}
+.sk-pblk .sk-pact{align-self:flex-start}
+.sk-pmain .sk-steam{margin:0;padding:14px 16px;border-radius:12px;border:1px solid rgba(102,192,244,.3);background:radial-gradient(240px 140px at 100% 0%,rgba(102,192,244,.16),transparent 70%),#25272e}
+.sk-pmain .sk-steam .av{border-radius:10px}
+/* buyurtmalar (skinsavdo «Покупки») */
+.sk-osum{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:14px 12px 0;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,184,28,.35);background:rgba(255,184,28,.08);font-size:13px}
+.sk-osum strong{color:var(--ska);font-family:var(--skd);font-weight:800}
+.sk-osum em{font-style:normal;font-size:12px;color:#9da6b8}
+.sk-chips{display:flex;gap:4px;width:fit-content;max-width:calc(100% - 24px);margin:14px 12px 0;padding:3px;border-radius:10px;border:1px solid #26282b;background:#25272e;overflow-x:auto}
+.sk-chips button{height:auto;padding:8px 12px;border:none;border-radius:7px;background:none;color:#70758c;font-family:var(--skd);font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.sk-chips button.on{background:var(--ska);border-color:var(--ska);color:#121314}
+.sk-ol{gap:8px;padding:14px 12px 0}
+.sk-or{position:relative;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid #26282b;background:#25272e;cursor:pointer}
+.sk-or:active{background:#2e2f38}
+.sk-or .th{position:relative;flex:0 0 72px;height:54px;border-radius:8px;background:#1a1e20}
+.sk-or .th img{max-width:90%;max-height:90%}
+.sk-or .th .wr{position:absolute;left:5px;top:3px;font-size:9.5px;font-weight:800;font-style:normal}
+.sk-or .md b{font-family:var(--skd);font-size:13px;font-weight:700}
+.sk-or .md small{font-size:11.5px;color:#70758c}
+.sk-or .md small .id{font-variant-numeric:tabular-nums;color:#9da6b8}
+.sk-or .rw{margin-top:8px}
+.sk-or .pr{font-family:var(--skd);font-size:13px;font-weight:700}
+.sk-st{height:22px;padding:0 10px;border-radius:999px;font-family:var(--skd);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.sk-st.p{background:rgba(255,184,28,.14);color:var(--ska)}
+.sk-st.d{background:rgba(48,209,88,.14);color:#30d158}
+.sk-st.c{background:rgba(255,77,79,.14);color:#ff4d4f}
+.sk-or .nt{margin-top:8px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,184,28,.28);background:rgba(255,184,28,.08);color:var(--ska);font-size:12px;line-height:1.5}
+.sk-or .nt.c{border-color:rgba(255,77,79,.32);background:rgba(255,77,79,.1);color:#ff8484}
+.sk-or .ac{display:inline-flex;align-items:center;gap:6px;height:auto;margin-top:8px;padding:8px 12px;border:none;border-radius:10px;background:var(--ska);color:#121314;font-family:var(--skd);font-size:11px;font-weight:700}
+.sk-or .ac.gh{background:#262a32;color:#fff;border:none}
+.sk-or .ac svg{width:14px;height:14px}
+/* buyurtma tafsilotlari (skinsavdo pur-hero + pur-details) */
+.sk-pur .sk-mh .id{font-family:var(--skd);font-size:13px;letter-spacing:.04em;color:#70758c}
+.sk-purh{padding:16px 16px 0}
+.sk-purh .im{position:relative;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;border-radius:12px;border:1px solid #26282b;background:#25272e;overflow:hidden}
+.sk-purh .im img{position:relative;max-width:90%;max-height:90%;object-fit:contain;filter:drop-shadow(0 10px 24px rgba(0,0,0,.55))}
+.sk-purd{display:flex;flex-direction:column;gap:14px;padding:16px}
+.sk-purd .nm{font-family:var(--skd);font-size:18px;font-weight:700;line-height:1.3}
+.sk-purd .pr{display:flex;align-items:baseline;gap:6px}
+.sk-purd .pr b{font-family:var(--skd);font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--ska)}
+.sk-purd .pr span{font-size:13px;font-weight:600;color:#70758c}
+.sk-pcall{padding:12px 14px;border-radius:10px;font-size:12.5px;line-height:1.5}
+.sk-pcall.info{border:1px solid rgba(255,184,28,.28);background:rgba(255,184,28,.08);color:var(--ska)}
+.sk-pcall.ok{border:1px solid rgba(48,209,88,.32);background:rgba(48,209,88,.1);color:#30d158}
+.sk-pcall.err{border:1px solid rgba(255,77,79,.32);background:rgba(255,77,79,.1);color:#ff8484}
+.sk-purd .acts{display:flex;flex-wrap:wrap;gap:8px}
+.sk-ptrade{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:none;border-radius:10px;background:var(--ska);color:#121314;font-family:var(--skd);font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(255,184,28,.3)}
+.sk-pmeta{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:10px;border:1px solid #26282b;background:#25272e}
+.sk-pmeta div{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:12px}
+.sk-pmeta .k{color:#70758c}
+.sk-pmeta .v{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}
 /* admin boshqaruv paneli (to'liq ekran) */
 .adm{position:fixed;inset:0;z-index:90;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:calc(env(safe-area-inset-top) + 0px) 0 env(safe-area-inset-bottom)}
@@ -2493,7 +2654,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-04.7";
+var CLIENT_BUILD="2026-11-04.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -6008,7 +6169,7 @@ var SK_L=[
 ["Asosiy do'konga qaytish","Вернуться в основной магазин","Back to main shop"],["Balansni to'ldirish","Пополнить баланс","Top up balance"],["Skinlar do'koni","Магазин скинов","Skin shop"],
 ["Orqaga","Назад","Back"],["Yopish","Закрыть","Close"],["close","закрыть","close"],["back","назад","back"],
 // bosh sahifa
-["Steam'ga ~1 daqiqada","В Steam за ~1 минуту","To Steam in ~1 minute"],["Skinlar","Скины","Skins"],["so'mda —","в сумах —","in so'm —"],["Skinlar so'mda —","Скины в сумах —","Skins in so'm —"],["Hamma holatlar","Все качества","All conditions"],["Steam'ni to'ldirish","Пополнить Steam","Top up Steam"],
+["Steam'ga ~1 daqiqada","В Steam за ~1 минуту","To Steam in ~1 minute"],["Skinlar","Скины","Skins"],["so'mda —","в сумах —","in so'm —"],["Skinlar so'mda —","Скины в сумах —","Skins in so'm —"],["Steam savdo takliflari","Трейд-офферы Steam","Steam trade offers"],["Skin xaridi va Steam to'ldirish uchun","Для покупки скинов и пополнения Steam","For skins and Steam top-ups"],["Xaridlar","Покупки","Purchases"],["Jami xarid qilingan:","Всего куплено:","Total spent:"],["Saqlangan ✓ — skinlar shu havolaga Steam savdo taklifi bo'lib keladi.","Сохранена ✓ — скины приходят на эту ссылку трейд-оффером Steam.","Saved ✓ — skins arrive at this link as a Steam trade offer."],["Havolani o'zgartirish","Изменить ссылку","Change link"],["Havolani kiritish","Ввести ссылку","Add link"],["Steam Guard","Steam Guard","Steam Guard"],["Mobil autentifikator 7 kundan beri yoqilgan bo'lishi kerak, aks holda Steam savdoni bir necha kunga ushlab turadi.","Мобильный аутентификатор должен быть включён не менее 7 дней, иначе Steam задержит обмен на несколько дней.","The mobile authenticator must be on for 7+ days, otherwise Steam holds the trade for several days."],["Skin yetkazilmasa yoki taklif bekor bo'lsa — pul balansingizga avtomatik qaytadi.","Если скин не доставлен или обмен отменён — деньги автоматически вернутся на баланс.","If the skin isn't delivered or the offer is cancelled, the money returns to your balance automatically."],["Buyurtma","Заказ","Order"],["Holat","Статус","Status"],["Sana","Дата","Date"],["Steam taklif","Трейд-оффер","Trade offer"],["Skin Steam hisobingizga yetkazildi.","Скин доставлен на ваш аккаунт Steam.","The skin was delivered to your Steam account."],["Buyurtma bekor qilindi, pul balansga qaytarildi.","Заказ отменён, деньги возвращены на баланс.","The order was cancelled and the money returned to your balance."],["Steam'ga savdo taklifi tayyorlanmoqda — odatda 1–5 daqiqa.","Готовим трейд-оффер в Steam — обычно 1–5 минут.","Preparing the Steam trade offer — usually 1–5 minutes."],["Steam'dagi savdo taklifini qabul qiling — keyin taklif bekor bo'ladi va pul qaytadi.","Примите трейд-оффер в Steam — иначе он отменится и деньги вернутся.","Accept the Steam trade offer — otherwise it is cancelled and the money is refunded."],["Trade-lock: ochilishini kutyapmiz, keyin avtomatik Steam'ga yuboriladi.","Trade-lock: ждём разблокировки, затем скин автоматически отправится в Steam.","Trade lock: waiting for unlock, then the skin is sent to Steam automatically."],["Profil menyusi","Меню профиля","Profile menu"],["Nusxalash","Копировать","Copy"],["Oldinga","Вперёд","Next"],["Hamma holatlar","Все качества","All conditions"],["Steam'ni to'ldirish","Пополнить Steam","Top up Steam"],
 ["Skin to'g'ridan-to'g'ri","Скин приходит прямо","The skin goes straight"],["Steam hisobingizga","на ваш аккаунт Steam","to your Steam account"],
 ["keladi. Parol so'ralmaydi, yetkazilmasa — pul balansga qaytadi.",". Пароль не нужен; если не доставим — деньги вернутся на баланс.",". No password needed; if it isn't delivered, the money returns to your balance."],
 ["Bozorga o'tish","Перейти в маркет","Go to market"],["Trade havolani kiritish","Ввести трейд-ссылку","Add trade link"],
@@ -6130,6 +6291,9 @@ var SK_L=[
 function skPl(n,a,b,c){n=Math.abs(parseInt(String(n).replace(/\s/g,""),10))||0;var d=n%10,h=n%100;return d===1&&h!==11?a:d>=2&&d<=4&&(h<12||h>14)?b:c;}
 function skAmt(s,L){return s.replace(/(\d[\d,.]*)\s?mln/g,function(_,n){return L==="ru"?n+" млн":n.replace(",",".")+"M";}).replace(/(\d[\d,.]*)\s?ming/g,function(_,n){return L==="ru"?n+" тыс.":n+"K";});}
 var SK_TRX=[
+[/^(\d+) ta jarayonda$/,function(m,n){return n+" в процессе";},function(m,n){return n+" in progress";}],
+[/^(.+?) gacha Steam'dagi savdo taklifini qabul qiling — keyin taklif bekor bo'ladi va pul qaytadi\.$/,function(m,d){return "Примите трейд-оффер в Steam до "+d+" — иначе он отменится и деньги вернутся.";},function(m,d){return "Accept the Steam trade offer by "+d+" — otherwise it is cancelled and the money is refunded.";}],
+[/^Trade-lock: (.+) da ochiladi, keyin avtomatik Steam'ga yuboriladi\.$/,function(m,d){return "Trade-lock: откроется "+d+", затем скин автоматически отправится в Steam.";},function(m,d){return "Trade lock: unlocks "+d+", then the skin is sent to Steam automatically.";}],
 [/^Bekor · (.+)$/,function(m,x){return (/^\d+$/.test(x)?"Отменённые · "+x:"Отменён · "+skTrTxt(x,"ru"));},function(m,x){return "Cancelled · "+(/^\d+$/.test(x)?x:skTrTxt(x,"en"));}],
 [/^(\d+) uslub ochilgan$/,function(m,n){return n+" "+skPl(n,"стиль открыт","стиля открыто","стилей открыто");},function(m,n){return n+(n==="1"?" style unlocked":" styles unlocked");}],
 [/^(\d+) stiker$/,function(m,n){return n+" "+skPl(n,"стикер","стикера","стикеров");},function(m,n){return n+(n==="1"?" sticker":" stickers");}],
@@ -6239,6 +6403,8 @@ SK.f=skF0();
 var SK_SV=function(p,w,extra){return '<svg viewBox="0 0 24 24" width="'+(w||20)+'" height="'+(w||20)+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'+(extra||"")+'>'+p+'</svg>';};
 /* Ikonkalar: Lucide (ISC litsenziya) — asosiy ilova bilan bir xil to'plam */
 var SK_I={
+  sort:SK_SV('<path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4" /><path d="M7 4v16" />',16),
+  pkg:SK_SV('<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /><path d="M12 22V12" /><path d="m3.3 7 7.703 4.734a2 2 0 0 0 2.004 0L20.7 7" /><path d="m7.5 4.27 9 5.15" />',18),
   back:SK_SV('<path d="m15 18-6-6 6-6" />'),
   close:SK_SV('<path d="M18 6 6 18" /><path d="m6 6 12 12" />',20),
   home:SK_SV('<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />',23),
@@ -6364,6 +6530,8 @@ function openCs2(src,game){
 function skBack(){
   if(document.getElementById("sheetEl")){closeSheet();return;}
   var el=skEl();if(!el){skBackOn(false);return;}
+  if(el.querySelector(".sk-drawer")){skDrawerClose();return;}
+  var smb=skEl("skSortM");if(smb&&!smb.hidden){skSortOpen(false);return;}
   var md=el.querySelector(".sk-modal");if(md){md.remove();return;}
   if(el.querySelector(".sk-page")){skItemAct("back");return;}
   if(SK.tab!=="home"){skTab("home");return;}
@@ -6410,7 +6578,8 @@ function skTab(tab){
 }
 /* ---- umumiy bosishlar ---- */
 function skClick(e){
-  var t=e.target.closest("[data-sktab],[data-skgo],[data-skgame],[data-skfav],[data-skb],[data-skcat],[data-skw],[data-skrm],[data-skact],[data-skamt],[data-skof],[data-skpg],[data-skm],[data-skwt],[data-skbuy],[data-skordf],[data-skcart],[data-sklk],[data-skoffer],[data-skocancel],#skExit,#skBal,#skAv,#skMore,#skRetry,#skFilt,#skTu");
+  var smn=skEl("skSortM");if(smn&&!smn.hidden&&!e.target.closest("#skSortBox"))skSortOpen(false);
+  var t=e.target.closest("[data-sktab],[data-skgo],[data-skgame],[data-skfav],[data-skb],[data-skcat],[data-skw],[data-skrm],[data-skact],[data-skamt],[data-skof],[data-skpg],[data-skm],[data-skwt],[data-skbuy],[data-skordf],[data-skcart],[data-sklk],[data-skoffer],[data-skocancel],[data-skrec],[data-sksort],[data-skord],#skExit,#skBal,#skAv,#skMore,#skRetry,#skFilt,#skTu,#skSort");
   if(!t)return;
   haptic();
   var a=function(n){return t.getAttribute(n);};
@@ -6419,6 +6588,9 @@ function skClick(e){
   if(t.hasAttribute("data-skgo"))return skTab(a("data-skgo"));
   if(t.hasAttribute("data-skgame")){var g=a("data-skgame");if(!skOn(g))return toast("⏳ "+SK_G[g].n+" bozori tez orada ochiladi");return skSetGame(g,true);}
   if(t.hasAttribute("data-skrec")){var rr=skEl("skRec");if(rr)rr.scrollBy({left:Number(a("data-skrec"))*158,behavior:"smooth"});return;}
+  if(t.id==="skSort"){var sm2=skEl("skSortM");return skSortOpen(!!(sm2&&sm2.hidden));}
+  if(t.hasAttribute("data-sksort")){SK.sort=a("data-sksort");skSortOpen(false);skSortPaint();return skLoad(true);}
+  if(t.hasAttribute("data-skord"))return skOrderDetail(a("data-skord"));
   if(t.hasAttribute("data-skb"))return skOpenItem(a("data-skb"),a("data-skg")||SK.game);
   if(t.hasAttribute("data-skcat")){var nc=a("data-skcat");
     // O'sha toifa yana bosilsa — qurollar menyusi ochiladi/yopiladi
@@ -6449,6 +6621,8 @@ function skClick(e){
   if(t.id==="skTu")return skTradeSheet(null);
 }
 function skAct(k){
+  if(k==="profile"){var mm=skEl("skMain");if(mm)mm.scrollTo({top:0,behavior:"smooth"});return;}
+  if(k==="tradecopy"){var tv=SK.tradeUrl||"";try{navigator.clipboard.writeText(tv).then(function(){toast("Nusxalandi");},function(){toast(tv);});}catch(e){toast(tv);}return;}
   if(k==="pay"){closeCs2();go("pay");}
   else if(k==="trade")skTradeSheet(null);
   else if(k==="help")skHelpSheet();
@@ -6458,6 +6632,7 @@ function skAct(k){
   else if(k==="steam"){closeCs2();S.screen="home";S.steamPage=true;STEAM=null;render();window.scrollTo(0,0);}
   else if(k==="favs"){SK.f=skF0();SK.f.fav=true;SK.cat="";SK.w="";SK.q="";SK.items=[];skTab("market");}
   else if(k==="market")skTab("market");
+  else if(k==="orders")skTab("orders");
   else if(k==="steamOn")skSteamLink();
   else if(k==="steamOff")skAsk("Steam akkauntni uzish","Steam akkaunt uziladi. Keyin istalgan trade havolani kiritish mumkin bo'ladi — tekshiruv o'chadi.","Ha, uzish",function(){
     api("/api/steam/unlink","POST",{}).then(function(){SK.steam=null;toast("Steam akkaunt uzildi");if(SK.tab==="profile")skProfile();}).catch(function(){toast(t("srv_off"),true);});});
@@ -6637,11 +6812,12 @@ function skMarket(){
   m.innerHTML='<div class="sk-gtabs sk-in" id="skGt"></div>'
     +'<div class="sk-tool sk-in"><div class="r1"><button class="sk-fb" id="skFilt" aria-label="Filtrlar">'+SK_I.sliders+'<i id="skFn" hidden></i></button>'
     +'<label class="sk-srch">'+SK_I.search+'<input id="skQ" placeholder="'+esc(SK_G[SK.game].ph)+'" value="'+esc(SK.q)+'" autocomplete="off" enterkeyhint="search"></label></div>'
-    +'<div class="r2"><label class="sk-sel" id="skSortBox"><select id="skSort" aria-label="Tartib">'+SK_SORT.map(function(o){return '<option value="'+o[0]+'"'+(SK.sort===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="dn">'+SK_I.down+'</span></label>'
+    +'<div class="r2"><div class="sk-sortw" id="skSortBox"><button class="sk-sortt" id="skSort" aria-haspopup="listbox" aria-expanded="false" aria-label="Tartib">'+SK_I.sort+'<span class="lb" id="skSortL"></span><span class="chev">'+SK_I.down+'</span></button>'
+    +'<div class="sk-sortm" id="skSortM" role="listbox" hidden>'+SK_SORT.map(function(o){return '<button role="option" data-sksort="'+o[0]+'"><span>'+o[1]+'</span>'+SK_I.check+'</button>';}).join("")+'</div></div>'
     +'<button class="sk-tu" id="skTu"></button></div></div>'
-    +'<div class="sk-cats sk-in" id="skCats"></div><div class="sk-wpn" id="skWpn" hidden></div><div class="sk-act" id="skAct" hidden></div>'
+    +'<div class="sk-catbar sk-in"><div class="sk-cats" id="skCats"></div><div class="sk-wpn" id="skWpn" hidden></div></div><div class="sk-act" id="skAct" hidden></div>'
     +'<div class="sk-bar"><b id="skBarT"></b><span id="skCnt"></span></div><div id="skList"></div>';
-  m.querySelector("#skSort").addEventListener("change",function(){haptic();SK.sort=this.value;skLoad(true);});
+  skSortPaint();
   var tmr=null;
   m.querySelector("#skQ").addEventListener("input",function(){
     var v=this.value;clearTimeout(tmr);
@@ -6667,6 +6843,21 @@ function skCats(){
     return '<button class="sk-cat'+(on?' on':'')+(on&&SK.wOpen?' open':'')+'" data-skcat="'+c[0]+'">'+ico+esc(c[1])+(on&&SK.w?' · '+esc(SK.w):'')
       +(hasDd?'<span class="dn">'+SK_I.down+'</span>':'')+(c[0]==="new"&&SK.info&&SK.info.live?'<i class="lv" title="Real vaqt"></i>':'')+'</button>';}).join("");
 }
+function skSortPaint(){
+  var l=skEl("skSortL"),cur=SK_SORT.filter(function(o){return o[0]===SK.sort;})[0]||SK_SORT[0];if(l)l.textContent=_t(cur[1]);
+  document.querySelectorAll("#sk [data-sksort]").forEach(function(b){var on=b.getAttribute("data-sksort")===(SK.sort||"");b.classList.toggle("on",on);b.setAttribute("aria-selected",on?"true":"false");});
+}
+function skSortOpen(on){var mm=skEl("skSortM"),tb=skEl("skSort");if(!mm)return;mm.hidden=!on;if(tb){tb.classList.toggle("open",on);tb.setAttribute("aria-expanded",on?"true":"false");}}
+// chapdan chiquvchi panel (skinsavdo mobil filtrlari kabi): fon bosilsa yoki «Orqaga» — yopiladi
+function skDrawer(html){
+  var el=skEl();if(!el)return null;skDrawerClose(true);
+  var d=document.createElement("div");d.className="sk-drawer";
+  d.innerHTML='<button class="sk-dbg" aria-label="Yopish"></button><aside class="sk-dp" role="dialog" aria-modal="true" aria-label="Filtrlar"><div class="sk-dsh">'+html+'</div></aside>';
+  el.appendChild(d);d.querySelector(".sk-dbg").addEventListener("click",function(){haptic();skDrawerClose();});
+  requestAnimationFrame(function(){requestAnimationFrame(function(){d.classList.add("on");});});
+  return d.querySelector(".sk-dp");
+}
+function skDrawerClose(now){var d=skEl()&&skEl().querySelector(".sk-drawer");if(!d)return;if(now){d.remove();return;}d.classList.remove("on");setTimeout(function(){d.remove();},300);}
 function skTuBtn(){
   var b=skEl("skTu");if(!b)return;
   var has=!!SK.tradeUrl;b.className="sk-tu"+(has?" ok":"");b.innerHTML=(has?SK_I.check:SK_I.link)+(has?' Trade URL':' Trade URL kiriting');
@@ -6935,12 +7126,15 @@ function skOrders(paintOnly){
     }
     return o.status==="cancelled"&&o.cancelReason?'<div class="nt c">'+esc(o.cancelReason)+'</div>':'';
   };
+  // skinsavdo «Покупки»: xulosa satri, tablar (pill guruhi), xarid kartochkalari; karta bosilsa — tafsilotlar oynasi
+  var spent=all.filter(function(o){return o.status==="done";}).reduce(function(a,o){return a+(o.price||0);},0),pendN=all.filter(function(o){return stOf(o)==="pending";}).length;
   m.innerHTML='<div class="sk-ph sk-in"><h2>Buyurtmalar</h2><p>Skin xaridlaringiz va ularning holati</p></div>'
+    +(all.length?'<div class="sk-osum sk-in"><span>Jami <strong>'+all.length+' ta</strong> xarid'+(spent?' · <strong>'+esc(money(spent))+'</strong>':'')+'</span>'+(pendN?'<em>'+pendN+' ta jarayonda</em>':'')+'</div>':'')
     +'<div class="sk-chips sk-in">'+F.map(function(f){var n=f[0]==="all"?all.length:all.filter(function(o){return stOf(o)===f[0];}).length;
       return '<button class="'+(SK.ordF===f[0]?"on":"")+'" data-skordf="'+f[0]+'">'+f[1]+(n?' · '+n:'')+'</button>';}).join("")+'</div>'
-    +(L.length?'<div class="sk-ol">'+L.map(function(o){var s=skOrdSt(o),g=SK_G[o.cs2.game]||SK_G.cs2;
-      return '<div class="sk-or sk-in"><div class="th">'+skImg(o.cs2.img)+'</div><div class="md"><b>'+esc(o.cs2.name||o.item)+'</b>'
-        +'<small>'+esc(g.n)+(o.seq?' · #'+esc(o.seq):'')+' · '+esc(dt(o.ts))+(o.cs2.float!=null?' · '+Number(o.cs2.float).toFixed(4):'')+'</small>'
+    +(L.length?'<div class="sk-ol">'+L.map(function(o){var s=skOrdSt(o),g=SK_G[o.cs2.game]||SK_G.cs2,wr=o.cs2.wear||"";
+      return '<div class="sk-or sk-in" data-skord="'+esc(o.id)+'"><div class="th">'+(wr?'<i class="wr" style="color:'+(C2_WCOL[wr]||"#9da6b8")+'">'+esc(wr)+'</i>':'')+skImg(o.cs2.img)+'</div><div class="md"><b>'+esc(o.cs2.name||o.item)+'</b>'
+        +'<small><span class="id">#'+esc(o.seq||String(o.id).slice(-6))+'</span> · '+esc(g.n)+' · '+esc(dt(o.ts))+(o.cs2.float!=null?' · '+Number(o.cs2.float).toFixed(4):'')+'</small>'
         +'<div class="rw"><span class="pr">'+esc(money(o.price))+'</span><span class="sk-st '+s[0]+'">'+esc(s[1])+'</span></div>'
         +extra(o)+'</div></div>';}).join("")+'</div>'
       :'<div class="sk-empty sk-in"><b>'+(all.length?"Bu bo'limda buyurtma yo'q":"Hali skin sotib olmagansiz")+'</b>'+(all.length?'Boshqa filtrni tanlang.':'Bozordan birinchi skiningizni tanlang — u Steam\'ga ~1 daqiqada keladi.')
@@ -6951,6 +7145,31 @@ function skOrders(paintOnly){
     skStopOrd();SK.ordT=setInterval(function(){if(SK.tab!=="orders"||!skEl())return skStopOrd();
       loadMe(function(){if(SK.tab==="orders"&&skEl()&&!skEl().querySelector(".sk-modal"))skOrders(true);skBal();});},15000);
   }
+}
+// Buyurtma tafsilotlari: rasm (4:3), raqam, nom, narx, holat izohi, amallar va ma'lumotlar jadvali (skinsavdo «Покупка» kabi)
+function skOrderDetail(id){
+  var el=skEl(),o=(ME.orders||[]).filter(function(x){return x.id===id;})[0];if(!el||!o||!o.cs2)return;
+  var old=el.querySelector(".sk-modal");if(old)old.remove();
+  var c=o.cs2,s=skOrdSt(o),g=SK_G[c.game]||SK_G.cs2,dt=skDt;
+  var cl=o.status==="done"?["ok","Skin Steam hisobingizga yetkazildi."]:o.status==="cancelled"?["err",o.cancelReason||"Buyurtma bekor qilindi, pul balansga qaytarildi."]
+    :c.state==="accept"?["info",(c.expiry?dt(c.expiry)+" gacha ":"")+"Steam'dagi savdo taklifini qabul qiling — keyin taklif bekor bo'ladi va pul qaytadi."]
+    :c.state==="locked"?["info","Trade-lock: "+(c.unlockAt?dt(c.unlockAt)+" da ochiladi":"ochilishini kutyapmiz")+", keyin avtomatik Steam'ga yuboriladi."]
+    :["info","Steam'ga savdo taklifi tayyorlanmoqda — odatda 1–5 daqiqa."];
+  var kv=[["Holat",s[1]],["Sana",dt(o.ts)],["O'yin",g.full||g.n]];
+  if(c.wear)kv.push(["Holati",(C2_WEAR[c.wear]||c.wear)]);
+  if(c.float!=null)kv.push(["Float",Number(c.float).toFixed(6)]);
+  if(c.tradeId)kv.push(["Steam taklif",c.tradeId]);
+  var d=document.createElement("div");d.className="sk-modal";
+  d.innerHTML='<div class="sk-mb sk-pur" role="dialog" aria-modal="true" aria-label="Buyurtma">'
+    +'<div class="sk-mh"><b>Buyurtma <span class="id">#'+esc(o.seq||String(o.id).slice(-6))+'</span></b><button data-skm="x" aria-label="Yopish">'+SK_I.close+'</button></div>'
+    +'<div class="sk-purh"><div class="im"><span class="wm"></span>'+skImg(c.img)+'</div></div>'
+    +'<div class="sk-purd"><div class="nm">'+esc(c.name||o.item)+'</div><div class="pr"><b>'+esc(skNum(o.price))+'</b><span>so\'m</span></div>'
+    +'<div class="sk-pcall '+cl[0]+'">'+esc(cl[1])+'</div>'
+    +(o.status==="pending"&&c.state==="accept"?'<div class="acts"><button class="sk-ptrade" data-skoffer="'+esc(c.tradeId||"")+'">'+STEAM_SVG.replace(/width="[^"]*"/,'width="16"').replace(/height="[^"]*"/,'height="16"')+' Steam\'da qabul qilish</button></div>':'')
+    +(o.status==="pending"&&c.state==="locked"&&!c.cancelReq?'<div class="acts"><button class="sk-pghost" data-skocancel="'+esc(o.id)+'">Bekor qilish (3%)</button></div>':'')
+    +'<div class="sk-pmeta">'+kv.map(function(r){return '<div><span class="k">'+esc(r[0])+'</span><span class="v">'+esc(r[1])+'</span></div>';}).join("")+'</div></div></div>';
+  d.addEventListener("click",function(e){if(e.target===d){haptic();d.remove();}});
+  el.appendChild(d);
 }
 // Trade-lock'dagi xaridni bekor qilish (lis-skins 3% oladi)
 function skCancelAsk(id){
@@ -7049,24 +7268,38 @@ function skProfile(){
   var m=skEl("skMain");if(!m)return;
   var u=tgUser()||{},nm=[u.first_name,u.last_name].filter(Boolean).join(" ")||"Mehmon";
   var all=(ME.orders||[]).filter(function(o){return o.cs2;}),done=all.filter(function(o){return o.status==="done";}).length;
+  var pend=all.filter(function(o){return o.status==="pending";}).length,spent=all.filter(function(o){return o.status==="done";}).reduce(function(a,o){return a+(o.price||0);},0);
   var has=!!SK.tradeUrl;
-  var row=function(act,icon,title,sub){return '<button data-skact="'+act+'"><span class="ic">'+icon+'</span><span class="tx">'+esc(title)+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><span class="ar">'+SK_I.arr+'</span></button>';};
-  var st=SK.steam,stIco=STEAM_SVG.replace(/width="[^"]*"/,'width="26"').replace(/height="[^"]*"/,'height="26"');
-  var stc=st?'<div class="sk-steam sk-in"><div class="av">'+(st.avatar?'<img src="'+esc(st.avatar)+'" alt="" onerror="this.remove()">':'')+stIco+'</div>'
+  // skinsavdo profili: yon panel (avatar, balans kartasi, menyu, chiqish) + asosiy qism (bloklar)
+  var nav=function(act,icon,title,badge){return '<button class="sk-pni" data-skact="'+act+'"><span class="ico">'+icon+'</span><span class="tx">'+esc(title)+'</span>'+(badge?'<i>'+esc(badge)+'</i>':'')+'</button>';};
+  var st=SK.steam,stIco=STEAM_SVG.replace(/width="[^"]*"/,'width="24"').replace(/height="[^"]*"/,'height="24"');
+  var stc=st?'<div class="sk-steam sk-pblk"><div class="av">'+(st.avatar?'<img src="'+esc(st.avatar)+'" alt="" onerror="this.remove()">':'')+stIco+'</div>'
       +'<div class="tx"><small class="lb">Steam akkaunt ulangan</small><b>'+esc(st.name||("SteamID "+st.id))+'</b>'
       +'<div class="ch">'+(st.privacy?(st.privacy==="public"?'<span class="g">Profil ochiq</span>':'<span class="w">Profil yopiq</span>'):'')+(st.tradeBan?'<span class="r">Savdo taqiqi</span>':'')+(st.vac?'<span class="r">VAC</span>':'')+'</div></div>'
-      +'<button class="sk-ib" data-skact="steamOff" aria-label="Steam akkauntni uzish">'+SK_I.exit+'</button></div>'
-    :'<div class="sk-steam off sk-in"><div class="av">'+stIco+'</div><div class="tx"><b>Steam akkauntni ulang</b><small>Trade havola sizniki ekani tekshiriladi — skin boshqa odamga ketib qolmaydi</small></div>'
-      +(SK.steamLogin?'<button class="sk-btn sm" data-skact="steamOn">Ulash</button>':'')+'</div>';
-  m.innerHTML='<div class="sk-me sk-in"><div class="av">'+skAvatar()+'</div><div style="min-width:0"><b>'+esc(nm)+'</b><small>'+(u.username?'@'+esc(u.username):'Verion Shop')+'</small></div></div>'
+      +'<button class="sk-pghost sm" data-skact="steamOff" aria-label="Steam akkauntni uzish">'+SK_I.exit+'</button></div>'
+    :'<div class="sk-steam off sk-pblk"><div class="av">'+stIco+'</div><div class="tx"><b>Steam akkauntni ulang</b><small>Trade havola sizniki ekani tekshiriladi — skin boshqa odamga ketib qolmaydi</small></div>'
+      +(SK.steamLogin?'<button class="sk-pact" data-skact="steamOn">Ulash</button>':'')+'</div>';
+  m.innerHTML='<div class="sk-prof">'
+    +'<aside class="sk-pside sk-in"><div class="sk-me"><div class="av">'+skAvatar()+'</div><b>'+esc(nm)+'</b><small>'+(u.username?'@'+esc(u.username):'Verion Shop')+(u.id?' · ID '+esc(String(u.id)):'')+'</small></div>'
+    +'<div class="sk-wal"><small>Balans</small><b>'+esc(skNum(ME.balance||0))+'<span class="ccy">so\'m</span></b><span class="sub">Skin xaridi va Steam to\'ldirish uchun</span>'
+    +'<button class="sk-pact wd" data-skact="pay">'+SK_I.plus+' Balansni to\'ldirish</button></div>'
+    +'<div class="sk-pnav" role="navigation" aria-label="Profil menyusi">'+nav("profile",SK_I.user,"Profil")+nav("orders",SK_I.orders,"Buyurtmalar",pend?pend+" ta jarayonda":"")
+    +nav("favs",'<span class="hrt">'+SK_I.heart+'</span>',"Sevimli skinlar",SK.favs.length?String(SK.favs.length):"")
+    +nav("offers",STEAM_SVG.replace(/width="[^"]*"/,'width="18"').replace(/height="[^"]*"/,'height="18"'),"Steam savdo takliflari")
+    +nav("help",SK_I.help,"Qanday ishlaydi?")+nav("support",SK_I.chat,"Qo'llab-quvvatlash")+'</div>'
+    +'<div class="sk-pfoot"><button class="sk-plog" data-skact="exit">'+SK_I.exit+' Asosiy do\'konga qaytish</button></div></aside>'
+    +'<section class="sk-pmain sk-in">'
+    +'<div class="sk-tiles"><div><span>Xaridlar</span><b>'+all.length+'</b></div><div><span>Yetkazildi</span><b>'+done+'</b></div><div><span>Sevimli</span><b>'+SK.favs.length+'</b></div></div>'
+    +(spent?'<div class="sk-pspent">Jami xarid qilingan: <b>'+esc(money(spent))+'</b></div>':'')
+    +'<div class="sk-pblk"><div class="hd">Steam trade havola</div>'
+    +'<div class="sk-pfield"><input class="sk-pinp" readonly value="'+esc(SK.tradeUrl||"")+'" placeholder="Kiritilmagan — xariddan oldin kerak" aria-label="Steam trade havola">'
+    +(has?'<button class="cp" data-skact="tradecopy" aria-label="Nusxalash">'+SK_I.copy+'</button>':'')+'</div>'
+    +'<div class="hint"><i>•</i><span>'+(has?'Saqlangan ✓ — skinlar shu havolaga Steam savdo taklifi bo\'lib keladi.':'Steam → Inventar → Savdo takliflari → «Kim menga taklif yubora oladi?» bo\'limidagi havola.')+'</span></div>'
+    +'<button class="sk-pact" data-skact="trade">'+SK_I.link+' '+(has?'Havolani o\'zgartirish':'Havolani kiritish')+'</button></div>'
     +stc
-    +'<div class="sk-wal sk-in"><small>Balans</small><b>'+esc(money(ME.balance||0))+'</b><button class="sk-btn wd" data-skact="pay">'+SK_I.plus+' Balansni to\'ldirish</button></div>'
-    +'<div class="sk-tiles sk-in"><div><b>'+all.length+'</b><span>xarid</span></div><div><b>'+done+'</b><span>yetkazildi</span></div><div><b>'+SK.favs.length+'</b><span>sevimli</span></div></div>'
-    +'<div class="sk-list sk-in">'+row("trade",SK_I.link,"Steam trade havola",has?"Saqlangan ✓":"Kiritilmagan — xariddan oldin kerak")
-    +row("favs",'<span style="color:#ff5d6c;fill:#ff5d6c;display:flex">'+SK_I.heart+'</span>',"Sevimli skinlar",SK.favs.length?SK.favs.length+" ta":"Hali bo'sh")
-    +row("offers",STEAM_SVG.replace(/width="[^"]*"/,'width="20"').replace(/height="[^"]*"/,'height="20"'),"Steam'dagi savdo takliflarim","Kelgan skinni qabul qilish")+'</div>'
-    +'<div class="sk-list sk-in">'+row("help",SK_I.help,"Qanday ishlaydi?","Savollar va javoblar")+row("support",SK_I.chat,"Qo'llab-quvvatlash","Operator bilan yozishish")
-    +row("exit",SK_I.exit,"Asosiy do'konga qaytish","Verion Shop")+'</div>';
+    +'<div class="sk-pblk"><div class="hd">Steam Guard</div><div class="hint"><i>•</i><span>Mobil autentifikator 7 kundan beri yoqilgan bo\'lishi kerak, aks holda Steam savdoni bir necha kunga ushlab turadi.</span></div>'
+    +'<div class="hint"><i>•</i><span>Skin yetkazilmasa yoki taklif bekor bo\'lsa — pul balansingizga avtomatik qaytadi.</span></div></div>'
+    +'</section></div>';
 }
 /* ---- pastdan chiqadigan oynalar ---- */
 function skSheet(inner,back){var sh=openSheet(inner,back);sh.classList.add("sks");return sh;}
@@ -7074,7 +7307,7 @@ function skFilterSheet(){
   var f=JSON.parse(JSON.stringify(SK.f)),priced=SK.priced,g=SK.game,R=SK_RAR[g]||[];
   var Q=[[0,50000,"50 mingacha"],[50000,200000,"50–200 ming"],[200000,1000000,"200 ming – 1 mln"],[1000000,5000000,"1–5 mln"],[5000000,0,"5 mln dan"]];
   var ck=function(attr,val,label,col){return '<button class="ck" data-'+attr+'="'+val+'"><i class="bx"></i>'+(col?'<i class="dt" style="background:'+col+'"></i>':'')+'<span>'+esc(label)+'</span></button>';};
-  var html='<h3 class="t">Filtrlar</h3>'
+  var html='<h3 class="t">Filtrlar<button class="sk-dx" id="skFX" aria-label="Yopish">'+SK_I.close+'</button></h3>'
     +'<button class="sw" id="skFFav"><span style="display:flex;align-items:center;gap:10px"><span style="color:#ff5d6c;fill:#ff5d6c;display:flex">'+SK_I.heart+'</span>Faqat sevimlilar</span><i class="tg"></i></button>'
     +(priced?'<div class="sec">Narx, so\'m</div><div class="pr2"><input class="sk-inp" id="skPmin" type="number" inputmode="numeric" placeholder="dan" aria-label="Narx, dan"><span>—</span><input class="sk-inp" id="skPmax" type="number" inputmode="numeric" placeholder="gacha" aria-label="Narx, gacha"></div>'
       +'<div class="qp">'+Q.map(function(q,i){return '<button data-pq="'+i+'">'+q[2]+'</button>';}).join("")+'</div>':'')
@@ -7084,7 +7317,7 @@ function skFilterSheet(){
     +(SK.info&&SK.info.locks?'<div class="sec">Yetkazish · «Jonli» takliflar</div><div class="qp">'+[["now","⚡ Darhol"],["lock","🔒 Trade-lock (arzonroq)"]].map(function(x){return '<button data-ul="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div>':'')
     +(g==="cs2"?'<div class="sec">Float · «Jonli» takliflar</div><div class="qp">'+Object.keys(SK_FLR).map(function(k){return '<button data-fl="'+k+'"><span style="color:'+C2_WCOL[k]+'">'+k+'</span> '+SK_FLR[k][0]+'–'+SK_FLR[k][1]+'</button>';}).join("")+'</div>':'')
     +'<div class="fact"><button class="sk-btn gh" id="skFClr">Tozalash</button><button class="sk-btn" id="skFApply">Ko\'rsatish</button></div>';
-  var sh=skSheet(html,null);
+  var sh=skDrawer(html);if(!sh)return;sh.classList.add("sks");
   var pmin=sh.querySelector("#skPmin"),pmax=sh.querySelector("#skPmax");
   var has=function(a,v){return a.indexOf(v)!==-1;},tog=function(a,v){var i=a.indexOf(v);if(i===-1)a.push(v);else a.splice(i,1);};
   var paint=function(){
@@ -7103,7 +7336,8 @@ function skFilterSheet(){
   if(pmin)pmin.addEventListener("input",function(){f.pmin=num(this.value);paint();});
   if(pmax)pmax.addEventListener("input",function(){f.pmax=num(this.value);paint();});
   sh.addEventListener("click",function(e){
-    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],[data-ul],[data-fl],#skFFav,#skFClr,#skFApply");if(!b)return;haptic();
+    var b=e.target.closest("[data-pq],[data-wr],[data-rr],[data-ty],[data-st2],[data-ul],[data-fl],#skFFav,#skFClr,#skFApply,#skFX");if(!b)return;haptic();
+    if(b.id==="skFX")return skDrawerClose();
     if(b.hasAttribute("data-pq")){var q=Q[Number(b.getAttribute("data-pq"))];if(f.pmin===q[0]&&f.pmax===q[1]){f.pmin=0;f.pmax=0;}else{f.pmin=q[0];f.pmax=q[1];}}
     else if(b.hasAttribute("data-wr"))tog(f.wear,b.getAttribute("data-wr"));
     else if(b.hasAttribute("data-rr"))tog(f.rar,b.getAttribute("data-rr"));
@@ -7117,7 +7351,7 @@ function skFilterSheet(){
       // Float va yetkazish filtri jonli takliflarga, holat/noyoblik/turi — katalogga qo'llanadi
       var liveF=f.unlock||f.fl,catF=f.wear.length||f.rar.length||f.types.length||f.star||f.fav;
       if(liveF&&!catF)SK.cat="new";else if(SK.cat==="new"&&catF)SK.cat="";
-      closeSheet();skCats();skLoad(true);return;}
+      skDrawerClose();skCats();skLoad(true);return;}
     paint();
   });
   paint();
