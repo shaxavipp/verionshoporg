@@ -2768,7 +2768,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.7";
+var CLIENT_BUILD="2026-11-05.8";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -11483,7 +11483,7 @@ var XT_HTML={
 function _xh(k){var o=XT_HTML[k];return o[S.lang]||o.uz;}
 /* ===================== STEAM HAMYON ===================== */
 var STEAM=null;
-var STEAM_SVG='<svg viewBox="0 0 64 64" width="44" height="44"><circle cx="40" cy="22" r="11" fill="none" stroke="#fff" stroke-width="5"/><circle cx="40" cy="22" r="5" fill="#fff"/><circle cx="21" cy="44" r="8" fill="none" stroke="#fff" stroke-width="4.5"/><path d="M29 41 L33 30" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M4 36 L15 41" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>';
+var STEAM_SVG='<svg viewBox="0 0 24 24" width="44" height="44"><circle cx="12" cy="12" r="12" fill="#fff"/><path fill="#1a5aa6" d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/></svg>';
 function loadSteam(cb){api("/api/steam").then(function(r){STEAM=r;cb&&cb();}).catch(function(){STEAM={enabled:false};cb&&cb();});}
 function steamUsd(){var v=Number(String(S.st.usd||"").replace(",","."));return isFinite(v)?Math.round(v*100)/100:0;}
 function steamPriceOf(usd){return Math.ceil(usd*(STEAM&&STEAM.rate||0)/100)*100;}
@@ -11492,7 +11492,7 @@ function steamHTML(){
   if(!STEAM){loadSteam(render);return '<div class="xpage"><div class="vn-head"><div class="vn-spin" style="margin:30px auto"></div></div></div>';}
   var usd=steamUsd(),price=steamPriceOf(usd),ok=STEAM.enabled&&usd>=STEAM.min&&usd<=STEAM.max;
   var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Steam</b>'+admPen("steam")+'</button><div class="xpage">'
-    +'<div class="xhero"><div class="xlogo">'+(cardImgSet("steam")?'<img src="'+esc(cardImgSet("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':STEAM_SVG)+'</div><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div>'
+    +'<div class="xhero"><div class="xlogo" style="background:none;width:76px;height:76px">'+(cardImgSet("steam")?'<img src="'+esc(cardImgSet("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':'<img src="/assets/steam.svg" alt="Steam" style="width:100%;height:100%">')+'</div><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div>'
     +'<div class="xsum"><div class="r1"><span class="lb">'+ic("bolt",14)+' '+esc(_x("To'ldiriladi"))+'</span><span class="big" id="stBig">$'+usd.toFixed(2)+'</span></div>'
     +'<div class="r2"><span>'+esc(_x("To'lov summasi"))+'</span><span class="pay" id="stPay">'+esc(money(price).replace(" so'm",""))+'<small>so\'m</small></span></div></div>'
     +'<div class="xbox"><div class="hd"><b>'+ic("users",16)+' Steam login</b><button class="help" id="stHelp">'+ic("info",13)+' '+esc(_x("Qayerdan olaman?"))+'</button></div>'
