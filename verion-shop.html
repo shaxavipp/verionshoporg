@@ -2765,7 +2765,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.6";
+var CLIENT_BUILD="2026-11-05.7";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4117,6 +4117,8 @@ function ctaBtn(){return '<span class="pcta" aria-hidden="true"><i class="pgr"><
   document.addEventListener("pointerdown",function(e){var c=e.target&&e.target.closest&&e.target.closest(".homecats .pcard");if(!c||rf())return;
     var r=c.getBoundingClientRect(),sp=document.createElement("span");sp.className="pripple";sp.style.left=(e.clientX-r.left)+"px";sp.style.top=(e.clientY-r.top)+"px";c.appendChild(sp);
     setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},750);},{passive:true});})();
+/* Bo'lim kartasiga admin rasm qo'ymagan bo'lsa — ilovaga o'rnatilgan tayyor muqova (assets/cover-cat-*.jpg) */
+function catDefCover(kind){var f={obuna:"obuna",games:"oyinlar",telegram:"telegram",nakrutka:"nakrutka"}[kind];return f?"/assets/cover-cat-"+f+".jpg":"";}
 function categoryCardsHTML(){
   var html='<div class="grid groupgrid homecats">',any=false;
   for(var m=0;m<PRODUCTS_PILLS.length;m++){
@@ -4136,7 +4138,8 @@ function categoryCardsHTML(){
     any=true;
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
-    var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic(CAT_ICON[kind]||"star",32);
+    var cimg=meta.img||catDefCover(kind);
+    var tile=cimg?'<img src="'+esc(cimg)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic(CAT_ICON[kind]||"star",32);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
@@ -4160,7 +4163,8 @@ function categoryCardsHTML(){
   if(nkMeta.enabled!==false){
     any=true;
     ensureNkLoadedForHome(); // hali yuklanmagan bo'lsa fonda yuklaydi, tayyor bo'lgach son yangilanadi
-    var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("trendUp",32);
+    var nkImg=nkMeta.img||catDefCover("nakrutka");
+    var nkTile=nkImg?'<img src="'+esc(nkImg)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):(NkHomeFail?esc(t("nakrutka_sub")):'…'); // faqat mahsulot soni (yuklanguncha …, xato bo'lsa eski izoh)
     html+='<button class="pcard" data-opencat="nakrutka" style="--cc:'+CAT_COLOR.nakrutka+'">'
@@ -4350,7 +4354,9 @@ function gameTabs(g,region){
   if(have[""])out.push({key:"",label:t("g_other")});
   return out;
 }
-function gameInitials(name){return String(name||"?").split(/\s+/).map(function(w){return w.charAt(0);}).join("").slice(0,2).toUpperCase();}
+/* Birinchi belgi (emoji ham butun qoladi: charAt juft belgini ikkiga bo'lib «�» chiqarar edi) */
+function firstCh(x){var a=Array.from(String(x==null?"":x).trim());return a.length?a[0]:"";}
+function gameInitials(name){return String(name||"?").split(/\s+/).map(function(w){return firstCh(w);}).join("").slice(0,2).toUpperCase();}
 function gameAvatarHTML(g){
   return g.img?'<img src="'+esc(g.img)+'" alt="">':esc(gameInitials(g.name));
 }
@@ -4729,7 +4735,7 @@ function reviewCardHTML(r){
     +'</div>';
 }
 function reviewRotatorInnerHTML(r){
-  var initial=(r.name||"?").trim().charAt(0).toUpperCase();
+  var initial=(firstCh(r.name)||"?").toUpperCase();
   return '<div class="avatar" style="width:26px;height:26px;font-size:11px;flex:0 0 auto">'+esc(initial)+'</div>'
     +'<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px">'
     +'<b style="font-size:12px">'+esc(r.name||"")+'</b><span style="font-size:10px">'+starsHTML(r.stars,10)+'</span></div>'
@@ -6771,7 +6777,7 @@ function skLoadFont(){
 }
 function skAvatar(){
   var u=tgUser()||{},ph=/^https:\/\//.test(String(u.photo_url||""))?u.photo_url:"";
-  var l=String(u.first_name||u.username||"V").trim().charAt(0).toUpperCase()||"V";
+  var l=firstCh(u.first_name||u.username||"V").toUpperCase()||"V";
   return '<span>'+esc(l)+'</span>'+(ph?'<img src="'+esc(ph)+'" alt="" onerror="this.remove()">':'');
 }
 /* ---- ochish / yopish (kartochkadan kengayib ochiladi) ---- */
@@ -9087,7 +9093,7 @@ var SINB={tab:"want",q:"",timer:null,items:[],counts:{},tgs:null};
 var SINB_ST={want:["want","Operator kutyapti"],human:["human","Siz gaplashyapsiz"],ai:["ai","AI"],closed:["closed","Yopilgan"]};
 var SINB_QUICK=["Salom! Qanday yordam bera olaman?","Tekshiryapman, biroz kuting","To'lovingiz tushdi ✅","Buyurtmangiz bajarildi ✅","Rahmat! Yana savol bo'lsa yozing"];
 function sinbHue(uid){var n=Number(uid)||0;return Math.abs((n*47)%360);}
-function sinbInit(it){var n=String(it.name||it.uname||it.uid||"?").trim();return esc((n.charAt(0)||"?").toUpperCase());}
+function sinbInit(it){var n=String(it.name||it.uname||it.uid||"?").trim();return esc((firstCh(n)||"?").toUpperCase());}
 function sinbSrcIc(v){return v==="tg"?ic("send",11):v==="bot"?ic("bot",11):ic("phone",11);}
 function sinbSrcName(v){return v==="tg"?"Support akkaunt":v==="bot"?"Do'kon boti":"Ilova";}
 function sinbName(it){return it.name||(it.uname?"@"+it.uname:"ID "+it.uid);}
