@@ -728,14 +728,17 @@ nav button svg{width:24px;height:24px}
 .chips button:active{transform:scale(.96)}
 .chips button.on{color:var(--acc2);background:var(--acc-soft);font-weight:600;box-shadow:inset 0 0 0 1px var(--acc)}
 .methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.pbal{margin:6px 16px 4px;padding:18px 20px;border-radius:var(--r-xl);border:none;background:var(--grad-hero);text-align:left;color:#fff;position:relative;overflow:hidden;
-  box-shadow:0 16px 32px -18px rgba(11,87,207,.9)}
-.pbal::after{content:"";position:absolute;right:-60px;top:-80px;width:220px;height:220px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,rgba(255,255,255,.22),rgba(255,255,255,0) 65%)}
+/* To'lov sahifasidagi balans — shaffof shisha karta (egasi so'ragan eski uslub), rangi hozirgi brend ko'ki (--acc) */
+.pbal{margin:6px 16px 4px;padding:18px 20px;border-radius:var(--r-xl);border:1px solid rgba(var(--acc-rgb),.38);
+  background:linear-gradient(135deg,rgba(var(--acc-rgb),.18),rgba(var(--acc-rgb),.04) 70%);text-align:center;color:var(--txt);position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.pbal::after{content:"";position:absolute;left:50%;top:-90px;width:260px;height:180px;margin-left:-130px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(var(--acc-rgb),.22),rgba(var(--acc-rgb),0))}
+.pbal::before{background:linear-gradient(90deg,rgba(var(--acc-rgb),0),rgba(var(--acc-rgb),.13),rgba(var(--acc-rgb),0))}
 .pbal .pbl,.pbal .pbv{position:relative;z-index:1}
-.pbal .pbl{font-size:var(--fs-sm);font-weight:500;letter-spacing:0;color:rgba(255,255,255,.78)}
-.pbal .pbv{font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.03em;margin-top:2px;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}
-.pbal .pbv .cs{color:rgba(255,255,255,.72)}
+.pbal .pbl{font-size:var(--fs-sm);font-weight:600;letter-spacing:0;color:var(--mut)}
+.pbal .pbv{font-size:var(--fs-3xl);font-weight:700;letter-spacing:-.03em;margin-top:2px;color:var(--txt);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pbal .pbv .cs{color:var(--mut)}
 .pmsect{margin:20px 16px 8px;font-size:var(--fs-sm);font-weight:600;color:var(--mut)}
 .pmwrap{margin:0 16px}
 .pmwrap .methods{gap:10px}
@@ -2657,7 +2660,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.1";
+var CLIENT_BUILD="2026-11-05.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4001,7 +4004,10 @@ function categoryCardsHTML(){
     var gcount=kind==="games"?gamesOf("games").length:0;
     // "Obuna" — katalogdagi obunalar + sayt API orqali sotiladigan obunalar (o'yinlar mexanizmi, section=obuna).
     var scount=kind==="obuna"?gamesOf("obuna").length:0;
-    if(!items.length&&!gcount&&!scount)continue;
+    // O'yinlar bo'limi ichida doim CS2/Dota 2/Rust skinlar (yoqilganlari) va Steam hamyon kartochkasi bor —
+    // o'yinlar katalogi bo'sh bo'lsa ham bo'lim yashirinmasin (aks holda skinlar do'koniga kirib bo'lmaydi).
+    var xcount=kind==="games"&&catEnabled("games")?skGamesOn().length+1:0;
+    if(!items.length&&!gcount&&!scount&&!xcount)continue;
     any=true;
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
@@ -4009,7 +4015,7 @@ function categoryCardsHTML(){
     html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
       +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
-      +'<div class="ct">'+(gcount?(gcount+' '+esc(t("games_unit"))):((items.length+scount)+' '+esc(t("group_count_unit"))))+'</div></div></button>';
+      +'<div class="ct">'+(gcount?(gcount+' '+esc(t("games_unit"))):((items.length+scount+xcount)+' '+esc(t("group_count_unit"))))+'</div></div></button>';
   }
   // "Nakrutka" — qo'lda qo'shiladigan katalog mahsuloti shart emas (JAP orqali jonli
   // xizmatlar), shu sabab PRODUCTS_PILLS'dan mustaqil. Bosh sahifaning eng pastki
