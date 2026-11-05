@@ -182,29 +182,41 @@ button,a,[role="button"],summary,label,select{touch-action:manipulation}
 .homecats .pcard:nth-child(3) .ptile .isvg,.homecats .pcard:nth-child(3) .ptile::before{animation-delay:-2s}
 .homecats .pcard:nth-child(4) .ptile .isvg,.homecats .pcard:nth-child(4) .ptile::before{animation-delay:-3s}
 .homecats .pcard:nth-child(5) .ptile .isvg,.homecats .pcard:nth-child(5) .ptile::before{animation-delay:-1.5s}
-/* Bosh sahifa bo'lim kartalari: "ochish" belgisi (yumshoq nafas oluvchi dumaloq tugma) va davriy yaltirash — kartani bosish mumkinligini sezdiradi */
+/* Bosh sahifa bo'lim kartalari — "tirik" effekt (faqat transform/opacity):
+   1) rasm juda sekin yaqinlashadi (Ken Burns); 2) yorug'lik chizig'i kartani aylanib chiqadi va navbat bilan bitta kartada yonadi (12 s aylanish, har biriga ~3 s);
+   3) "ochish" tugmasidan to'lqin halqalar tarqaladi; 4) bosilganda bosilgan joydan to'lqin chiqadi.
+   Kamroq harakat / prefers-reduced-motion / .lite (zaif telefon) rejimida hammasi o'chadi. */
+@keyframes kenb{0%{transform:scale(1.06) translate3d(0,0,0)}100%{transform:scale(1.14) translate3d(-1.6%,-1.2%,0)}}
+@keyframes spinFx{to{transform:rotate(360deg)}}
+@keyframes spotWin{0%{opacity:0}4%{opacity:1}24%{opacity:1}30%,100%{opacity:0}}
+@keyframes ringOut{0%{transform:scale(1);opacity:.65}100%{transform:scale(1.9);opacity:0}}
+@keyframes ripOut{from{transform:scale(1);opacity:.7}to{transform:scale(16);opacity:0}}
 @keyframes goPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 @keyframes goNudge{0%,100%{transform:translateX(-1px)}50%{transform:translateX(2.5px)}}
-.homecats .pcard .pgo{position:absolute;right:8px;bottom:8px;z-index:3;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;pointer-events:none;
+.homecats .pcard:nth-child(1){--d:0s}.homecats .pcard:nth-child(2){--d:3s}.homecats .pcard:nth-child(3){--d:6s}.homecats .pcard:nth-child(4){--d:9s}.homecats .pcard:nth-child(5){--d:4.5s}
+.homecats .pcard::before{content:"";position:absolute;z-index:0;left:50%;top:50%;width:440px;height:440px;margin:-220px 0 0 -220px;pointer-events:none;opacity:0;
+  background:conic-gradient(from 0deg,transparent 0 58%,var(--cc) 80%,#fff 90%,var(--cc) 95%,transparent 100%);
+  animation:spinFx 3.2s linear infinite,spotWin 12s linear infinite;animation-delay:0s,var(--d)}
+.homecats .pcard::after{content:"";position:absolute;z-index:1;inset:2px;border-radius:calc(var(--r-xl) - 2px);background:var(--card);pointer-events:none}
+.homecats .pcard>.ptile,.homecats .pcard>.pbody{position:relative;z-index:2}
+.homecats .pcard .ptile img{animation:kenb 11s ease-in-out infinite alternate;will-change:transform}
+.homecats .pcard:nth-child(2) .ptile img{animation-delay:-3s}.homecats .pcard:nth-child(3) .ptile img{animation-delay:-6s}.homecats .pcard:nth-child(4) .ptile img{animation-delay:-9s}
+.homecats .pcard .pbody .nm{padding-right:32px}
+.homecats .pcard .pgo{position:absolute;right:6px;top:7px;z-index:3;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;pointer-events:none;
   background:linear-gradient(135deg,var(--acc2),var(--acc));box-shadow:0 4px 14px rgba(var(--acc-rgb),.5),0 0 0 3px rgba(255,255,255,.14);animation:goPulse 2.8s ease-in-out infinite}
-.homecats .pcard .pgo svg{width:16px;height:16px;animation:goNudge 2.8s ease-in-out infinite}
-.homecats .pcard .ptile::after{content:"";position:absolute;top:0;bottom:0;left:0;width:34%;z-index:2;pointer-events:none;
-  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.16),rgba(255,255,255,0));animation:sweep 7s 1.2s ease-in-out infinite}
-.homecats .pcard:nth-child(2) .ptile::after{animation-delay:2.4s}.homecats .pcard:nth-child(3) .ptile::after{animation-delay:3.6s}
-.homecats .pcard:nth-child(4) .ptile::after{animation-delay:4.8s}.homecats .pcard:nth-child(5) .ptile::after{animation-delay:6s}
-.homecats .pcard:nth-child(2) .pgo,.homecats .pcard:nth-child(2) .pgo svg{animation-delay:-.7s}.homecats .pcard:nth-child(3) .pgo,.homecats .pcard:nth-child(3) .pgo svg{animation-delay:-1.4s}
-.homecats .pcard:nth-child(4) .pgo,.homecats .pcard:nth-child(4) .pgo svg{animation-delay:-2.1s}
+.homecats .pcard .pgo svg{width:14px;height:14px;animation:goNudge 2.8s ease-in-out infinite}
+.homecats .pcard .pgr{position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none;animation:spotWin 12s linear infinite;animation-delay:var(--d)}
+.homecats .pcard .pgr::before,.homecats .pcard .pgr::after{content:"";position:absolute;inset:-1px;border-radius:50%;border:2px solid rgba(255,255,255,.9);animation:ringOut 1.4s ease-out infinite}
+.homecats .pcard .pgr::after{animation-delay:.7s}
+.homecats .pcard .pripple{position:absolute;z-index:5;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:rgba(var(--acc-rgb),.5);pointer-events:none;animation:ripOut .7s ease-out forwards}
 /* oyna ochilganda ichidagi bloklar ketma-ket chiqadi (faqat ochilishda) */
 .sheet.intro .sheet-body>*{animation:rise .55s var(--spring) both}
 .sheet.intro .sheet-body>*:nth-child(2){animation-delay:.06s}.sheet.intro .sheet-body>*:nth-child(3){animation-delay:.12s}
 .sheet.intro .sheet-body>*:nth-child(4){animation-delay:.18s}.sheet.intro .sheet-body>*:nth-child(n+5){animation-delay:.24s}
 /* bezak animatsiyalari: kamroq harakat rejimi va zaif telefonda o'chadi */
-[data-reduce-motion="1"] .balcard::before,[data-reduce-motion="1"] .pbal::before,[data-reduce-motion="1"] .profhero::before,
-[data-reduce-motion="1"] .homecats .pcard .ptile .isvg,[data-reduce-motion="1"] .homecats .pcard .ptile::before,[data-reduce-motion="1"] .homecats .pcard .ptile::after,
-[data-reduce-motion="1"] .homecats .pcard .pgo,[data-reduce-motion="1"] .homecats .pcard .pgo svg,
-[data-reduce-motion="1"] .profhero .avatar::before,[data-reduce-motion="1"] .sheet.intro .sheet-body>*{animation:none}
-@media (prefers-reduced-motion:reduce){.balcard::before,.pbal::before,.profhero::before,.homecats .pcard .ptile .isvg,.homecats .pcard .ptile::before,.homecats .pcard .ptile::after,.homecats .pcard .pgo,.homecats .pcard .pgo svg,.profhero .avatar::before,.sheet.intro .sheet-body>*{animation:none}}
-.lite .homecats .pcard .pgo,.lite .homecats .pcard .pgo svg,.lite .homecats .pcard .ptile::after{animation:none}
+[data-reduce-motion="1"] .balcard::before,[data-reduce-motion="1"] .pbal::before,[data-reduce-motion="1"] .profhero::before,[data-reduce-motion="1"] .homecats .pcard .ptile .isvg,[data-reduce-motion="1"] .homecats .pcard .ptile::before,[data-reduce-motion="1"] .profhero .avatar::before,[data-reduce-motion="1"] .sheet.intro .sheet-body>*,[data-reduce-motion="1"] .homecats .pcard::before,[data-reduce-motion="1"] .homecats .pcard .ptile img,[data-reduce-motion="1"] .homecats .pcard .pgo,[data-reduce-motion="1"] .homecats .pcard .pgo svg,[data-reduce-motion="1"] .homecats .pcard .pgr,[data-reduce-motion="1"] .homecats .pcard .pgr::before,[data-reduce-motion="1"] .homecats .pcard .pgr::after{animation:none}
+@media (prefers-reduced-motion:reduce){.balcard::before,.pbal::before,.profhero::before,.homecats .pcard .ptile .isvg,.homecats .pcard .ptile::before,.profhero .avatar::before,.sheet.intro .sheet-body>*,.homecats .pcard::before,.homecats .pcard .ptile img,.homecats .pcard .pgo,.homecats .pcard .pgo svg,.homecats .pcard .pgr,.homecats .pcard .pgr::before,.homecats .pcard .pgr::after{animation:none}}
+.lite .homecats .pcard::before,.lite .homecats .pcard .ptile img,.lite .homecats .pcard .pgo,.lite .homecats .pcard .pgo svg,.lite .homecats .pcard .pgr,.lite .homecats .pcard .pgr::before,.lite .homecats .pcard .pgr::after{animation:none}
 /* ===== jonli bo'lim ikonkalari — har bir bo'limning o'z harakati =====
    faqat transform/opacity/dashoffset; kamroq harakat rejimida to'liq o'chadi */
 .homecats .pcard .ptile .isvg.ani{animation:none;overflow:visible}
@@ -4006,7 +4018,12 @@ var CAT_COLOR={obuna:"#8b5cf6",games:"#22c55e",telegram:"#2f8fff",nakrutka:"#ff8
 /* Bosh sahifa — endi faqat kategoriya kartochkalari (4-6 ta) ko'rsatiladi.
    Bosilganda o'sha kategoriyaning tarkibi (guruhlar yoki, guruh yo'q bo'lsa,
    to'g'ridan-to'g'ri mahsulotlar) alohida "ekran" sifatida ochiladi. */
-function goChip(){return '<span class="pgo" aria-hidden="true">'+ic("arrowRight",16)+'</span>';}
+function goChip(){return '<span class="pgo" aria-hidden="true"><i class="pgr"></i>'+ic("arrowRight",16)+'</span>';}
+/* Bo'lim kartasi bosilganda bosilgan joydan to'lqin tarqaladi (kamroq harakat / zaif telefonda yo'q) */
+(function(){var rf=function(){var d=document.documentElement;return d.getAttribute("data-reduce-motion")==="1"||d.classList.contains("lite")||(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches);};
+  document.addEventListener("pointerdown",function(e){var c=e.target&&e.target.closest&&e.target.closest(".homecats .pcard");if(!c||rf())return;
+    var r=c.getBoundingClientRect(),sp=document.createElement("span");sp.className="pripple";sp.style.left=(e.clientX-r.left)+"px";sp.style.top=(e.clientY-r.top)+"px";c.appendChild(sp);
+    setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},750);},{passive:true});})();
 function categoryCardsHTML(){
   var html='<div class="grid groupgrid homecats">',any=false;
   for(var m=0;m<PRODUCTS_PILLS.length;m++){
@@ -4028,8 +4045,8 @@ function categoryCardsHTML(){
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
     var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic(CAT_ICON[kind]||"star",32);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
-      +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+goChip()+'</div>'
-      +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
+      +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
+      +'<div class="pbody">'+goChip()+'<div class="nm">'+esc(label)+'</div>'
       +'<div class="ct">'+(gcount?(gcount+' '+esc(t("games_unit"))):((items.length+scount+xcount)+' '+esc(t("group_count_unit"))))+'</div></div></button>';
   }
   // "Nakrutka" — qo'lda qo'shiladigan katalog mahsuloti shart emas (JAP orqali jonli
@@ -4042,8 +4059,8 @@ function categoryCardsHTML(){
     any=true;
     var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("sparkles",32);
     html+='<button class="pcard" data-opencat="ai" style="--cc:'+CAT_COLOR.ai+'">'
-      +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+aiTile+goChip()+'</div>'
-      +'<div class="pbody"><div class="nm">'+esc(categoryLabel("ai"))+'</div>'
+      +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+aiTile+'</div>'
+      +'<div class="pbody">'+goChip()+'<div class="nm">'+esc(categoryLabel("ai"))+'</div>'
       +'<div class="ct">'+aiList.length+' '+esc(t("ai_unit"))+'</div></div></button>';
   }
   var nkMeta=CatMeta.nakrutka||{};
@@ -4054,8 +4071,8 @@ function categoryCardsHTML(){
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):esc(t("nakrutka_sub"));
     html+='<button class="pcard" data-opencat="nakrutka" style="--cc:'+CAT_COLOR.nakrutka+'">'
-      +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+nkTile+goChip()+'</div>'
-      +'<div class="pbody"><div class="nm">'+esc(nkLabel)+'</div>'
+      +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+nkTile+'</div>'
+      +'<div class="pbody">'+goChip()+'<div class="nm">'+esc(nkLabel)+'</div>'
       +'<div class="ct">'+nkCountText+'</div></div></button>';
   }
   if(!any)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
