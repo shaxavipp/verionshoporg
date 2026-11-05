@@ -191,32 +191,46 @@ button,a,[role="button"],summary,label,select{touch-action:manipulation}
 @keyframes spotWin{0%{opacity:0}4%{opacity:1}24%{opacity:1}30%,100%{opacity:0}}
 @keyframes ringOut{0%{transform:scale(1);opacity:.65}100%{transform:scale(1.9);opacity:0}}
 @keyframes ripOut{from{transform:scale(1);opacity:.7}to{transform:scale(16);opacity:0}}
-@keyframes goPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-@keyframes goNudge{0%,100%{transform:translateX(-1px)}50%{transform:translateX(2.5px)}}
+@keyframes ctaShine{0%,52%{transform:translateX(-140%) skewX(-18deg)}86%,100%{transform:translateX(360%) skewX(-18deg)}}
+@keyframes ctaRing{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.16,1.55);opacity:0}}
+@keyframes arrGo{0%,100%{transform:translateX(-1.5px)}50%{transform:translateX(3px)}}
+@keyframes dotBlink{0%,100%{opacity:1}50%{opacity:.35}}
+/* RGB yorug'lik chizig'i: har bir bo'limning o'z mahsulotlari ranglarida (Obuna — ChatGPT/Spotify/Netflix, O'yinlar — o'yin ranglari, Telegram — ko'k/binafsha/oltin yulduz, Nakrutka — TikTok/Instagram) */
+.homecats .pcard[data-opencat="obuna"]{--g1:#10b981;--g2:#8b5cf6;--g3:#f43f5e}
+.homecats .pcard[data-opencat="games"]{--g1:#22c55e;--g2:#f59e0b;--g3:#ef4444}
+.homecats .pcard[data-opencat="telegram"]{--g1:#2aabee;--g2:#7c83ff;--g3:#ffc233}
+.homecats .pcard[data-opencat="nakrutka"]{--g1:#25f4ee;--g2:#e1306c;--g3:#ff9a3c}
+.homecats .pcard[data-opencat="ai"]{--g1:#10a37f;--g2:#8b5cf6;--g3:#4285f4}
 .homecats .pcard:nth-child(1){--d:0s}.homecats .pcard:nth-child(2){--d:3s}.homecats .pcard:nth-child(3){--d:6s}.homecats .pcard:nth-child(4){--d:9s}.homecats .pcard:nth-child(5){--d:4.5s}
 .homecats .pcard::before{content:"";position:absolute;z-index:0;left:50%;top:50%;width:440px;height:440px;margin:-220px 0 0 -220px;pointer-events:none;opacity:0;
-  background:conic-gradient(from 0deg,transparent 0 58%,var(--cc) 80%,#fff 90%,var(--cc) 95%,transparent 100%);
+  background:conic-gradient(from 0deg,transparent 0 50%,var(--g1,var(--cc)) 64%,var(--g2,var(--cc)) 78%,var(--g3,var(--cc)) 90%,#fff 95.5%,transparent 100%);
   animation:spinFx 3.2s linear infinite,spotWin 12s linear infinite;animation-delay:0s,var(--d)}
 .homecats .pcard::after{content:"";position:absolute;z-index:1;inset:2px;border-radius:calc(var(--r-xl) - 2px);background:var(--card);pointer-events:none}
 .homecats .pcard>.ptile,.homecats .pcard>.pbody{position:relative;z-index:2}
 .homecats .pcard .ptile img{animation:kenb 11s ease-in-out infinite alternate;will-change:transform}
 .homecats .pcard:nth-child(2) .ptile img{animation-delay:-3s}.homecats .pcard:nth-child(3) .ptile img{animation-delay:-6s}.homecats .pcard:nth-child(4) .ptile img{animation-delay:-9s}
-.homecats .pcard .pbody .nm{padding-right:32px}
-.homecats .pcard .pgo{position:absolute;right:6px;top:7px;z-index:3;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;pointer-events:none;
-  background:linear-gradient(135deg,var(--acc2),var(--acc));box-shadow:0 4px 14px rgba(var(--acc-rgb),.5),0 0 0 3px rgba(255,255,255,.14);animation:goPulse 2.8s ease-in-out infinite}
-.homecats .pcard .pgo svg{width:14px;height:14px;animation:goNudge 2.8s ease-in-out infinite}
-.homecats .pcard .pgr{position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none;animation:spotWin 12s linear infinite;animation-delay:var(--d)}
-.homecats .pcard .pgr::before,.homecats .pcard .pgr::after{content:"";position:absolute;inset:-1px;border-radius:50%;border:2px solid rgba(255,255,255,.9);animation:ringOut 1.4s ease-out infinite}
-.homecats .pcard .pgr::after{animation-delay:.7s}
-.homecats .pcard .pripple{position:absolute;z-index:5;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:rgba(var(--acc-rgb),.5);pointer-events:none;animation:ripOut .7s ease-out forwards}
+/* "mavjud" belgisi: soni yonida yashil nuqta */
+.homecats .pcard .ct::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:6px;vertical-align:1px;animation:dotBlink 2.4s ease-in-out infinite}
+/* "Sotib olish" tugmasi: yashil (xarid rangi), yaltirash, oq doira ichida harakatlanuvchi strelka; yonayotgan kartada halqa tarqaladi */
+.homecats .pcard .pcta{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:10px;height:36px;border-radius:999px;color:#fff;pointer-events:none;
+  background:linear-gradient(135deg,#4ade80 0%,#22c55e 48%,#16a34a 100%);box-shadow:0 6px 18px rgba(34,197,94,.42),inset 0 1px 0 rgba(255,255,255,.4)}
+.homecats .pcard .pcta b{position:relative;z-index:1;font-size:13.5px;font-weight:700;letter-spacing:.01em;text-shadow:0 1px 2px rgba(2,70,30,.4);white-space:nowrap}
+.homecats .pcard .pcta .parr{position:relative;z-index:1;width:22px;height:22px;border-radius:50%;background:#fff;color:#15803d;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(2,70,30,.3)}
+.homecats .pcard .pcta .parr svg{width:14px;height:14px;animation:arrGo 1.4s ease-in-out infinite}
+.homecats .pcard .pcta .psh{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
+.homecats .pcard .pcta .psh::before{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:translateX(-140%) skewX(-18deg);animation:ctaShine 4.8s ease-in-out infinite;animation-delay:var(--d)}
+.homecats .pcard .pcta .pgr{position:absolute;inset:0;border-radius:999px;opacity:0;animation:spotWin 12s linear infinite;animation-delay:var(--d)}
+.homecats .pcard .pcta .pgr::before,.homecats .pcard .pcta .pgr::after{content:"";position:absolute;inset:0;border-radius:999px;border:2px solid rgba(74,222,128,.95);animation:ctaRing 1.5s ease-out infinite}
+.homecats .pcard .pcta .pgr::after{animation-delay:.75s}
+.homecats .pcard .pripple{position:absolute;z-index:5;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:rgba(34,197,94,.42);pointer-events:none;animation:ripOut .7s ease-out forwards}
 /* oyna ochilganda ichidagi bloklar ketma-ket chiqadi (faqat ochilishda) */
 .sheet.intro .sheet-body>*{animation:rise .55s var(--spring) both}
 .sheet.intro .sheet-body>*:nth-child(2){animation-delay:.06s}.sheet.intro .sheet-body>*:nth-child(3){animation-delay:.12s}
 .sheet.intro .sheet-body>*:nth-child(4){animation-delay:.18s}.sheet.intro .sheet-body>*:nth-child(n+5){animation-delay:.24s}
 /* bezak animatsiyalari: kamroq harakat rejimi va zaif telefonda o'chadi */
-[data-reduce-motion="1"] .balcard::before,[data-reduce-motion="1"] .pbal::before,[data-reduce-motion="1"] .profhero::before,[data-reduce-motion="1"] .homecats .pcard .ptile .isvg,[data-reduce-motion="1"] .homecats .pcard .ptile::before,[data-reduce-motion="1"] .profhero .avatar::before,[data-reduce-motion="1"] .sheet.intro .sheet-body>*,[data-reduce-motion="1"] .homecats .pcard::before,[data-reduce-motion="1"] .homecats .pcard .ptile img,[data-reduce-motion="1"] .homecats .pcard .pgo,[data-reduce-motion="1"] .homecats .pcard .pgo svg,[data-reduce-motion="1"] .homecats .pcard .pgr,[data-reduce-motion="1"] .homecats .pcard .pgr::before,[data-reduce-motion="1"] .homecats .pcard .pgr::after{animation:none}
-@media (prefers-reduced-motion:reduce){.balcard::before,.pbal::before,.profhero::before,.homecats .pcard .ptile .isvg,.homecats .pcard .ptile::before,.profhero .avatar::before,.sheet.intro .sheet-body>*,.homecats .pcard::before,.homecats .pcard .ptile img,.homecats .pcard .pgo,.homecats .pcard .pgo svg,.homecats .pcard .pgr,.homecats .pcard .pgr::before,.homecats .pcard .pgr::after{animation:none}}
-.lite .homecats .pcard::before,.lite .homecats .pcard .ptile img,.lite .homecats .pcard .pgo,.lite .homecats .pcard .pgo svg,.lite .homecats .pcard .pgr,.lite .homecats .pcard .pgr::before,.lite .homecats .pcard .pgr::after{animation:none}
+[data-reduce-motion="1"] .balcard::before,[data-reduce-motion="1"] .pbal::before,[data-reduce-motion="1"] .profhero::before,[data-reduce-motion="1"] .homecats .pcard .ptile .isvg,[data-reduce-motion="1"] .homecats .pcard .ptile::before,[data-reduce-motion="1"] .profhero .avatar::before,[data-reduce-motion="1"] .sheet.intro .sheet-body>*,[data-reduce-motion="1"] .homecats .pcard::before,[data-reduce-motion="1"] .homecats .pcard .ptile img,[data-reduce-motion="1"] .homecats .pcard .ct::before,[data-reduce-motion="1"] .homecats .pcard .pcta .parr svg,[data-reduce-motion="1"] .homecats .pcard .pcta .psh::before,[data-reduce-motion="1"] .homecats .pcard .pcta .pgr,[data-reduce-motion="1"] .homecats .pcard .pcta .pgr::before,[data-reduce-motion="1"] .homecats .pcard .pcta .pgr::after{animation:none}
+@media (prefers-reduced-motion:reduce){.balcard::before,.pbal::before,.profhero::before,.homecats .pcard .ptile .isvg,.homecats .pcard .ptile::before,.profhero .avatar::before,.sheet.intro .sheet-body>*,.homecats .pcard::before,.homecats .pcard .ptile img,.homecats .pcard .ct::before,.homecats .pcard .pcta .parr svg,.homecats .pcard .pcta .psh::before,.homecats .pcard .pcta .pgr,.homecats .pcard .pcta .pgr::before,.homecats .pcard .pcta .pgr::after{animation:none}}
+.lite .homecats .pcard::before,.lite .homecats .pcard .ptile img,.lite .homecats .pcard .ct::before,.lite .homecats .pcard .pcta .parr svg,.lite .homecats .pcard .pcta .psh::before,.lite .homecats .pcard .pcta .pgr,.lite .homecats .pcard .pcta .pgr::before,.lite .homecats .pcard .pcta .pgr::after{animation:none}
 /* ===== jonli bo'lim ikonkalari — har bir bo'limning o'z harakati =====
    faqat transform/opacity/dashoffset; kamroq harakat rejimida to'liq o'chadi */
 .homecats .pcard .ptile .isvg.ani{animation:none;overflow:visible}
@@ -4018,7 +4032,7 @@ var CAT_COLOR={obuna:"#8b5cf6",games:"#22c55e",telegram:"#2f8fff",nakrutka:"#ff8
 /* Bosh sahifa — endi faqat kategoriya kartochkalari (4-6 ta) ko'rsatiladi.
    Bosilganda o'sha kategoriyaning tarkibi (guruhlar yoki, guruh yo'q bo'lsa,
    to'g'ridan-to'g'ri mahsulotlar) alohida "ekran" sifatida ochiladi. */
-function goChip(){return '<span class="pgo" aria-hidden="true"><i class="pgr"></i>'+ic("arrowRight",16)+'</span>';}
+function ctaBtn(){return '<span class="pcta" aria-hidden="true"><i class="pgr"></i><i class="psh"></i><b>'+esc(t("g_buy"))+'</b><span class="parr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span>';}
 /* Bo'lim kartasi bosilganda bosilgan joydan to'lqin tarqaladi (kamroq harakat / zaif telefonda yo'q) */
 (function(){var rf=function(){var d=document.documentElement;return d.getAttribute("data-reduce-motion")==="1"||d.classList.contains("lite")||(window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches);};
   document.addEventListener("pointerdown",function(e){var c=e.target&&e.target.closest&&e.target.closest(".homecats .pcard");if(!c||rf())return;
@@ -4046,8 +4060,8 @@ function categoryCardsHTML(){
     var tile=meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic(CAT_ICON[kind]||"star",32);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
-      +'<div class="pbody">'+goChip()+'<div class="nm">'+esc(label)+'</div>'
-      +'<div class="ct">'+(gcount?(gcount+' '+esc(t("games_unit"))):((items.length+scount+xcount)+' '+esc(t("group_count_unit"))))+'</div></div></button>';
+      +'<div class="pbody"><div class="nm">'+esc(label)+'</div>'
+      +'<div class="ct">'+(gcount?(gcount+' '+esc(t("games_unit"))):((items.length+scount+xcount)+' '+esc(t("group_count_unit"))))+'</div>'+ctaBtn()+'</div></button>';
   }
   // "Nakrutka" — qo'lda qo'shiladigan katalog mahsuloti shart emas (JAP orqali jonli
   // xizmatlar), shu sabab PRODUCTS_PILLS'dan mustaqil. Bosh sahifaning eng pastki
@@ -4060,8 +4074,8 @@ function categoryCardsHTML(){
     var aiTile=aiMeta.img?'<img src="'+esc(aiMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("sparkles",32);
     html+='<button class="pcard" data-opencat="ai" style="--cc:'+CAT_COLOR.ai+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+aiTile+'</div>'
-      +'<div class="pbody">'+goChip()+'<div class="nm">'+esc(categoryLabel("ai"))+'</div>'
-      +'<div class="ct">'+aiList.length+' '+esc(t("ai_unit"))+'</div></div></button>';
+      +'<div class="pbody"><div class="nm">'+esc(categoryLabel("ai"))+'</div>'
+      +'<div class="ct">'+aiList.length+' '+esc(t("ai_unit"))+'</div>'+ctaBtn()+'</div></button>';
   }
   var nkMeta=CatMeta.nakrutka||{};
   if(nkMeta.enabled!==false){
@@ -4069,11 +4083,11 @@ function categoryCardsHTML(){
     ensureNkLoadedForHome(); // hali yuklanmagan bo'lsa fonda yuklaydi, tayyor bo'lgach son yangilanadi
     var nkTile=nkMeta.img?'<img src="'+esc(nkMeta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
-    var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):esc(t("nakrutka_sub"));
+    var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):(NkHomeFail?esc(t("nakrutka_sub")):'…'); // faqat mahsulot soni (yuklanguncha …, xato bo'lsa eski izoh)
     html+='<button class="pcard" data-opencat="nakrutka" style="--cc:'+CAT_COLOR.nakrutka+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+nkTile+'</div>'
-      +'<div class="pbody">'+goChip()+'<div class="nm">'+esc(nkLabel)+'</div>'
-      +'<div class="ct">'+nkCountText+'</div></div></button>';
+      +'<div class="pbody"><div class="nm">'+esc(nkLabel)+'</div>'
+      +'<div class="ct">'+nkCountText+'</div>'+ctaBtn()+'</div></button>';
   }
   if(!any)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   return html+'</div>';
@@ -5630,6 +5644,7 @@ function nkCatLabel(raw,appName){
 // Xizmatlar ro'yxati (4 tarmoq bo'yicha allaqachon serverda filtrlangan) — panel va
 // umumiy qidiruv o'rtasida qayta ishlatish uchun soddagina xotira-kesh (5 daqiqa).
 var NkCache={ts:0,flat:null,usdRate:0,catMeta:null,promise:null};
+var NkHomeFail=false; // bosh sahifa kartasi uchun yuklash xato bo'lsa, abadiy "…" qolmasin
 function loadNkFlat(){
   if(NkCache.flat&&Date.now()-NkCache.ts<5*60*1000)return Promise.resolve(NkCache.flat);
   if(NkCache.promise)return NkCache.promise;
@@ -5651,10 +5666,13 @@ function ensureNkLoadedForSearch(){
 // Bosh sahifadagi "Nakrutka" kartochkasida jami mahsulot sonini ko'rsatish uchun —
 // hali yuklanmagan bo'lsa jim tarzda yuklaydi va tayyor bo'lgach bosh sahifani qayta chizadi.
 function ensureNkLoadedForHome(){
-  if(NkCache.flat)return;
+  if(NkCache.flat||NkHomeFail)return;
   loadNkFlat().then(function(){
     if(S.screen==="home"&&!S.category&&!S.group)render();
-  }).catch(function(){});
+  }).catch(function(){
+    NkHomeFail=true;
+    if(S.screen==="home"&&!S.category&&!S.group)render();
+  });
 }
 // Admin "bo'lim" (butun tarmoq — Telegram/Instagram/TikTok/YouTube) yoki "guruh"
 // (tarmoq ichidagi bitta kategoriya, masalan Telegram->Members) darajasida yashirishi
