@@ -1175,7 +1175,7 @@ nav button svg{width:24px;height:24px}
    O'z sarlavhasi, pastki menyusi (Bosh sahifa / Bozor / Buyurtmalar / Profil), uchqunli fon,
    Unbounded (sarlavhalar) + Inter Tight (matn). Ilova mavzusidan qat'i nazar doim to'q. */
 .sk{color-scheme:dark;--skbg:#0f1013;--skp:#18191e;--skp2:#1e2027;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skt:#fff;--skm:#7d8999;--skm2:#a3adbb;
-  --ska:#ffb81c;--ska2:#ffd36b;--skg:#30d158;--skr:#ef5350;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;--skb:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --ska:#33a1ff;--ska2:#8fd3ff;--ska-rgb:51,161,255;--skf:linear-gradient(135deg,#0a5fd6 0%,#1370e4 50%,#2a8af5 100%);--skw:#ffb81c;--skw-rgb:255,184,28;--skg:#30d158;--skr:#ef5350;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;--skb:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   position:fixed;inset:0;z-index:92;display:flex;flex-direction:column;background:var(--skbg);color:var(--skt);font-family:var(--skb);overflow:hidden;-webkit-font-smoothing:antialiased;
   opacity:0;transform:scale(1.015);transition:opacity .3s ease,transform .35s cubic-bezier(.2,.8,.2,1)}
 .sk.on{opacity:1;transform:none}
@@ -1185,11 +1185,11 @@ nav button svg{width:24px;height:24px}
 .sk button,.sks button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sk [hidden],.sks [hidden]{display:none!important}
 body.sk-open{overflow:hidden}
-/* fon: tepada iliq nur, to'r, mayda don (grain), uchqunlar — skinsavdo darajasidagi "tirik" fon, o'z rangimizda */
+/* fon: tepada nur, to'r, mayda don (grain), uchqunlar — "tirik" fon, Verion ranglarida */
 .sk-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
-  background:radial-gradient(130% 58% at 50% -14%,rgba(255,184,28,.22),rgba(255,184,28,.07) 45%,transparent 72%),
-    radial-gradient(70% 38% at 108% 46%,rgba(255,150,20,.07),transparent 70%),radial-gradient(80% 40% at -12% 88%,rgba(255,184,28,.06),transparent 70%),var(--skbg)}
-.sk-bg i{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--ska);box-shadow:0 0 14px 5px rgba(255,184,28,.45);opacity:.7;animation:skFloat 7s ease-in-out infinite}
+  background:radial-gradient(130% 58% at 50% -14%,rgba(var(--ska-rgb),.22),rgba(var(--ska-rgb),.07) 45%,transparent 72%),
+    radial-gradient(70% 38% at 108% 46%,rgba(24,180,240,.07),transparent 70%),radial-gradient(80% 40% at -12% 88%,rgba(var(--ska-rgb),.06),transparent 70%),var(--skbg)}
+.sk-bg i{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--ska);box-shadow:0 0 14px 5px rgba(var(--ska-rgb),.45);opacity:.7;animation:skFloat 7s ease-in-out infinite}
 .sk-bg i:nth-child(3n){width:3px;height:3px;opacity:.5;animation-duration:9s}
 .sk-bg i:nth-child(4n){filter:blur(1px);animation-duration:11s}
 @keyframes skFloat{0%,100%{transform:translate(0,0);opacity:.7}50%{transform:translate(6px,-16px);opacity:.25}}
@@ -1200,10 +1200,10 @@ body.sk-open{overflow:hidden}
 .sk-ib:active{transform:scale(.94)}
 .sk-logo{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-family:var(--skd);font-weight:800;font-size:15px;letter-spacing:-.2px;line-height:.95;text-transform:uppercase}
 .sk-logo img{display:block;height:34px;width:auto;max-width:100%}
-.sk-logo .mk{flex:0 0 32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#ffcf4a,#ff9d00);color:#141414;box-shadow:0 6px 18px rgba(255,170,0,.35)}
+.sk-logo .mk{flex:0 0 32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--skf);color:#fff;box-shadow:0 6px 18px rgba(var(--ska-rgb),.35)}
 .sk-logo b{display:block;color:var(--ska);font-weight:800}
-.sk-bal{flex:0 0 auto;display:flex;align-items:center;gap:7px;height:40px;padding:0 5px 0 11px;border-radius:12px;border:1.5px solid rgba(255,184,28,.55);background:rgba(255,184,28,.08);color:var(--ska);font-weight:800;font-size:14px;white-space:nowrap}
-.sk-bal .pl{width:28px;height:28px;border-radius:9px;background:var(--ska);color:#141414;display:flex;align-items:center;justify-content:center}
+.sk-bal{flex:0 0 auto;display:flex;align-items:center;gap:7px;height:40px;padding:0 5px 0 11px;border-radius:12px;border:1.5px solid rgba(var(--ska-rgb),.55);background:rgba(var(--ska-rgb),.08);color:var(--ska);font-weight:800;font-size:14px;white-space:nowrap}
+.sk-bal .pl{width:28px;height:28px;border-radius:9px;background:var(--skf);color:#fff;display:flex;align-items:center;justify-content:center}
 .sk-av{position:relative;flex:0 0 40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid var(--skl2);background:linear-gradient(135deg,#2b3550,#121726);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0}
 .sk-av img,.sk-me .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 /* asosiy qism va pastki menyu */
@@ -1219,7 +1219,7 @@ body.sk-open{overflow:hidden}
 /* kirish animatsiyasi: bosilgan kartochkadan butun ekranga silliq ochiladi (clip-path — joylashuv o'zgarmaydi),
    logo xiralikdan aniq bo'lib chiqadi, ustidan yorug'lik o'tadi, orqasida halqa tarqaladi; so'ng do'kon ko'tarilib ochiladi */
 .sk-fx{position:fixed;inset:0;z-index:93;pointer-events:none;
-  background:radial-gradient(70% 50% at 50% 42%,rgba(255,184,28,.26),transparent 70%),radial-gradient(80% 60% at 50% 115%,rgba(47,143,255,.22),transparent 70%),#0b0c10;
+  background:radial-gradient(70% 50% at 50% 42%,rgba(var(--ska-rgb),.26),transparent 70%),radial-gradient(80% 60% at 50% 115%,rgba(47,143,255,.22),transparent 70%),#0b0c10;
   -webkit-clip-path:inset(var(--t) var(--r) var(--b) var(--l) round 20px);clip-path:inset(var(--t) var(--r) var(--b) var(--l) round 20px);
   transition:clip-path .6s cubic-bezier(.7,0,.2,1),-webkit-clip-path .6s cubic-bezier(.7,0,.2,1),opacity .4s ease,transform .4s ease}
 .sk-fx.go{-webkit-clip-path:inset(0 0 0 0 round 0);clip-path:inset(0 0 0 0 round 0)}
@@ -1238,7 +1238,7 @@ body.sk-open{overflow:hidden}
   opacity:0;transform:translateY(8px);transition:opacity .5s ease .6s,transform .6s cubic-bezier(.16,1,.3,1) .6s}
 .sk-fx.go .lg small{opacity:1;transform:none}
 .sk-fx .rg{position:absolute;left:50%;top:46%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;
-  border:1.5px solid rgba(255,184,28,.55);opacity:0;transform:scale(.5)}
+  border:1.5px solid rgba(var(--ska-rgb),.55);opacity:0;transform:scale(.5)}
 .sk-fx.go .rg{animation:skRing 1.1s cubic-bezier(.16,1,.3,1) .35s both}
 .sk-fx.go .rg.r2{animation-delay:.55s;border-color:rgba(47,143,255,.5)}
 @keyframes skRing{0%{opacity:.8;transform:scale(.5)}100%{opacity:0;transform:scale(1.9)}}
@@ -1253,8 +1253,8 @@ body.sk-open{overflow:hidden}
 .sk-lbl{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--ska)}
 .sk-h2{margin:6px 0 0;font-family:var(--skd);font-weight:800;font-size:26px;line-height:1.08;letter-spacing:-.4px}
 .sk-h2.c{text-align:center}
-.sk-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:54px;padding:0 22px;border:none;border-radius:16px;background:var(--ska);color:#141414;font-weight:800;font-size:16px;
-  box-shadow:0 10px 34px rgba(255,170,0,.35),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .12s}
+.sk-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:54px;padding:0 22px;border:none;border-radius:16px;background:var(--skf);color:#fff;font-weight:800;font-size:16px;
+  box-shadow:0 10px 34px rgba(var(--ska-rgb),.35),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .12s}
 .sk-btn:active{transform:scale(.97)}
 .sk-btn.gh{background:rgba(255,255,255,.04);color:#fff;border:1.5px solid var(--skl2);box-shadow:none}
 .sk-btn.wd{display:flex;width:100%}
@@ -1311,16 +1311,16 @@ body.sk-open{overflow:hidden}
 .sk-gt small{position:relative;font-size:12px;color:var(--skm);font-weight:600}
 .sk-gt.off{opacity:.5}
 .sk-card2{position:relative;margin:0 16px;padding:24px 20px 22px;border-radius:26px;overflow:hidden;border:1px solid var(--skl)}
-.sk-card2.y{border-color:rgba(255,184,28,.35);background:radial-gradient(420px 260px at 50% 110%,rgba(255,184,28,.22),transparent 70%),linear-gradient(180deg,#1b1c21,#15161a)}
+.sk-card2.y{border-color:rgba(var(--ska-rgb),.35);background:radial-gradient(420px 260px at 50% 110%,rgba(var(--ska-rgb),.22),transparent 70%),linear-gradient(180deg,#1b1c21,#15161a)}
 .sk-card2.b{border-color:rgba(86,150,220,.35);background:radial-gradient(380px 260px at 100% 100%,rgba(70,130,210,.25),transparent 70%),linear-gradient(180deg,#1a2230,#141820)}
 .sk-tag{display:inline-flex;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
-.sk-tag.y{color:var(--ska);border:1px solid rgba(255,184,28,.45);background:rgba(255,184,28,.08)}
+.sk-tag.y{color:var(--ska);border:1px solid rgba(var(--ska-rgb),.45);background:rgba(var(--ska-rgb),.08)}
 .sk-tag.b{color:#78b8f2;border:1px solid rgba(120,184,242,.4);background:rgba(120,184,242,.08)}
 .sk-card2 h3{margin:16px 0 0;font-family:var(--skd);font-weight:800;font-size:26px;line-height:1.1;letter-spacing:-.5px}
 .sk-card2 p{margin:10px 0 0;font-size:15px;line-height:1.5;color:var(--skm2)}
 .sk-steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
 .sk-steps span{display:inline-flex;align-items:center;gap:9px;padding:6px 14px 6px 6px;border-radius:999px;background:rgba(0,0,0,.35);font-size:14px;font-weight:700}
-.sk-steps span i{width:26px;height:26px;border-radius:50%;background:var(--ska);color:#141414;font-style:normal;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}
+.sk-steps span i{width:26px;height:26px;border-radius:50%;background:var(--skf);color:#fff;font-style:normal;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px}
 .sk-card2 .bigs{position:absolute;right:-50px;top:-40px;width:200px;height:200px;opacity:.1;pointer-events:none}
 .sk-card2 .bigs svg{width:100%;height:100%}
 .sk-amts{display:flex;gap:8px;margin-top:16px}
@@ -1332,14 +1332,14 @@ body.sk-open{overflow:hidden}
 .sk-pay span img{display:block;height:26px;width:auto;max-width:112px;object-fit:contain}
 .sk-faq{margin-top:20px;display:grid;gap:10px}
 .sk-faq details{border-radius:20px;background:#121317;border:1px solid var(--skl);padding:0 20px;transition:border-color .2s}
-.sk-faq details[open]{border-color:rgba(255,184,28,.6)}
+.sk-faq details[open]{border-color:rgba(var(--ska-rgb),.6)}
 .sk-faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:20px 0;font-size:16px;font-weight:700}
 .sk-faq summary::-webkit-details-marker{display:none}
 .sk-faq summary:after{content:"+";font-size:24px;line-height:18px;font-weight:300;color:#fff}
 .sk-faq details[open] summary:after{content:"–"}
 .sk-faq p{margin:0 0 20px;font-size:15px;line-height:1.6;color:var(--skm)}
-.sk-final{position:relative;overflow:hidden;margin-top:30px;padding:54px 20px 50px;text-align:center;border-top:1px solid rgba(255,184,28,.14);
-  background:radial-gradient(70% 62% at 50% 56%,rgba(255,184,28,.22),transparent 72%),linear-gradient(180deg,#1a1912,#111110)}
+.sk-final{position:relative;overflow:hidden;margin-top:30px;padding:54px 20px 50px;text-align:center;border-top:1px solid rgba(var(--ska-rgb),.14);
+  background:radial-gradient(70% 62% at 50% 56%,rgba(var(--ska-rgb),.22),transparent 72%),linear-gradient(180deg,#0f1520,#0f1013)}
 .sk-final>*{position:relative}
 .sk-final p{margin:12px 0 22px;font-size:16px;color:var(--skm2)}
 /* yaqinda sotilganlar */
@@ -1367,7 +1367,7 @@ body.sk-open{overflow:hidden}
 .sk-tool{margin:14px 16px 0;padding:12px;border-radius:22px;border:1px solid var(--skl);background:rgba(24,25,30,.92)}
 .sk-tool .r1{display:flex;gap:10px}
 .sk-fb{position:relative;flex:0 0 52px;height:52px;border-radius:14px;border:none;background:var(--skp3);color:#e6eaf0;display:flex;align-items:center;justify-content:center;padding:0}
-.sk-fb i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--ska);color:#141414;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px #18191e}
+.sk-fb i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--skf);color:#fff;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px #18191e}
 .sk-srch{flex:1;min-width:0;height:52px;border-radius:14px;border:1.5px solid var(--skl2);background:#141519;display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--skm)}
 .sk-srch:focus-within{border-color:var(--ska)}
 .sk-srch input{flex:1;min-width:0;border:none;outline:none;background:none;color:#fff;font:inherit;font-size:16px}
@@ -1383,8 +1383,8 @@ body.sk-open{overflow:hidden}
 .sk-cats::-webkit-scrollbar{display:none}
 .sk-cat{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:13px;border:none;background:none;color:#c8ced8;font-weight:700;font-size:14px;white-space:nowrap}
 .sk-cat svg{color:#8a93a3}
-.sk-cat.on{background:var(--ska);color:#141414}
-.sk-cat.on svg{color:#141414}
+.sk-cat.on{background:var(--skf);color:#fff}
+.sk-cat.on svg{color:#fff}
 /* toifa ostida ochiluvchi qurollar menyusi */
 .sk-wpn{display:flex;flex-direction:column;gap:2px;margin:8px 16px 0;padding:8px;border-radius:18px;border:1px solid var(--skl2);background:#16171c;box-shadow:0 18px 40px rgba(0,0,0,.45);max-height:min(62vh,560px);overflow-y:auto;overscroll-behavior:contain;animation:skPop .22s cubic-bezier(.2,1.2,.4,1) both}
 .sk-wpn button{display:grid;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px;min-width:0;min-height:54px;padding:4px 14px 4px 8px;border-radius:12px;border:none;background:transparent;color:#d8dde5;font-weight:700;font-size:15px;text-align:left}
@@ -1392,9 +1392,9 @@ body.sk-open{overflow:hidden}
 .sk-wpn button i img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
 .sk-wpn button span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-wpn button small{flex:0 0 auto;font-size:12px;color:var(--skm);font-weight:700}
-.sk-wpn button.all{display:flex;justify-content:center;gap:8px;min-height:46px;margin-bottom:4px;background:rgba(255,184,28,.1);color:var(--ska)}
+.sk-wpn button.all{display:flex;justify-content:center;gap:8px;min-height:46px;margin-bottom:4px;background:rgba(var(--ska-rgb),.1);color:var(--ska)}
 .sk-wpn button:active{background:rgba(255,255,255,.05)}
-.sk-wpn button.on{background:rgba(255,184,28,.14);color:var(--ska)}
+.sk-wpn button.on{background:rgba(var(--ska-rgb),.14);color:var(--ska)}
 .sk-wpn button.on small{color:var(--ska)}
 .sk-cat .ci{display:inline-flex;align-items:center;justify-content:center;width:40px;height:26px;flex:0 0 auto}
 .sk-cat .ci img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
@@ -1409,13 +1409,13 @@ body.sk-open{overflow:hidden}
 .sk-sales span{flex:1;min-width:0;color:var(--skm)}
 .sk-sales em{flex:0 0 auto;font-style:normal;font-weight:800;color:var(--skg)}
 .sk-act{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px 0}
-.sk-act button{height:34px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,184,28,.5);background:rgba(255,184,28,.1);color:var(--ska);font-weight:800;font-size:13px}
+.sk-act button{height:34px;padding:0 12px;border-radius:11px;border:1px solid rgba(var(--ska-rgb),.5);background:rgba(var(--ska-rgb),.1);color:var(--ska);font-weight:800;font-size:13px}
 .sk-bar{display:flex;align-items:baseline;justify-content:space-between;padding:22px 16px 12px}
 .sk-bar b{font-family:var(--skd);font-weight:800;font-size:19px;letter-spacing:-.3px}
 .sk-bar span{font-size:13px;color:var(--skm);font-weight:600}
 .sk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 16px}
 .sk-card{position:relative;display:flex;flex-direction:column;width:100%;padding:0;text-align:left;color:#fff;border-radius:18px;overflow:hidden;background:#17181d;border:1px solid #25272e;transition:transform .14s,border-color .14s}
-.sk-card:active{transform:scale(.97);border-color:rgba(255,184,28,.5)}
+.sk-card:active{transform:scale(.97);border-color:rgba(var(--ska-rgb),.5)}
 .sk-card:focus-visible,.sk-card:hover{border-color:#3d424e}
 /* xira Verion belgisi — har rasm orqasida (rasm yuklanmasa ham kartochka bo'sh ko'rinmaydi) */
 .sk .wm{position:absolute;left:50%;top:50%;width:80%;max-width:190px;aspect-ratio:300/69;transform:translate(-50%,-50%);background:var(--sklogo) center/contain no-repeat;opacity:.13;pointer-events:none}
@@ -1441,7 +1441,7 @@ body.sk-open{overflow:hidden}
 .sk-cn{font-size:12.5px;color:#9da6b8;font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-cg{display:flex;align-items:center;justify-content:center;gap:7px;height:40px;margin-top:11px;border-radius:11px;background:#262a32;color:#fff;font-weight:700;font-size:13.5px;transition:background .15s,color .15s}
 .sk-cg svg{width:16px;height:16px}
-.sk-card:hover .sk-cg,.sk-card:focus-visible .sk-cg{background:var(--ska);color:#141414}
+.sk-card:hover .sk-cg,.sk-card:focus-visible .sk-cg{background:var(--skf);color:#fff}
 .sk-more{display:block;width:calc(100% - 32px);margin:14px 16px 0;height:52px;border-radius:16px;border:1.5px solid var(--skl2);background:var(--skp);color:#fff;font-weight:800;font-size:15px}
 .sk-x{display:flex;align-items:center;gap:14px;width:calc(100% - 32px);margin:16px 16px 0;padding:16px;border-radius:20px;border:1px solid rgba(86,150,220,.35);background:linear-gradient(135deg,#1a2738,#15181e 70%);color:#fff;text-align:left}
 .sk-x .ic{flex:0 0 48px;height:48px;border-radius:14px;background:radial-gradient(circle at 35% 30%,#2a6db0,#0b2547);display:flex;align-items:center;justify-content:center}
@@ -1459,7 +1459,7 @@ body.sk-open{overflow:hidden}
 .sk-stage .glow{position:absolute;left:50%;top:48%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(closest-side,var(--rg,rgba(120,140,190,.3)),transparent);pointer-events:none}
 .sk-stage .bd{position:relative;display:flex;gap:10px;align-items:center}
 .sk-badge{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 16px;border-radius:14px;font-weight:800;font-size:15px}
-.sk-badge.bolt{width:46px;padding:0;border:1.5px solid rgba(255,184,28,.6);background:rgba(255,184,28,.12);color:var(--ska)}
+.sk-badge.bolt{width:46px;padding:0;border:1.5px solid rgba(var(--ska-rgb),.6);background:rgba(var(--ska-rgb),.12);color:var(--ska)}
 .sk-badge.av{border:1.5px dashed rgba(48,209,88,.6);background:rgba(48,209,88,.08);color:#4fe07a}
 .sk-stage .im{position:relative;height:230px;display:flex;align-items:center;justify-content:center}
 .sk-stage .im img{max-width:92%;max-height:210px;object-fit:contain;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
@@ -1495,7 +1495,7 @@ body.sk-open{overflow:hidden}
 .sk-wt small{display:block;font-size:13px;color:var(--skm);margin-top:2px}
 .sk-wt em{display:block;font-style:normal;font-weight:800;font-size:16px;margin-top:12px}
 .sk-wt i{position:absolute;top:14px;right:12px;padding:2px 9px;border-radius:999px;background:var(--skp3);color:#c8ced8;font-style:normal;font-size:12px;font-weight:700}
-.sk-wt button.on{border-color:var(--ska);background:rgba(255,184,28,.12)}
+.sk-wt button.on{border-color:var(--ska);background:rgba(var(--ska-rgb),.12)}
 .sk-og{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
 .sk-oc{display:flex;flex-direction:column;padding:12px;border-radius:20px;border:1px solid var(--skl);background:radial-gradient(160px 130px at 50% 42%,var(--rg,rgba(80,100,150,.22)),transparent 75%),#1a1c22}
 .sk-oc .t{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--skm)}
@@ -1511,7 +1511,7 @@ body.sk-open{overflow:hidden}
 /* ---- Tasdiqlash oynasi ---- */
 .sk-modal{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,8,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:skFade .2s both}
 @keyframes skFade{from{opacity:0}to{opacity:1}}
-.sk-mb{width:100%;max-width:440px;max-height:calc(100% - 20px);overflow-y:auto;overscroll-behavior:contain;border-radius:26px;border:1px solid var(--skl);background:radial-gradient(120% 34% at 50% 0,rgba(255,184,28,.09),transparent 70%),#18191e;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:skPop .28s cubic-bezier(.2,1.3,.4,1) both}
+.sk-mb{width:100%;max-width:440px;max-height:calc(100% - 20px);overflow-y:auto;overscroll-behavior:contain;border-radius:26px;border:1px solid var(--skl);background:radial-gradient(120% 34% at 50% 0,rgba(var(--ska-rgb),.09),transparent 70%),#18191e;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:skPop .28s cubic-bezier(.2,1.3,.4,1) both}
 @keyframes skPop{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
 .sk-mh{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px}
 .sk-mh b{font-family:var(--skd);font-weight:800;font-size:20px;letter-spacing:-.4px}
@@ -1539,7 +1539,7 @@ body.sk-open{overflow:hidden}
 .sk-mf .sk-btn.gh{background:var(--skp3);border:none}
 .sk-ok{padding:26px 20px 6px;text-align:center}
 .sk-ok .ic{width:86px;height:86px;margin:0 auto;border-radius:28px;display:flex;align-items:center;justify-content:center;background:rgba(48,209,88,.12);border:1.5px solid rgba(48,209,88,.45)}
-.sk-ok .ic.w{background:rgba(255,184,28,.12);border-color:rgba(255,184,28,.5)}
+.sk-ok .ic.w{background:rgba(var(--skw-rgb),.12);border-color:rgba(var(--skw-rgb),.5)}
 .sk-ok h3{margin:18px 0 8px;font-family:var(--skd);font-weight:800;font-size:22px}
 .sk-ok p{margin:0;font-size:14.5px;line-height:1.55;color:var(--skm2)}
 /* ---- Buyurtmalar ---- */
@@ -1549,10 +1549,10 @@ body.sk-open{overflow:hidden}
 .sk-chips{display:flex;gap:8px;padding:14px 16px 0;overflow-x:auto;scrollbar-width:none}
 .sk-chips::-webkit-scrollbar{display:none}
 .sk-chips button{flex:0 0 auto;height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#c8ced8;font-weight:700;font-size:14px}
-.sk-chips button.on{background:var(--ska);border-color:var(--ska);color:#141414}
+.sk-chips button.on{background:var(--skf);border-color:transparent;color:#fff}
 .sk-ol{display:grid;gap:12px;padding:14px 16px 0}
 .sk-or{display:flex;gap:12px;padding:12px;border-radius:20px;border:1px solid var(--skl);background:var(--skp)}
-.sk-or .th{flex:0 0 76px;height:76px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side,rgba(255,184,28,.14),transparent),#121317}
+.sk-or .th{flex:0 0 76px;height:76px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:radial-gradient(closest-side,rgba(var(--ska-rgb),.14),transparent),#121317}
 .sk-or .th img{max-width:68px;max-height:58px;object-fit:contain}
 .sk-or .md{flex:1;min-width:0}
 .sk-or .md b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1560,16 +1560,16 @@ body.sk-open{overflow:hidden}
 .sk-or .rw{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
 .sk-or .pr{font-weight:800;font-size:15px}
 .sk-st{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:9px;font-size:12px;font-weight:800}
-.sk-st.p{background:rgba(255,184,28,.12);color:var(--ska)}
+.sk-st.p{background:rgba(var(--ska-rgb),.12);color:var(--ska)}.sk-st.p.w{background:rgba(var(--skw-rgb),.12);color:var(--skw)}
 .sk-st.d{background:rgba(48,209,88,.12);color:#4fe07a}
 .sk-st.c{background:rgba(239,83,80,.12);color:#ff7b78}
-.sk-or .ac{display:inline-flex;margin-top:10px;height:36px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,184,28,.5);background:none;color:var(--ska);font-weight:800;font-size:13px;align-items:center;gap:6px}
+.sk-or .ac{display:inline-flex;margin-top:10px;height:36px;padding:0 12px;border-radius:11px;border:1px solid rgba(var(--ska-rgb),.5);background:none;color:var(--ska);font-weight:800;font-size:13px;align-items:center;gap:6px}
 /* ---- Profil ---- */
-.sk-me{display:flex;align-items:center;gap:14px;margin:22px 16px 0;padding:18px;border-radius:24px;border:1px solid var(--skl);background:radial-gradient(260px 160px at 100% 0%,rgba(255,184,28,.14),transparent 70%),var(--skp)}
-.sk-me .av{position:relative;flex:0 0 64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,184,28,.55);background:linear-gradient(135deg,#2b3550,#121726);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px}
+.sk-me{display:flex;align-items:center;gap:14px;margin:22px 16px 0;padding:18px;border-radius:24px;border:1px solid var(--skl);background:radial-gradient(260px 160px at 100% 0%,rgba(var(--ska-rgb),.14),transparent 70%),var(--skp)}
+.sk-me .av{position:relative;flex:0 0 64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid rgba(var(--ska-rgb),.55);background:linear-gradient(135deg,#2b3550,#121726);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px}
 .sk-me b{display:block;font-family:var(--skd);font-weight:800;font-size:19px}
 .sk-me small{display:block;font-size:13.5px;color:var(--skm);margin-top:4px}
-.sk-wal{margin:12px 16px 0;padding:18px;border-radius:24px;border:1px solid rgba(255,184,28,.35);background:linear-gradient(180deg,#1d1b14,#16161a)}
+.sk-wal{margin:12px 16px 0;padding:18px;border-radius:24px;border:1px solid rgba(var(--ska-rgb),.35);background:linear-gradient(180deg,#121b2b,#16161a)}
 .sk-wal small{font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--skm);text-transform:uppercase}
 .sk-wal b{display:block;margin-top:6px;font-family:var(--skd);font-weight:800;font-size:30px;letter-spacing:-.6px}
 .sk-wal .sk-btn{margin-top:14px}
@@ -1585,8 +1585,8 @@ body.sk-open{overflow:hidden}
 .sk-list .tx small{display:block;font-size:12.5px;color:var(--skm);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sk-list .ar{color:var(--skm)}
 /* pastdan chiqadigan oynalar (filtr, trade havola, yordam) */
-.sheet.sks{--skp:#18191e;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skm:#7d8999;--skm2:#a3adbb;--ska:#ffb81c;--skg:#30d158;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;
-  font-family:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;background:radial-gradient(120% 30% at 50% 0,rgba(255,184,28,.08),transparent 70%),#141519;border-top-color:#2a2d35}
+.sheet.sks{--skp:#18191e;--skp3:#262931;--skl:#2a2d35;--skl2:#353a45;--skm:#7d8999;--skm2:#a3adbb;--ska:#33a1ff;--ska2:#8fd3ff;--ska-rgb:51,161,255;--skf:linear-gradient(135deg,#0a5fd6 0%,#1370e4 50%,#2a8af5 100%);--skw:#ffb81c;--skw-rgb:255,184,28;--skg:#30d158;--skd:"Unbounded","Inter Tight",system-ui,sans-serif;
+  font-family:"Inter Tight","Inter",-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;background:radial-gradient(120% 30% at 50% 0,rgba(var(--ska-rgb),.08),transparent 70%),#141519;border-top-color:#2a2d35}
 .sheet.sks .grab{background:#353a45}
 .sheet.sks .sheet-x,.sheet.sks .sheet-back{background:#262931;color:#c8ced8;border-color:#353a45}
 .sks h3.t{margin:4px 0 0;font-family:var(--skd);font-weight:800;font-size:22px;letter-spacing:-.4px}
@@ -1594,17 +1594,17 @@ body.sk-open{overflow:hidden}
 .sks .sw{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:16px;padding:16px;border-radius:18px;border:1px solid var(--skl);background:var(--skp);color:#fff;font-size:15px;font-weight:700}
 .sks .sw .tg{flex:0 0 50px;height:30px;border-radius:15px;background:#353a45;position:relative;transition:background .15s}
 .sks .sw .tg:after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#9aa3b2;transition:transform .15s,background .15s}
-.sks .sw.on .tg{background:rgba(255,184,28,.35)}
+.sks .sw.on .tg{background:rgba(var(--ska-rgb),.35)}
 .sks .sw.on .tg:after{transform:translateX(20px);background:var(--ska)}
 .sks .pr2{display:flex;align-items:center;gap:10px}
 .sks .pr2 span{color:var(--skm)}
 .sks .qp{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .sks .qp button{height:38px;padding:0 13px;border-radius:12px;border:1px solid var(--skl);background:var(--skp);color:#c8ced8;font-size:13px;font-weight:700}
-.sks .qp button.on{border-color:var(--ska);background:rgba(255,184,28,.12);color:var(--ska)}
+.sks .qp button.on{border-color:var(--ska);background:rgba(var(--ska-rgb),.12);color:var(--ska)}
 .sks .ck{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border:none;background:none;color:#fff;font-size:15px;font-weight:600;text-align:left}
 .sks .ck .bx{flex:0 0 24px;height:24px;border-radius:7px;border:1.5px solid #4a505c;position:relative}
-.sks .ck.on .bx{background:var(--ska);border-color:var(--ska)}
-.sks .ck.on .bx:after{content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid #141414;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.sks .ck.on .bx{background:var(--skf);border-color:transparent}
+.sks .ck.on .bx:after{content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
 .sks .ck .dt{flex:0 0 10px;height:10px;border-radius:50%}
 .sks .grp{font-size:12px;font-weight:800;letter-spacing:.1em;color:#5d6573;text-transform:uppercase;margin:8px 0 2px}
 .sks .fact{position:sticky;bottom:0;display:flex;gap:10px;margin:20px -16px 0;padding:14px 16px 8px;background:linear-gradient(180deg,rgba(20,21,25,0),#141519 30%)}
@@ -1613,7 +1613,7 @@ body.sk-open{overflow:hidden}
 .sks .fact .sk-btn:not(.gh){flex:1}
 .sks .stp{display:grid;gap:10px;margin-top:16px}
 .sks .stp div{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;border:1px solid var(--skl);background:var(--skp);font-size:15px;font-weight:600}
-.sks .stp b{flex:0 0 34px;height:34px;border-radius:11px;background:var(--ska);color:#141414;font-family:var(--skd);display:flex;align-items:center;justify-content:center;font-weight:800}
+.sks .stp b{flex:0 0 34px;height:34px;border-radius:11px;background:var(--skf);color:#fff;font-family:var(--skd);display:flex;align-items:center;justify-content:center;font-weight:800}
 /* qo'shimcha: bosh sahifa lentalari, skin sahifasi, kafolat */
 .sk-hero>*{position:relative}
 .sk-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
@@ -1635,7 +1635,7 @@ body.sk-open{overflow:hidden}
 .sk-oc .bdg{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 .sk-oc .bdg span{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.6);font-size:10.5px;font-weight:800}
 .sk-oc .bdg svg{width:11px;height:11px}
-.sk-oc .bdg .lk{color:var(--ska)}.sk-oc .bdg .sl{color:#9cc7f0}.sk-oc .bdg .nw{color:#4fe07a}
+.sk-oc .bdg .lk{color:var(--skw)}.sk-oc .bdg .sl{color:#9cc7f0}.sk-oc .bdg .nw{color:#4fe07a}
 .sk-oc .stks{display:flex;gap:4px;margin-top:6px}
 .sk-oc .stks img{width:26px;height:26px;object-fit:contain;border-radius:7px;background:rgba(0,0,0,.3)}
 .sk-oc .gms{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
@@ -1644,21 +1644,21 @@ body.sk-open{overflow:hidden}
 .sk-oc .acts{display:flex;gap:8px;margin-top:10px}
 .sk-oc .acts .sk-btn{flex:1;margin:0}
 .sk-oc .acts .ct{flex:0 0 46px;height:46px;border-radius:13px;border:1px solid var(--skl2);background:var(--skp3);color:#cfd5df;display:flex;align-items:center;justify-content:center;padding:0}
-.sk-oc .acts .ct.on{border-color:var(--ska);color:var(--ska);background:rgba(255,184,28,.12)}
+.sk-oc .acts .ct.on{border-color:var(--ska);color:var(--ska);background:rgba(var(--ska-rgb),.12)}
 .sk-stk span img{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:4px}
 .sk-lt{display:flex;gap:8px;margin:0 0 14px;overflow-x:auto;scrollbar-width:none}
 .sk-lt button{flex:0 0 auto;height:38px;padding:0 13px;border-radius:12px;border:1px solid var(--skl);background:#141519;color:#c8ced8;font-weight:700;font-size:13px}
-.sk-lt button.on{border-color:var(--ska);color:var(--ska);background:rgba(255,184,28,.1)}
+.sk-lt button.on{border-color:var(--ska);color:var(--ska);background:rgba(var(--ska-rgb),.1)}
 .sk-cat .lv{width:8px;height:8px;border-radius:50%;background:#30d158}
 .sk-cat.on .lv{background:#141414;box-shadow:none}
 
-.sk-warn{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;border:1px solid rgba(255,184,28,.3);background:rgba(255,184,28,.07);font-size:13px;line-height:1.5;color:#e7dcc0}
-.sk-warn svg{flex:0 0 16px;width:16px;height:16px;margin-top:2px;color:var(--ska)}
+.sk-warn{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;border:1px solid rgba(var(--skw-rgb),.3);background:rgba(var(--skw-rgb),.07);font-size:13px;line-height:1.5;color:#e7dcc0}
+.sk-warn svg{flex:0 0 16px;width:16px;height:16px;margin-top:2px;color:var(--skw)}
 .sk-cartbar{position:absolute;left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:7;display:flex;align-items:center;gap:12px;height:62px;padding:0 12px;border:none;border-radius:18px;
-  background:linear-gradient(135deg,#ffc53d,#ff9f0a);color:#141414;text-align:left;box-shadow:0 14px 40px rgba(255,160,0,.4);animation:skPop .3s cubic-bezier(.2,1.3,.4,1) both}
+  background:var(--skf);color:#fff;text-align:left;box-shadow:0 14px 40px rgba(var(--ska-rgb),.4);animation:skPop .3s cubic-bezier(.2,1.3,.4,1) both}
 .sk-page~.sk-cartbar{bottom:calc(14px + env(safe-area-inset-bottom))}
-.sk-cartbar .ic{position:relative;flex:0 0 40px;height:40px;border-radius:12px;background:rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center}
-.sk-cartbar .ic i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#141414;color:#ffc53d;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center}
+.sk-cartbar .ic{position:relative;flex:0 0 40px;height:40px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}
+.sk-cartbar .ic i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#fff;color:#0a5fd6;font-size:11px;font-weight:900;font-style:normal;display:flex;align-items:center;justify-content:center}
 .sk-cartbar .tx{flex:1;min-width:0}.sk-cartbar .tx b{display:block;font-size:16px;font-weight:900;white-space:nowrap}.sk-cartbar .tx small{display:block;font-size:12px;font-weight:700;opacity:.72}
 .sk-cartbar .go{display:flex;align-items:center;gap:2px;font-weight:800;font-size:14px;white-space:nowrap}
 .sk.hascart .sk-main{padding-bottom:calc(166px + env(safe-area-inset-bottom))}
@@ -1687,17 +1687,17 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-steam .tx small.lb{color:#78b8f2;font-weight:700;margin:0 0 2px}
 .sk-steam .ch{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .sk-steam .ch span{padding:2px 8px;border-radius:7px;font-size:11px;font-weight:800}
-.sk-steam .ch .g{background:rgba(48,209,88,.12);color:#4fe07a}.sk-steam .ch .w{background:rgba(255,184,28,.12);color:var(--ska)}.sk-steam .ch .r{background:rgba(239,83,80,.14);color:#ff7b78}
+.sk-steam .ch .g{background:rgba(48,209,88,.12);color:#4fe07a}.sk-steam .ch .w{background:rgba(var(--skw-rgb),.12);color:var(--skw)}.sk-steam .ch .r{background:rgba(239,83,80,.14);color:#ff7b78}
 .sk-steam .sk-btn.sm{flex:0 0 auto}
-/* ================= v3.15 — skinsavdo uslubi 1:1 (logo, nom va urg'u rangi — Verion'niki) =================
-   O'lchamlar skinsavdo.uz mobil ko'rinishidan o'lchab olingan (Playwright, 400px): sarlavha 60px #1a1b20, tugmalar 36–38px r6–8,
+/* ================= v3.15 — marketplace uslubi (logo, nom, ranglar — Verion: kumush + elektr ko'k) =================
+   Mobil o'lchamlar (400px): sarlavha 60px #1a1b20, tugmalar 36–38px r6–8,
    panellar r8–12 #1a1b20 + #26282b chegara, kartochka: tepada belgi+yurak, 108px rasm, noyoblik chizig'i, narx 13px, nom 11px,
-   «Ko'rish» 36px r6. Fonda xira suzuvchi skinlar va uchqunlar. Ularning rasmlari, logosi, matni va kodi olinmagan. */
-.sk{--skbg:#101012;--skp:#1a1b20;--skp2:#1a1e20;--skp3:#262a32;--skl:#26282b;--skl2:#353b46;--skm:#7d8999;--skm2:#9da6b8;--skm3:#70758c;--skc:#56cbf2;line-height:1.5}
+   «Ko'rish» 36px r6. Fonda xira suzuvchi skinlar va uchqunlar. Urg'u — --ska (ko'k), tugmalar — --skf, ogohlantirish — --skw. */
+.sk{--skbg:#101012;--skp:#1a1b20;--skp2:#1a1e20;--skp3:#262a32;--skl:#26282b;--skl2:#353b46;--skm:#7d8999;--skm2:#9da6b8;--skm3:#70758c;--skc:#33a1ff;line-height:1.5}
 .sk-bg{background:var(--skbg)}
 .sk-bg .fs{position:absolute;display:block;height:auto;max-width:none;opacity:var(--o,.1);transform:rotate(var(--rot,0deg));animation:skDrift var(--dur,12s) ease-in-out infinite alternate;will-change:transform;pointer-events:none}
 @keyframes skDrift{from{transform:translate3d(0,0,0) rotate(var(--rot,0deg))}to{transform:translate3d(14px,-22px,0) rotate(calc(var(--rot,0deg) + 8deg))}}
-.sk-bg i{width:5px;height:5px;background:var(--ska);box-shadow:0 0 10px 2px rgba(255,184,28,.6);opacity:.47;animation:skTwinkle 3.2s ease-in-out infinite alternate}
+.sk-bg i{width:5px;height:5px;background:var(--ska);box-shadow:0 0 10px 2px rgba(var(--ska-rgb),.6);opacity:.47;animation:skTwinkle 3.2s ease-in-out infinite alternate}
 .sk-bg i:nth-child(3n){width:3px;height:3px;opacity:.57;animation-duration:2.6s}
 .sk-bg i:nth-child(4n){width:4px;height:4px;opacity:.39;filter:none;animation-duration:4s}
 @keyframes skTwinkle{from{transform:scale(.6)}to{transform:scale(1.3)}}
@@ -1707,8 +1707,8 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-ib{flex:0 0 36px;width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:#fff}
 .sk-ib:active{background:#262a32;transform:none}
 .sk-logo img{height:28px}
-.sk-bal{height:36px;padding:0 6px 0 12px;gap:6px;border:none;border-radius:8px;background:var(--ska);color:#121314;font-size:13px;font-weight:700}
-.sk-bal .pl{width:24px;height:24px;border-radius:6px;background:rgba(0,0,0,.12);color:#121314}
+.sk-bal{height:36px;padding:0 6px 0 12px;gap:6px;border:none;border-radius:8px;background:var(--skf);color:#fff;font-size:13px;font-weight:700}
+.sk-bal .pl{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.18);color:#fff}
 .sk-av{flex:0 0 36px;width:36px;height:36px;border:1px solid #26282b;font-size:14px}
 .sk-crumb{font-size:12px;color:var(--skm3)}
 .sk-crumb b{color:var(--skm2);font-weight:500}
@@ -1719,7 +1719,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-sec{padding:0 12px;margin-top:48px}
 .sk-lbl{font-size:12px;font-weight:600;letter-spacing:.18em}
 .sk-h2{font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.02em}
-.sk-btn{height:auto;min-height:50px;padding:14px 22px;border-radius:12px;font-size:15px;font-weight:600;color:#1a1a1a;box-shadow:0 10px 30px -8px rgba(255,184,28,.5)}
+.sk-btn{height:auto;min-height:50px;padding:14px 22px;border-radius:12px;font-size:15px;font-weight:600;color:#fff;box-shadow:0 10px 30px -8px rgba(var(--ska-rgb),.5)}
 .sk-btn:active{transform:scale(.98)}
 .sk-btn.gh{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;box-shadow:none}
 .sk-btn.sm{min-height:40px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;box-shadow:none}
@@ -1728,9 +1728,9 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-sk{border-radius:8px;background:linear-gradient(90deg,#1a1b20 0,#23252c 50%,#1a1b20 100%);background-size:200% 100%}
 .sk-empty b{font-size:16px}
 /* bosh sahifa: hero (nur + 56px to'r), yozib turuvchi o'yin nomi */
-.sk-hero{padding:48px 12px 0;background:radial-gradient(300px 300px at 105% 100%,rgba(64,90,255,.16),transparent 70%)}
+.sk-hero{padding:48px 12px 0;background:radial-gradient(300px 300px at 105% 100%,rgba(24,180,240,.14),transparent 70%)}
 .sk-hero:before{content:"";position:absolute;left:-160px;top:-210px;width:580px;height:580px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(closest-side,rgba(255,184,28,.30),rgba(255,184,28,.12) 45%,rgba(255,184,28,0) 100%)}
+  background:radial-gradient(closest-side,rgba(var(--ska-rgb),.30),rgba(var(--ska-rgb),.12) 45%,rgba(var(--ska-rgb),0) 100%)}
 .sk-hero:after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.024) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.024) 1px,transparent 1px);
   background-size:56px 56px;-webkit-mask-image:radial-gradient(70% 60% at 50% 30%,#000 30%,transparent 80%);mask-image:radial-gradient(70% 60% at 50% 30%,#000 30%,transparent 80%)}
 .sk-hero>*{position:relative;z-index:1}
@@ -1738,7 +1738,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-pill i{width:7px;height:7px;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.18)}
 .sk-hero h1{margin:24px 0 4px;font-size:32px;font-weight:700;line-height:1.02;letter-spacing:-.035em}
 .sk-typed{display:flex;align-items:center;min-height:1.15em;margin:0 0 22px;font-family:var(--skd);font-size:clamp(34px,9vw,48px);font-weight:700;line-height:1.1;letter-spacing:-.02em}
-.sk-typed .hl{white-space:nowrap;background:linear-gradient(110deg,#ffb81c,#ffd36b 60%,#ffb81c);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:skShimmer 4.5s linear infinite}
+.sk-typed .hl{white-space:nowrap;background:linear-gradient(110deg,#33a1ff,#8fd3ff 55%,#33a1ff);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:skShimmer 4.5s linear infinite}
 .sk-typed .caret{display:inline-block;width:.08em;height:.9em;margin-left:.06em;background:var(--ska);animation:skCaret 1s step-end infinite}
 @keyframes skShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 @keyframes skCaret{50%{opacity:0}}
@@ -1767,7 +1767,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-all{height:36px;padding:0 6px 0 12px;border:none;border-radius:8px;background:transparent;color:var(--ska);font-size:13px;font-weight:600}
 .sk-rail{gap:8px;margin:20px -12px 0;padding:0 12px 4px}
 .sk-rail .sk-card{flex:0 0 160px}
-/* yaqinda sotib olindi (skinsavdo «so'nggi bitimlar» kartochkalari) */
+/* yaqinda sotib olindi (so'nggi bitimlar kartochkalari) */
 .sk-dh{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}
 .sk-dh .sk-h2{margin:0;font-size:22px}
 .sk-dh .ar{display:flex;gap:6px}
@@ -1786,7 +1786,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-rc .ag{margin-top:2px;font-size:12px;color:#70758c}
 /* «Qanday ishlaydi», Steam hamyon, to'lov, FAQ, yakuniy chaqiriq */
 .sk-card2{margin:0 12px;padding:28px 22px;border-radius:20px}
-.sk-card2.y{border-color:rgba(255,184,28,.35);background:radial-gradient(520px 520px at 120% 130%,rgba(255,184,28,.2),transparent 65%),#1a1b20}
+.sk-card2.y{border-color:rgba(var(--ska-rgb),.35);background:radial-gradient(520px 520px at 120% 130%,rgba(var(--ska-rgb),.2),transparent 65%),#1a1b20}
 .sk-card2.b{border-color:rgba(102,192,244,.3);background:radial-gradient(520px 520px at 120% 130%,rgba(102,192,244,.16),transparent 65%),#16202a}
 .sk-tag{padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:.12em}
 .sk-card2 h3{margin:16px 0 0;font-size:24px;font-weight:700;letter-spacing:-.02em}
@@ -1794,7 +1794,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-steps{gap:8px;margin:20px 0 26px}
 .sk-steps span{gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:#1a1e20;font-size:13px;font-weight:600}
 .sk-steps span i{width:22px;height:22px;font-size:12px}
-.sk-pbtn{display:inline-flex;align-items:center;gap:10px;height:50px;padding:0 24px;border:none;border-radius:12px;background:var(--ska);color:#121314;font-size:15px;font-weight:800}
+.sk-pbtn{display:inline-flex;align-items:center;gap:10px;height:50px;padding:0 24px;border:none;border-radius:12px;background:var(--skf);color:#fff;font-size:15px;font-weight:800}
 .sk-pbtn svg{width:18px;height:18px}
 .sk-pbtn.st{margin-top:18px;background:transparent;border:1px solid rgba(102,192,244,.55);color:#fff}
 .sk-amts{gap:8px;margin-top:18px}
@@ -1802,18 +1802,18 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-pay span{height:52px;min-width:130px;border-radius:12px;border:1px solid #26282b;background:#1a1b20}
 .sk-faq{gap:8px;margin-top:24px}
 .sk-faq details{padding:0;border-radius:14px;background:#101012;border:1px solid rgba(255,255,255,.05)}
-.sk-faq details[open]{border-color:rgba(255,184,28,.5)}
+.sk-faq details[open]{border-color:rgba(var(--ska-rgb),.5)}
 .sk-faq summary{gap:16px;padding:18px 22px;font-size:15px;font-weight:600}
 .sk-faq summary:after{font-size:20px}
 .sk-faq p{margin:0;padding:0 22px 20px;font-size:14px;line-height:1.65;color:#70758c}
 .sk-final{margin-top:56px;padding:70px 16px 80px;border-top:none;background:#101012}
-.sk-final .gl{position:absolute;left:50%;top:50%;width:640px;height:640px;margin:-320px 0 0 -320px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,184,28,.2),transparent 70%)}
+.sk-final .gl{position:absolute;left:50%;top:50%;width:640px;height:640px;margin:-320px 0 0 -320px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(var(--ska-rgb),.2),transparent 70%)}
 .sk-final .sk-h2{margin:0 0 16px;font-size:32px;line-height:1.1;letter-spacing:-.03em}
 .sk-final p{margin:0 0 36px;font-size:18px;color:#7d8999}
 /* bozor: o'yin tablari, asboblar paneli, toifalar, kartochkalar */
 .sk-gtabs{gap:8px;padding:12px 12px 0}
 .sk-gtab{height:40px;padding:8px 16px 8px 10px;gap:8px;border-radius:8px;border:1px solid #26282b;background:#1a1b20;color:#7d8999;font-size:12.6px;font-weight:600}
-.sk-gtab.on{border-color:var(--skc);background:#213039;color:#e5e7eb;box-shadow:none}
+.sk-gtab.on{border-color:var(--skc);background:rgba(var(--ska-rgb),.12);color:#e5e7eb;box-shadow:none}
 .sk-gtab .gimg.sm{flex:0 0 22px;width:22px;height:22px;aspect-ratio:auto;border-radius:5px}
 .sk-gtab .gimg.sm i{font-size:8px}
 .sk-gtab:not(.on) .gimg{opacity:.8}
@@ -1840,9 +1840,9 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-cat.on .lv{background:#30d158}
 .sk-wpn{margin:8px 12px 0;padding:10px;border-radius:8px;border:1px solid #26282b;background:#1a1b20}
 .sk-wpn button{min-height:48px;border-radius:8px;font-size:13px;font-weight:600;color:#c9cfd9}
-.sk-wpn button.all{min-height:40px;background:rgba(255,184,28,.1)}
+.sk-wpn button.all{min-height:40px;background:rgba(var(--ska-rgb),.1)}
 .sk-wpn button:active{background:#1a1e20}
-.sk-wpn button.on{background:rgba(255,184,28,.1)}
+.sk-wpn button.on{background:rgba(var(--ska-rgb),.1)}
 .sk-act{padding:12px 12px 0}
 .sk-act button{height:30px;border-radius:6px;font-size:12px}
 .sk-bar{padding:16px 12px 10px}
@@ -1874,7 +1874,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-cn{margin:0;padding:2px 10px 0;font-size:11px;font-weight:500;line-height:1.3;color:#9da6b8}
 .sk-cg{height:36px;margin:10px;border-radius:6px;background:#262a32;font-size:12px;font-weight:600;letter-spacing:.02em;gap:6px}
 .sk-cg svg{width:14px;height:14px}
-.sk-card:hover .sk-cg,.sk-card:focus-visible .sk-cg,.sk-card:active .sk-cg{background:var(--ska);color:#121314}
+.sk-card:hover .sk-cg,.sk-card:focus-visible .sk-cg,.sk-card:active .sk-cg{background:var(--skf);color:#fff}
 .sk-more{width:calc(100% - 24px);height:44px;margin:14px 12px 0;border:none;border-radius:8px;background:#262a32;font-size:13px;font-weight:600}
 .sk-x{width:calc(100% - 24px);margin:16px 12px 0;border-radius:12px}
 /* skin sahifasi */
@@ -1882,7 +1882,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-stage .glow{display:none}
 .sk-stage .bd{gap:8px}
 .sk-badge{height:40px;border-radius:10px;font-size:14px;font-weight:700}
-.sk-badge.bolt{width:40px;border:1px solid rgba(255,184,28,.6);background:rgba(255,184,28,.12)}
+.sk-badge.bolt{width:40px;border:1px solid rgba(var(--ska-rgb),.6);background:rgba(var(--ska-rgb),.12)}
 .sk-badge.av{gap:6px;padding:0 14px;border:1px dashed rgba(48,209,88,.7);background:rgba(48,209,88,.12);color:#30d158}
 .sk-badge.av.no{border-color:#353b46;background:none;color:#7d8999}
 .sk-badge.av svg{width:13px;height:13px}
@@ -1914,7 +1914,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-pz b{font-size:24px;font-weight:700;letter-spacing:-.02em}
 .sk-pz span{font-size:13px;color:#70758c}
 .sk-pz a{font-size:13px;color:#70758c}
-.sk-page .sk-buyb{width:calc(100% - 24px);height:54px;min-height:54px;margin:16px 12px 0;padding:0 28px;border-radius:12px;font-size:16px;font-weight:800;color:#121314;box-shadow:none;flex-direction:row-reverse}
+.sk-page .sk-buyb{width:calc(100% - 24px);height:54px;min-height:54px;margin:16px 12px 0;padding:0 28px;border-radius:12px;font-size:16px;font-weight:800;color:#fff;box-shadow:none;flex-direction:row-reverse}
 .sk-offs{margin:20px 12px 0;padding:18px 20px;border-radius:12px;border:1px solid #26282b;background:#1a1b20}
 .sk-offs h3{margin:0 0 10px;padding-bottom:14px;border-bottom:1px solid #26282b;font-size:15px;font-weight:600;letter-spacing:0}
 .sk-offs h3 span{font-family:var(--skb);font-size:13px;font-weight:400;color:#70758c}
@@ -1931,9 +1931,10 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-og{gap:8px;margin-top:8px}
 .sk-oc{padding:10px;border-radius:12px;border:1px solid #26282b;background:radial-gradient(120% 70% at 50% 35%,var(--rg,rgba(80,100,150,.18)),transparent 70%),#1a1b20}
 .sk-oc .t{display:flex;align-items:center;gap:0;min-height:18px;font-size:11px;color:#70758c}
-.sk-oc .t .dl{display:flex;margin-right:auto;color:#ff9f0a}
+.sk-oc .t .dl{display:flex;margin-right:auto;color:var(--ska)}
 .sk-oc .t .dl svg{width:15px;height:15px}
-.sk-oc .t .dl.sl{color:#9cc7f0}
+.sk-oc .t .dl.lk{color:var(--skw)}
+.sk-oc .t .dl.sl{color:var(--skm2)}
 .sk-oc .t b{font-weight:700}
 .sk-oc .t b+span:not(:empty):before{content:"/";margin:0 4px;color:#70758c}
 .sk-oc .im{height:110px;margin:6px 0}
@@ -1945,9 +1946,9 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-oc .n{font-size:13px;font-weight:700}
 .sk-oc .p{margin-top:4px;font-size:15px;font-weight:800}
 .sk-oc .acts{gap:6px;margin-top:8px}
-.sk-oc .sk-btn{height:38px;min-height:38px;padding:0 10px;border-radius:8px;font-size:13px;font-weight:700;color:#121314;box-shadow:none}
+.sk-oc .sk-btn{height:38px;min-height:38px;padding:0 10px;border-radius:8px;font-size:13px;font-weight:700;color:#fff;box-shadow:none}
 .sk-oc .acts .ct{flex:0 0 38px;height:38px;border:none;border-radius:8px;background:#262a32}
-.sk-oc .acts .ct.on{background:rgba(255,184,28,.16);color:var(--ska)}
+.sk-oc .acts .ct.on{background:rgba(var(--ska-rgb),.16);color:var(--ska)}
 .sk-sales{margin:16px 12px 0;padding:18px 20px;border-radius:12px;border:1px solid #26282b;background:#1a1b20}
 .sk-sales h3{margin:0 0 6px;padding-bottom:12px;border-bottom:1px solid #26282b;font-size:15px;font-weight:600}
 .sk-sales div{padding:9px 0;font-size:13px}
@@ -1977,14 +1978,14 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-ok h3{font-size:20px;font-weight:700}
 .sk-ok p{font-size:14px;color:#7d8999}
 .sk-warn{border-radius:10px}
-.sk-cartbar{height:58px;border-radius:12px;background:var(--ska);box-shadow:0 10px 30px -8px rgba(255,184,28,.5)}
+.sk-cartbar{height:58px;border-radius:12px;background:var(--skf);box-shadow:0 10px 30px -8px rgba(var(--ska-rgb),.5)}
 /* buyurtmalar va profil */
 .sk-ph{padding:20px 12px 0}
 .sk-ph h2{font-size:22px;font-weight:700}
 .sk-ph p{font-size:13px;color:#70758c}
 .sk-chips{gap:6px;padding:14px 12px 0}
 .sk-chips button{height:36px;padding:0 14px;border-radius:8px;border:1px solid #26282b;background:#1a1b20;color:#9da6b8;font-size:13px;font-weight:600}
-.sk-chips button.on{background:var(--ska);border-color:var(--ska);color:#121314}
+.sk-chips button.on{background:var(--skf);border-color:transparent;color:#fff}
 .sk-ol{gap:8px;padding:14px 12px 0}
 .sk-or{gap:12px;padding:12px;border-radius:12px;border:1px solid #26282b;background:#1a1b20}
 .sk-or .th{flex:0 0 64px;height:64px;border-radius:10px;background:#1a1e20}
@@ -2018,7 +2019,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sks .sec{margin:20px 0 8px;font-size:11px;letter-spacing:.1em;color:#70758c}
 .sks .sw{margin-top:14px;padding:14px;border-radius:10px;border:1px solid #26282b;background:#1a1e20;font-size:14px}
 .sks .qp button{height:34px;padding:0 12px;border-radius:6px;border:1px solid #26282b;background:#1a1e20;font-size:12.5px}
-.sks .qp button.on{border-color:var(--ska);background:rgba(255,184,28,.1);color:var(--ska)}
+.sks .qp button.on{border-color:var(--ska);background:rgba(var(--ska-rgb),.1);color:var(--ska)}
 .sks .ck{padding:7px 0;font-size:13.5px;color:#9da6b8}
 .sks .ck.on{color:#fff}
 .sks .ck .bx{flex:0 0 18px;height:18px;border-radius:4px;border:1.5px solid #353b46}
@@ -2028,11 +2029,11 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sks .fact .sk-btn.gh{flex:0 0 120px;background:#262a32;border:none}
 .sks .stp div{padding:12px;border-radius:10px;border:1px solid #26282b;background:#1a1e20;font-size:14px}
 .sks .stp b{flex:0 0 30px;height:30px;border-radius:8px}
-/* ================= v3.16 — skinsavdo 1:1: sarlavhadagi balans paneli, tartib menyusi, chap filtr paneli, toifa menyusi,
-   savat, profil (prof-*), buyurtmalar (pur-* / prof-status) ================= */
-.sk-bal{height:40px;padding:0 7px 0 10px;gap:6px;border:1.2px solid rgba(255,184,28,.5);border-radius:8px;background:linear-gradient(270deg,rgba(255,184,28,.2),rgba(255,184,28,.1));color:var(--ska);font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+/* ================= v3.16 — bozor: sarlavhadagi balans paneli, tartib menyusi, chap filtr paneli, toifa menyusi,
+   savat, profil, buyurtmalar va buyurtma tafsilotlari ================= */
+.sk-bal{height:40px;padding:0 7px 0 10px;gap:6px;border:1.2px solid rgba(var(--ska-rgb),.5);border-radius:8px;background:linear-gradient(270deg,rgba(var(--ska-rgb),.2),rgba(var(--ska-rgb),.1));color:var(--ska);font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.1)}
 .sk-bal svg{width:15px;height:15px}
-.sk-bal .pl{width:24px;height:24px;border-radius:6px;background:var(--ska);color:#121314}
+.sk-bal .pl{width:24px;height:24px;border-radius:6px;background:var(--skf);color:#fff}
 .sk-tool{position:relative;z-index:6}
 .sk-sortw{position:relative;flex-shrink:0}
 .sk-sortt{display:inline-flex;align-items:center;gap:10px;height:38px;min-width:170px;padding:0 12px;border:1px solid transparent;border-radius:6px;background:#262a32;color:#fff;font-size:13px;font-weight:500;white-space:nowrap}
@@ -2056,10 +2057,10 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-wpn button{grid-template-columns:30px minmax(0,1fr) auto;gap:8px;min-height:36px;padding:4px 8px;border:1px solid transparent;border-radius:5px;color:#9da6b8;font-size:12px;font-weight:500}
 .sk-wpn button i{width:30px;height:30px}
 .sk-wpn button small{font-size:11px;color:#70758c}
-.sk-wpn button.all{display:flex;justify-content:center;min-height:0;margin:0 0 4px;padding:7px 10px;background:rgba(255,184,28,.1);color:var(--ska);font-size:12px;font-weight:600}
-.sk-wpn button.on{background:rgba(255,184,28,.1);border-color:var(--ska);color:var(--ska)}
+.sk-wpn button.all{display:flex;justify-content:center;min-height:0;margin:0 0 4px;padding:7px 10px;background:rgba(var(--ska-rgb),.1);color:var(--ska);font-size:12px;font-weight:600}
+.sk-wpn button.on{background:rgba(var(--ska-rgb),.1);border-color:var(--ska);color:var(--ska)}
 .sk-wpn button:active{background:#262a32}
-/* chap filtr paneli (skinsavdo mobil sidebar) */
+/* chap filtr paneli (mobil) */
 .sk-drawer{position:absolute;inset:0;z-index:20}
 .sk-dbg{position:absolute;inset:0;width:100%;border:none;padding:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity .25s}
 .sk-drawer.on .sk-dbg{opacity:1}
@@ -2093,19 +2094,19 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-cl .sk-mi .nm span{font-size:11px}
 .sk-cl .sk-mi .pr{font-size:13px;font-weight:600}
 .sk-mi .rm{flex:0 0 28px;height:28px;border-radius:6px;background:none;color:#707c8c}
-/* profil (skinsavdo prof-sidebar + prof-main) */
+/* profil (yon panel + asosiy qism) */
 .sk-prof{display:grid;gap:14px;padding:20px 12px 0}
 .sk-pside{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:16px;border:1px solid #26282b;background:#1a1b20}
 .sk-pside .sk-me{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0;padding:6px 4px 14px;border:none;border-bottom:1px solid #26282b;border-radius:0;background:none;text-align:center}
-.sk-pside .sk-me .av{flex:0 0 80px;width:80px;height:80px;margin-bottom:4px;border:2px solid rgba(255,184,28,.5);font-size:28px}
+.sk-pside .sk-me .av{flex:0 0 80px;width:80px;height:80px;margin-bottom:4px;border:2px solid rgba(var(--ska-rgb),.5);font-size:28px}
 .sk-pside .sk-me b{font-family:var(--skd);font-size:16px;font-weight:700}
 .sk-pside .sk-me small{margin:0;font-size:11px;color:#70758c}
-.sk-pside .sk-wal{display:flex;flex-direction:column;gap:6px;margin:0;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,184,28,.28);background:linear-gradient(135deg,rgba(255,184,28,.1) 0%,rgba(255,184,28,.02) 100%)}
+.sk-pside .sk-wal{display:flex;flex-direction:column;gap:6px;margin:0;padding:14px 16px;border-radius:14px;border:1px solid rgba(var(--ska-rgb),.28);background:linear-gradient(135deg,rgba(var(--ska-rgb),.1) 0%,rgba(var(--ska-rgb),.02) 100%)}
 .sk-pside .sk-wal small{font-family:var(--skd);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#70758c}
 .sk-pside .sk-wal b{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--ska);font-variant-numeric:tabular-nums}
 .sk-pside .sk-wal b .ccy{margin-left:4px;font-family:var(--skb);font-size:12px;font-weight:600;letter-spacing:0;color:#70758c}
 .sk-pside .sk-wal .sub{font-size:11.5px;line-height:1.5;color:#70758c}
-.sk-pact{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 18px;border:none;border-radius:10px;background:var(--ska);color:#121314;font-family:var(--skd);font-size:12px;font-weight:700;letter-spacing:.02em;white-space:nowrap;box-shadow:0 6px 18px rgba(255,184,28,.2)}
+.sk-pact{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 18px;border:none;border-radius:10px;background:var(--skf);color:#fff;font-family:var(--skd);font-size:12px;font-weight:700;letter-spacing:.02em;white-space:nowrap;box-shadow:0 6px 18px rgba(var(--ska-rgb),.2)}
 .sk-pact.wd{width:100%;height:44px;margin-top:6px;font-size:13px}
 .sk-pact svg{width:16px;height:16px}
 .sk-pghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border:none;border-radius:10px;background:#262a32;color:#fff;font-family:var(--skd);font-size:12px;font-weight:700;white-space:nowrap}
@@ -2116,9 +2117,9 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-pni .ico{display:flex;color:inherit}
 .sk-pni .ico svg{width:18px;height:18px}
 .sk-pni .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sk-pni i{flex:0 0 auto;padding:2px 8px;border-radius:999px;background:rgba(255,184,28,.14);color:var(--ska);font-family:var(--skb);font-size:11px;font-weight:700;font-style:normal}
+.sk-pni i{flex:0 0 auto;padding:2px 8px;border-radius:999px;background:rgba(var(--ska-rgb),.14);color:var(--ska);font-family:var(--skb);font-size:11px;font-weight:700;font-style:normal}
 .sk-pni:active{background:#2e2f38;color:#fff}
-.sk-pni:first-child{background:var(--ska);color:#121314;box-shadow:0 4px 14px rgba(255,184,28,.2)}
+.sk-pni:first-child{background:var(--skf);color:#fff;box-shadow:0 4px 14px rgba(var(--ska-rgb),.2)}
 .sk-pni .hrt{display:flex;color:#ff5d6c;fill:#ff5d6c}
 .sk-pfoot{padding-top:10px;border-top:1px solid #26282b}
 .sk-plog{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 14px;border-radius:10px;border:1px solid #26282b;background:#262a32;color:#fff;font-family:var(--skd);font-size:12px;font-weight:700;letter-spacing:.02em}
@@ -2128,7 +2129,7 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-pmain .sk-tiles div{display:flex;flex-direction:column;gap:4px;padding:14px 12px;border-radius:12px;border:1px solid #26282b;background:#25272e;text-align:left}
 .sk-pmain .sk-tiles span{margin:0;font-family:var(--skd);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#70758c}
 .sk-pmain .sk-tiles b{font-size:22px;font-weight:800;letter-spacing:-.02em}
-.sk-pspent{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,184,28,.25);background:rgba(255,184,28,.08);font-size:12.5px;color:#9da6b8}
+.sk-pspent{padding:10px 14px;border-radius:10px;border:1px solid rgba(var(--ska-rgb),.25);background:rgba(var(--ska-rgb),.08);font-size:12.5px;color:#9da6b8}
 .sk-pspent b{color:var(--ska);font-family:var(--skd)}
 .sk-pblk{display:flex;flex-direction:column;gap:10px;margin:0;padding:16px 18px;border-radius:12px;border:1px solid #26282b;background:#25272e}
 .sk-pblk .hd{font-family:var(--skd);font-size:13px;font-weight:700;letter-spacing:.01em}
@@ -2142,13 +2143,13 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-pblk .sk-pact{align-self:flex-start}
 .sk-pmain .sk-steam{margin:0;padding:14px 16px;border-radius:12px;border:1px solid rgba(102,192,244,.3);background:radial-gradient(240px 140px at 100% 0%,rgba(102,192,244,.16),transparent 70%),#25272e}
 .sk-pmain .sk-steam .av{border-radius:10px}
-/* buyurtmalar (skinsavdo «Покупки») */
-.sk-osum{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:14px 12px 0;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,184,28,.35);background:rgba(255,184,28,.08);font-size:13px}
+/* buyurtmalar */
+.sk-osum{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:14px 12px 0;padding:12px 16px;border-radius:12px;border:1px solid rgba(var(--ska-rgb),.35);background:rgba(var(--ska-rgb),.08);font-size:13px}
 .sk-osum strong{color:var(--ska);font-family:var(--skd);font-weight:800}
 .sk-osum em{font-style:normal;font-size:12px;color:#9da6b8}
 .sk-chips{display:flex;gap:4px;width:fit-content;max-width:calc(100% - 24px);margin:14px 12px 0;padding:3px;border-radius:10px;border:1px solid #26282b;background:#25272e;overflow-x:auto}
 .sk-chips button{height:auto;padding:8px 12px;border:none;border-radius:7px;background:none;color:#70758c;font-family:var(--skd);font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
-.sk-chips button.on{background:var(--ska);border-color:var(--ska);color:#121314}
+.sk-chips button.on{background:var(--skf);border-color:transparent;color:#fff}
 .sk-ol{gap:8px;padding:14px 12px 0}
 .sk-or{position:relative;gap:12px;padding:10px 12px;border-radius:10px;border:1px solid #26282b;background:#25272e;cursor:pointer}
 .sk-or:active{background:#2e2f38}
@@ -2161,15 +2162,16 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-or .rw{margin-top:8px}
 .sk-or .pr{font-family:var(--skd);font-size:13px;font-weight:700}
 .sk-st{height:22px;padding:0 10px;border-radius:999px;font-family:var(--skd);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
-.sk-st.p{background:rgba(255,184,28,.14);color:var(--ska)}
+.sk-st.p{background:rgba(var(--ska-rgb),.14);color:var(--ska)}.sk-st.p.w{background:rgba(var(--skw-rgb),.14);color:var(--skw)}
 .sk-st.d{background:rgba(48,209,88,.14);color:#30d158}
 .sk-st.c{background:rgba(255,77,79,.14);color:#ff4d4f}
-.sk-or .nt{margin-top:8px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,184,28,.28);background:rgba(255,184,28,.08);color:var(--ska);font-size:12px;line-height:1.5}
+.sk-or .nt{margin-top:8px;padding:10px 12px;border-radius:10px;border:1px solid rgba(var(--ska-rgb),.28);background:rgba(var(--ska-rgb),.08);color:var(--ska);font-size:12px;line-height:1.5}
 .sk-or .nt.c{border-color:rgba(255,77,79,.32);background:rgba(255,77,79,.1);color:#ff8484}
-.sk-or .ac{display:inline-flex;align-items:center;gap:6px;height:auto;margin-top:8px;padding:8px 12px;border:none;border-radius:10px;background:var(--ska);color:#121314;font-family:var(--skd);font-size:11px;font-weight:700}
+.sk-or .nt.w{border-color:rgba(var(--skw-rgb),.28);background:rgba(var(--skw-rgb),.08);color:var(--skw)}
+.sk-or .ac{display:inline-flex;align-items:center;gap:6px;height:auto;margin-top:8px;padding:8px 12px;border:none;border-radius:10px;background:var(--skf);color:#fff;font-family:var(--skd);font-size:11px;font-weight:700}
 .sk-or .ac.gh{background:#262a32;color:#fff;border:none}
 .sk-or .ac svg{width:14px;height:14px}
-/* buyurtma tafsilotlari (skinsavdo pur-hero + pur-details) */
+/* buyurtma tafsilotlari (rasm + ma'lumotlar) */
 .sk-pur .sk-mh .id{font-family:var(--skd);font-size:13px;letter-spacing:.04em;color:#70758c}
 .sk-purh{padding:16px 16px 0}
 .sk-purh .im{position:relative;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;border-radius:12px;border:1px solid #26282b;background:#25272e;overflow:hidden}
@@ -2180,11 +2182,12 @@ body.sk-open.sk-cart .toast{bottom:calc(158px + env(safe-area-inset-bottom))}
 .sk-purd .pr b{font-family:var(--skd);font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--ska)}
 .sk-purd .pr span{font-size:13px;font-weight:600;color:#70758c}
 .sk-pcall{padding:12px 14px;border-radius:10px;font-size:12.5px;line-height:1.5}
-.sk-pcall.info{border:1px solid rgba(255,184,28,.28);background:rgba(255,184,28,.08);color:var(--ska)}
+.sk-pcall.info{border:1px solid rgba(var(--ska-rgb),.28);background:rgba(var(--ska-rgb),.08);color:var(--ska)}
+.sk-pcall.warn{border:1px solid rgba(var(--skw-rgb),.28);background:rgba(var(--skw-rgb),.08);color:var(--skw)}
 .sk-pcall.ok{border:1px solid rgba(48,209,88,.32);background:rgba(48,209,88,.1);color:#30d158}
 .sk-pcall.err{border:1px solid rgba(255,77,79,.32);background:rgba(255,77,79,.1);color:#ff8484}
 .sk-purd .acts{display:flex;flex-wrap:wrap;gap:8px}
-.sk-ptrade{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:none;border-radius:10px;background:var(--ska);color:#121314;font-family:var(--skd);font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(255,184,28,.3)}
+.sk-ptrade{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:none;border-radius:10px;background:var(--skf);color:#fff;font-family:var(--skd);font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(var(--ska-rgb),.3)}
 .sk-pmeta{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:10px;border:1px solid #26282b;background:#25272e}
 .sk-pmeta div{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:12px}
 .sk-pmeta .k{color:#70758c}
@@ -2654,7 +2657,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-04.8";
+var CLIENT_BUILD="2026-11-05.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -6741,7 +6744,7 @@ function skHomePop(){
   if(!skOn(g)&&SK.games){SK.pop=[];SK.popGame=g;return paint();}
   api("/api/cs2/catalog?game="+g+(g==="cs2"?"&cat=knife":"")).then(function(r){SK.pop=r.items||[];SK.popGame=g;paint();}).catch(function(){SK.pop=[];paint();});
 }
-// Fonda xira suzib yuruvchi skinlar (skinsavdo foni kabi): top skinlarning haqiqiy rasmlari, 7–16% ko'rinishda,
+// Fonda xira suzib yuruvchi skinlar: top skinlarning haqiqiy rasmlari, 7–16% ko'rinishda,
 // sekin siljiydi va buriladi; do'kon va skin sahifasi fonida bir xil. Uchqunlar — SK_SPARKS.
 var SK_FS=[[4,18,150,.16,-18,13],[60,7,118,.11,14,11],[30,47,118,.11,-8,15],[76,44,84,.07,22,12],[2,74,118,.11,12,14],[50,86,150,.16,-14,16]];
 function skBgFill(){
@@ -6848,7 +6851,7 @@ function skSortPaint(){
   document.querySelectorAll("#sk [data-sksort]").forEach(function(b){var on=b.getAttribute("data-sksort")===(SK.sort||"");b.classList.toggle("on",on);b.setAttribute("aria-selected",on?"true":"false");});
 }
 function skSortOpen(on){var mm=skEl("skSortM"),tb=skEl("skSort");if(!mm)return;mm.hidden=!on;if(tb){tb.classList.toggle("open",on);tb.setAttribute("aria-expanded",on?"true":"false");}}
-// chapdan chiquvchi panel (skinsavdo mobil filtrlari kabi): fon bosilsa yoki «Orqaga» — yopiladi
+// chapdan chiquvchi panel (mobil filtrlar): fon bosilsa yoki «Orqaga» — yopiladi
 function skDrawer(html){
   var el=skEl();if(!el)return null;skDrawerClose(true);
   var d=document.createElement("div");d.className="sk-drawer";
@@ -6992,7 +6995,7 @@ function skItemPaint(p){
       +'<button class="sk-btn sk-buyb" data-skpg="cheap">'+SK_I.bolt+' Sotib olish</button>'
       :'<div class="sk-pz"><span style="font-size:16px">Hozir sotuvda yo\'q — birozdan keyin qarang</span><a href="#" data-skpg="steam">Steam '+SK_I.ext+'</a></div>')
     +'<section class="sk-offs"><h3>Barcha takliflar <span>('+offs.length+')</span></h3>'+lt
-    +(wt.length>1?'<div class="sk-wt"><button data-skwt="" class="all" style="--wc:#56cbf2"><b>Hammasi</b><small>Hamma holatlar</small><em>'+esc(skNum(Math.min.apply(null,wt.map(function(w){return w[2];}))))+' dan</em><i>'+offs.length+'</i></button>'
+    +(wt.length>1?'<div class="sk-wt"><button data-skwt="" class="all" style="--wc:#33a1ff"><b>Hammasi</b><small>Hamma holatlar</small><em>'+esc(skNum(Math.min.apply(null,wt.map(function(w){return w[2];}))))+' dan</em><i>'+offs.length+'</i></button>'
       +wt.map(function(w){return '<button data-skwt="'+w[0]+'" style="--wc:'+C2_WCOL[w[0]]+'"><b>'+w[0]+'</b><small>'+C2_WEAR[w[0]]+'</small><em>'+esc(skNum(w[2]))+' dan</em><i>'+w[1]+'</i></button>';}).join("")+'</div>':'')
     +'<div class="sk-og" id="skOg"></div></section>'
     +(C.sales&&C.sales.length?'<section class="sk-sales"><h3>'+esc(_t("So'nggi sotuvlar"))+'</h3>'+C.sales.map(function(x){var wc=C2_WCOL[x.wear]||"#8b93a1";
@@ -7107,7 +7110,8 @@ function skOrdSt(o){
   if(o.status==="done")return ["d","Yetkazildi"];
   if(o.status==="cancelled")return ["c",o.refundAmt!=null&&o.refundAmt<o.price?"Bekor · "+skShort(o.refundAmt)+" qaytdi":"Bekor · pul qaytdi"];
   var s=c.state;
-  return ["p",s==="accept"?"Steam'da qabul qiling":s==="locked"?(c.cancelReq?"Bekor qilinmoqda":"Trade-lock"):s==="sent"||s==="withdraw"?"Yuborilmoqda":s==="unknown"?"Tekshirilmoqda":"Sotib olinmoqda"];
+  // jarayonda — ko'k (brend); mijozdan harakat kutilsa yoki trade-lock — sariq (ogohlantirish)
+  return [s==="accept"||s==="locked"?"p w":"p",s==="accept"?"Steam'da qabul qiling":s==="locked"?(c.cancelReq?"Bekor qilinmoqda":"Trade-lock"):s==="sent"||s==="withdraw"?"Yuborilmoqda":s==="unknown"?"Tekshirilmoqda":"Sotib olinmoqda"];
 }
 function skOrders(paintOnly){
   var m=skEl("skMain");if(!m)return;
@@ -7119,14 +7123,14 @@ function skOrders(paintOnly){
   if(paintOnly)m.classList.add("na");
   var extra=function(o){var c=o.cs2;
     if(o.status==="pending"){
-      if(c.state==="accept")return '<div class="nt">'+(c.expiry?'⏱ '+esc(dt(c.expiry))+' gacha qabul qiling — keyin taklif bekor bo\'ladi va pul qaytadi':'Steam\'dagi trade taklifini qabul qiling')+'</div><button class="ac" data-skoffer="'+esc(c.tradeId||"")+'">Taklifni ochish '+SK_I.ext+'</button>';
-      if(c.state==="locked")return '<div class="nt">🔒 '+(c.unlockAt?esc(dt(c.unlockAt))+' da ochiladi':'Trade-lock\'da')+' — keyin avtomatik Steam\'ga yuboriladi</div>'+(c.cancelReq?'':'<button class="ac gh" data-skocancel="'+esc(o.id)+'">Bekor qilish (3%)</button>');
+      if(c.state==="accept")return '<div class="nt w">'+(c.expiry?'⏱ '+esc(dt(c.expiry))+' gacha qabul qiling — keyin taklif bekor bo\'ladi va pul qaytadi':'Steam\'dagi trade taklifini qabul qiling')+'</div><button class="ac" data-skoffer="'+esc(c.tradeId||"")+'">Taklifni ochish '+SK_I.ext+'</button>';
+      if(c.state==="locked")return '<div class="nt w">🔒 '+(c.unlockAt?esc(dt(c.unlockAt))+' da ochiladi':'Trade-lock\'da')+' — keyin avtomatik Steam\'ga yuboriladi</div>'+(c.cancelReq?'':'<button class="ac gh" data-skocancel="'+esc(o.id)+'">Bekor qilish (3%)</button>');
       if(c.state==="sent"||c.state==="withdraw")return '<div class="nt">Steam\'ga trade taklifi tayyorlanmoqda…</div>';
       return "";
     }
     return o.status==="cancelled"&&o.cancelReason?'<div class="nt c">'+esc(o.cancelReason)+'</div>':'';
   };
-  // skinsavdo «Покупки»: xulosa satri, tablar (pill guruhi), xarid kartochkalari; karta bosilsa — tafsilotlar oynasi
+  // Buyurtmalar: xulosa satri, tablar (pill guruhi), xarid kartochkalari; karta bosilsa — tafsilotlar oynasi
   var spent=all.filter(function(o){return o.status==="done";}).reduce(function(a,o){return a+(o.price||0);},0),pendN=all.filter(function(o){return stOf(o)==="pending";}).length;
   m.innerHTML='<div class="sk-ph sk-in"><h2>Buyurtmalar</h2><p>Skin xaridlaringiz va ularning holati</p></div>'
     +(all.length?'<div class="sk-osum sk-in"><span>Jami <strong>'+all.length+' ta</strong> xarid'+(spent?' · <strong>'+esc(money(spent))+'</strong>':'')+'</span>'+(pendN?'<em>'+pendN+' ta jarayonda</em>':'')+'</div>':'')
@@ -7146,14 +7150,14 @@ function skOrders(paintOnly){
       loadMe(function(){if(SK.tab==="orders"&&skEl()&&!skEl().querySelector(".sk-modal"))skOrders(true);skBal();});},15000);
   }
 }
-// Buyurtma tafsilotlari: rasm (4:3), raqam, nom, narx, holat izohi, amallar va ma'lumotlar jadvali (skinsavdo «Покупка» kabi)
+// Buyurtma tafsilotlari: rasm (4:3), raqam, nom, narx, holat izohi, amallar va ma'lumotlar jadvali
 function skOrderDetail(id){
   var el=skEl(),o=(ME.orders||[]).filter(function(x){return x.id===id;})[0];if(!el||!o||!o.cs2)return;
   var old=el.querySelector(".sk-modal");if(old)old.remove();
   var c=o.cs2,s=skOrdSt(o),g=SK_G[c.game]||SK_G.cs2,dt=skDt;
   var cl=o.status==="done"?["ok","Skin Steam hisobingizga yetkazildi."]:o.status==="cancelled"?["err",o.cancelReason||"Buyurtma bekor qilindi, pul balansga qaytarildi."]
-    :c.state==="accept"?["info",(c.expiry?dt(c.expiry)+" gacha ":"")+"Steam'dagi savdo taklifini qabul qiling — keyin taklif bekor bo'ladi va pul qaytadi."]
-    :c.state==="locked"?["info","Trade-lock: "+(c.unlockAt?dt(c.unlockAt)+" da ochiladi":"ochilishini kutyapmiz")+", keyin avtomatik Steam'ga yuboriladi."]
+    :c.state==="accept"?["warn",(c.expiry?dt(c.expiry)+" gacha ":"")+"Steam'dagi savdo taklifini qabul qiling — keyin taklif bekor bo'ladi va pul qaytadi."]
+    :c.state==="locked"?["warn","Trade-lock: "+(c.unlockAt?dt(c.unlockAt)+" da ochiladi":"ochilishini kutyapmiz")+", keyin avtomatik Steam'ga yuboriladi."]
     :["info","Steam'ga savdo taklifi tayyorlanmoqda — odatda 1–5 daqiqa."];
   var kv=[["Holat",s[1]],["Sana",dt(o.ts)],["O'yin",g.full||g.n]];
   if(c.wear)kv.push(["Holati",(C2_WEAR[c.wear]||c.wear)]);
@@ -7270,7 +7274,7 @@ function skProfile(){
   var all=(ME.orders||[]).filter(function(o){return o.cs2;}),done=all.filter(function(o){return o.status==="done";}).length;
   var pend=all.filter(function(o){return o.status==="pending";}).length,spent=all.filter(function(o){return o.status==="done";}).reduce(function(a,o){return a+(o.price||0);},0);
   var has=!!SK.tradeUrl;
-  // skinsavdo profili: yon panel (avatar, balans kartasi, menyu, chiqish) + asosiy qism (bloklar)
+  // Profil: yon panel (avatar, balans kartasi, menyu, chiqish) + asosiy qism (bloklar)
   var nav=function(act,icon,title,badge){return '<button class="sk-pni" data-skact="'+act+'"><span class="ico">'+icon+'</span><span class="tx">'+esc(title)+'</span>'+(badge?'<i>'+esc(badge)+'</i>':'')+'</button>';};
   var st=SK.steam,stIco=STEAM_SVG.replace(/width="[^"]*"/,'width="24"').replace(/height="[^"]*"/,'height="24"');
   var stc=st?'<div class="sk-steam sk-pblk"><div class="av">'+(st.avatar?'<img src="'+esc(st.avatar)+'" alt="" onerror="this.remove()">':'')+stIco+'</div>'
