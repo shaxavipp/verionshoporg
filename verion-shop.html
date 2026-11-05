@@ -421,7 +421,7 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25;white-space
 .bigtile img.fit{filter:drop-shadow(0 6px 14px rgba(0,0,0,.28))}
 /* maxsus kartochka rasmi (Steam, raqam, skinlar): shaffof logo kartochka fonida markazda */
 .cardart{background:var(--card2)!important;position:relative}
-.cardart img{object-fit:contain!important;padding:12%;box-sizing:border-box}
+.cardart img{object-fit:cover!important}
 .ptile.emoji-only{background:var(--card2)!important}
 .ptile .emj{font-size:42px;line-height:1;position:relative;z-index:1}
 .ptile .tl{font-size:13px;font-weight:700;letter-spacing:.01em;position:relative;z-index:1;text-align:center}
@@ -4016,14 +4016,14 @@ function admPenGo(a,arg){
 function openCardArt(k){
   var c=cardArt(k)||{},D=CARD_DEF[k],F={img:c.img||""};
   var html='<h2>🖼 '+esc(D[0])+' — kartochka</h2>'
-    +'<div class="paynote" style="margin:0 0 6px">Bosh sahifa va bo\'limlardagi kartochka. Bo\'sh qoldirilgani standart holida qoladi; nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi.</div>'
-    +gImgPick("ca_img","Avatar (kvadrat rasm)",F.img)
+    +'<div class="paynote" style="margin:0 0 6px">Bo\'limdagi kartochka. Rasm kartochkani to\'liq to\'ldiradi (kvadrat 1:1, masalan 1024×1024). Rasm qo\'yilmasa — ilovaga o\'rnatilgan tayyor muqova chiqadi. Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi.</div>'
+    +gImgPick("ca_img","Rasm (kvadrat)",F.img)
     +'<label>Nomi</label><input id="ca_name" maxlength="60" value="'+esc(c.name&&c.name.uz||"")+'" placeholder="'+esc(D[0])+'">'
     +'<label>Qisqa matn</label><input id="ca_sub" maxlength="60" value="'+esc(c.sub&&c.sub.uz||"")+'" placeholder="'+esc(D[1])+'">'
     +'<div style="height:12px"></div><button class="btn big" id="caSave">'+esc(t("a_save"))+'</button>'
     +(cardArt(k)?'<div style="height:8px"></div><button class="btn red" id="caReset">Asl holiga qaytarish</button>':'')+'<div style="height:20px"></div>';
   var sh=openSheet(html);
-  gBindImg(sh,"ca_img",512,function(u){F.img=u;},true);
+  gBindImg(sh,"ca_img",800,function(u){F.img=u;},false);
   var post=function(v,btn){var o={};o[k]=v;btn.disabled=true;
     api("/api/admin/extras","POST",{cards:o}).then(function(r){
       EXTRAS=EXTRAS||{};EXTRAS.cards=r.cards||{};loadExtras._sig="";haptic("ok");toast(t("a_saved"));closeSheet();render();
@@ -9423,7 +9423,7 @@ function prdRows(){
         sub:L.length+" ta mahsulot · "+prdRange(L.map(function(x){return Number(x.price)||0;})),conn:c0,hidden:hid,sold:sold,items:L});
     });
     solo.forEach(function(x){
-      rows.push({kind:kind,type:"citem",key:"item:"+x.id,title:loc(x.title)||x.id,img:(x.tile&&x.tile.img)||"",emoji:(x.tile&&x.tile.emoji)||"",
+      rows.push({kind:kind,type:"citem",key:"item:"+x.id,title:loc(x.title)||x.id,img:(x.tile&&x.tile.img)||(x.fulfill==="fragment_stars_custom"?"/assets/cover-stars.jpg":x.fulfill==="fragment_premium"?"/assets/cover-premium.jpg":""),emoji:(x.tile&&x.tile.emoji)||"",
         sub:(Number(x.price)>0?money(x.price):(x.fulfill==="fragment_stars_custom"?"Istalgan miqdor":"narx qo'yilmagan")),conn:prdItemConn(x),hidden:x.active===false,sold:prdSale("item:"+x.id),item:x});
     });
     if(kind==="telegram"){
@@ -9431,7 +9431,7 @@ function prdRows(){
       if(gifts.length)rows.push({kind:kind,type:"gifts",key:"gifts",title:"Telegram sovg'alar",icon:"gift",sub:gifts.length+" ta sovg'a · "+prdRange(gifts.map(function(x){return Number(x.price)||0;})),
         conn:{t:"Gift bot",cls:svc.giftBot?"ok":"err"},hidden:gifts.every(function(x){return x.active===false;}),
         sold:gifts.reduce(function(s,x){var q=prdSale("item:"+x.id);s.n+=q.n;s.sum+=q.sum;return s;},{n:0,sum:0}),items:gifts});
-      if(svc.vnum)rows.push({kind:kind,type:"vnum",key:"svc:vnum",title:"Virtual raqam",icon:"phone",sub:"Telegram uchun SMS raqamlar · "+(svc.vnum.ttlMin||20)+" daqiqa",
+      if(svc.vnum)rows.push({kind:kind,type:"vnum",key:"svc:vnum",title:cardTxt("vnum","name"),img:cardImg("vnum"),icon:"phone",sub:"Telegram uchun SMS raqamlar · "+(svc.vnum.ttlMin||20)+" daqiqa",
         conn:{t:svc.vnum.provider==="5sim"?"5sim":"TG-Lion",cls:svc.vnum.enabled&&svc.vnum.keySet?"ok":svc.vnum.enabled?"err":"mut"},hidden:!svc.vnum.enabled,sold:prdSale("svc:vnum")});
     }
     var sec=kind==="obuna"?"obuna":kind==="games"?"games":"";
@@ -9441,10 +9441,10 @@ function prdRows(){
         conn:prdGameConn(g.id),hidden:!g.active||g.draft||!on.length,draft:!!g.draft,sold:prdSale("game:"+g.id),game:g});
     });
     if(kind==="games"){
-      if(svc.steam)rows.push({kind:kind,type:"steam",key:"svc:steam",title:"Steam hamyon",icon:"wallet",sub:"$"+svc.steam.min+"–$"+svc.steam.max+" · 1$ = "+money(svc.steam.rate),
+      if(svc.steam)rows.push({kind:kind,type:"steam",key:"svc:steam",title:cardTxt("steam","name"),img:cardImg("steam"),icon:"wallet",sub:"$"+svc.steam.min+"–$"+svc.steam.max+" · 1$ = "+money(svc.steam.rate),
         conn:{t:svc.steam.mode==="manual"?"Qo'lda":svc.steam.line?svc.steam.line.name:"Ludovex ulanmagan",cls:svc.steam.mode==="manual"?"mut":svc.steam.line&&svc.steam.line.enabled?"ok":"err"},hidden:!svc.steam.enabled,sold:prdSale("svc:steam")});
       if(svc.skins){var sg=svc.skins.games||{},on2=["cs2","dota2","rust"].filter(function(k){return sg[k];});
-        rows.push({kind:kind,type:"skins",key:"svc:skins",title:"Skinlar do'koni",icon:"gamepad",sub:(on2.length?on2.map(function(k){return {cs2:"CS2",dota2:"Dota 2",rust:"Rust"}[k];}).join(" · "):"o'chiq"),
+        rows.push({kind:kind,type:"skins",key:"svc:skins",title:"Skinlar do'koni",img:cardImg("cs2"),icon:"gamepad",sub:(on2.length?on2.map(function(k){return {cs2:"CS2",dota2:"Dota 2",rust:"Rust"}[k];}).join(" · "):"o'chiq"),
           conn:{t:"lis-skins",cls:svc.skins.enabled&&svc.skins.keySet?"ok":svc.skins.enabled?"err":"mut"},hidden:!svc.skins.enabled,
           sold:["cs2","dota2","rust"].reduce(function(s,k){var q=prdSale("svc:skins:"+k);s.n+=q.n;s.sum+=q.sum;return s;},{n:0,sum:0})});}
     }
@@ -9471,6 +9471,7 @@ function openAdminProducts(){
     +'<button class="adm-hb" id="prdRef" aria-label="Balanslarni yangilash">↻</button><button class="adm-hb" id="prdTools" aria-label="Katalog vositalari">'+ic("gear",16)+'</button></div>'
     +'<div class="prd-prov" id="prdProv"></div>'
     +'<div class="sinb-tools"><input id="prdQ" type="search" placeholder="Mahsulot, o\'yin yoki xizmat" autocomplete="off"></div>'
+    +'<div class="arow" style="padding:0 14px 8px;gap:8px;flex-wrap:wrap"><button class="btn sm gray" id="prdCats" style="width:auto">🗂 Bo\'limlar: nomi va rasmi</button><button class="btn sm gray" id="prdGrps" style="width:auto">📁 Guruhlar</button></div>'
     +'<div class="sinb-tabs" id="prdTabs"></div>'
     +'<div class="sinb-list" id="prdList"><div class="sinb-empty">Yuklanmoqda…</div></div>'
     +'<div class="prd-add"><button class="btn" id="prdNew">'+ic("plus",15)+' Yangi mahsulot</button></div>';
@@ -9479,6 +9480,8 @@ function openAdminProducts(){
   el.querySelector("#prdTools").addEventListener("click",function(){haptic();openAdminCatalog();});
   el.querySelector("#prdRef").addEventListener("click",function(){haptic();toast("Balanslar yangilanmoqda…");prdLoad(true,prdPaint);});
   el.querySelector("#prdNew").addEventListener("click",function(){haptic();prdNewSheet();});
+  el.querySelector("#prdCats").addEventListener("click",function(){haptic();PRD.dirty=true;openAdminCategories();});
+  el.querySelector("#prdGrps").addEventListener("click",function(){haptic();PRD.dirty=true;openAdminGroups();});
   var qt=null;el.querySelector("#prdQ").addEventListener("input",function(){clearTimeout(qt);var v=this.value;qt=setTimeout(function(){PRD.q=v.trim().toLowerCase();prdPaint();},200);});
   el.querySelector("#prdTabs").addEventListener("click",function(e){var b=e.target.closest("[data-t]");if(!b)return;haptic();PRD.tab=b.getAttribute("data-t");prdPaint();});
   el.querySelector("#prdList").addEventListener("click",function(e){var b=e.target.closest("[data-prd]");if(b){haptic();prdOpen(b.getAttribute("data-prd"));}});
@@ -9553,13 +9556,13 @@ function prdConnHTML(r){
     });
   }else if(r.type==="steam"){var s=svc.steam||{},p=s.line?prdProv(s.line.id):null,b=p?prdBal(p.message):"";
     h+=prdProvLine(s.mode==="manual"?"Qo'lda":"Ludovex API",s.mode==="manual"?"Admin hamyonni o'zi to'ldiradi":(s.line?(s.line.enabled?(p?(p.ok?"Ishlayapti":"Xato: "+esc(p.message)):"Yoqilgan"):"Liniya o'chiq"):"Ludovex liniyasi yo'q")+(b?' · balans <b>'+esc(b)+'</b>':''),r.conn.cls)
-      +'<div class="arow" style="margin-top:8px"><button class="btn sm gray" data-pa="steam">Kurs, chegaralar</button><button class="btn sm gray" data-pa="lines">Ludovex liniyasi</button></div>';
+      +'<div class="arow" style="margin-top:8px"><button class="btn sm" data-pa="card:steam">🖼 Nomi va rasmi</button><button class="btn sm gray" data-pa="steam">Kurs, chegaralar</button><button class="btn sm gray" data-pa="lines">Ludovex liniyasi</button></div>';
   }else if(r.type==="vnum"){var v=svc.vnum||{};
     h+=prdProvLine(v.provider==="5sim"?"5sim.net API":"TG-Lion API",(v.enabled?"Yoqilgan":"O'chiq")+" · kalit "+(v.keySet?"bor":"yo'q")+" · kurs "+esc(String(v.rate||""))+(v.provider==="5sim"?" so'm/coin":" so'm/$")+" · ustama "+esc(String(v.markup||0))+"%",r.conn.cls,'<button class="btn sm gray" data-pa="vntest" style="width:auto">Sinash</button>')
-      +'<div class="d" id="prdVnRes"></div><div class="arow" style="margin-top:8px"><button class="btn sm gray" data-pa="vnum">Sozlamalar</button></div>';
+      +'<div class="d" id="prdVnRes"></div><div class="arow" style="margin-top:8px"><button class="btn sm" data-pa="card:vnum">🖼 Nomi va rasmi</button><button class="btn sm gray" data-pa="vnum">Sozlamalar</button></div>';
   }else if(r.type==="skins"){var k=svc.skins||{},p2=null;(PRD.ov.providers||[]).forEach(function(x){if(/lis|skin|cs2/i.test(x.id+" "+x.name))p2=x;});
     h+=prdProvLine("lis-skins.com API",(k.enabled?"Yoqilgan":"O'chiq")+" · kalit "+(k.keySet?"bor":"yo'q")+(p2?" · "+(p2.ok?"balans <b>"+esc(prdBal(p2.message)||p2.message)+"</b>":"xato: "+esc(p2.message)):""),r.conn.cls)
-      +'<div class="arow" style="margin-top:8px"><button class="btn sm gray" data-pa="cs2">Skinlar sozlamasi</button></div>';
+      +'<div class="arow" style="margin-top:8px"><button class="btn sm" data-pa="card:cs2">🖼 CS2</button><button class="btn sm" data-pa="card:dota2">🖼 Dota 2</button><button class="btn sm" data-pa="card:rust">🖼 Rust</button><button class="btn sm gray" data-pa="cs2">Skinlar sozlamasi</button></div>';
   }else if(r.type==="nakrutka"){
     ((PRD.ov&&PRD.ov.smm)||[]).forEach(function(l){var p=prdProv("smm:"+l.id)||prdProv(l.id),b=p?prdBal(p.message):"";
       h+=prdProvLine(l.name,(!l.enabled?"O'chiq":!l.ready?"Kalit yo'q":p?(p.ok?"Ishlayapti":"Xato: "+esc(p.message)):"Yoqilgan")+(b?' · balans <b>'+esc(b)+'</b>':''),!l.enabled?"mut":!l.ready||(p&&!p.ok)?"err":"ok");});
@@ -9606,6 +9609,7 @@ function prdAct(r,a,id){
   if(a==="gedit"){gAdmLoad(function(){openAdminGameForm(r.game.id);});return;}
   if(a==="lines"){openAdminGames(r.game&&r.game.section==="obuna"?"obuna":"");return;}
   if(a==="import"){gAdmLoad(function(){openAdminImportAll();});return;}
+  if(a.indexOf("card:")===0&&CARD_DEF[a.slice(5)]){openCardArt(a.slice(5));return;}
   if(a==="steam"||a==="steamvn"){openAdminSteam();return;}
   if(a==="vnum"){openAdminVnum();return;}
   if(a==="cs2"){openAdminCs2();return;}
