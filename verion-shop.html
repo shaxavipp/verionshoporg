@@ -195,16 +195,11 @@ button,a,[role="button"],summary,label,select{touch-action:manipulation}
 @keyframes ctaRing{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.16,1.55);opacity:0}}
 @keyframes arrGo{0%,100%{transform:translateX(-1.5px)}50%{transform:translateX(3px)}}
 @keyframes dotBlink{0%,100%{opacity:1}50%{opacity:.35}}
-/* RGB yorug'lik chizig'i: har bir bo'limning o'z mahsulotlari ranglarida (Obuna — ChatGPT/Spotify/Netflix, O'yinlar — o'yin ranglari, Telegram — ko'k/binafsha/oltin yulduz, Nakrutka — TikTok/Instagram) */
-.homecats .pcard[data-opencat="obuna"]{--g1:#10b981;--g2:#8b5cf6;--g3:#f43f5e}
-.homecats .pcard[data-opencat="games"]{--g1:#22c55e;--g2:#f59e0b;--g3:#ef4444}
-.homecats .pcard[data-opencat="telegram"]{--g1:#2aabee;--g2:#7c83ff;--g3:#ffc233}
-.homecats .pcard[data-opencat="nakrutka"]{--g1:#25f4ee;--g2:#e1306c;--g3:#ff9a3c}
-.homecats .pcard[data-opencat="ai"]{--g1:#10a37f;--g2:#8b5cf6;--g3:#4285f4}
+/* Yorug'lik chizig'i: hamma kartada bir xil, yumshoq och-ko'k (ko'zni charchatmaydi — oq yaltiroq uchi yo'q, sekin aylanadi) */
 .homecats .pcard:nth-child(1){--d:0s}.homecats .pcard:nth-child(2){--d:3s}.homecats .pcard:nth-child(3){--d:6s}.homecats .pcard:nth-child(4){--d:9s}.homecats .pcard:nth-child(5){--d:4.5s}
 .homecats .pcard::before{content:"";position:absolute;z-index:0;left:50%;top:50%;width:440px;height:440px;margin:-220px 0 0 -220px;pointer-events:none;opacity:0;
-  background:conic-gradient(from 0deg,transparent 0 50%,var(--g1,var(--cc)) 64%,var(--g2,var(--cc)) 78%,var(--g3,var(--cc)) 90%,#fff 95.5%,transparent 100%);
-  animation:spinFx 3.2s linear infinite,spotWin 12s linear infinite;animation-delay:0s,var(--d)}
+  background:conic-gradient(from 0deg,transparent 0 56%,rgba(120,185,255,.08) 62%,rgba(120,185,255,.42) 86%,rgba(170,214,255,.66) 98%,transparent 100%);
+  animation:spinFx 6s linear infinite,spotWin 12s linear infinite;animation-delay:0s,var(--d)}
 .homecats .pcard::after{content:"";position:absolute;z-index:1;inset:2px;border-radius:calc(var(--r-xl) - 2px);background:var(--card);pointer-events:none}
 .homecats .pcard>.ptile,.homecats .pcard>.pbody{position:relative;z-index:2}
 .homecats .pcard .ptile img{animation:kenb 11s ease-in-out infinite alternate;will-change:transform}
@@ -218,9 +213,9 @@ button,a,[role="button"],summary,label,select{touch-action:manipulation}
 .homecats .pcard .pcta .parr{position:relative;z-index:1;width:22px;height:22px;border-radius:50%;background:#fff;color:#15803d;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(2,70,30,.3)}
 .homecats .pcard .pcta .parr svg{width:14px;height:14px;animation:arrGo 1.4s ease-in-out infinite}
 .homecats .pcard .pcta .psh{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
-.homecats .pcard .pcta .psh::before{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:translateX(-140%) skewX(-18deg);animation:ctaShine 4.8s ease-in-out infinite;animation-delay:var(--d)}
+.homecats .pcard .pcta .psh::before{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.34),transparent);transform:translateX(-140%) skewX(-18deg);animation:ctaShine 4.8s ease-in-out infinite;animation-delay:var(--d)}
 .homecats .pcard .pcta .pgr{position:absolute;inset:0;border-radius:999px;opacity:0;animation:spotWin 12s linear infinite;animation-delay:var(--d)}
-.homecats .pcard .pcta .pgr::before,.homecats .pcard .pcta .pgr::after{content:"";position:absolute;inset:0;border-radius:999px;border:2px solid rgba(74,222,128,.95);animation:ctaRing 1.5s ease-out infinite}
+.homecats .pcard .pcta .pgr::before,.homecats .pcard .pcta .pgr::after{content:"";position:absolute;inset:0;border-radius:999px;border:2px solid rgba(74,222,128,.55);animation:ctaRing 1.5s ease-out infinite}
 .homecats .pcard .pcta .pgr::after{animation-delay:.75s}
 .homecats .pcard .pripple{position:absolute;z-index:5;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:rgba(34,197,94,.42);pointer-events:none;animation:ripOut .7s ease-out forwards}
 /* oyna ochilganda ichidagi bloklar ketma-ket chiqadi (faqat ochilishda) */
