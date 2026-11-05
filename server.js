@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-05.3";
+const BUILD = "2026-11-05.4";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -3117,6 +3117,48 @@ function handleRequest(req, res) {
       }).catch(e => {
         if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Fragment (Stars/Premium)", String(e.message || e), "fragment_failed"); }
         const o = unknownDeliveryOrder(u, it, "Telegram Stars (" + amount + ") @" + uname, price, e.message);
+        send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance, pending: true });
+      });
+    });
+  }
+  /* Telegram Premium — xaridorning o'ziga yoki istalgan boshqa @username'ga (Fragment orqali).
+     Pul avval band qilinadi (reserveBalance); yetkazib beruvchi aniq rad etsa — qaytariladi,
+     aloqa uzilib natija noma'lum bo'lsa — buyurtma "kutilmoqda" bo'lib adminga xabar ketadi. */
+  if (url === "/api/buy-premium" && m === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: req._authReason === "expired" ? "expired" : "auth" });
+    return readBody(req, res, b => {
+      const cat = catalogArr();
+      if (!cat) return send(res, 409, { error: "catalog not published" });
+      const it = cat.find(x => x.id === b.itemId && x.active !== false && x.fulfill === "fragment_premium");
+      if (!it) return send(res, 404, { error: "no item" });
+      const uname = String(b.username || "").trim().replace(/^@/, "");
+      if (!/^[A-Za-z0-9_]{4,32}$/.test(uname)) return send(res, 400, { error: "username" });
+      const price = Math.round(Number(it.price) || 0);
+      const acc = user(u);
+      if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
+      const months = Number(it.premiumMonths) || 3;
+      const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
+      fragmentCall("/premium/buy", { duration: months, username: uname }).then(r => {
+        const j = r.json;
+        if (!j || j.ok !== true) {
+          acc.balance += price; save();                       // aniq rad etildi — pul qaytadi
+          const msg = (j && j.message) || "Fragment xatosi";
+          // Qabul qiluvchida Premium allaqachon bor — bu xaridorning xatosi, yetkazib beruvchi nosozligi emas (adminga signal ketmaydi)
+          if (/already.*premium|premium.*already|(has|have).*(active )?premium|уже.*(premium|премиум)|allaqachon.*premium/i.test(String(msg)))
+            return send(res, 409, { error: "already_premium", message: "Bu foydalanuvchida allaqachon Telegram Premium mavjud. Qayta sotib olish mumkin emas." });
+          return supplierFail(res, "Fragment (Stars/Premium)", msg, "fragment_failed");
+        }
+        const summary = "💎 Premium " + months + " oy @" + uname + " ga yuborildi";
+        const o = { id: genId("VN"), seq: nextOrderSeq(), uid: u.id, uname: u.username || null, itemId: it.id,
+          item: title, price, status: "done", ts: Date.now(),
+          delivered: summary, doneTs: Date.now(), fragment: j.result || null, premiumRecipient: uname };
+        DB.orders.push(o); save(); notifyOrder(o); logDeliveryToChannel(o);
+        creditReferralOnOrder(o);
+        send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance });
+      }).catch(e => {
+        if (requestNotSent(e)) { acc.balance += price; save(); return supplierFail(res, "Fragment (Stars/Premium)", String(e.message || e), "fragment_failed"); }
+        const o = unknownDeliveryOrder(u, it, title + " → @" + uname, price, e.message, { premiumRecipient: uname });
         send(res, 200, { ok: true, order: pubOrder(o), balance: acc.balance, pending: true });
       });
     });

@@ -2606,6 +2606,48 @@ body.sinb-open{overflow:hidden}
 .giftUrow{display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px}
 .giftSelfBtn{color:var(--acc2);font-size:var(--fs-sm);font-weight:500;background:none;border:none;padding:0}
 .exta{font-family:ui-monospace,Menlo,monospace;font-size:var(--fs-2xs);min-height:90px}
+/* Telegram Premium sotib olish + "Balans yetarli emas" oynasi (raqobatchi oqimiga o'xshash) */
+.pmHead{position:relative;display:flex;align-items:center;gap:14px;padding:14px;border-radius:var(--r-xl);border:1px solid var(--line);margin-bottom:4px;
+  background:linear-gradient(135deg,rgba(var(--acc-rgb),.16),rgba(139,92,246,.10))}
+.pmHead .pmIc{width:64px;height:64px;border-radius:18px;overflow:hidden;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:32px;background:var(--card2);border:1px solid var(--line)}
+.pmHead .pmT{font-size:var(--fs-lg);font-weight:700;letter-spacing:.01em}
+.pmHead .pmS{font-size:var(--fs-xs);color:var(--mut);margin-top:3px;line-height:1.4}
+.pmLbl{font-size:var(--fs-xs);font-weight:600;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin:18px 2px 8px}
+.pmSelfRow{margin-top:8px}
+.pmUc{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:999px;border:1px solid}
+.pmUc.ok{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.08)}
+.pmUc.warn{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.09)}
+.pmUc .pmUi{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.pmUc.ok .pmUi{background:rgba(34,197,94,.2);color:var(--ok)}
+.pmUc.warn .pmUi{background:rgba(245,158,11,.22);color:var(--gold)}
+.pmUc .pmUn{display:flex;flex-direction:column;min-width:0;flex:1}
+.pmUc .pmUn b{font-size:var(--fs-md);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmUc .pmUn i{font-style:normal;font-size:var(--fs-sm)}
+.pmUc.ok .pmUn i{color:var(--ok)}.pmUc.warn .pmUn i{color:var(--gold)}
+.pmChg{background:none;border:none;color:var(--mut);font-size:var(--fs-sm);padding:6px 2px;flex:0 0 auto}
+.pmWarn{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:12px 14px;border-radius:var(--r-lg);border:1px solid rgba(245,158,11,.5);background:rgba(245,158,11,.08);color:var(--gold);font-size:var(--fs-sm);line-height:1.45}
+.pmWarn svg{flex:0 0 auto;margin-top:2px}
+.pmPk{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pmPk button{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--r-lg);background:var(--card2);border:1px solid var(--line);text-align:left;color:var(--txt);min-width:0;transition:border-color .2s,background .2s,transform .2s var(--spring)}
+.pmPk button:active{transform:scale(.97)}
+.pmPk button.on{border-color:var(--acc);background:rgba(var(--acc-rgb),.12);box-shadow:0 0 0 1px rgba(var(--acc-rgb),.35)}
+.pmPk .ic{width:44px;height:44px;border-radius:13px;overflow:hidden;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(var(--acc-rgb),.12)}
+.pmPk .tx{display:flex;flex-direction:column;min-width:0}
+.pmPk .nm{font-size:var(--fs-md);font-weight:600}
+.pmPk .pc{font-size:var(--fs-sm);font-weight:600;color:var(--acc2);margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pmPk .dot{margin-left:auto;width:10px;height:10px;border-radius:50%;background:var(--acc);opacity:0;flex:0 0 auto;transition:opacity .2s}
+.pmPk button.on .dot{opacity:1}
+.nbWrap{text-align:center;padding:4px 0 2px}
+.nbIc{width:84px;height:84px;border-radius:26px;margin:6px auto 14px;display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,.14);color:var(--err)}
+.nbT{font-size:var(--fs-xl);font-weight:700}
+.nbS{font-size:var(--fs-sm);color:var(--mut);margin:8px 6px 16px;line-height:1.5}
+.nbTbl{background:var(--card2);border:1px solid var(--line);border-radius:var(--r-lg);padding:2px 16px;text-align:left}
+.nbTbl .r{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.nbTbl .r:last-child{border-bottom:none}
+.nbTbl .r span{color:var(--mut)}.nbTbl .r b{font-weight:650}
+.nbTbl .r.bad span,.nbTbl .r.bad b{color:var(--err)}
+.nbBtns{display:flex;gap:10px;margin-top:16px}.nbBtns .btn{flex:1;min-width:0;white-space:nowrap}.nbBtns .btn.gray{flex:0 0 34%}
+
 
 /* Telegram Sovg'alar — to'liq ekranli sahifa: sarlavha kartasi, kichik tablar, 2-ustunli tanlash kartochkalari */
 .ghHead{display:flex;align-items:center;gap:14px;margin:6px 16px 16px;padding:14px;background:var(--card);
@@ -2695,7 +2737,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.3";
+var CLIENT_BUILD="2026-11-05.4";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2823,6 +2865,7 @@ en:{
   a_publish:"Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
   a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
   bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
+  nb_title:"Insufficient balance",nb_sub:"Your balance is not enough to buy this product. Top up your balance first.",nb_price:"Product price",nb_short:"Short by",nb_close:"Close",nb_topup:"Top up balance",pm_sub:"Official subscription · activated by username",pm_change:"Change",pm_months:"months",pm_already:"This user already has Telegram Premium. It cannot be bought again.",pm_already_short:"Premium is already active for this user",
   buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
   need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
   pw_exact:"Transfer EXACTLY this amount",pw_timer_hint:"Pay before the time runs out",pw_rule1:"Do not change the amount even by 1 sum",
@@ -2921,6 +2964,7 @@ uz:{
   a_publish:"Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
   a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
   bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
+  nb_title:"Balans yetarli emas",nb_sub:"Bu mahsulotni olish uchun balansingiz yetarli emas. Avval balansni to'ldiring.",nb_price:"Mahsulot narxi",nb_short:"Yetishmaydi",nb_close:"Yopish",nb_topup:"Balansni to'ldirish",pm_sub:"Rasmiy obuna · username orqali yoqiladi",pm_change:"O'zgartirish",pm_months:"oylik",pm_already:"Bu foydalanuvchida allaqachon Telegram Premium mavjud. Qayta sotib olish mumkin emas.",pm_already_short:"Bu foydalanuvchida Premium allaqachon bor",
   buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
   need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
   pw_exact:"AYNAN shu summani o'tkazing",pw_timer_hint:"Shu vaqt tugaguncha to'lovni amalga oshiring",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
@@ -3019,6 +3063,7 @@ ru:{
   a_publish:"Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
   a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
   bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
+  nb_title:"Недостаточно средств",nb_sub:"Для покупки не хватает средств на балансе. Сначала пополните баланс.",nb_price:"Цена товара",nb_short:"Не хватает",nb_close:"Закрыть",nb_topup:"Пополнить баланс",pm_sub:"Официальная подписка · активация по username",pm_change:"Изменить",pm_months:"мес.",pm_already:"У этого пользователя уже есть Telegram Premium. Купить повторно нельзя.",pm_already_short:"У пользователя уже есть Premium",
   buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
   need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
   pw_exact:"Переведите РОВНО эту сумму",pw_timer_hint:"Оплатите до истечения времени",pw_rule1:"Не меняйте сумму даже на 1 сум",
@@ -3963,15 +4008,21 @@ function openCardArt(k){
 function productGridHTML(items,extra){
   var html='<div class="grid">'+(extra||[]).map(function(x){return x.charAt(0)==="<"?x:xProductCard(x);}).join("");
   if(!items.length&&!(extra&&extra.length))html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
+  var premShown=false; // Premium paketlari (3/6/12 oy) bitta "Telegram Premium" kartasiga jamlanadi — paketni ichida tanlanadi
   for(var j=0;j<items.length;j++){
-    var it=items[j];
+    var it=items[j],premCard=false;
+    if(it.fulfill==="fragment_premium"){
+      if(premShown)continue;
+      premShown=true;premCard=true;
+      var pp=premiumPacks();if(pp.length)it=pp[0];
+    }
     var realStk=stockOf(it);
     var out=realStk!==null&&realStk<=0,hideStk=HIDE_STOCK_KINDS.indexOf(it.kind)!==-1||realStk===null;
     var isFav=ME.favorites&&ME.favorites.indexOf(it.id)!==-1;
     html+='<button class="pcard" data-open="'+esc(it.id)+'">'
       +(tgUser()?('<span class="favbtn'+(isFav?" on":"")+'" data-fav="'+esc(it.id)+'" aria-label="'+esc(t("fav_title"))+'" aria-pressed="'+(isFav?"true":"false")+'">'+ic(isFav?"heartFill":"heart",15)+'</span>'):"")
       +tileHTML(it)
-      +'<div class="pbody"><div class="nm">'+esc(loc(it.title))+'</div>'
+      +'<div class="pbody"><div class="nm">'+esc(premCard?"Telegram Premium":loc(it.title))+'</div>'
       +(it.kind==="obuna"?('<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
       +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+esc(stockBadgeText(realStk))+'</span>')+'</div>'):"")
       +'</div></button>';
@@ -4878,6 +4929,7 @@ function openProduct(id){
   var it=byId(id);if(!it)return;
   if(it.fulfill==="fragment_stars_custom")return openStarsBuy(it);
   if(it.fulfill==="telegram_gift")return openGiftBuy(it);
+  if(it.fulfill==="fragment_premium")return openPremiumBuy(it);
   if(it.fulfill==="gift_hub"){S.giftHub={tab:"oddiy",hubId:it.id,selected:null};haptic();render();window.scrollTo(0,0);return;}
   // Haqiqiy (real vaqtda) zaxira soni — agar shu mahsulot uchun aniq stock ro'yxati
   // yuritilayotgan bo'lsa (StockCounts orqali), o'shani olamiz; aks holda admin panelidagi
@@ -4922,6 +4974,134 @@ function openProduct(id){
   }
   var btn=sh.querySelector("#buyBtn");
   if(btn&&!out&&!guest)btn.addEventListener("click",function(){openBuyConfirm(it,qty);});
+}
+
+/* ===== "Balans yetarli emas" oynasi — narx / balans / yetishmaydi + pastda «Hisobni to'ldirish» tugmasi ===== */
+function openNeedBalance(price,onBack){
+  price=Math.round(Number(price)||0);
+  var bal=Math.round(Number(ME&&ME.balance)||0),need=Math.max(0,price-bal);
+  var sh=openSheet(
+    '<div class="nbWrap"><div class="nbIc">'+ic("wallet",38)+'</div>'
+    +'<div class="nbT">'+esc(t("nb_title"))+'</div>'
+    +'<div class="nbS">'+esc(t("nb_sub"))+'</div>'
+    +'<div class="nbTbl"><div class="r"><span>'+esc(t("nb_price"))+'</span><b>'+esc(money(price))+'</b></div>'
+    +'<div class="r"><span>'+esc(t("bal_title"))+'</span><b>'+esc(money(bal))+'</b></div>'
+    +'<div class="r bad"><span>'+esc(t("nb_short"))+'</span><b>'+esc(money(need))+'</b></div></div>'
+    +'<div class="nbBtns"><button class="btn gray big" id="nbClose" type="button">'+esc(t("nb_close"))+'</button>'
+    +'<button class="btn big" id="nbTop" type="button">'+ic("plus",16)+' '+esc(t("nb_topup"))+'</button></div></div>'
+  );
+  sh.querySelector("#nbClose").addEventListener("click",function(){closeSheet();if(onBack)onBack();});
+  sh.querySelector("#nbTop").addEventListener("click",function(){
+    S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
+    closeSheet();go("pay");
+  });
+}
+
+/* ===== Telegram Premium: kimga (o'zim / boshqa @username) + tekshirish + paket + sotib olish ===== */
+var PM_STATE=null; // oxirgi tekshirilgan qabul qiluvchi (balans oynasidan qaytganda qayta tekshirmaslik uchun)
+function premiumPacks(){
+  var c=catalog(),out=[];
+  for(var i=0;i<c.length;i++){var x=c[i];if(x&&x.fulfill==="fragment_premium"&&x.active!==false)out.push(x);}
+  out.sort(function(a,b){return (Number(a.premiumMonths)||0)-(Number(b.premiumMonths)||0);});
+  return out;
+}
+function openPremiumBuy(it){
+  var guest=!tgUser(),me=tgUser(),selfUname=me&&me.username?me.username:"";
+  var packs=premiumPacks();if(!packs.length)packs=[it];
+  var sel=it,checked=null,lastVal="";
+  if(PM_STATE&&Date.now()-PM_STATE.ts<10*60*1000){checked=PM_STATE;lastVal=PM_STATE.uname;}
+  var sh=openSheet(
+    '<div class="pmHead">'+admPen("item",it.id,"abs")
+    +'<div class="pmIc">'+tileIconHTML(it.tile,"💎")+'</div>'
+    +'<div><div class="pmT">Telegram Premium</div><div class="pmS">'+esc(t("pm_sub"))+'</div></div></div>'
+    +'<div class="pmLbl">@'+esc(t("username_label"))+'</div><div id="pmUser"></div>'
+    +'<div class="pmLbl">'+esc(t("g_pick"))+'</div><div class="pmPk" id="pmPk"></div>'
+    +'<div style="height:14px"></div><div id="pmBuyArea"></div>'
+  );
+  function months(x){return (Number(x.premiumMonths)||0)+" "+t("pm_months");}
+  function renderUser(msg){
+    var box=sh.querySelector("#pmUser");
+    if(checked){
+      var warn=!!checked.premium;
+      box.innerHTML='<div class="pmUc '+(warn?"warn":"ok")+'"><span class="pmUi">'+ic(warn?"warning":"check",20)+'</span>'
+        +'<span class="pmUn"><b>'+esc(checked.name||checked.uname)+'</b><i>@'+esc(checked.uname)+'</i></span>'
+        +'<button type="button" class="pmChg" id="pmChg">'+esc(t("pm_change"))+'</button></div>'
+        +(warn?'<div class="pmWarn">'+ic("warning",16)+'<span>'+esc(t("pm_already"))+'</span></div>':'');
+      sh.querySelector("#pmChg").addEventListener("click",function(){lastVal=checked?checked.uname:"";checked=null;PM_STATE=null;renderUser();renderBuy();});
+    }else{
+      box.innerHTML='<div class="arow"><input id="pmU" placeholder="@username" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value="'+esc(lastVal?"@"+lastVal.replace(/^@/,""):"")+'"><button class="btn sm" id="pmCheck" type="button">'+esc(t("check_btn"))+'</button></div>'
+        +(selfUname?'<div class="pmSelfRow"><button type="button" class="giftSelfBtn" id="pmSelf">'+esc(t("gift_self_btn"))+'</button></div>':'')
+        +'<div id="pmRes" style="margin-top:8px">'+(msg||"")+'</div>';
+      var inp=sh.querySelector("#pmU");
+      sh.querySelector("#pmCheck").addEventListener("click",function(){runCheck(inp.value);});
+      inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();runCheck(inp.value);}});
+      var sb=sh.querySelector("#pmSelf");
+      if(sb)sb.addEventListener("click",function(){inp.value="@"+selfUname;runCheck(selfUname);});
+    }
+  }
+  function runCheck(raw){
+    var uname=String(raw||"").trim().replace(/^@/,"");
+    lastVal=uname;
+    var res=sh.querySelector("#pmRes");
+    if(!/^[A-Za-z0-9_]{4,32}$/.test(uname)){if(res)res.innerHTML='<div class="paynote" style="color:var(--err)">'+ic("cross",13)+' '+esc(t("user_not_found"))+'</div>';return;}
+    if(res)res.innerHTML='<div class="paynote">'+esc(t("checking"))+'…</div>';
+    var cb=sh.querySelector("#pmCheck");if(cb)cb.disabled=true;
+    api("/api/fragment/check-user","POST",{username:uname}).then(function(r){
+      var rs=r.result||{};
+      checked=PM_STATE={uname:rs.username||uname,name:rs.name||"",premium:rs.is_premium===true,ts:Date.now()};
+      haptic("ok");renderUser();renderBuy();
+    }).catch(function(){
+      renderUser('<div class="paynote" style="color:var(--err)">'+ic("cross",13)+' '+esc(t("user_not_found"))+'</div>');
+    });
+  }
+  function renderPacks(){
+    var box=sh.querySelector("#pmPk"),h="";
+    for(var i=0;i<packs.length;i++){
+      var x=packs[i];
+      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic">'+tileIconHTML(x.tile,"💎")+'</span>'
+        +'<span class="tx"><span class="nm">'+esc(months(x))+'</span><span class="pc">'+esc(money(x.price))+'</span></span><span class="dot"></span></button>';
+    }
+    box.innerHTML=h;
+    var bs=box.querySelectorAll("[data-pk]");
+    for(var j=0;j<bs.length;j++)bs[j].addEventListener("click",function(){
+      var id=this.getAttribute("data-pk");
+      for(var k=0;k<packs.length;k++)if(packs[k].id===id)sel=packs[k];
+      haptic();renderPacks();renderBuy();
+    });
+  }
+  function renderBuy(errMsg){
+    var area=sh.querySelector("#pmBuyArea");
+    var can=!!checked&&!checked.premium&&!guest;
+    area.innerHTML='<button class="btn big" id="pmBuy" type="button" '+(can?"":"disabled")+'>'+esc(guest?t("open_in_tg"):t("buy"))+' — '+esc(money(sel.price))+'</button>'
+      +(errMsg?'<div class="paynote" style="color:var(--err);text-align:center">'+ic("warning",13)+' '+esc(errMsg)+'</div>'
+        :(can?'':'<div class="minnote" style="text-align:center;margin-top:8px">'+esc(guest?t("guest_note"):(checked&&checked.premium?t("pm_already_short"):t("stars_hint_check")))+'</div>'));
+    var b=area.querySelector("#pmBuy");
+    if(b&&can)b.addEventListener("click",function(){doBuy(b);});
+  }
+  function doBuy(btn){
+    if(!checked||checked.premium)return;
+    var price=Math.round(Number(sel.price)||0);
+    if(ME&&ME.balance!=null&&Number(ME.balance)<price){return openNeedBalance(price,function(){openPremiumBuy(sel);});}
+    btn.disabled=true;btn.textContent=t("processing");
+    api("/api/buy-premium","POST",{itemId:sel.id,username:checked.uname}).then(function(r){
+      ME.balance=r.balance;PM_STATE=null;haptic("ok");closeSheet();
+      loadMe(function(){
+        if(r.order&&r.order.delivered){showDeliveredSheet(sel,r.order);}
+        else{toast(t("bought_ok"));}
+        go("orders");
+      });
+    }).catch(function(e){
+      var code=e.resp&&e.resp.error;
+      if(code==="balance"){renderBuy();return openNeedBalance(price,function(){openPremiumBuy(sel);});}
+      var msg;
+      if(code==="already_premium"){checked.premium=true;renderUser();msg=null;}
+      else if(code==="fragment_failed")msg=(e.resp&&e.resp.message)||t("fragment_err");
+      else if(code==="username")msg=t("user_not_found");
+      else msg=t("srv_off");
+      renderBuy(msg);haptic();
+    });
+  }
+  renderUser();renderPacks();renderBuy();
 }
 
 /* ===== moslashuvchan (istalgan miqdorda) Stars xaridi — Fragment orqali ===== */
@@ -4978,12 +5158,14 @@ function openStarsBuy(it){
   sh.querySelector("#stBuy").addEventListener("click",function(){
     var amt=Math.round(Number(sh.querySelector("#stAmt").value)||0);
     if(!checkedUser||amt<minS)return;
+    if(ME&&ME.balance!=null&&Number(ME.balance)<Math.round(amt*rate))return openNeedBalance(Math.round(amt*rate),function(){openStarsBuy(it);});
     var btn=sh.querySelector("#stBuy");btn.disabled=true;btn.textContent=t("processing");
     api("/api/buy-stars-custom","POST",{itemId:it.id,username:checkedUser,amount:amt}).then(function(r){
       ME.balance=r.balance;haptic("ok");closeSheet();
       loadMe(function(){ if(r.order&&r.order.delivered){showDeliveredSheet(it,r.order);} go("orders"); });
     }).catch(function(e){
       btn.disabled=false;btn.textContent=t("buy");
+      if(e.resp&&e.resp.error==="balance")return openNeedBalance(Math.round(amt*rate),function(){openStarsBuy(it);});
       var msg=null;
       if(e.resp&&e.resp.error==="balance")msg=t("need_more");
       else if(e.resp&&e.resp.error==="min_amount")msg=t("min_amount_note")+": "+e.resp.min;
@@ -5055,6 +5237,7 @@ function openGiftBuy(it){
   });
   sh.querySelector("#gBuy").addEventListener("click",function(){
     if(!checkedUser)return;
+    if(ME&&ME.balance!=null&&Number(ME.balance)<Math.round(Number(it.price)||0))return openNeedBalance(it.price,function(){openGiftBuy(it);});
     var msg=sh.querySelector("#gMsg").value.trim();
     var body=sh.querySelector(".sheet-body");
     var head=sh.querySelector(".sheet-head");
@@ -5076,6 +5259,7 @@ function openGiftBuy(it){
       haptic();
       if(head)head.style.visibility="";
       var msg2=null;
+      if(e.resp&&e.resp.error==="balance")return openNeedBalance(it.price,function(){openGiftBuy(it);});
       if(e.resp&&e.resp.error==="balance")msg2=t("need_more");
       else if(e.resp&&e.resp.error==="gift_failed")msg2=e.resp.message||t("srv_off");
       else msg2=t("srv_off");
@@ -5131,7 +5315,7 @@ function openBuyConfirm(it,qty){
         });
       }).catch(function(e){
         var code=e.resp&&e.resp.error;
-        if(code==="balance"){closeSheet();toast(t("need_more"));go("pay");}
+        if(code==="balance"){openNeedBalance(total(),function(){openBuyConfirm(it,qty);});}
         else if(code==="out_of_stock"){closeSheet();toast(t("out_stock"));render();}
         else if(code==="no_username"){closeSheet();toast(t("need_username"));}
         else if(code==="fragment_failed"){closeSheet();toast((e.resp.message)||t("fragment_err"));}
