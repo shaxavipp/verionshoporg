@@ -2765,7 +2765,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.5";
+var CLIENT_BUILD="2026-11-05.6";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3945,8 +3945,10 @@ function tileHTML(it,big){
       
       +'</div>';
   }
-  var img=st.img?'<img'+(st.fit==="contain"?' class="fit"':'')+' src="'+esc(st.img)+'" alt="" onerror="this.remove()">':"";
-  var labels=st.img?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
+  // Admin rasm qo'ymagan Stars/Premium uchun — ilovaga o'rnatilgan tayyor muqova
+  var dc=st.img?"":(it&&it.fulfill==="fragment_stars_custom"?"stars":(it&&it.fulfill==="fragment_premium"?"premium":"")),isrc=st.img||(dc?"/assets/cover-"+dc+".jpg":"");
+  var img=isrc?'<img'+(st.fit==="contain"&&st.img?' class="fit"':'')+' src="'+esc(isrc)+'" alt="" onerror="this.remove()">':"";
+  var labels=isrc?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
 }
 // Mahsulot soni: zaxira ro'yxati bo'lsa — o'sha; admin "Soni"ni kiritgan bo'lsa — o'sha;
@@ -3966,9 +3968,12 @@ function skGamesOn(){var o=ME.skins;if(!o)return ME.cs2?["cs2"]:[];return SK_GK.
    Qo'yilmagan bo'lsa — standart rasm va matn. */
 var CARD_DEF={steam:["Steam hamyon","Istalgan summa"],vnum:["Virtual raqam","Telegram uchun SMS"],cs2:["CS2 skinlar","Steam'ga darhol"],dota2:["Dota 2 skinlar","Steam'ga darhol"],rust:["Rust skinlar","Steam'ga darhol"]};
 function cardArt(k){var c=EXTRAS&&EXTRAS.cards&&EXTRAS.cards[k];return c&&typeof c==="object"?c:null;}
-function cardImg(k){var c=cardArt(k);return c&&/^(https:\/\/|\/gimg\/)/.test(String(c.img||""))?c.img:"";}
+function cardImgSet(k){var c=cardArt(k);return c&&/^(https:\/\/|\/gimg\/)/.test(String(c.img||""))?c.img:"";}
+/* Admin rasm qo'ymagan bo'lsa — ilovaga o'rnatilgan tayyor muqova (assets/cover-*.jpg) */
+var DEF_COVER={vnum:1,steam:1,cs2:1,dota2:1,rust:1};
+function cardImg(k){return cardImgSet(k)||(DEF_COVER[k]?"/assets/cover-"+k+".jpg":"");}
 function cardTxt(k,f){var c=cardArt(k),v=c&&c[f],x=v&&(v[S.lang]||v.uz)||"";return x||_t(CARD_DEF[k][f==="name"?0:1]);}
-function cardTile(k,cls,fallback){var im=cardImg(k);return im?'<div class="'+cls+' cardart"><img src="'+esc(im)+'" alt="" loading="lazy"></div>':fallback;}
+function cardTile(k,cls,fallback){var im=cardImg(k),own=!!cardImgSet(k);return im?'<div class="'+cls+(own?' cardart':'')+'"><img src="'+esc(im)+'" alt="" loading="lazy"></div>':fallback;}
 function xProductCard(k){
   var body=function(){return '<div class="pbody"><div class="nm">'+esc(cardTxt(k,"name"))+'</div></div></button>';};
   if(SK_G[k])return '<button class="pcard" data-cs2open="'+k+'">'+cardTile(k,"ptile",skTile(k,"ptile"))+body();
@@ -11473,7 +11478,7 @@ function steamHTML(){
   if(!STEAM){loadSteam(render);return '<div class="xpage"><div class="vn-head"><div class="vn-spin" style="margin:30px auto"></div></div></div>';}
   var usd=steamUsd(),price=steamPriceOf(usd),ok=STEAM.enabled&&usd>=STEAM.min&&usd<=STEAM.max;
   var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Steam</b>'+admPen("steam")+'</button><div class="xpage">'
-    +'<div class="xhero"><div class="xlogo">'+(cardImg("steam")?'<img src="'+esc(cardImg("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':STEAM_SVG)+'</div><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div>'
+    +'<div class="xhero"><div class="xlogo">'+(cardImgSet("steam")?'<img src="'+esc(cardImgSet("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':STEAM_SVG)+'</div><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div>'
     +'<div class="xsum"><div class="r1"><span class="lb">'+ic("bolt",14)+' '+esc(_x("To'ldiriladi"))+'</span><span class="big" id="stBig">$'+usd.toFixed(2)+'</span></div>'
     +'<div class="r2"><span>'+esc(_x("To'lov summasi"))+'</span><span class="pay" id="stPay">'+esc(money(price).replace(" so'm",""))+'<small>so\'m</small></span></div></div>'
     +'<div class="xbox"><div class="hd"><b>'+ic("users",16)+' Steam login</b><button class="help" id="stHelp">'+ic("info",13)+' '+esc(_x("Qayerdan olaman?"))+'</button></div>'
