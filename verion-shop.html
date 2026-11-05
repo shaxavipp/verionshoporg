@@ -818,11 +818,12 @@ nav button svg{width:24px;height:24px}
 
 /* ===== Steam hamyon va Virtual raqam ===== */
 .xpage{padding:4px 16px 120px}
-.xhero{position:relative;text-align:center;padding:24px 16px 20px;border-radius:var(--r-xl);border:1px solid var(--line);background:var(--card);overflow:hidden}
-.xhero .xlogo{width:64px;height:64px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+.xhero{position:relative;display:flex;align-items:center;gap:14px;text-align:left;padding:16px;border-radius:var(--r-xl);border:1px solid var(--line);background:var(--card);overflow:hidden}
+.xhero .xht{min-width:0}
+.xhero .xlogo{width:56px;height:56px;margin:0;flex:0 0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
   background:#1b2838;color:#fff}
-.xhero h2{margin:0;font-size:var(--fs-xl);font-weight:650;letter-spacing:-.02em}
-.xhero p{margin:6px 0 0;color:var(--mut);font-size:var(--fs-sm)}
+.xhero h2{margin:0;font-size:var(--fs-lg);font-weight:650;letter-spacing:-.02em}
+.xhero p{margin:4px 0 0;color:var(--mut);font-size:var(--fs-sm);line-height:1.4}
 .xsum{margin-top:12px;padding:16px;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card)}
 .xsum .r1{display:flex;align-items:center;justify-content:space-between}
 .xsum .lb{font-size:var(--fs-sm);font-weight:500;letter-spacing:0;color:var(--mut);display:flex;align-items:center;gap:6px}
@@ -2663,6 +2664,64 @@ body.sinb-open{overflow:hidden}
 .ptile.bigtile .bgb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(26px) saturate(1.3) brightness(.5);transform:scale(1.35);pointer-events:none}
 .sheet.full .ptile.bigtile>img:not(.bgb){inset:auto;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;transform:translateX(-50%);object-fit:contain;border-radius:var(--r-lg);box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .sheet.full #gBuySheet{display:flex;flex-direction:column;flex:1 1 auto}
+/* ===== Xarid oynalari: ixcham sarlavha, bosqichlar, tavsif, tez tanlov ===== */
+.phead{position:relative;display:flex;align-items:center;gap:14px;margin:2px 0 4px}
+.phead .pth{position:relative;width:68px;height:68px;border-radius:18px;overflow:hidden;flex:0 0 auto;background:var(--card2);box-shadow:0 0 0 1px var(--line),0 10px 22px -12px rgba(0,0,0,.7)}
+.phead .pth .ptile{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;margin:0;border-radius:0}
+.phead .pt{min-width:0;flex:1}
+.phead h2{font-size:19px;line-height:1.2;margin:0}
+.phead .ps{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:6px;font-size:var(--fs-sm);color:var(--mut)}
+.phead .pp{font-weight:700;font-size:var(--fs-md);color:var(--txt);font-variant-numeric:tabular-nums}
+.pchip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:999px;background:var(--card2);color:var(--mut2);font-size:11.5px;font-weight:600;white-space:nowrap}
+.pchip.ok{background:rgba(45,200,120,.14);color:#47d391}
+.pchip.no{background:rgba(255,92,114,.14);color:#ff8394}
+[data-theme="light"] .pchip.ok{color:#14804d}[data-theme="light"] .pchip.no{color:#c62039}
+.pstep{display:flex;align-items:center;gap:8px;margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut)}
+.pstep b{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--acc-soft);color:var(--acc2);font-size:11px;letter-spacing:0;flex:0 0 auto}
+.pstep .pl{margin-left:auto;text-transform:none;letter-spacing:0}
+.pdesc{margin:14px 0 4px;display:flex;flex-direction:column;gap:10px}
+.pdesc .dh{font-weight:650;font-size:var(--fs-md)}
+.pdesc .dp{color:var(--mut2);font-size:var(--fs-md);line-height:1.55;white-space:pre-line}
+.pdesc .dl{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:var(--r-lg);background:var(--card);border:1px solid var(--line)}
+.pdesc .dl>div{display:flex;gap:9px;align-items:flex-start;font-size:var(--fs-md);line-height:1.4}
+.pdesc .dl svg{flex:0 0 auto;margin-top:2px;color:#47d391}
+.pdesc .dn{display:flex;gap:10px;padding:11px 13px;border-radius:var(--r-lg);font-size:var(--fs-sm);line-height:1.5}
+.pdesc .dn span{white-space:pre-line;min-width:0}
+.pdesc .dn svg{flex:0 0 auto;margin-top:2px}
+.pdesc .dn.warn{background:rgba(255,184,76,.10);border:1px solid rgba(255,184,76,.28);color:#ffd08a}
+.pdesc .dn.info{background:var(--acc-soft);border:1px solid rgba(var(--acc-rgb),.25);color:var(--mut2)}
+[data-theme="light"] .pdesc .dn.warn{color:#7a4f00}
+.qpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.qpick button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:var(--r-lg);background:var(--card2);border:1px solid var(--line);color:var(--txt);transition:border-color .2s,background .2s,transform .15s}
+.qpick button b{font-size:var(--fs-md);display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+.qpick button span{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+.qpick button.on{border-color:var(--acc);background:rgba(var(--acc-rgb),.12);box-shadow:0 0 0 1px rgba(var(--acc-rgb),.35)}
+.qpick button:active{transform:scale(.97)}
+.phead .pth.nkth{display:flex;align-items:center;justify-content:center;background:var(--acc-soft);color:var(--acc2)}
+.sheet.full #nkOrderStage,.sheet.full #nkDirectStage,.sheet.full .nkform{display:flex;flex-direction:column;flex:1 1 auto}
+.xsum{margin-top:10px!important;padding:12px 14px!important}
+.xsum .big{font-size:26px!important}
+.xsum .r2{margin-top:8px!important;padding-top:8px!important}
+.rcpt{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card);overflow:hidden;margin:12px 0 12px}
+.rcpt .rr{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;font-size:var(--fs-md);border-top:1px solid var(--line)}
+.rcpt .rr.f{border-top:0}
+.rcpt .rr>span{color:var(--mut2);min-width:0}
+.rcpt .rr>b{font-weight:650;text-align:right;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}
+.rcpt .rr.short,.rcpt .rr.short>span{color:var(--err)}
+.gpgrid{padding-top:10px}
+.ghero:not(.hasimg){min-height:116px}
+.gpn{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gpkg{overflow:visible}
+.pmPk{grid-template-columns:1fr!important}
+.pmPk button{padding:12px 14px}
+.pmPk .ic{background:linear-gradient(135deg,#6a45ee,#c04fe0 60%,#ff4fc4);color:#fff}
+.pmPk .tx{flex:1}
+.pmPk .nm{font-size:var(--fs-lg)}
+.pmPk .sub{font-size:12px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
+.pmPk .pr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.pmPk .sv{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:999px;background:rgba(45,200,120,.14);color:#47d391;font-size:11px;font-weight:700}
+[data-theme="light"] .pmPk .sv{color:#14804d}
+
 .pmLblRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 2px 8px}
 .pmLblRow .pmLbl{margin:0}
 /* "O'zimga" — ingichka tugma (Stars, Premium, sovg'a) */
@@ -2768,7 +2827,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.8";
+var CLIENT_BUILD="2026-11-05.9";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -2896,7 +2955,7 @@ en:{
   a_publish:"Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
   a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
   bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
-  back_btn:"Back",nb_title:"Insufficient balance",nb_sub:"Your balance is not enough to buy this product. Top up your balance first.",nb_price:"Product price",nb_short:"Short by",nb_close:"Close",nb_topup:"Top up balance",pm_sub:"Official subscription · activated by username",pm_change:"Change",pm_months:"months",pm_already:"This user already has Telegram Premium. It cannot be bought again.",pm_already_short:"Premium is already active for this user",
+  pm_mo:"mo",back_btn:"Back",nb_title:"Insufficient balance",nb_sub:"Your balance is not enough to buy this product. Top up your balance first.",nb_price:"Product price",nb_short:"Short by",nb_close:"Close",nb_topup:"Top up balance",pm_sub:"Official subscription · activated by username",pm_change:"Change",pm_months:"months",pm_already:"This user already has Telegram Premium. It cannot be bought again.",pm_already_short:"Premium is already active for this user",
   buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
   need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
   pw_exact:"Transfer EXACTLY this amount",pw_timer_hint:"Pay before the time runs out",pw_rule1:"Do not change the amount even by 1 sum",
@@ -2995,7 +3054,7 @@ uz:{
   a_publish:"Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
   a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
   bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
-  back_btn:"Orqaga",nb_title:"Balans yetarli emas",nb_sub:"Bu mahsulotni olish uchun balansingiz yetarli emas. Avval balansni to'ldiring.",nb_price:"Mahsulot narxi",nb_short:"Yetishmaydi",nb_close:"Yopish",nb_topup:"Balansni to'ldirish",pm_sub:"Rasmiy obuna · username orqali yoqiladi",pm_change:"O'zgartirish",pm_months:"oylik",pm_already:"Bu foydalanuvchida allaqachon Telegram Premium mavjud. Qayta sotib olish mumkin emas.",pm_already_short:"Bu foydalanuvchida Premium allaqachon bor",
+  pm_mo:"oy",back_btn:"Orqaga",nb_title:"Balans yetarli emas",nb_sub:"Bu mahsulotni olish uchun balansingiz yetarli emas. Avval balansni to'ldiring.",nb_price:"Mahsulot narxi",nb_short:"Yetishmaydi",nb_close:"Yopish",nb_topup:"Balansni to'ldirish",pm_sub:"Rasmiy obuna · username orqali yoqiladi",pm_change:"O'zgartirish",pm_months:"oylik",pm_already:"Bu foydalanuvchida allaqachon Telegram Premium mavjud. Qayta sotib olish mumkin emas.",pm_already_short:"Bu foydalanuvchida Premium allaqachon bor",
   buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
   need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
   pw_exact:"AYNAN shu summani o'tkazing",pw_timer_hint:"Shu vaqt tugaguncha to'lovni amalga oshiring",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
@@ -3094,7 +3153,7 @@ ru:{
   a_publish:"Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
   a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
   bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
-  back_btn:"Назад",nb_title:"Недостаточно средств",nb_sub:"Для покупки не хватает средств на балансе. Сначала пополните баланс.",nb_price:"Цена товара",nb_short:"Не хватает",nb_close:"Закрыть",nb_topup:"Пополнить баланс",pm_sub:"Официальная подписка · активация по username",pm_change:"Изменить",pm_months:"мес.",pm_already:"У этого пользователя уже есть Telegram Premium. Купить повторно нельзя.",pm_already_short:"У пользователя уже есть Premium",
+  pm_mo:"мес",back_btn:"Назад",nb_title:"Недостаточно средств",nb_sub:"Для покупки не хватает средств на балансе. Сначала пополните баланс.",nb_price:"Цена товара",nb_short:"Не хватает",nb_close:"Закрыть",nb_topup:"Пополнить баланс",pm_sub:"Официальная подписка · активация по username",pm_change:"Изменить",pm_months:"мес.",pm_already:"У этого пользователя уже есть Telegram Premium. Купить повторно нельзя.",pm_already_short:"У пользователя уже есть Premium",
   buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
   need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
   pw_exact:"Переведите РОВНО эту сумму",pw_timer_hint:"Оплатите до истечения времени",pw_rule1:"Не меняйте сумму даже на 1 сум",
@@ -4223,7 +4282,7 @@ function giftHubHTML(){
   }
   if(!items.length)html+='<div class="empty">'+esc(t("empty_section"))+'</div>';
   html+='</div>'
-    +'<div style="padding:10px 16px 4px">'
+    +'<div class="gbuybar">'
     +'<button class="btn big" id="ghBuyBtn"'+(items.length?"":" disabled")+'>'+esc(t("buy"))+'</button>'
     +'</div>';
   return html;
@@ -4534,7 +4593,7 @@ function gameValidate(g,showErrors){
 }
 function bindGames(){
   // O'yin sahifasida pastda "Sotib olish" turadi — xabarlar uning USTIDA chiqsin.
-  document.body.classList.toggle("has-gbuy",!!(S.game&&document.getElementById("gBuy")));
+  document.body.classList.toggle("has-gbuy",!!((S.game&&document.getElementById("gBuy"))||document.getElementById("ghBuyBtn")));
   var els=document.querySelectorAll("[data-opengame]"),i;
   for(i=0;i<els.length;i++)els[i].addEventListener("click",function(){
     S.game={id:this.getAttribute("data-opengame"),region:null,tab:null,pkg:null,acc:(S.gameAcc&&S.gameAcc[this.getAttribute("data-opengame")])||{},chk:null};
@@ -4640,19 +4699,19 @@ function openGameBuy(g,p){
   var root=sh.querySelector("#gBuySheet");
   function draw(){
     var tot=total(),enough=bal!==null&&bal>=tot;
-    var rows='<tr><td>'+esc(g.name)+'</td><td>'+esc(p.name+(p.sub?" "+p.sub:""))+'</td></tr>'
-      +(accText?'<tr><td>'+esc(t("g_account"))+'</td><td>'+esc(accText)+'</td></tr>':'')
-      +'<tr><td>'+esc(t("g_price"))+'</td><td>'+esc(money(p.price))+'</td></tr>'
-      +(promo?'<tr><td>'+esc(t("promo_discount"))+' ('+esc(promo.code)+')</td><td style="color:var(--acc)">−'+esc(money(promo.discount))+'</td></tr>':'')
-      +'<tr><td>'+esc(t("bal_title"))+'</td><td>'+(bal===null?"…":esc(money(bal)))+'</td></tr>'
-      +(enough?'<tr><td>'+esc(t("g_after"))+'</td><td>'+esc(money(bal-tot))+'</td></tr>'
-              :'<tr class="short"><td>'+esc(t("g_short"))+'</td><td>'+esc(money(tot-(bal||0)))+'</td></tr>');
+    var rows='<div class="rr f"><span>'+esc(g.name)+'</span><b>'+esc(p.name+(p.sub?" "+p.sub:""))+'</b></div>'
+      +(accText?'<div class="rr"><span>'+esc(t("g_account"))+'</span><b>'+esc(accText)+'</b></div>':'')
+      +'<div class="rr"><span>'+esc(t("g_price"))+'</span><b>'+esc(money(p.price))+'</b></div>'
+      +(promo?'<div class="rr"><span>'+esc(t("promo_discount"))+' ('+esc(promo.code)+')</span><b style="color:var(--acc)">−'+esc(money(promo.discount))+'</b></div>':'')
+      +'<div class="rr"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
+      +(enough?'<div class="rr"><span>'+esc(t("g_after"))+'</span><b>'+esc(money(bal-tot))+'</b></div>'
+              :'<div class="rr short"><span>'+esc(t("g_short"))+'</span><b>'+esc(money(tot-(bal||0)))+'</b></div>');
     root.innerHTML=(enough
         ?'<h2>'+esc(t("g_confirm"))+'</h2>'
         :'<div class="gnomoney">'+ic("wallet",26)+'</div><h2 style="text-align:center">'+esc(t("g_nomoney"))+'</h2>'
           +'<div class="paynote" style="text-align:center;margin-top:4px">'+esc(t("g_nomoney_sub"))+'</div>')
-      +'<table class="gtab">'+rows+'</table>'
-      +'<div class="arow" style="margin:8px 0"><input id="gPromo" placeholder="'+esc(t("promo_placeholder"))+'" style="text-transform:uppercase"><button class="btn sm" id="gPromoBtn">'+esc(t("promo_apply"))+'</button></div>'
+      +'<div class="rcpt">'+rows+'</div>'
+      +'<div class="arow" style="margin:0 0 8px"><input id="gPromo" placeholder="'+esc(t("promo_placeholder"))+'" style="text-transform:uppercase"><button class="btn sm" id="gPromoBtn">'+esc(t("promo_apply"))+'</button></div>'
       +'<div class="fbar">'+(enough
         ?'<button class="btn big green" id="gPay">'+esc(t("g_pay"))+' — '+esc(money(tot))+'</button>'
         :'<div class="gbtn2"><button class="btn gray big" id="gClose">'+esc(t("g_close"))+'</button><button class="btn big" id="gTop">'+ic("plus",15)+' '+esc(t("bal_topup"))+'</button></div>')+'</div>';
@@ -4970,6 +5029,34 @@ function closeSheet(instant){
 // Klaviatura: Escape pastki oynani yopadi
 document.addEventListener("keydown",function(e){if(e.key!=="Escape")return;var nb=document.getElementById("nbOv");if(nb){nb.remove();return;}if(document.getElementById("sheetEl"))closeSheet();});
 
+/* ===== Xarid oynalari uchun umumiy bo'laklar ===== */
+function pheadHTML(it,sub,title){
+  return '<div class="phead">'+admPen("item",it.id,"abs")+'<div class="pth">'+tileHTML(it)+'</div><div class="pt"><h2>'+esc(title||loc(it.title))+'</h2><div class="ps">'+(sub||"")+'</div></div></div>';
+}
+function pstepHTML(n,label,right){
+  return '<div class="pstep"><b>'+n+'</b><span>'+esc(String(label||"").replace(/\s*:\s*$/,""))+'</span>'+(right?'<span class="pl">'+right+'</span>':'')+'</div>';
+}
+/* Tavsifni tartibli ko'rsatadi: ✅ qatorlar — ro'yxat, ⚠️ — ogohlantirish, 📌 — eslatma, qolgani — oddiy matn */
+function descHTML(txt){
+  txt=String(txt||"").replace(/\r/g,"").trim();if(!txt)return "";
+  var EM=/^[\u2139\u2600-\u27BF\uFE0F\u200D\u{1F000}-\u{1FAFF}\s]+/u,OK=/^[\u2705\u2714\u2611]/u,WARN=/^[\u26A0\u2757\u{1F6AB}]/u,NOTE=/^[\u{1F4CC}\u2139\u{1F4A1}\u{1F4DD}]/u;
+  var blocks=txt.split(/\n\s*\n/).map(function(b){return b.split("\n").map(function(x){return x.trim();}).filter(Boolean);}).filter(function(b){return b.length;});
+  var out="";
+  for(var bi=0;bi<blocks.length;bi++){
+    var lines=blocks[bi],first=lines[0];
+    if(lines.every(function(l){return OK.test(l);})){out+='<div class="dl">'+lines.map(function(l){return '<div>'+ic("check",15)+'<span>'+esc(l.replace(EM,""))+'</span></div>';}).join("")+'</div>';continue;}
+    if(WARN.test(first)){out+='<div class="dn warn">'+ic("warning",16)+'<span>'+esc(lines.join("\n").replace(EM,""))+'</span></div>';continue;}
+    if(NOTE.test(first)){
+      var nl=lines.slice();
+      if(nl.length===1&&/:$/.test(nl[0])&&blocks[bi+1]){bi++;nl=nl.concat(blocks[bi]);}
+      out+='<div class="dn info">'+ic("info",16)+'<span>'+esc(nl.join("\n").replace(EM,""))+'</span></div>';continue;
+    }
+    if(bi===0&&lines.length===1&&first.length<=64){out+='<div class="dh">'+esc(first.replace(EM,""))+'</div>';continue;}
+    out+='<div class="dp">'+esc(lines.join("\n"))+'</div>';
+  }
+  return '<div class="pdesc">'+out+'</div>';
+}
+
 function openProduct(id){
   var it=byId(id);if(!it)return;
   if(it.fulfill==="fragment_stars_custom")return openStarsBuy(it);
@@ -4986,10 +5073,9 @@ function openProduct(id){
   var qtyMax=it.kind==="obuna"?Math.max(1,Math.min(MAX_QTY,realStock===null?MAX_QTY:realStock)):1;
   var showQty=it.kind==="obuna"&&!out&&qtyMax>1;
   var sh=openSheet(
-    '<div style="position:relative">'+tileHTML(it,true)+admPen("item",it.id,"abs")+'</div>'
-    +'<h2>'+esc(loc(it.title))+'</h2>'
-    +(it.kind==="obuna"&&realStock!==null?('<div class="cat">'+esc(stockBadgeText(realStock))+'</div>'):"")
-    +'<div class="desc">'+esc(loc(it.desc))+'</div>'
+    pheadHTML(it,'<span class="pp">'+esc(money(it.price))+'</span>'
+      +(it.kind==="obuna"&&realStock!==null?('<span class="pchip '+(out?"no":"ok")+'">'+esc(stockBadgeText(realStock))+'</span>'):""))
+    +descHTML(loc(it.desc))
     +(showQty?(
       '<div class="qtyBlock">'
       +'<span class="qtyBlockLabel">'+esc(t("qty_label"))+'</span>'
@@ -5069,11 +5155,9 @@ function openPremiumBuy(it){
   var sel=it,checked=null,lastVal="";
   if(PM_STATE&&Date.now()-PM_STATE.ts<10*60*1000){checked=PM_STATE;lastVal=PM_STATE.uname;}
   var sh=openSheet(
-    '<div class="pmHead">'+admPen("item",it.id,"abs")
-    +'<div class="pmIc">'+tileIconHTML(it.tile,"💎")+'</div>'
-    +'<div><div class="pmT">Telegram Premium</div><div class="pmS">'+esc(t("pm_sub"))+'</div></div></div>'
-    +'<div class="pmLblRow"><span class="pmLbl">@'+esc(t("username_label"))+'</span>'+selfBtnHTML("pmSelf")+'</div><div id="pmUser"></div>'
-    +'<div class="pmLbl">'+esc(t("g_pick"))+'</div><div class="pmPk" id="pmPk"></div>'
+    pheadHTML(it,esc(t("pm_sub")),"Telegram Premium")
+    +pstepHTML(1,'@'+t("username_label"),selfBtnHTML("pmSelf"))+'<div id="pmUser"></div>'
+    +pstepHTML(2,t("g_pick"))+'<div class="pmPk" id="pmPk"></div>'
     +'<div style="height:16px"></div><div class="fbar" id="pmBuyArea"></div>',
     null,{full:true}
   );
@@ -5112,10 +5196,13 @@ function openPremiumBuy(it){
   }
   function renderPacks(){
     var box=sh.querySelector("#pmPk"),h="";
+    var b0=packs[0],basePer=(Number(b0.premiumMonths)||1)>0?(Number(b0.price)||0)/(Number(b0.premiumMonths)||1):0;
     for(var i=0;i<packs.length;i++){
-      var x=packs[i];
-      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic">'+tileIconHTML(x.tile,"💎")+'</span>'
-        +'<span class="tx"><span class="nm">'+esc(months(x))+'</span><span class="pc">'+esc(money(x.price))+'</span></span><span class="dot"></span></button>';
+      var x=packs[i],mo=Number(x.premiumMonths)||1,per=(Number(x.price)||0)/mo;
+      var sv=basePer>0&&x!==b0?Math.round((1-per/basePer)*100):0;
+      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic">'+ic("star",20)+'</span>'
+        +'<span class="tx"><span class="nm">'+esc(months(x))+'</span><span class="sub">'+esc(money(Math.round(per)))+' / '+esc(t("pm_mo"))+'</span></span>'
+        +'<span class="pr"><span class="pc">'+esc(money(x.price))+'</span>'+(sv>=1?'<span class="sv">−'+sv+'%</span>':'')+'</span><span class="dot"></span></button>';
     }
     box.innerHTML=h;
     var bs=box.querySelectorAll("[data-pk]");
@@ -5166,12 +5253,12 @@ function openPremiumBuy(it){
 function openStarsBuy(it){
   var rate=Number(it.pricePerStar)||0, minS=Number(it.minStars)||50;
   var sh=openSheet(
-    '<div style="position:relative">'+tileHTML(it,true)+admPen("item",it.id,"abs")+'</div>'
-    +'<h2>'+esc(loc(it.title))+'</h2><div class="cat">'+ic("star",13)+' '+esc(t("stars_unit"))+'</div>'
-    +'<div class="pmLblRow"><span class="pmLbl">@'+esc(t("username_label"))+'</span>'+selfBtnHTML("stSelf")+'</div>'
+    pheadHTML(it,'<span class="pchip">'+ic("star",12)+' '+esc(t("stars_unit"))+'</span><span>1 '+ic("star",11)+' = '+esc(money(rate))+'</span>')
+    +pstepHTML(1,'@'+t("username_label"),selfBtnHTML("stSelf"))
     +'<div class="arow"><input id="stU" placeholder="@username"><button class="btn sm" id="stCheck">'+esc(t("check_btn"))+'</button></div>'
     +'<div id="stUres" style="margin-top:8px"></div>'
-    +'<div class="sect" style="margin:16px 0 6px">'+esc(t("amount_optional"))+'</div>'
+    +pstepHTML(2,t("amount_optional"))
+    +'<div class="qpick" id="stQ">'+[50,100,250,500,1000,2500].filter(function(n){return n>=minS;}).map(function(n){return '<button type="button" data-qa="'+n+'"><b>'+ic("star",12)+n+'</b><span>'+esc(money(n*rate))+'</span></button>';}).join("")+'</div>'
     +'<div class="paybox" style="margin:0">'
     +'<div class="row"><div class="l">'+esc(t("stars_amount_label"))+'</div></div>'
     +'<div class="amount"><input id="stAmt" type="number" min="'+minS+'" step="1" placeholder="0"><span class="cur">'+ic("star",13)+'</span></div>'
@@ -5187,6 +5274,7 @@ function openStarsBuy(it){
   function updatePrice(){
     var amt=Math.round(Number(sh.querySelector("#stAmt").value)||0);
     var price=amt*rate;
+    var qq=sh.querySelectorAll("#stQ [data-qa]");for(var qi=0;qi<qq.length;qi++)qq[qi].classList.toggle("on",Number(qq[qi].getAttribute("data-qa"))===amt);
     sh.querySelector("#stPrice").textContent=amt>0?money(price):"—";
     var ok=checkedUser&&amt>=minS;
     sh.querySelector("#stBuy").disabled=!ok;
@@ -5198,6 +5286,8 @@ function openStarsBuy(it){
     }
   }
   sh.querySelector("#stAmt").addEventListener("input",updatePrice);
+  var stQs=sh.querySelectorAll("#stQ [data-qa]");
+  for(var sq=0;sq<stQs.length;sq++)stQs[sq].addEventListener("click",function(){sh.querySelector("#stAmt").value=this.getAttribute("data-qa");updatePrice();haptic();});
   sh.querySelector("#stCheck").addEventListener("click",function(){
     var uname=sh.querySelector("#stU").value.trim().replace(/^@/,"");
     if(!uname)return;
@@ -5244,12 +5334,11 @@ function openGiftBuy(it){
   var me=tgUser();
   var selfUname=me&&me.username?me.username:"";
   var sh=openSheet(
-    '<div style="position:relative">'+tileHTML(it,true)+admPen("item",it.id,"abs")+'</div>'
-    +'<h2>'+esc(loc(it.title))+'</h2><div class="cat">🎁 '+esc(t("gift_unit"))+'</div>'
-    +'<div class="pmLblRow"><span class="pmLbl">'+esc(t("gift_send_title"))+'</span>'+selfBtnHTML("gSelf")+'</div>'
+    pheadHTML(it,'<span class="pchip">🎁 '+esc(t("gift_unit"))+'</span><span class="pp">'+esc(money(it.price))+'</span>')
+    +pstepHTML(1,t("gift_send_title"),selfBtnHTML("gSelf"))
     +'<div class="arow"><input id="gU" placeholder="'+esc(t("gift_username_ph"))+'"><button class="btn sm" id="gCheck">'+esc(t("check_btn"))+'</button></div>'
     +'<div id="gUres" style="margin-top:8px"></div>'
-    +'<div class="sect" style="margin:16px 0 6px">'+esc(t("gift_message_label"))+'</div>'
+    +pstepHTML(2,t("gift_message_label"))
     +'<textarea id="gMsg" maxlength="200" placeholder="'+esc(t("gift_message_ph"))+'" style="width:100%;min-height:60px;border-radius:12px;border:1px solid var(--line);padding:10px;font:inherit;box-sizing:border-box"></textarea>'
     +'<div class="switch" style="margin-top:6px"><span style="font-size:13.5px">'+esc(t("gift_anon_label"))+'</span><button type="button" class="swbtn" id="gAnon"><i></i></button></div>'
     +'<div class="row" style="border-top:1px dashed var(--line);margin-top:8px"><div class="l">'+esc(t("price_label"))+'</div><div class="r">'+esc(money(it.price))+'</div></div>'
@@ -5336,24 +5425,24 @@ function openBuyConfirm(it,qty){
   function total(){return Math.max(0,subtotal-(promo?promo.discount:0));}
   function enough(){return bal!==null&&bal>=total();}
   var sh=openSheet(
-    tileHTML(it,true)
-    +'<h2>'+esc(t("buy_confirm"))+'</h2>'
-    +'<div class="refline"><span>'+esc(loc(it.title))+(qty>1?(' ×'+qty):'')+'</span><b>'+esc(money(subtotal))+'</b></div>'
+    pheadHTML(it,'<span class="pchip">'+esc(categoryLabel(it.kind)||"")+'</span>'+(qty>1?'<span class="pp">× '+qty+'</span>':''))
+    +pstepHTML("✓",t("buy_confirm"))
+    +'<div class="rcpt"><div class="rr f"><span>'+esc(t("g_price"))+(qty>1?(' × '+qty):'')+'</span><b>'+esc(money(subtotal))+'</b></div>'
     +'<div id="promoLine"></div>'
-    +'<div class="arow" style="margin:8px 0"><input id="promoInput" placeholder="'+esc(t("promo_placeholder"))+'" style="text-transform:uppercase"><button class="btn sm" id="promoApplyBtn">'+esc(t("promo_apply"))+'</button></div>'
+    +'<div class="rr"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
+    +'<div id="afterLine"></div></div>'
+    +'<div class="arow" style="margin:0 0 8px"><input id="promoInput" placeholder="'+esc(t("promo_placeholder"))+'" style="text-transform:uppercase"><button class="btn sm" id="promoApplyBtn">'+esc(t("promo_apply"))+'</button></div>'
     +'<div id="promoMsg"></div>'
-    +'<div class="refline"><span>'+esc(t("bal_title"))+'</span><b>'+(bal===null?"…":esc(money(bal)))+'</b></div>'
-    +'<div id="afterLine"></div>'
     +'<div class="fbar"><div id="buyActionArea"></div></div>',
     null,{full:true}
   );
   function renderTotals(){
     var pl=sh.querySelector("#promoLine");
-    pl.innerHTML=promo?('<div class="refline"><span>'+esc(t("promo_discount"))+' ('+esc(promo.code)+')</span><b style="color:var(--acc)">−'+esc(money(promo.discount))+'</b></div>'):'';
+    pl.innerHTML=promo?('<div class="rr"><span>'+esc(t("promo_discount"))+' ('+esc(promo.code)+')</span><b style="color:var(--acc)">−'+esc(money(promo.discount))+'</b></div>'):'';
     var al=sh.querySelector("#afterLine");
     var ok=enough();
-    al.innerHTML=ok?('<div class="refline"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-total()))+'</b></div>')
-      :(bal!==null?('<div class="refline" style="color:var(--err)"><span>'+esc(t("nb_short"))+'</span><b>'+esc(money(total()-bal))+'</b></div>'):'');
+    al.innerHTML=ok?('<div class="rr"><span>'+esc(t("after_left"))+'</span><b>'+esc(money(bal-total()))+'</b></div>')
+      :(bal!==null?('<div class="rr short"><span>'+esc(t("nb_short"))+'</span><b>'+esc(money(total()-bal))+'</b></div>'):'');
     var area=sh.querySelector("#buyActionArea");
     area.innerHTML='<button class="btn big'+(ok?' green':'')+'" id="doBuy">'+esc(t("pay_from_balance"))+' — '+esc(money(total()))+'</button>';
     bindActionButtons();
@@ -5933,18 +6022,17 @@ function nkVisibleFlat(){
 // nakrutka panelidan ham, umumiy qidiruv natijasidan ham chaqiriladi.
 function nkRenderOrderForm(container,svc,backLabel,onBack){
   var h=(onBack?('<button class="backrow" data-nk-back-x="1">'+ic("arrowLeft",16)+' <b>'+esc(backLabel)+'</b></button>'):'')
-    +'<div style="padding:0 16px 4px"><div style="font-weight:700;font-size:14.5px">'+esc(smmTranslate(svc.name))+'</div>'
-    +'<div class="d" style="margin-top:2px">'+esc(t("nakrutka_min_max").replace("{min}",svc.min).replace("{max}",svc.max))+'</div>'
-    +'<label>'+esc(t("nakrutka_link_label"))+'</label>'
+    +'<div class="nkform"'+(onBack?' style="padding:0 16px 4px"':'')+'>'
+    +'<div class="phead"><div class="pth nkth">'+ic("trendUp",26)+'</div><div class="pt"><h2>'+esc(smmTranslate(svc.name))+'</h2>'
+    +'<div class="ps">'+esc(t("nakrutka_min_max").replace("{min}",svc.min).replace("{max}",svc.max))+'</div></div></div>'
+    +pstepHTML(1,t("nakrutka_link_label"))
     +'<input id="nkLink" placeholder="'+esc(t("nakrutka_link_ph"))+'">'
-    +'<label>'+esc(t("nakrutka_qty_label"))+'</label>'
+    +pstepHTML(2,t("nakrutka_qty_label"))
     +'<div class="amount"><input id="nkQty" type="number" inputmode="numeric" placeholder="'+svc.min+'"><span class="cur">'+esc(t("nakrutka_qty_unit"))+'</span></div>'
     +'<div id="nkQtyErr" class="paynote" style="display:none;color:#e74c3c"></div>'
-    +'<div class="refline" style="margin-top:10px"><span>'+esc(t("nakrutka_total_label"))+'</span><b id="nkTotal">'+money(0)+'</b></div>'
+    +'<div class="rcpt" style="margin-top:14px"><div class="rr f"><span>'+esc(t("nakrutka_total_label"))+'</span><b id="nkTotal">'+money(0)+'</b></div></div>'
     +'<div id="nkBalWarn" class="paynote" style="display:none;color:#e74c3c"></div>'
-    +'<div style="height:12px"></div>'
-    +'<button class="btn big" id="nkOrderBtn" disabled>'+esc(t("nakrutka_order_btn"))+'</button>'
-    +'<div style="height:10px"></div></div>';
+    +'<div class="fbar"><button class="btn big" id="nkOrderBtn" disabled>'+esc(t("nakrutka_order_btn"))+'</button></div></div>';
   container.innerHTML=h;
   if(onBack){
     var back=container.querySelector("[data-nk-back-x]");
@@ -6009,7 +6097,7 @@ function nkGroupByCat(app,byApp,meta){
 // o'z panelidagi order formaga o'xshab, alohida pastdan chiqadigan sheet sifatida ko'rinadi.
 var NK_PAGE_SVC_LIST=[];
 function openNkOrderSheet(svc,backLabel){
-  var sh=openSheet('<h2>🚀 '+esc(smmTranslate(svc.name))+'</h2><div id="nkOrderStage"></div>');
+  var sh=openSheet('<div id="nkOrderStage"></div>',null,{full:true,compact:true});
   nkRenderOrderForm(sh.querySelector("#nkOrderStage"),svc,null,null);
 }
 // Nakrutka bo'limini boshqa har qanday kategoriya kabi TO'LIQ SAHIFA sifatida chizadi
@@ -6101,7 +6189,7 @@ function ensureNkPageLoaded(){
 // nakrutka xizmati) to'g'ridan-to'g'ri buyurtma darchasini ochadi.
 function openNakrutkaServiceDirect(svc){
   var meta=NK_APP_META[nakrutkaAppOf(svc)]||{name:t("nakrutka_title")};
-  var sh=openSheet('<h2>🚀 '+esc(smmTranslate(svc.name))+'</h2><div id="nkDirectStage"></div>');
+  var sh=openSheet('<div id="nkDirectStage"></div>',null,{full:true,compact:true});
   nkRenderOrderForm(sh.querySelector("#nkDirectStage"),svc,null,null);
 }
 function openFavoritesSheet(){
@@ -11492,7 +11580,7 @@ function steamHTML(){
   if(!STEAM){loadSteam(render);return '<div class="xpage"><div class="vn-head"><div class="vn-spin" style="margin:30px auto"></div></div></div>';}
   var usd=steamUsd(),price=steamPriceOf(usd),ok=STEAM.enabled&&usd>=STEAM.min&&usd<=STEAM.max;
   var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Steam</b>'+admPen("steam")+'</button><div class="xpage">'
-    +'<div class="xhero"><div class="xlogo" style="background:none;width:76px;height:76px">'+(cardImgSet("steam")?'<img src="'+esc(cardImgSet("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':'<img src="/assets/steam.svg" alt="Steam" style="width:100%;height:100%">')+'</div><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div>'
+    +'<div class="xhero"><div class="xlogo" style="background:none">'+(cardImgSet("steam")?'<img src="'+esc(cardImgSet("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':'<img src="/assets/steam.svg" alt="Steam" style="width:100%;height:100%">')+'</div><div class="xht"><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div></div>'
     +'<div class="xsum"><div class="r1"><span class="lb">'+ic("bolt",14)+' '+esc(_x("To'ldiriladi"))+'</span><span class="big" id="stBig">$'+usd.toFixed(2)+'</span></div>'
     +'<div class="r2"><span>'+esc(_x("To'lov summasi"))+'</span><span class="pay" id="stPay">'+esc(money(price).replace(" so'm",""))+'<small>so\'m</small></span></div></div>'
     +'<div class="xbox"><div class="hd"><b>'+ic("users",16)+' Steam login</b><button class="help" id="stHelp">'+ic("info",13)+' '+esc(_x("Qayerdan olaman?"))+'</button></div>'
