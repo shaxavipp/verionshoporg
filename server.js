@@ -1110,10 +1110,13 @@ function escHtml(s) {
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-const DEFAULT_GREETING = "👋 Xush kelibsiz, {name} ✌️\n\n"
-  + "Verion Shop — o'yin donatlari, obunalar va raqamli xizmatlar bitta joyda.\n"
-  + "Buyurtma bir daqiqada, yetkazish avtomatik.\n\n"
-  + "⚡️ Tez, arzon va ishonchli.\n\n"
+const DEFAULT_GREETING = "👋 Xush kelibsiz, {name}!\n\n"
+  + "🛍 Verion Shop — raqamli mahsulotlar do'koni:\n"
+  + "🎮 O'yin donatlari va Steam hamyon\n"
+  + "🤖 AI va ilova obunalari (ChatGPT, Gemini, Netflix, Spotify…)\n"
+  + "✈️ Telegram Stars, Premium va sovg'alar\n"
+  + "📱 Virtual raqamlar · 📈 Nakrutka\n\n"
+  + "⚡️ Buyurtma bir daqiqada, yetkazish avtomatik.\n"
   + "🙏 Bizni tanlaganingiz uchun rahmat!";
 function greetingHtml(from) {
   const c = botCfg();

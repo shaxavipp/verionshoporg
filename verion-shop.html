@@ -2658,7 +2658,10 @@ body.sinb-open{overflow:hidden}
 .sheet.full .fbar{position:sticky;bottom:0;z-index:3;margin:auto -16px 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
 .sheet.full .fbar .minnote{margin-top:8px}
 .sheet.full .ptile.bigtile{border-radius:var(--r-xl)}
-.sheet.full.compact .ptile.bigtile{aspect-ratio:auto;height:150px}
+.sheet.full.compact .ptile.bigtile{aspect-ratio:auto;height:188px}
+/* Mahsulot rasmi to'liq ko'rinadi (kvadrat muqova kesilmaydi): orqada xira nusxasi, oldida butun rasm */
+.ptile.bigtile .bgb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(26px) saturate(1.3) brightness(.5);transform:scale(1.35);pointer-events:none}
+.sheet.full .ptile.bigtile>img:not(.bgb){inset:auto;top:0;bottom:0;left:50%;width:auto;height:100%;max-width:100%;transform:translateX(-50%);object-fit:contain;border-radius:var(--r-lg);box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .sheet.full #gBuySheet{display:flex;flex-direction:column;flex:1 1 auto}
 .pmLblRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 2px 8px}
 .pmLblRow .pmLbl{margin:0}
@@ -3948,6 +3951,7 @@ function tileHTML(it,big){
   // Admin rasm qo'ymagan Stars/Premium uchun — ilovaga o'rnatilgan tayyor muqova
   var dc=st.img?"":(it&&it.fulfill==="fragment_stars_custom"?"stars":(it&&it.fulfill==="fragment_premium"?"premium":"")),isrc=st.img||(dc?"/assets/cover-"+dc+".jpg":"");
   var img=isrc?'<img'+(st.fit==="contain"&&st.img?' class="fit"':'')+' src="'+esc(isrc)+'" alt="" onerror="this.remove()">':"";
+  if(big&&isrc)img='<img class="bgb" src="'+esc(isrc)+'" alt="" aria-hidden="true" onerror="this.remove()">'+img;
   var labels=isrc?"":('<div class="tl">'+esc(st.label||"")+'</div><div class="ts">'+esc(st.sub||"")+'</div>');
   return '<div class="ptile'+(big?" bigtile":"")+'" style="background:'+esc(st.bg||"#222")+';color:'+esc(st.fg||"#fff")+'">'+img+labels+'</div>';
 }
