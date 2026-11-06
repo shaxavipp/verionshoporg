@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.27";
+const BUILD = "2026-11-06.28";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2652,6 +2652,28 @@ function handleRequest(req, res) {
       if (err) return send(res, 404, { error: "not found" });
       res.writeHead(200, { "Content-Type": { png: "image/png", jpg: "image/jpeg", svg: "image/svg+xml" }[mt[1]], "Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff" });
       res.end(buf);
+    });
+  }
+  // Qo'llanma videolari (site/media/*.mp4): sayt, bot va Instagram Reels joylash uchun ochiq havola.
+  // Faqat tekis nomlar; Range so'rovlari (206) — telefon va brauzer videoni bo'lib-bo'lib yuklaydi.
+  if ((m === "GET" || m === "HEAD") && url.indexOf("/media/") === 0) {
+    const f = url.slice(7);
+    if (!/^[a-z0-9-]+\.mp4$/.test(f)) return send(res, 404, { error: "not found" });
+    const fp = path.join(__dirname, "site", "media", f);
+    return fs.stat(fp, (err, st) => {
+      if (err || !st.isFile()) return send(res, 404, { error: "not found" });
+      const H = { "Content-Type": "video/mp4", "Accept-Ranges": "bytes", "Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff" };
+      const rg = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || ""));
+      let a = 0, b = st.size - 1, code = 200;
+      if (rg && (rg[1] || rg[2])) {
+        if (rg[1]) { a = +rg[1]; if (rg[2]) b = Math.min(+rg[2], st.size - 1); } else { a = Math.max(0, st.size - +rg[2]); }
+        if (a > b || a >= st.size) { res.writeHead(416, { "Content-Range": "bytes */" + st.size }); return res.end(); }
+        code = 206; H["Content-Range"] = "bytes " + a + "-" + b + "/" + st.size;
+      }
+      H["Content-Length"] = b - a + 1;
+      res.writeHead(code, H);
+      if (m === "HEAD") return res.end();
+      fs.createReadStream(fp, { start: a, end: b }).pipe(res);
     });
   }
   // O'yinlar: /api/games*, /api/admin/games*, /gimg/* — modul o'zi javob beradi.
