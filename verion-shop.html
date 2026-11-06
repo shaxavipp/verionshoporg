@@ -2859,7 +2859,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.19";
+var CLIENT_BUILD="2026-11-06.20";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5286,7 +5286,7 @@ function openPremiumBuy(it){
     for(var i=0;i<packs.length;i++){
       var x=packs[i],mo=Number(x.premiumMonths)||1,per=(Number(x.price)||0)/mo;
       var sv=basePer>0&&x!==b0?Math.round((1-per/basePer)*100):0;
-      var xt=x.tile||{},has=!!(xt.video||xt.lottie||xt.img||xt.emoji)||pmHasDefIcon(mo);
+      var xt=x.tile||{},has=pmHasCustom(xt)||pmHasDefIcon(mo);
       h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic'+(has?" has":"")+'">'+pmIconHTML(xt,mo)+'</span>'
         +'<span class="tx"><span class="nm">'+esc(months(x))+'</span></span>'
         +'<span class="pr"><span class="pc">'+esc(money(x.price))+'</span>'+(sv>=1?'<span class="sv">−'+sv+'%</span>':'')+'</span><span class="dot"></span></button>';
@@ -9832,16 +9832,23 @@ function pmAdmItem(m){var L=pmAdmItems();for(var i=0;i<L.length;i++)if((Number(L
 function pmBadgeHTML(m){return '<span class="pmN"><b>'+esc(String(m))+'</b><i>'+esc(t("pm_months"))+'</i></span>';}
 /* Paket belgisi: admin qo'ygan premium emoji/rasm; bo'lmasa 3/6/12 uchun tayyor belgi (assets/pm-N.png), boshqasiga oy soni */
 function pmHasDefIcon(m){return m===3||m===6||m===12;}
+// Paket belgisi sifatida faqat premium emoji (video/Lottie/rasm) yoki emoji olinadi. Oddiy formada yuklangan
+// mahsulot rasmi (/gimg/, data:) — bu muqova, belgi emas: u hisobga olinmaydi, o'rniga tayyor belgi chiqadi.
+function pmIconTile(tile){
+  tile=tile||{};var img=String(tile.img||"");if(/^\/gimg\/|^data:/.test(img))img="";
+  return {video:tile.video||"",lottie:tile.lottie||"",emoji:tile.emoji||"",img:img};
+}
+function pmHasCustom(tile){var x=pmIconTile(tile);return !!(x.video||x.lottie||x.img||x.emoji);}
 function pmIconHTML(tile,m){
-  tile=tile||{};m=Number(m)||0;
-  if(tile.video||tile.lottie||tile.img||tile.emoji)return tileIconHTML(tile,"");
+  m=Number(m)||0;
+  if(pmHasCustom(tile))return tileIconHTML(pmIconTile(tile),"");
   return pmHasDefIcon(m)?'<img src="/assets/pm-'+m+'.png" alt="" style="width:100%;height:100%;object-fit:contain">':pmBadgeHTML(m);
 }
 function pmAdmHTML(){
   var st=pmAdmState(),ms=pmAdmMonths(),h='<div class="prd-sect" style="padding:14px 2px 6px">Paketlar — narx qo\'ying</div><div class="pma">';
   ms.forEach(function(m){
     var it=pmAdmItem(m),tile=st.tiles[m]||(it&&it.tile)||{},pr=st.prices.hasOwnProperty(m)?st.prices[m]:(it&&Number(it.price)>0?String(it.price):"");
-    var ok=pmOkMonths(m),on=ok&&it&&it.active!==false&&Number(it.price)>0,custom=!!(tile.video||tile.lottie||tile.img||tile.emoji);
+    var ok=pmOkMonths(m),on=ok&&it&&it.active!==false&&Number(it.price)>0,custom=pmHasCustom(tile);
     h+='<div class="pma-r"><span class="pma-ic'+(custom||pmHasDefIcon(m)?" has":"")+'">'+pmIconHTML(tile,m)+'</span>'
       +'<span class="pma-n"><b>'+m+' oy</b><small class="'+(on?"ok":"")+'">'+(!ok?"fragment-api.uz hozircha bermaydi — do'konda ko'rinmaydi":on?"Do'konda":(it?"Yashirin":"Narx qo'yilmagan"))+'</small></span>'
       +'<span class="pma-p"><input inputmode="numeric" data-pmp="'+m+'" value="'+esc(pr)+'" placeholder="Narx" aria-label="'+m+' oy narxi, so\'m"><i>so\'m</i></span>'
