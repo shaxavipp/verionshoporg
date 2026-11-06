@@ -2716,6 +2716,29 @@ body.sinb-open{overflow:hidden}
 .pmPk button{padding:12px 14px}
 .pmPk .ic{background:linear-gradient(135deg,#6a45ee,#c04fe0 60%,#ff4fc4);color:#fff}
 .pmPk .tx{flex:1}
+.pmPk .ic.has{background:transparent}
+.pmN{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;color:#fff}
+.pmN b{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.pmN i{font-style:normal;font-size:9.5px;font-weight:700;opacity:.85;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.pma{display:flex;flex-direction:column;gap:8px}
+.pma-r{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-lg);background:var(--card);border:1px solid var(--line)}
+.pma-ic{width:44px;height:44px;border-radius:13px;overflow:hidden;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:24px;background:linear-gradient(135deg,#6a45ee,#c04fe0 60%,#ff4fc4)}
+.pma-ic.has{background:var(--card2)}
+.pma-n{display:flex;flex-direction:column;min-width:0;flex:1}
+.pma-n b{font-size:var(--fs-md);font-weight:650}
+.pma-n small{font-size:11.5px;color:var(--mut);margin-top:2px}
+.pma-n small.ok{color:#47d391}
+.pma-p{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.pma-p input{width:104px;height:38px;margin:0;padding:0 10px;text-align:right;font-variant-numeric:tabular-nums}
+.pma-p i{font-style:normal;font-size:11px;color:var(--mut)}
+.pma-e{width:38px;height:38px;border-radius:11px;background:var(--card2);border:1px solid var(--line);flex:0 0 auto;font-size:16px;opacity:.75}
+.pma-e.on{opacity:1;border-color:var(--acc)}
+.pma-em{display:flex;gap:8px;align-items:center;margin:-2px 0 4px;padding:0 2px}
+.pma-em input{flex:1;min-width:0;margin:0;height:38px}
+.pma-em .btn{width:auto}
+.pma-add{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.pma-add button{height:36px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:600}
+.pma-add button:disabled{opacity:.35}
 .pmPk .nm{font-size:var(--fs-lg)}
 .pmPk .sub{font-size:12px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
 .pmPk .pr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
@@ -2827,7 +2850,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.12";
+var CLIENT_BUILD="2026-11-06.13";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4044,11 +4067,11 @@ function skTile(g,cls){var G=SK_G[g],u="https://cdn.cloudflare.steamstatic.com/s
 function skGamesOn(){var o=ME.skins;if(!o)return ME.cs2?["cs2"]:[];return SK_GK.filter(function(g){return o[g];});}
 /* Maxsus kartochkalar (Steam, virtual raqam, CS2/Dota 2/Rust skinlar): admin qo'ygan rasm va nom (EXTRAS.cards).
    Qo'yilmagan bo'lsa — standart rasm va matn. */
-var CARD_DEF={steam:["Steam hamyon","Istalgan summa"],vnum:["Virtual raqam","Telegram uchun SMS"],cs2:["CS2 skinlar","Steam'ga darhol"],dota2:["Dota 2 skinlar","Steam'ga darhol"],rust:["Rust skinlar","Steam'ga darhol"]};
+var CARD_DEF={premium:["Telegram Premium","3 · 6 · 12 oy"],steam:["Steam hamyon","Istalgan summa"],vnum:["Virtual raqam","Telegram uchun SMS"],cs2:["CS2 skinlar","Steam'ga darhol"],dota2:["Dota 2 skinlar","Steam'ga darhol"],rust:["Rust skinlar","Steam'ga darhol"]};
 function cardArt(k){var c=EXTRAS&&EXTRAS.cards&&EXTRAS.cards[k];return c&&typeof c==="object"?c:null;}
 function cardImgSet(k){var c=cardArt(k);return c&&/^(https:\/\/|\/gimg\/)/.test(String(c.img||""))?c.img:"";}
 /* Admin rasm qo'ymagan bo'lsa — ilovaga o'rnatilgan tayyor muqova (assets/cover-*.jpg) */
-var DEF_COVER={vnum:1,steam:1,cs2:1,dota2:1,rust:1};
+var DEF_COVER={premium:1,vnum:1,steam:1,cs2:1,dota2:1,rust:1};
 /* «Tayyor muqovalar» (admin: Mahsulotlar → 🖼) yoqilgan bo'lsa — ilovaga o'rnatilgan muqovalar ustun; o'chiq bo'lsa — admin yuklagan rasm ustun */
 function ownCovers(){return !(EXTRAS&&EXTRAS.coverMode==="builtin");}
 function cardImg(k){if(DEF_COVER[k]&&(!ownCovers()||!cardImgSet(k)))return "/assets/cover-"+k+".jpg";return cardImgSet(k);}
@@ -4136,6 +4159,7 @@ function productGridHTML(items,extra){
       if(premShown)continue;
       premShown=true;premCard=true;
       var pp=premiumPacks();if(pp.length)it=pp[0];
+      it=premCardItem(it);
     }
     var realStk=stockOf(it);
     var out=realStk!==null&&realStk<=0,hideStk=HIDE_STOCK_KINDS.indexOf(it.kind)!==-1||realStk===null;
@@ -4143,7 +4167,7 @@ function productGridHTML(items,extra){
     html+='<button class="pcard" data-open="'+esc(it.id)+'">'
       +(tgUser()?('<span class="favbtn'+(isFav?" on":"")+'" data-fav="'+esc(it.id)+'" aria-label="'+esc(t("fav_title"))+'" aria-pressed="'+(isFav?"true":"false")+'">'+ic(isFav?"heartFill":"heart",15)+'</span>'):"")
       +tileHTML(it)
-      +'<div class="pbody"><div class="nm">'+esc(premCard?"Telegram Premium":loc(it.title))+'</div>'
+      +'<div class="pbody"><div class="nm">'+esc(premCard?cardTxt("premium","name"):loc(it.title))+'</div>'
       +(it.kind==="obuna"?('<div class="prow"><span class="prc">'+esc(money(it.price))+'</span>'
       +(hideStk&&!out?"":'<span class="stkb'+(out?" out":"")+'">'+esc(stockBadgeText(realStk))+'</span>')+'</div>'):"")
       +'</div></button>';
@@ -5183,13 +5207,19 @@ function premiumPacks(){
   out.sort(function(a,b){return (Number(a.premiumMonths)||0)-(Number(b.premiumMonths)||0);});
   return out;
 }
+/* Bo'limdagi «Telegram Premium» kartasi: admin qo'ygan kartochka rasmi (Mahsulotlar → Telegram Premium → 🖼),
+   bo'lmasa — tayyor muqova. Paketning o'z belgisi (premium emoji) faqat paketlar ro'yxatida chiqadi. */
+function premCardItem(it){
+  return {id:it.id,kind:"telegram",fulfill:"fragment_premium",premiumMonths:it.premiumMonths,price:it.price,title:it.title,
+    tile:{label:"Telegram Premium",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:cardImgSet("premium")}};
+}
 function openPremiumBuy(it){
   var guest=!tgUser();
   var packs=premiumPacks();if(!packs.length)packs=[it];
   var sel=it,checked=null,lastVal="";
   if(PM_STATE&&Date.now()-PM_STATE.ts<10*60*1000){checked=PM_STATE;lastVal=PM_STATE.uname;}
   var sh=openSheet(
-    pheadHTML(it,esc(t("pm_sub")),"Telegram Premium")
+    pheadHTML(premCardItem(it),esc(t("pm_sub")),cardTxt("premium","name"))
     +pstepHTML(1,'@'+t("username_label"),selfBtnHTML("pmSelf"))+'<div id="pmUser"></div>'
     +pstepHTML(2,t("g_pick"))+'<div class="pmPk" id="pmPk"></div>'
     +'<div style="height:16px"></div><div class="fbar" id="pmBuyArea"></div>',
@@ -5234,7 +5264,8 @@ function openPremiumBuy(it){
     for(var i=0;i<packs.length;i++){
       var x=packs[i],mo=Number(x.premiumMonths)||1,per=(Number(x.price)||0)/mo;
       var sv=basePer>0&&x!==b0?Math.round((1-per/basePer)*100):0;
-      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic">'+ic("star",20)+'</span>'
+      var xt=x.tile||{},has=!!(xt.video||xt.lottie||xt.img||xt.emoji);
+      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic'+(has?" has":"")+'">'+tileIconHTML(xt,pmBadgeHTML(mo))+'</span>'
         +'<span class="tx"><span class="nm">'+esc(months(x))+'</span><span class="sub">'+esc(money(Math.round(per)))+' / '+esc(t("pm_mo"))+'</span></span>'
         +'<span class="pr"><span class="pc">'+esc(money(x.price))+'</span>'+(sv>=1?'<span class="sv">−'+sv+'%</span>':'')+'</span><span class="dot"></span></button>';
     }
@@ -9545,7 +9576,7 @@ function prdRange(prices){
 function prdRows(){
   var rows=[],cat=catalog(),G=GADM||{games:[],packages:[]},svc=(PRD.ov&&PRD.ov.services)||{};
   prdKinds().forEach(function(kind){
-    var items=cat.filter(function(x){return x.kind===kind&&x.fulfill!=="telegram_gift"&&x.fulfill!=="gift_hub";});
+    var items=cat.filter(function(x){return x.kind===kind&&x.fulfill!=="telegram_gift"&&x.fulfill!=="gift_hub"&&x.fulfill!=="fragment_premium";});
     var groups={},solo=[];
     items.forEach(function(x){if(x.group){(groups[x.group]=groups[x.group]||[]).push(x);}else solo.push(x);});
     Object.keys(groups).forEach(function(k){
@@ -9559,6 +9590,12 @@ function prdRows(){
         sub:(Number(x.price)>0?money(x.price):(x.fulfill==="fragment_stars_custom"?"Istalgan miqdor":"narx qo'yilmagan")),conn:prdItemConn(x),hidden:x.active===false,sold:prdSale("item:"+x.id),item:x});
     });
     if(kind==="telegram"){
+      // Telegram Premium (Fragment) — 3/6/12 oylik paketlar doim shu qatorda; narx qo'yilgani do'konda chiqadi
+      var pms=pmAdmItems(),pmOn=pms.filter(function(x){return x.active!==false&&Number(x.price)>0;});
+      rows.push({kind:kind,type:"premium",key:"svc:premium",title:cardTxt("premium","name"),img:cardImg("premium"),icon:"diamond",
+        sub:(pmOn.length?pmOn.map(function(x){return (Number(x.premiumMonths)||0)+" oy";}).join(" · ")+" · "+prdRange(pmOn.map(function(x){return Number(x.price)||0;})):"Narx qo'yilmagan — do'konda ko'rinmaydi"),
+        conn:{t:"Fragment API",cls:svc.fragment?(pmOn.length?"ok":"warn"):"err"},hidden:!pmOn.length,items:pms,
+        sold:pms.reduce(function(s,x){var q=prdSale("item:"+x.id);s.n+=q.n;s.sum+=q.sum;return s;},{n:0,sum:0})});
       var gifts=cat.filter(function(x){return x.fulfill==="telegram_gift";}),hub=cat.filter(function(x){return x.fulfill==="gift_hub";})[0]||null;
       if(gifts.length||hub)rows.push({kind:kind,type:"gifts",key:"gifts",title:(hub&&loc(hub.title))||"Telegram sovg'alar",icon:"gift",hub:hub,
         img:(hub&&hub.tile&&hub.tile.img)||"",emoji:(hub&&hub.tile&&hub.tile.emoji)||"",
@@ -9660,6 +9697,7 @@ function prdPaint(){
 function prdOpen(key,quiet){
   var r=null,rows=prdRows();for(var i=0;i<rows.length;i++)if(rows[i].key===key)r=rows[i];
   if(!r){var d0=document.getElementById("prdD");if(d0&&quiet)d0.remove();PRD.cur=null;return;}
+  if(!quiet||PRD.cur!==key)PRD.pm=null;   // Premium muharriri: yangi ochilganda qoralama tozalanadi
   PRD.cur=key;
   var d=document.getElementById("prdD");
   if(!d){d=document.createElement("div");d.className="sthr";d.id="prdD";document.body.appendChild(d);}
@@ -9670,7 +9708,8 @@ function prdOpen(key,quiet){
   d.innerHTML=h;
   d.querySelector("#prdDBack").addEventListener("click",function(){haptic();d.remove();PRD.cur=null;});
   d.querySelector(".prd-body").addEventListener("click",function(e){var b=e.target.closest("[data-pa]");if(b){haptic();prdAct(r,b.getAttribute("data-pa"),b.getAttribute("data-id"));}});
-  if(r.type==="cgroup"||r.type==="citem"||r.type==="gifts"){var fx=d.querySelector("[data-fragbal]");if(fx)api("/api/admin/fragment-balance").then(function(j){fx.textContent=j&&j.ok!==false&&j.result!==undefined?("Balans: "+JSON.stringify(j.result).replace(/[{}"]/g,"").slice(0,60)):((j&&j.message)||"javob yo'q");}).catch(function(){fx.textContent="tekshirib bo'lmadi";});}
+  if(r.type==="premium")pmAdmBind(d,r);
+  if(r.type==="cgroup"||r.type==="citem"||r.type==="gifts"||r.type==="premium"){var fx=d.querySelector("[data-fragbal]");if(fx)api("/api/admin/fragment-balance").then(function(j){fx.textContent=j&&j.ok!==false&&j.result!==undefined?("Balans: "+JSON.stringify(j.result).replace(/[{}"]/g,"").slice(0,60)):((j&&j.message)||"javob yo'q");}).catch(function(){fx.textContent="tekshirib bo'lmadi";});}
 }
 function prdProvLine(name,state,cls,extra){
   return '<div class="prd-pl"><span class="dot '+cls+'"></span><div><b>'+esc(name)+'</b><span>'+state+'</span></div>'+(extra||"")+'</div>';
@@ -9697,6 +9736,10 @@ function prdConnHTML(r){
     // Do'kondagi «Telegram sovg'alar» kartochkasi (gift_hub) — nomi va rasmi shu yerdan o'zgaradi
     if(r.type==="gifts")h+='<div class="arow" style="margin-top:8px">'+(r.hub?'<button class="btn sm" data-pa="edit" data-id="'+esc(r.hub.id)+'">🖼 Kartochka nomi va rasmi</button>'
       :'<button class="btn sm" data-pa="newhub">🖼 Do\'konga sovg\'alar kartochkasini qo\'shish</button>')+'</div>';
+  }else if(r.type==="premium"){
+    h+=prdProvLine("Fragment API (Premium)",svc.fragment?'Kalit o\'rnatilgan · <span data-fragbal>balans tekshirilmoqda…</span>':"Kalit yo'q — Railway → Variables → FRAGMENT_API_KEY",svc.fragment?"ok":"err")
+      +'<div class="d" style="margin-top:6px">Mijoz @username kiritadi, Fragment tekshiradi va Premium o\'sha akkauntga avtomatik yuboriladi. Fragment rad etsa — pul mijoz balansiga qaytadi.</div>'
+      +'<div class="arow" style="margin-top:8px"><button class="btn sm" data-pa="card:premium">🖼 Kartochka nomi va rasmi</button></div>';
   }else if(r.type==="steam"){var s=svc.steam||{},p=s.line?prdProv(s.line.id):null,b=p?prdBal(p.message):"";
     h+=prdProvLine(s.mode==="manual"?"Qo'lda":"Ludovex API",s.mode==="manual"?"Admin hamyonni o'zi to'ldiradi":(s.line?(s.line.enabled?(p?(p.ok?"Ishlayapti":"Xato: "+esc(p.message)):"Yoqilgan"):"Liniya o'chiq"):"Ludovex liniyasi yo'q")+(b?' · balans <b>'+esc(b)+'</b>':''),r.conn.cls)
       +'<div class="arow" style="margin-top:8px"><button class="btn sm" data-pa="card:steam">🖼 Nomi va rasmi</button><button class="btn sm gray" data-pa="steam">Kurs, chegaralar</button><button class="btn sm gray" data-pa="lines">Ludovex liniyasi</button></div>';
@@ -9716,6 +9759,7 @@ function prdConnHTML(r){
 }
 function prdInnerHTML(r){
   var h="";
+  if(r.type==="premium")return pmAdmHTML();
   if(r.type==="cgroup"||r.type==="gifts"||r.type==="citem"){
     var L=r.items||[r.item],st=(PRD.ov&&PRD.ov.stock)||{};
     h+='<div class="prd-sect" style="padding:14px 2px 6px">Ichidagi mahsulotlar ('+L.length+')</div>';
@@ -9741,7 +9785,106 @@ function prdInnerHTML(r){
   }
   return h;
 }
+/* ---------- Telegram Premium (Fragment): paketlar va narxlar ----------
+   3, 6, 12 oy doim tayyor turadi; admin faqat narx qo'yadi. «+ Oy qo'shish» — 1–12 oydan istalgani.
+   Narx qo'yilgan paket do'konda chiqadi (fragment_premium mahsuloti yaratiladi), narx o'chirilsa — yashiriladi.
+   Har paketga Telegram premium emoji (ID bo'yicha) biriktiriladi — do'kondagi paket belgisi shu bo'ladi. */
+var PM_DEF_MONTHS=[3,6,12];
+function pmAdmItems(){
+  return catalog().filter(function(x){return x.fulfill==="fragment_premium";})
+    .sort(function(a,b){return (Number(a.premiumMonths)||0)-(Number(b.premiumMonths)||0);});
+}
+function pmAdmState(){if(!PRD.pm)PRD.pm={prices:{},tiles:{},extra:[],open:{},add:false};return PRD.pm;}
+function pmAdmMonths(){
+  var st=pmAdmState(),seen={},out=[];
+  PM_DEF_MONTHS.concat(pmAdmItems().map(function(x){return Number(x.premiumMonths)||0;})).concat(st.extra)
+    .forEach(function(m){if(m>=1&&m<=12&&!seen[m]){seen[m]=1;out.push(m);}});
+  return out.sort(function(a,b){return a-b;});
+}
+function pmAdmItem(m){var L=pmAdmItems();for(var i=0;i<L.length;i++)if((Number(L[i].premiumMonths)||0)===m)return L[i];return null;}
+function pmBadgeHTML(m){return '<span class="pmN"><b>'+esc(String(m))+'</b><i>'+esc(t("pm_months"))+'</i></span>';}
+function pmAdmHTML(){
+  var st=pmAdmState(),ms=pmAdmMonths(),h='<div class="prd-sect" style="padding:14px 2px 6px">Paketlar — narx qo\'ying</div><div class="pma">';
+  ms.forEach(function(m){
+    var it=pmAdmItem(m),tile=st.tiles[m]||(it&&it.tile)||{},pr=st.prices.hasOwnProperty(m)?st.prices[m]:(it&&Number(it.price)>0?String(it.price):"");
+    var on=it&&it.active!==false&&Number(it.price)>0,custom=!!(tile.video||tile.lottie||tile.img||tile.emoji);
+    h+='<div class="pma-r"><span class="pma-ic'+(custom?" has":"")+'">'+tileIconHTML(tile,pmBadgeHTML(m))+'</span>'
+      +'<span class="pma-n"><b>'+m+' oy</b><small class="'+(on?"ok":"")+'">'+(on?"Do'konda":(it?"Yashirin":"Narx qo'yilmagan"))+(m===3||m===6||m===12?"":" · Fragment rad etishi mumkin")+'</small></span>'
+      +'<span class="pma-p"><input inputmode="numeric" data-pmp="'+m+'" value="'+esc(pr)+'" placeholder="Narx" aria-label="'+m+' oy narxi, so\'m"><i>so\'m</i></span>'
+      +'<button class="pma-e'+(custom?" on":"")+'" type="button" data-pa="pmemoji" data-id="'+m+'" aria-label="Premium emoji">✨</button></div>'
+      +(st.open[m]?'<div class="pma-em"><input data-pmid="'+m+'" inputmode="numeric" placeholder="Premium emoji ID, masalan 5433838489083409183" value="'+esc(st.open[m]===true?"":st.open[m])+'">'
+        +'<button class="btn sm" type="button" data-pa="pmfetch" data-id="'+m+'">Yuklab olish</button>'
+        +(custom?'<button class="btn sm gray" type="button" data-pa="pmclear" data-id="'+m+'" style="width:auto">✕</button>':'')+'</div>':'');
+  });
+  h+='</div>';
+  if(st.add){
+    var used={};ms.forEach(function(m){used[m]=1;});
+    h+='<div class="pma-add">'+[1,2,3,4,5,6,7,8,9,10,11,12].map(function(m){return '<button type="button" data-pa="pmaddm" data-id="'+m+'"'+(used[m]?" disabled":"")+'>'+m+' oy</button>';}).join("")+'</div>';
+  }
+  h+='<div class="minnote" style="margin-top:8px">Fragment hozir 3, 6 va 12 oylik Premium beradi. Boshqa muddat qo\'shsangiz va Fragment uni rad etsa, pul mijoz balansiga avtomatik qaytadi.</div>'
+    +'<div class="minnote">✨ — paketga Telegram premium emoji qo\'yish (Telegram Desktop\'da emoji ustida «Copy Emoji ID»). Qo\'yilmasa, oy soni yozilgan belgi chiqadi.</div>'
+    +'<div class="arow" style="margin-top:10px"><button class="btn sm" type="button" data-pa="pmsave">Saqlash</button><button class="btn sm gray" type="button" data-pa="pmadd">'+ic("plus",14)+' Oy qo\'shish</button></div>';
+  return h;
+}
+function pmAdmBind(d,r){
+  var st=pmAdmState(),ins=d.querySelectorAll("[data-pmp]");
+  for(var i=0;i<ins.length;i++)ins[i].addEventListener("input",function(){var m=Number(this.getAttribute("data-pmp"));this.value=this.value.replace(/[^0-9]/g,"");st.prices[m]=this.value;});
+  var ids=d.querySelectorAll("[data-pmid]");
+  for(var j=0;j<ids.length;j++)ids[j].addEventListener("input",function(){st.open[Number(this.getAttribute("data-pmid"))]=this.value.trim()||true;});
+}
+function pmAdmRepaint(){var key=PRD.cur;if(key)prdOpen(key,true);}
+function pmAdmAct(a,id){
+  var st=pmAdmState(),m=Number(id)||0;haptic();
+  if(a==="pmemoji"){if(st.open[m])delete st.open[m];else st.open[m]=true;return pmAdmRepaint();}
+  if(a==="pmadd"){st.add=!st.add;return pmAdmRepaint();}
+  if(a==="pmaddm"){if(m>=1&&m<=12&&st.extra.indexOf(m)===-1)st.extra.push(m);st.add=false;return pmAdmRepaint();}
+  if(a==="pmclear"){st.tiles[m]={img:"",video:"",lottie:"",emoji:""};return pmAdmRepaint();}
+  if(a==="pmfetch"){
+    var v=String(st.open[m]===true?"":st.open[m]||"").trim();
+    if(!/^\d{5,25}$/.test(v)){toast("ID noto'g'ri — faqat raqamlar",true);return;}
+    toast("⏳ Telegramdan olinmoqda…");
+    api("/api/admin/premium-emoji?id="+encodeURIComponent(v),"GET").then(function(r){
+      st.tiles[m]={img:r.kind==="video"||r.kind==="lottie"?"":r.url,video:r.kind==="video"?r.url:"",lottie:r.kind==="lottie"?r.url:"",emoji:""};
+      delete st.open[m];toast("✅ Premium emoji qo'yildi — «Saqlash»ni bosing");pmAdmRepaint();
+    }).catch(function(e){toast((e&&e.resp&&(e.resp.message||e.resp.error))||"Emoji topilmadi",true);});
+    return;
+  }
+  if(a==="pmsave")return pmAdmSave();
+}
+function pmAdmSave(){
+  var st=pmAdmState(),ms=pmAdmMonths(),n=0,bad=false;
+  ms.forEach(function(m){
+    var it=pmAdmItem(m),raw=st.prices.hasOwnProperty(m)?st.prices[m]:(it&&Number(it.price)>0?String(it.price):""),price=Math.round(Number(raw)||0),tile=st.tiles[m];
+    if(raw!==""&&price<1000){bad=true;return;}
+    if(it){
+      var patch={price:price,active:price>0};
+      if(tile)patch.tile=Object.assign({},it.tile||{},tile,{fit:""});
+      if(price!==Number(it.price)||(price>0)!==(it.active!==false&&Number(it.price)>0)||tile){patchItem(it.id,patch);n++;}
+    }else if(price>0){
+      S.custom.push({id:"c"+Date.now()+"p"+m,kind:"telegram",cat:"",price:price,stock:0,active:true,fulfill:"fragment_premium",premiumMonths:m,
+        title:{uz:"Telegram Premium — "+m+" oy",ru:"Telegram Premium — "+m+" мес.",en:"Telegram Premium — "+m+(m===1?" month":" months")},
+        desc:{},note:"",group:null,groupLabel:null,groupImg:null,starsAmount:null,pricePerStar:null,minStars:null,telegramGiftId:null,giftKind:null,
+        tile:Object.assign({label:"Telegram Premium",sub:"",bg:"#2b1a5e",fg:"#ffffff",img:"",fit:"",img0:"",emoji:"",video:"",lottie:""},tile||{})});
+      n++;
+    }
+  });
+  if(bad){toast("Narx juda kichik — so'mda yozing (masalan 165000)",true);return;}
+  if(!n){toast("O'zgarish yo'q");return;}
+  persist();
+  var initData=(TG&&TG.initData)?TG.initData:"",arr=catalog();
+  if(!initData||typeof fetch!=="function"){toast(t("a_publish_err"),true);return;}
+  toast("⏳ Saqlanmoqda…");
+  fetch("/api/catalog",{method:"POST",headers:{"Content-Type":"application/json","X-Init-Data":initData},body:JSON.stringify(arr)})
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(){
+      S.serverCat=arr;S.custom=[];S.over={};S.removed=[];S.imported=null;persist();
+      PRD.pm=null;haptic("ok");toast("✅ Saqlandi — narx qo'yilgan paketlar do'konda");render();pmAdmRepaint();
+      try{loadServerCatalog();}catch(e){}
+    })
+    .catch(function(){toast(t("a_publish_err"),true);});
+}
 function prdAct(r,a,id){
+  if(r.type==="premium"&&/^pm/.test(a))return pmAdmAct(a,id);
   PRD.dirty=true;
   if(a==="edit"){ADM_PAGE=true;openAdminForm(id);return;}
   if(a==="newin"){ADM_PAGE=true;var x0=(r.items||[])[0]||{};openAdminForm(null,{kind:r.kind,group:r.group||"",groupLabel:x0.groupLabel||"",groupImg:x0.groupImg||"",fulfillType:r.type==="gifts"?"telegramgift":""});return;}

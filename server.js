@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.12";
+const BUILD = "2026-11-06.13";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2007,7 +2007,7 @@ function extrasCfg() {
   if (c.coverMode !== "builtin") c.coverMode = "own";
   return c;
 }
-const CARD_KEYS = ["steam", "vnum", "cs2", "dota2", "rust"];
+const CARD_KEYS = ["premium", "steam", "vnum", "cs2", "dota2", "rust"];
 const IMG_CUT_V = 1;   // oshirilsa — admin qurilmasi mavjud rasmlarni yana bir marta tozalaydi
 function publicExtras() {
   const c = extrasCfg(), now = Date.now();
@@ -3254,6 +3254,7 @@ function handleRequest(req, res) {
       const uname = String(b.username || "").trim().replace(/^@/, "");
       if (!/^[A-Za-z0-9_]{4,32}$/.test(uname)) return send(res, 400, { error: "username" });
       const price = Math.round(Number(it.price) || 0);
+      if (price <= 0) return send(res, 409, { error: "no_price" });   // narxi qo'yilmagan paket bepul sotilmasin
       const acc = user(u);
       if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
       const months = Number(it.premiumMonths) || 3;
