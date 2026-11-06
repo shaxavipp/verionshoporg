@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>
 /* Telegram ilovani shu manzilning o'zida ochsa (BotFather'dagi manzil ildizga qaragan bo'lsa) —
    mijoz tanishtiruv sahifasini ko'rmasdan darhol do'konga o'tadi. Parametrlar (#tgWebApp…, ?admin=…) saqlanadi. */
@@ -11,8 +11,8 @@ if(/tgWebApp/.test(h)||/tgWebApp/.test(s)||window.TelegramWebviewProxy){location
 document.documentElement.className+=" js";
 </script>
 <title>Verion Shop — raqamli mahsulotlar do'koni Telegram'da</title>
-<meta name="description" content="O'yin donatlari, Telegram Stars va Premium, Steam hamyon, CS2 skinlar, virtual raqamlar va AI obunalar — so'mda, Telegram ichida. Humo va Uzcard orqali to'lov, ro'yxatdan o'tish shart emas.">
-<meta name="theme-color" content="#080a12">
+<meta name="description" content="Telegram Stars va Premium, sovg'alar, Steam hamyon, CS2/Dota 2/Rust skinlar, virtual raqamlar, AI obunalar va o'yin donatlari — so'mda, Telegram ichida. Humo va Uzcard, ro'yxatdan o'tish shart emas.">
+<meta name="theme-color" content="#070912">
 <link rel="canonical" href="__SITE__/">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icon-180.png">
@@ -21,7 +21,7 @@ document.documentElement.className+=" js";
 <meta property="og:locale" content="uz_UZ">
 <meta property="og:url" content="__SITE__/">
 <meta property="og:title" content="Verion Shop — raqamli mahsulotlar do'koni Telegram'da">
-<meta property="og:description" content="O'yin donatlari, Telegram Stars va Premium, Steam hamyon, CS2 skinlar, virtual raqamlar va AI obunalar — so'mda, bir necha daqiqada.">
+<meta property="og:description" content="Telegram Stars, Premium, Steam, skinlar, virtual raqam va AI obunalar — so'mda, bir necha daqiqada.">
 <meta property="og:image" content="__SITE__/assets/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -30,7 +30,14 @@ document.documentElement.className+=" js";
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
 {"@type":"Organization","name":"Verion Shop","url":"__SITE__/","logo":"__SITE__/assets/icon-180.png"},
-{"@type":"WebSite","name":"Verion Shop","url":"__SITE__/","inLanguage":["uz","ru","en"]}]}
+{"@type":"WebSite","name":"Verion Shop","url":"__SITE__/","inLanguage":["uz","ru","en"]},
+{"@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"To'lov qancha vaqtda tushadi?","acceptedAnswer":{"@type":"Answer","text":"Odatda 1–15 daqiqa ichida. To'lov tasdiqlangach summa balansingizga qo'shiladi."}},
+{"@type":"Question","name":"Ro'yxatdan o'tish kerakmi?","acceptedAnswer":{"@type":"Answer","text":"Yo'q. Telegram akkauntingiz yetarli: botni ochib, ilovaga kirasiz."}},
+{"@type":"Question","name":"Buyurtma bajarilmasa nima bo'ladi?","acceptedAnswer":{"@type":"Answer","text":"Buyurtma bajarilmasa yoki bekor qilinsa, summa balansingizga qaytariladi. Savol bo'lsa, ilovadagi «Texnik yordam» orqali buyurtma raqamini yozing."}},
+{"@type":"Question","name":"Promokodni qanday ishlataman?","acceptedAnswer":{"@type":"Answer","text":"Mahsulotni tanlab, xarid oynasidagi «Promo-kod» maydoniga kodni yozing va «Qo'llash»ni bosing."}},
+{"@type":"Question","name":"Qaysi tillar bor?","acceptedAnswer":{"@type":"Answer","text":"Ilova o'zbek, rus va ingliz tillarida ishlaydi."}},
+{"@type":"Question","name":"Operator qachon javob beradi?","acceptedAnswer":{"@type":"Answer","text":"AI yordamchi 24/7 ishlaydi. Operator har kuni 10:00–22:00 (Toshkent vaqti) javob beradi."}}]}]}
 </script>
 <style>
 @font-face{font-family:"Onest";font-style:normal;font-weight:100 900;font-display:swap;src:url(/fonts/onest-latin-wght-normal.woff2) format("woff2");
@@ -41,186 +48,309 @@ document.documentElement.className+=" js";
   unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 :root{
   color-scheme:dark;
-  --bg:#080a12;--bg2:#0d1120;--card:#131728;--card2:#1b2038;
-  --line:rgba(140,160,235,.14);--line2:rgba(140,160,235,.26);
-  --txt:#f3f6fd;--mut:#9aa4bf;--mut2:#c7cee2;
+  --bg:#070912;--bg2:#0b0f1d;--card:#11152a;--card2:#181e38;--card3:#212849;
+  --line:rgba(140,160,235,.13);--line2:rgba(140,160,235,.26);
+  --txt:#f3f6fd;--mut:#98a2bd;--mut2:#c9d0e4;
   --acc:#2f8fff;--acc2:#8fc2ff;--gold:#ffcf70;--ok:#31e08a;
   --grad-btn:linear-gradient(135deg,#0f5fdc 0%,#2f8fff 100%);
-  --grad-text:linear-gradient(120deg,#8fc2ff 0%,#2f8fff 45%,#ffcf70 100%);
+  --grad-text:linear-gradient(110deg,#8fc2ff 0%,#2f8fff 40%,#9b7bff 70%,#ffcf70 100%);
   --r:14px;--r-lg:20px;--r-xl:28px;
   --font:"Onest",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --ease:cubic-bezier(.23,1,.32,1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--txt);line-height:1.55;font-size:16px;overflow-x:hidden;
-  background-image:radial-gradient(900px 520px at 78% -80px,rgba(47,143,255,.22),transparent 70%),radial-gradient(700px 460px at -10% 18%,rgba(15,95,220,.16),transparent 70%)}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);line-height:1.55;font-size:16px;overflow-x:hidden}
 img{display:block;max-width:100%;height:auto}
 a{color:inherit;text-decoration:none}
-.wrap{width:100%;max-width:1160px;margin:0 auto;padding:0 20px}
+button{font:inherit}
+.wrap{width:100%;max-width:1180px;margin:0 auto;padding:0 20px}
 .ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 :focus-visible{outline:2px solid var(--acc2);outline-offset:3px;border-radius:8px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+
+/* ---------- fon: aurora + to'r ---------- */
+.bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.bgfx .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(140,160,235,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(140,160,235,.06) 1px,transparent 1px);background-size:56px 56px;-webkit-mask:radial-gradient(ellipse 90% 60% at 60% 0%,#000 0%,transparent 70%);mask:radial-gradient(ellipse 90% 60% at 60% 0%,#000 0%,transparent 70%)}
+.bgfx .o{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55}
+.bgfx .o1{width:620px;height:620px;left:52%;top:-220px;background:#1d5fe0}
+.bgfx .o2{width:520px;height:520px;left:-180px;top:30%;background:#3a1fa8;opacity:.35}
+.bgfx .o3{width:440px;height:440px;right:-160px;top:62%;background:#0b6fd8;opacity:.28}
+@media (prefers-reduced-motion:no-preference){
+  .bgfx .o1{animation:dr1 22s ease-in-out infinite alternate}.bgfx .o2{animation:dr2 26s ease-in-out infinite alternate}
+  @keyframes dr1{to{transform:translate(-120px,80px) scale(1.12)}}@keyframes dr2{to{transform:translate(90px,-70px) scale(1.1)}}
+}
 
 /* ---------- header ---------- */
-header.top{position:sticky;top:0;z-index:50;background:rgba(9,12,22,.78);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);border-bottom:1px solid var(--line)}
+header.top{position:sticky;top:0;z-index:50;background:rgba(7,9,18,.72);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border-bottom:1px solid var(--line)}
 .hrow{display:flex;align-items:center;gap:18px;height:68px}
-.brand{display:flex;align-items:center;flex:0 0 auto}
 .brand img{height:34px;width:auto}
-nav.menu{display:flex;gap:4px;margin-left:12px}
+nav.menu{display:flex;gap:2px;margin-left:12px}
 nav.menu a{padding:8px 12px;border-radius:10px;font-size:14.5px;font-weight:500;color:var(--mut2);transition:background .2s,color .2s}
 nav.menu a:hover{background:rgba(140,160,235,.1);color:#fff}
 .hr{margin-left:auto;display:flex;align-items:center;gap:10px}
 .lang{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
-.lang button{font:inherit;font-size:12.5px;font-weight:600;color:var(--mut);background:none;border:0;border-radius:999px;padding:5px 10px;cursor:pointer;transition:background .2s,color .2s}
-.lang button[aria-pressed="true"]{background:var(--card2);color:#fff;box-shadow:0 0 0 1px var(--line2) inset}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font:inherit;font-weight:600;font-size:15px;border:0;border-radius:14px;padding:13px 22px;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s,background .25s;white-space:nowrap}
+.lang button{font-size:12.5px;font-weight:600;color:var(--mut);background:none;border:0;border-radius:999px;padding:5px 10px;cursor:pointer;transition:background .2s,color .2s}
+.lang button[aria-pressed="true"]{background:var(--card3);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:650;font-size:15px;border:0;border-radius:14px;padding:13px 22px;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s,background .25s;white-space:nowrap}
 .btn:active{transform:scale(.97)}
-.btn.pri{background:var(--grad-btn);color:#fff;box-shadow:0 10px 26px -10px rgba(47,143,255,.8)}
-.btn.pri:hover{box-shadow:0 14px 32px -10px rgba(47,143,255,.95);transform:translateY(-1px)}
-.btn.sec{background:rgba(140,160,235,.1);color:#fff;box-shadow:0 0 0 1px var(--line2) inset}
-.btn.sec:hover{background:rgba(140,160,235,.18)}
+.btn.pri{background:var(--grad-btn);color:#fff;box-shadow:0 10px 26px -10px rgba(47,143,255,.85),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn.pri:hover{box-shadow:0 16px 34px -10px rgba(47,143,255,1),inset 0 1px 0 rgba(255,255,255,.25);transform:translateY(-1px)}
+.btn.sec{background:rgba(140,160,235,.09);color:#fff;box-shadow:inset 0 0 0 1px var(--line2)}
+.btn.sec:hover{background:rgba(140,160,235,.16)}
 .btn.sm{padding:9px 16px;font-size:14px;border-radius:12px}
 
 /* ---------- hero ---------- */
-.hero{padding:56px 0 40px}
-.hgrid{display:grid;grid-template-columns:1.08fr .92fr;gap:40px;align-items:center}
-.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--acc2);background:rgba(47,143,255,.12);border:1px solid rgba(47,143,255,.28);padding:6px 12px;border-radius:999px;margin-bottom:20px}
-.pill i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(49,224,138,.18)}
-h1{font-size:clamp(34px,5.4vw,58px);line-height:1.06;font-weight:800;letter-spacing:-.025em}
-h1 em{font-style:normal;background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{margin-top:18px;font-size:clamp(16px,1.9vw,19px);color:var(--mut2);max-width:560px}
-.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.hero{padding:60px 0 30px}
+.hgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--acc2);background:rgba(47,143,255,.1);border:1px solid rgba(47,143,255,.28);padding:6px 13px 6px 10px;border-radius:999px;margin-bottom:22px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(49,224,138,.6)}
+@media (prefers-reduced-motion:no-preference){.pill i{animation:pulse 2.2s infinite}@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(49,224,138,0)}100%{box-shadow:0 0 0 0 rgba(49,224,138,0)}}}
+h1{font-size:clamp(34px,5.2vw,58px);line-height:1.04;font-weight:800;letter-spacing:-.03em}
+h1 em{font-style:normal;background:var(--grad-text);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+@media (prefers-reduced-motion:no-preference){h1 em{animation:shine 8s ease-in-out infinite alternate}@keyframes shine{to{background-position:100% 0}}}
+.lead{margin-top:20px;font-size:clamp(16px,1.9vw,19px);color:var(--mut2);max-width:560px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
-.chip{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--mut2);background:rgba(19,23,40,.7);border:1px solid var(--line);padding:8px 13px;border-radius:999px}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--mut2);background:rgba(17,21,42,.7);border:1px solid var(--line);padding:8px 13px;border-radius:999px}
 .chip .ic{width:16px;height:16px;color:var(--acc2)}
-.art{position:relative;height:460px}
-.art .glow{position:absolute;inset:8% 6%;background:radial-gradient(closest-side,rgba(47,143,255,.45),transparent 72%);filter:blur(20px)}
-.art figure{position:absolute;width:62%;border-radius:26px;overflow:hidden;box-shadow:0 30px 60px -22px rgba(0,0,0,.8),0 0 0 1px var(--line2);background:var(--card)}
-.art figure img{width:100%;aspect-ratio:1;object-fit:cover}
-.art .f1{left:0;top:8%;transform:rotate(-7deg);z-index:1}
-.art .f2{right:0;top:0;transform:rotate(5deg);z-index:2}
-.art .f3{left:19%;bottom:0;transform:rotate(-1.5deg);z-index:3;width:58%}
+
+.stage{position:relative;height:560px}
+.stage .aura{position:absolute;left:12%;right:8%;top:10%;bottom:6%;background:radial-gradient(closest-side,rgba(47,143,255,.5),transparent 72%);filter:blur(24px)}
+.bk{position:absolute;width:44%;border-radius:24px;overflow:hidden;box-shadow:0 30px 60px -24px rgba(0,0,0,.85),0 0 0 1px var(--line2)}
+.bk img{width:100%;aspect-ratio:1;object-fit:cover}
+.bk.b1{left:0;top:18%;transform:rotate(-9deg)}
+.bk.b2{right:0;top:44%;transform:rotate(8deg)}
+.phone{position:absolute;left:50%;top:0;width:282px;height:560px;margin-left:-141px;border-radius:46px;padding:10px;background:linear-gradient(150deg,#3b4462,#151a2c 40%,#0b0e19 70%,#2c3350);box-shadow:0 40px 80px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.06);z-index:2}
+.scr{position:relative;height:100%;border-radius:37px;overflow:hidden;background:radial-gradient(120% 60% at 50% 0%,#14244e,#0a0d19 60%);display:flex;flex-direction:column}
+.notch{position:absolute;left:50%;top:9px;width:92px;height:26px;margin-left:-46px;border-radius:20px;background:#000;z-index:3}
+.ahead{display:flex;align-items:center;justify-content:space-between;padding:44px 16px 10px}
+.ahead img{height:22px;width:auto}
+.ahead span{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2f8fff,#9b7bff);box-shadow:0 0 0 2px rgba(255,255,255,.12)}
+.asearch{margin:4px 14px 12px;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07);font-size:12.5px;color:var(--mut)}
+.asearch .ic{width:15px;height:15px}
+.alabel{padding:0 16px 8px;font-size:13px;font-weight:700}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
+.at{border-radius:16px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,.07)}
+.at img{width:100%;aspect-ratio:1;object-fit:cover}
+.at b{display:block;font-size:11.5px;font-weight:600;padding:7px 9px 8px}
+.anav{margin-top:auto;display:flex;justify-content:space-around;padding:12px 10px 16px;background:rgba(10,13,25,.85);border-top:1px solid rgba(255,255,255,.06)}
+.anav .ic{width:19px;height:19px;color:var(--mut)}
+.anav .ic.on{color:var(--acc2)}
+.fchip{position:absolute;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 14px 10px 10px;border-radius:16px;background:rgba(17,21,42,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line2);box-shadow:0 18px 40px -16px rgba(0,0,0,.9)}
+.fchip img{width:38px;height:38px;border-radius:10px;object-fit:cover}
+.fchip b{display:block;font-size:13px;font-weight:700;line-height:1.25}
+.fchip span{display:block;font-size:12px;color:var(--acc2);font-weight:600}
+.fchip.c1{left:-4%;bottom:14%}.fchip.c2{right:-3%;top:10%}
 @media (prefers-reduced-motion:no-preference){
-  .art figure{animation:fl 7s ease-in-out infinite}
-  .art .f2{animation-delay:-2.3s}.art .f3{animation-delay:-4.6s}
+  .bk.b1,.fchip.c1{animation:fl 7s ease-in-out infinite}.bk.b2,.fchip.c2{animation:fl 7s ease-in-out -3.5s infinite}
   @keyframes fl{0%,100%{translate:0 0}50%{translate:0 -10px}}
 }
 
+/* ---------- marquee ---------- */
+.mq{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(11,15,29,.6);overflow:hidden;margin-top:40px}
+.mq .tr{display:flex;width:max-content}
+.mq ul{display:flex;list-style:none;gap:0}
+.mq li{display:flex;align-items:center;gap:22px;padding:16px 0 16px 22px;font-size:15px;font-weight:600;color:var(--mut2);white-space:nowrap}
+.mq li::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);opacity:.7}
+@media (prefers-reduced-motion:no-preference){.mq .tr{animation:mq 38s linear infinite}@keyframes mq{to{transform:translateX(-50%)}}}
+
 /* ---------- sections ---------- */
-section{padding:72px 0}
-.sh{max-width:680px;margin-bottom:34px}
-.sh .kick{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2);margin-bottom:10px}
-h2{font-size:clamp(26px,3.6vw,40px);line-height:1.12;font-weight:800;letter-spacing:-.02em}
+section{padding:80px 0}
+.sh{max-width:700px;margin-bottom:36px}
+.sh .kick{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--acc2);margin-bottom:12px}
+.sh .kick i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+h2{font-size:clamp(27px,3.7vw,42px);line-height:1.1;font-weight:800;letter-spacing:-.025em}
 .sh p{margin-top:12px;color:var(--mut2);font-size:17px}
-.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.pcard{display:flex;flex-direction:column;background:linear-gradient(180deg,var(--card),#10142a);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;transition:transform .3s var(--ease),border-color .3s,box-shadow .3s}
-.pcard:hover{transform:translateY(-4px);border-color:var(--line2);box-shadow:0 22px 40px -24px rgba(47,143,255,.55)}
-.pcard .im{aspect-ratio:1;background:var(--card2);overflow:hidden}
-.pcard .im img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
-.pcard:hover .im img{transform:scale(1.05)}
-.pcard .tx{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
-.pcard h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
-.pcard p{font-size:14px;color:var(--mut);line-height:1.5;flex:1}
-.pcard .go{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:600;color:var(--acc2)}
-.pcard .go .ic{width:16px;height:16px;transition:transform .25s var(--ease)}
-.pcard:hover .go .ic{transform:translateX(4px)}
-.gwrap{margin-top:44px;display:none}
-.gwrap.on{display:block}
+.gl{position:relative;background:radial-gradient(420px circle at var(--mx,-999px) var(--my,-999px),rgba(47,143,255,.13),transparent 45%),linear-gradient(180deg,var(--card),#0e1226);border:1px solid var(--line);border-radius:var(--r-lg)}
+
+/* jonli narxlar */
+.prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.pc{display:flex;flex-direction:column;gap:14px;padding:18px;transition:transform .3s var(--ease),border-color .3s}
+.pc:hover{transform:translateY(-3px);border-color:var(--line2)}
+.pc .top{display:flex;align-items:center;gap:12px}
+.pc .top img{width:52px;height:52px;border-radius:14px;object-fit:cover;box-shadow:0 0 0 1px var(--line2)}
+.pc .top b{font-size:16px;font-weight:700;line-height:1.25}
+.pc .top small{display:block;font-size:12.5px;color:var(--mut);margin-top:2px}
+.pc .pr{font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.pc .pr span{font-size:15px;font-weight:600;color:var(--mut2);letter-spacing:0}
+.pc .unit{font-size:13px;color:var(--mut);margin-top:-10px}
+.pc .go{margin-top:auto;display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:650;color:var(--acc2)}
+.pc .go .ic{width:16px;height:16px;transition:transform .25s var(--ease)}
+.pc:hover .go .ic{transform:translateX(4px)}
+.live{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:var(--mut)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(49,224,138,.15)}
+
+/* bento katalog */
+.bento{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.bc{display:flex;flex-direction:column;overflow:hidden;transition:transform .35s var(--ease),border-color .3s,box-shadow .35s}
+.bc:hover{transform:translateY(-4px);border-color:var(--line2);box-shadow:0 26px 50px -28px rgba(47,143,255,.6)}
+.bc .im{aspect-ratio:1;overflow:hidden;background:var(--card2)}
+.bc .im img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.bc:hover .im img{transform:scale(1.05)}
+.bc .tx{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
+.bc h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.bc p{font-size:14px;color:var(--mut);line-height:1.5;flex:1}
+.bc .go{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:650;color:var(--acc2)}
+.bc .go .ic{width:16px;height:16px;transition:transform .25s var(--ease)}
+.bc:hover .go .ic{transform:translateX(4px)}
+.bc.w{grid-column:span 2;flex-direction:row}
+.bc.w .im{position:relative;width:50%;flex:0 0 50%;aspect-ratio:auto;isolation:isolate}
+.bc.w .im::before{content:"";position:absolute;inset:-30px;background:var(--bgi) center/cover;filter:blur(26px) brightness(.55) saturate(1.2);z-index:-1}
+.bc.w .im img{object-fit:contain}
+.bc.w .tx{padding:24px;justify-content:center}
+.bc.w h3{font-size:24px}
+.bc.w p{flex:0;font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tags span{font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:rgba(47,143,255,.12);color:var(--acc2);border:1px solid rgba(47,143,255,.22)}
+.bc.all{background:radial-gradient(500px 260px at 100% 0%,rgba(47,143,255,.35),transparent 70%),linear-gradient(160deg,#122352,#0d1226);justify-content:center}
+.bc.all .tx{padding:28px;gap:10px}
+.bc.all .btn{align-self:flex-start;margin-top:8px}
+.gwrap{margin-top:40px}
 .gwrap h3{font-size:20px;font-weight:700;margin-bottom:16px}
 .glist{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity;scrollbar-width:thin}
-.gitem{flex:0 0 156px;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px;transition:border-color .25s,transform .25s var(--ease)}
+.gitem{flex:0 0 156px;scroll-snap-align:start;padding:10px;transition:border-color .25s,transform .25s var(--ease)}
 .gitem:hover{border-color:var(--line2);transform:translateY(-2px)}
 .gitem .gi{aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--card2);display:grid;place-items:center;font-size:34px;font-weight:800;color:#fff}
 .gitem .gi img{width:100%;height:100%;object-fit:cover}
 .gitem b{display:block;margin-top:10px;font-size:14px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gitem span{display:block;font-size:12.5px;color:var(--mut);margin-top:2px}
 
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
-.step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 24px}
-.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--grad-btn);font-weight:800;font-size:17px;margin-bottom:16px;box-shadow:0 10px 22px -10px rgba(47,143,255,.8)}
+/* qadamlar */
+.steps{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.steps::before{content:"";position:absolute;left:12%;right:12%;top:52px;height:2px;background:linear-gradient(90deg,transparent,rgba(47,143,255,.55),rgba(155,123,255,.55),transparent)}
+.step{position:relative;padding:28px 24px;text-align:center}
+.step .si{position:relative;display:grid;place-items:center;width:52px;height:52px;margin:0 auto 18px;border-radius:16px;background:var(--grad-btn);box-shadow:0 12px 26px -10px rgba(47,143,255,.9),inset 0 1px 0 rgba(255,255,255,.3)}
+.step .si .ic{width:24px;height:24px;color:#fff}
+.step .si em{position:absolute;right:-8px;top:-8px;width:24px;height:24px;border-radius:50%;background:#fff;color:#0b1020;font-style:normal;font-size:13px;font-weight:800;display:grid;place-items:center}
 .step h3{font-size:19px;font-weight:700;margin-bottom:8px}
 .step p{color:var(--mut2);font-size:15px}
-.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.feat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px}
-.feat .fi{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:rgba(47,143,255,.14);color:var(--acc2);margin-bottom:16px}
-.feat h3{font-size:17.5px;font-weight:700;margin-bottom:6px}
-.feat p{font-size:14.5px;color:var(--mut2)}
-.pay{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(15,95,220,.28),rgba(19,23,40,.9));border:1px solid var(--line2);border-radius:var(--r-xl);padding:28px 30px}
-.pay .pt{flex:1 1 320px}
-.pay h2{font-size:clamp(22px,3vw,30px)}
-.pay p{margin-top:8px;color:var(--mut2);font-size:15.5px}
-.cards{display:flex;gap:12px;flex-wrap:wrap}
-.cardp{font-weight:800;letter-spacing:.06em;font-size:18px;padding:14px 22px;border-radius:14px;background:#0b1020;border:1px solid var(--line2)}
-.cardp.h{color:#4fd1ff}.cardp.u{color:#7ee787}
 
-.faq{max-width:820px}
-details{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;transition:border-color .25s}
-details[open]{border-color:var(--line2)}
+/* kafolatlar va afzalliklar */
+.ggrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.gcard{padding:24px}
+.gcard .fi{display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:rgba(49,224,138,.12);color:var(--ok);margin-bottom:16px}
+.gcard h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.gcard p{font-size:14.5px;color:var(--mut2)}
+.gcard a{color:var(--acc2);font-weight:600;font-size:14px;display:inline-block;margin-top:10px}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.feat{padding:24px;display:flex;gap:16px;align-items:flex-start}
+.feat .fi{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border-radius:12px;background:rgba(47,143,255,.13);color:var(--acc2)}
+.feat h3{font-size:16.5px;font-weight:700;margin-bottom:4px}
+.feat p{font-size:14.5px;color:var(--mut2)}
+
+/* to'lov */
+.pay{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;padding:34px}
+.pay h2{font-size:clamp(24px,3vw,32px)}
+.pay p{margin-top:10px;color:var(--mut2);font-size:16px}
+.cards{position:relative;height:220px;max-width:420px;width:100%;justify-self:end}
+.bcard{position:absolute;width:250px;height:156px;border-radius:18px;padding:18px;color:#fff;box-shadow:0 26px 50px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.25);display:flex;flex-direction:column;justify-content:space-between}
+.bcard .chp{width:38px;height:28px;border-radius:7px;background:linear-gradient(135deg,#f6dd8a,#c9a043);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.bcard b{font-size:22px;font-weight:800;letter-spacing:.08em}
+.bcard .row{display:flex;align-items:center;gap:14px}
+.bcard i{font-style:normal;font-size:14px;letter-spacing:.2em;opacity:.8}
+.bcard.h{left:0;top:0;background:linear-gradient(135deg,#0a8fd8,#0c3fb0 60%,#081f6b);transform:rotate(-6deg)}
+.bcard.u{right:0;top:52px;background:linear-gradient(135deg,#1aa864,#0b6b45 60%,#063d2a);transform:rotate(5deg)}
+
+/* FAQ */
+.fq{display:grid;grid-template-columns:.8fr 1.2fr;gap:30px;align-items:start}
+.fq .side{position:sticky;top:96px}
+.help{margin-top:22px;padding:22px}
+.help b{display:block;font-size:17px;margin-bottom:6px}
+.help p{font-size:14.5px;color:var(--mut2);margin-bottom:14px}
+details{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;transition:border-color .25s,background .25s}
+details[open]{border-color:var(--line2);background:var(--card2)}
 summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;font-weight:600;font-size:16.5px}
 summary::-webkit-details-marker{display:none}
 summary .ic{transition:transform .3s var(--ease);color:var(--acc2)}
 details[open] summary .ic{transform:rotate(180deg)}
 details p{padding:0 20px 20px;color:var(--mut2);font-size:15.5px}
 
-.final{text-align:center;padding:64px 24px;border-radius:var(--r-xl);background:radial-gradient(600px 260px at 50% 0,rgba(47,143,255,.32),transparent 70%),linear-gradient(180deg,var(--card),#0e1226);border:1px solid var(--line2)}
-.final h2{max-width:620px;margin:0 auto}
-.final p{margin:14px auto 0;max-width:560px;color:var(--mut2);font-size:17px}
-.final .cta{justify-content:center}
+/* yakuniy chaqiriq */
+.final{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center;padding:52px;border-radius:var(--r-xl);background:radial-gradient(700px 300px at 20% 0,rgba(47,143,255,.32),transparent 70%),radial-gradient(500px 300px at 100% 100%,rgba(155,123,255,.22),transparent 70%),linear-gradient(180deg,#121a36,#0d1124);border:1px solid var(--line2)}
+.final h2{max-width:560px}
+.final p{margin-top:14px;max-width:520px;color:var(--mut2);font-size:17px}
+.qr{text-align:center;padding:16px;border-radius:20px;background:#fff;color:#0b1020;width:212px}
+.qr img{width:180px;height:180px;image-rendering:pixelated;margin:0 auto}
+.qr b{display:block;font-size:14px;margin-top:10px}
+.qr span{display:block;font-size:12.5px;color:#4a5578;margin-top:2px;line-height:1.35}
 
-footer{margin-top:72px;border-top:1px solid var(--line);padding:44px 0 34px;background:rgba(8,10,18,.6)}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:44px 0 34px;background:rgba(7,9,18,.7)}
 .fg{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px}
 .fg p{color:var(--mut);font-size:14.5px;margin-top:14px;max-width:320px}
-.fg h4{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:14px;font-weight:700}
+.fg h4{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin-bottom:14px;font-weight:700}
 .fg ul{list-style:none;display:grid;gap:10px}
 .fg li a{color:var(--mut2);font-size:15px;transition:color .2s}.fg li a:hover{color:#fff}
 .copy{margin-top:32px;padding-top:22px;border-top:1px solid var(--line);color:var(--mut);font-size:13.5px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
 
-.js .rv{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+/* telefonda pastdagi doimiy tugma */
+.mcta{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:60;display:none;transform:translateY(140%);transition:transform .45s var(--ease)}
+.mcta.on{transform:none}
+.mcta .btn{width:100%;padding:15px;font-size:16px;border-radius:16px;box-shadow:0 18px 40px -12px rgba(0,0,0,.9),0 10px 26px -10px rgba(47,143,255,.9)}
+
+.js .rv{opacity:0;transform:translateY(18px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
 .js .rv.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
 
-@media (max-width:980px){
-  .hgrid{grid-template-columns:1fr;gap:20px}.art{height:380px;max-width:520px;margin:0 auto;width:100%}
-  .pgrid{grid-template-columns:repeat(2,1fr)}.fgrid{grid-template-columns:repeat(2,1fr)}
-  .fg{grid-template-columns:1fr 1fr}
-  nav.menu{display:none}
+@media (max-width:1020px){
+  .hgrid{grid-template-columns:1fr;gap:26px}.stage{max-width:520px;width:100%;margin:0 auto}
+  .bento{grid-template-columns:repeat(2,1fr)}.ggrid{grid-template-columns:repeat(2,1fr)}.fgrid{grid-template-columns:repeat(2,1fr)}
+  .fq{grid-template-columns:1fr}.fq .side{position:static}
+  .fg{grid-template-columns:1fr 1fr}nav.menu{display:none}
+  .pay{grid-template-columns:1fr}.final{grid-template-columns:1fr}.qr{display:none!important}
 }
 @media (max-width:640px){
-  .wrap{padding:0 16px}.hero{padding:30px 0 20px}section{padding:52px 0}
-  .steps{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}
-  .pgrid{gap:12px}.pcard .tx{padding:12px 12px 14px}.pcard h3{font-size:15.5px}.pcard p{font-size:13px}
-  .hr .btn{display:none}.art{height:330px}
+  .wrap{padding:0 16px}.hero{padding:30px 0 10px}section{padding:58px 0}
+  .hr .btn{display:none}.mcta{display:block}footer{padding-bottom:100px}
+  .stage{height:470px}.phone{width:236px;height:470px;margin-left:-118px;border-radius:40px}.scr{border-radius:31px}
+  .ahead{padding-top:38px}.agrid{gap:8px;padding:0 12px}.at b{font-size:10.5px;padding:6px 8px}
+  .fchip{padding:8px 11px 8px 8px}.fchip img{width:32px;height:32px}.fchip b{font-size:12px}.fchip span{font-size:11.5px}
+  .fchip.c1{left:0;bottom:6%}.fchip.c2{right:0;top:3%}.bk{width:42%}
+  .bento{gap:12px}.bc .tx{padding:12px 12px 14px}.bc h3{font-size:15.5px}.bc p{font-size:13px}
+  .bc.w{flex-direction:column}.bc.w .im{width:100%;flex:none;aspect-ratio:16/10}.bc.w .tx{padding:16px}.bc.w h3{font-size:19px}
+  .steps{grid-template-columns:1fr}.steps::before{display:none}.step{text-align:left;display:grid;grid-template-columns:52px 1fr;gap:4px 16px;padding:20px}
+  .step .si{grid-row:span 2;margin:0}.step h3{margin:2px 0 0}
+  .ggrid,.fgrid{grid-template-columns:1fr}.pay{padding:22px}.cards{height:170px}.bcard{width:200px;height:126px}.bcard b{font-size:18px}
+  .fg{grid-template-columns:1fr}.final{padding:34px 20px;text-align:center}.final .cta{justify-content:center}.final h2,.final p{margin-left:auto;margin-right:auto}
   .chips{gap:8px;margin-top:20px}.chip{font-size:12.5px;padding:7px 11px}
-  .pay{padding:22px}.fg{grid-template-columns:1fr}.final{padding:44px 18px}
   .cta .btn{flex:1 1 100%}
+  .prices{grid-template-columns:1fr 1fr;gap:10px}.pc{padding:14px;gap:10px}.pc .top{flex-direction:column;align-items:flex-start;gap:8px}.pc .top img{width:44px;height:44px}.pc .top b{font-size:14.5px}.pc .pr{font-size:21px}.pc .pr span{font-size:12.5px}.pc .unit{font-size:11.5px;margin-top:-6px}
 }
 </style>
 </head>
 <body>
+<div class="bgfx" aria-hidden="true"><div class="grid"></div><div class="o o1"></div><div class="o o2"></div><div class="o o3"></div></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
-<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
 <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3"/><path d="M3 7h15a2 2 0 0 1 2 2v2h-4a2 2 0 0 0 0 4h4"/></symbol>
-<symbol id="i-gift" viewBox="0 0 24 24"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
 <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
 <symbol id="i-headset" viewBox="0 0 24 24"><path d="M3 14v-3a9 9 0 0 1 18 0v3M21 15a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2zM3 15a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2zM21 17v1a3 3 0 0 1-3 3h-4"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
 <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.4 0-2.5.8-2.5 1.9 0 2.7 5 1.3 5 4 0 1.1-1.1 1.9-2.5 1.9-1.1 0-2-.4-2.5-1.2M12 6.5V8m0 8v1.5"/></symbol>
 <symbol id="i-pct" viewBox="0 0 24 24"><path d="M19 5 5 19M7 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></symbol>
 <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
 <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
 <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 7h12l1 14H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
 </defs></svg>
 
 <header class="top">
   <div class="wrap hrow">
-    <a class="brand" href="/" aria-label="Verion Shop"><img src="/assets/logo.svg" alt="Verion Shop" width="124" height="33"></a>
+    <a class="brand" href="/" aria-label="Verion Shop"><img src="/assets/logo.svg" alt="Verion Shop" width="128" height="34"></a>
     <nav class="menu" aria-label="Bo'limlar">
       <a href="#products" data-i="nav_products">Mahsulotlar</a>
+      <a href="#prices" data-i="nav_prices" data-need="prices" hidden>Narxlar</a>
       <a href="#how" data-i="nav_how">Qanday ishlaydi</a>
-      <a href="#why" data-i="nav_why">Afzalliklar</a>
+      <a href="#trust" data-i="nav_trust">Kafolatlar</a>
       <a href="#faq" data-i="nav_faq">Savollar</a>
     </nav>
     <div class="hr">
@@ -235,13 +365,13 @@ footer{margin-top:72px;border-top:1px solid var(--line);padding:44px 0 34px;back
 </header>
 
 <main>
-<section class="hero" style="padding-top:56px">
+<section class="hero" style="padding-bottom:0">
   <div class="wrap hgrid">
     <div>
       <span class="pill"><i></i><span data-i="pill">Telegram ichidagi raqamli do'kon</span></span>
-      <h1><span data-i="h1a">Raqamli mahsulotlar —</span><br><em data-i="h1b">so'mda, bir necha daqiqada</em></h1>
-      <p class="lead" data-i="lead">O'yin donatlari, Telegram Stars va Premium, Steam hamyon, CS2 skinlar, virtual raqamlar va AI obunalar. Hammasi Telegram ichida, ro'yxatdan o'tishsiz.</p>
-      <div class="cta">
+      <h1><span data-i="h1a">Raqamli mahsulotlar —</span><br><em data-i="h1b">so'mda, bir necha daqiqada</em></h1>
+      <p class="lead" data-i="lead">Telegram Stars va Premium, sovg'alar, Steam hamyon, CS2 skinlar, virtual raqamlar va AI obunalar. Hammasi Telegram ichida, ro'yxatdan o'tishsiz.</p>
+      <div class="cta" id="heroCta">
         <a class="btn pri" href="__APP__" data-open=""><svg class="ic"><use href="#i-send"/></svg><span data-i="open_app">Ilovani ochish</span></a>
         <a class="btn sec" href="__BOT__" data-bot><span data-i="go_bot">Botga o'tish</span></a>
       </div>
@@ -251,86 +381,126 @@ footer{margin-top:72px;border-top:1px solid var(--line);padding:44px 0 34px;back
         <span class="chip"><svg class="ic"><use href="#i-headset"/></svg><span data-i="chip3">AI yordam 24/7</span></span>
       </div>
     </div>
-    <div class="art" aria-hidden="true">
-      <div class="glow"></div>
-      <figure class="f1"><img src="/assets/t-premium.jpg" width="560" height="560" alt="" fetchpriority="high"></figure>
-      <figure class="f2"><img src="/assets/t-stars.jpg" width="560" height="560" alt="" fetchpriority="high"></figure>
-      <figure class="f3"><img src="/assets/t-gifts.jpg" width="560" height="560" alt="" fetchpriority="high"></figure>
+    <div class="stage" aria-hidden="true">
+      <div class="aura"></div>
+      <figure class="bk b1"><img src="/assets/t-gifts.jpg" width="560" height="560" alt=""></figure>
+      <figure class="bk b2"><img src="/assets/t-gemini.jpg" width="560" height="560" alt=""></figure>
+      <div class="phone"><div class="scr">
+        <div class="notch"></div>
+        <div class="ahead"><img src="/assets/logo.svg" alt="" width="84" height="22"><span></span></div>
+        <div class="asearch"><svg class="ic"><use href="#i-search"/></svg><span data-i="ph_search">Qidirish</span></div>
+        <div class="alabel" data-i="ph_label">Mashhur</div>
+        <div class="agrid">
+          <div class="at"><img src="/assets/t-stars.jpg" width="560" height="560" alt="" fetchpriority="high"><b>Telegram Stars</b></div>
+          <div class="at"><img src="/assets/t-premium.jpg" width="560" height="560" alt="" fetchpriority="high"><b>Telegram Premium</b></div>
+          <div class="at"><img src="/assets/t-steam.jpg" width="560" height="560" alt=""><b data-i="ph_steam">Steam hamyon</b></div>
+          <div class="at"><img src="/assets/t-cs2.jpg" width="560" height="560" alt=""><b data-i="ph_skins">CS2 skinlar</b></div>
+        </div>
+        <div class="anav"><svg class="ic on"><use href="#i-home"/></svg><svg class="ic"><use href="#i-grid"/></svg><svg class="ic"><use href="#i-bag"/></svg><svg class="ic"><use href="#i-user"/></svg></div>
+      </div></div>
+      <div class="fchip c1" id="fc1" hidden><img alt="" width="38" height="38"><div><b></b><span></span></div></div>
+      <div class="fchip c2" id="fc2" hidden><img alt="" width="38" height="38"><div><b></b><span></span></div></div>
     </div>
+  </div>
+  <div class="mq" aria-hidden="true"><div class="tr"><ul id="mqList">
+    <li>Telegram Stars</li><li>Telegram Premium</li><li data-i="mq_gifts">Telegram sovg'alari</li><li data-i="mq_steam">Steam hamyon</li><li data-i="mq_cs2">CS2 skinlar</li><li>Dota 2</li><li>Rust</li><li data-i="mq_vnum">Virtual raqam</li><li>Gemini Pro</li><li data-i="mq_games">O'yin donatlari</li><li data-i="mq_smm">Nakrutka</li>
+  </ul></div></div>
+</section>
+
+<section id="prices" data-need="prices" hidden>
+  <div class="wrap">
+    <div class="sh rv"><div class="kick"><i></i><span data-i="pr_kick">Jonli narxlar</span></div><h2 data-i="pr_h">Narxlar ilovadagi bilan bir xil</h2><p data-i="pr_p">Narxlar to'g'ridan-to'g'ri do'kon bazasidan olinadi va o'zgarsa, shu yerda ham darhol yangilanadi.</p></div>
+    <div class="prices" id="priceList"></div>
   </div>
 </section>
 
 <section id="products">
   <div class="wrap">
-    <div class="sh rv"><div class="kick" data-i="p_kick">Katalog</div><h2 data-i="p_h">Nimalarni olishingiz mumkin</h2><p data-i="p_p">Barcha mahsulotlar bitta ilovada. Balansni to'ldiring va kerakligini tanlang.</p></div>
-    <div class="pgrid">
-      <a class="pcard rv" href="__APP__" data-open="telegram"><div class="im"><img src="/assets/t-cat-telegram.jpg" width="560" height="560" loading="lazy" alt="Telegram Stars va Premium"></div><div class="tx"><h3 data-i="c1h">Stars va Premium</h3><p data-i="c1p">Telegram Stars, Premium obuna va sovg'alar akkauntingizga to'g'ridan-to'g'ri.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open="games"><div class="im"><img src="/assets/t-cat-oyinlar.jpg" width="560" height="560" loading="lazy" alt="O'yin donatlari"></div><div class="tx"><h3 data-i="c2h">O'yin donatlari</h3><p data-i="c2p">Mashhur o'yinlar uchun valyuta va paketlar. ID ni kiriting, qolganini biz qilamiz.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-steam.jpg" width="560" height="560" loading="lazy" alt="Steam hamyon"></div><div class="tx"><h3 data-i="c3h">Steam hamyon</h3><p data-i="c3p">Steam hisobingizni so'mda to'ldiring. Valyuta va kurs bilan bosh qotirmaysiz.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-cs2.jpg" width="560" height="560" loading="lazy" alt="CS2, Dota 2 va Rust skinlari"></div><div class="tx"><h3 data-i="c4h">Skinlar</h3><p data-i="c4p">CS2, Dota 2 va Rust skinlari. Steam trade havolangizga yetkaziladi.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-vnum.jpg" width="560" height="560" loading="lazy" alt="Virtual raqam"></div><div class="tx"><h3 data-i="c5h">Virtual raqam</h3><p data-i="c5p">Telegram va boshqa xizmatlarga ro'yxatdan o'tish uchun raqam. Kod ilovaning o'zida chiqadi.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open="ai"><div class="im"><img src="/assets/t-cat-obuna.jpg" width="560" height="560" loading="lazy" alt="AI va ilova obunalari"></div><div class="tx"><h3 data-i="c6h">AI va obunalar</h3><p data-i="c6p">Gemini Pro kabi AI xizmatlari va ilova obunalari.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open="nakrutka"><div class="im"><img src="/assets/t-cat-nakrutka.jpg" width="560" height="560" loading="lazy" alt="Nakrutka xizmatlari"></div><div class="tx"><h3 data-i="c7h">Nakrutka</h3><p data-i="c7p">Telegram, Instagram va boshqa tarmoqlar uchun obunachi va layk xizmatlari.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
-      <a class="pcard rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-gemini.jpg" width="560" height="560" loading="lazy" alt="Gemini Pro obunasi"></div><div class="tx"><h3 data-i="c8h">Gemini Pro</h3><p data-i="c8p">Google Gemini Pro obunasi — akkauntingizga ulab beriladi.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+    <div class="sh rv"><div class="kick"><span data-i="p_kick">Katalog</span></div><h2 data-i="p_h">Nimalarni olishingiz mumkin</h2><p data-i="p_p">Barcha mahsulotlar bitta ilovada. Balansni bir marta to'ldiring va kerakligini tanlang.</p></div>
+    <div class="bento">
+      <a class="bc w gl rv" href="__APP__" data-open="telegram"><div class="im" style="--bgi:url(/assets/t-cat-telegram.jpg)"><img src="/assets/t-cat-telegram.jpg" width="560" height="560" loading="lazy" alt="Telegram Stars, Premium va sovg'alar"></div><div class="tx"><h3 data-i="c1h">Telegram xizmatlari</h3><p data-i="c1p">Stars, Premium obuna va sovg'alar — to'g'ridan-to'g'ri akkauntingizga yoki do'stingizga.</p><div class="tags"><span>Stars</span><span>Premium</span><span data-i="tag_gifts">Sovg'alar</span></div><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc gl rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-steam.jpg" width="560" height="560" loading="lazy" alt="Steam hamyon"></div><div class="tx"><h3 data-i="c3h">Steam hamyon</h3><p data-i="c3p">Steam hisobingizni so'mda to'ldiring.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc gl rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-cs2.jpg" width="560" height="560" loading="lazy" alt="CS2, Dota 2 va Rust skinlari"></div><div class="tx"><h3 data-i="c4h">Skinlar</h3><p data-i="c4p">CS2, Dota 2 va Rust — trade havolangizga yetkaziladi.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc gl rv" href="__APP__" data-open="games"><div class="im"><img src="/assets/t-cat-oyinlar.jpg" width="560" height="560" loading="lazy" alt="O'yin donatlari"></div><div class="tx"><h3 data-i="c2h">O'yin donatlari</h3><p data-i="c2p">O'yin valyutasi va paketlar. ID ni kiriting — qolganini biz qilamiz.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc gl rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-vnum.jpg" width="560" height="560" loading="lazy" alt="Virtual raqam"></div><div class="tx"><h3 data-i="c5h">Virtual raqam</h3><p data-i="c5p">Ro'yxatdan o'tish uchun raqam. Kod ilovaning o'zida chiqadi.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc w gl rv" href="__APP__" data-open="ai"><div class="im" style="--bgi:url(/assets/t-gemini.jpg)"><img src="/assets/t-gemini.jpg" width="560" height="560" loading="lazy" alt="Gemini Pro va AI obunalar"></div><div class="tx"><h3 data-i="c6h">AI va obunalar</h3><p data-i="c6p">Gemini Pro kabi AI xizmatlari va ilova obunalari — akkauntingizga ulab beriladi.</p><div class="tags"><span>Gemini Pro</span><span data-i="tag_apps">Ilovalar</span></div><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc gl rv" href="__APP__" data-open="nakrutka"><div class="im"><img src="/assets/t-cat-nakrutka.jpg" width="560" height="560" loading="lazy" alt="Nakrutka"></div><div class="tx"><h3 data-i="c7h">Nakrutka</h3><p data-i="c7p">Telegram, Instagram va boshqa tarmoqlar uchun obunachi va layk.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <a class="bc gl rv" href="__APP__" data-open=""><div class="im"><img src="/assets/t-premium.jpg" width="560" height="560" loading="lazy" alt="Telegram Premium"></div><div class="tx"><h3 data-i="c8h">Telegram Premium</h3><p data-i="c8p">3, 6 yoki 12 oylik Premium — o'zingizga yoki sovg'a qilib.</p><span class="go"><span data-i="open">Ochish</span><svg class="ic"><use href="#i-arrow"/></svg></span></div></a>
+      <div class="bc w all rv"><div class="tx"><h3 data-i="all_h">Hammasi bitta ilovada</h3><p data-i="all_p">Balansni bir marta to'ldiring — istalgan mahsulotni bir necha bosishda oling. Buyurtma holati ilovada ko'rinib turadi.</p><a class="btn pri" href="__APP__" data-open=""><svg class="ic"><use href="#i-send"/></svg><span data-i="open_app">Ilovani ochish</span></a></div></div>
     </div>
-    <div class="gwrap" id="gwrap"><h3 data-i="g_h">Hozir mavjud o'yinlar</h3><div class="glist" id="glist"></div></div>
+    <div class="gwrap" id="gwrap" hidden><h3 data-i="g_h">Hozir mavjud o'yinlar</h3><div class="glist" id="glist"></div></div>
   </div>
 </section>
 
-<section id="how" style="background:linear-gradient(180deg,transparent,rgba(13,17,32,.8),transparent)">
+<section id="how" style="padding-top:20px">
   <div class="wrap">
-    <div class="sh rv"><div class="kick" data-i="h_kick">Qanday ishlaydi</div><h2 data-i="h_h">Uch qadam — va mahsulot sizda</h2></div>
+    <div class="sh rv"><div class="kick"><span data-i="h_kick">Qanday ishlaydi</span></div><h2 data-i="h_h">Uch qadam — va mahsulot sizda</h2></div>
     <div class="steps">
-      <div class="step rv"><h3 data-i="s1h">Ilovani oching</h3><p data-i="s1p">Telegram'da botni ochib, «Ilovani ochish» tugmasini bosing. Ro'yxatdan o'tish shart emas.</p></div>
-      <div class="step rv"><h3 data-i="s2h">Balansni to'ldiring</h3><p data-i="s2p">Humo yoki Uzcard kartasidan o'tkazing. To'lov odatda bir necha daqiqada balansga tushadi.</p></div>
-      <div class="step rv"><h3 data-i="s3h">Tanlang va oling</h3><p data-i="s3p">Mahsulotni tanlab, ma'lumotlarni kiriting va balansdan to'lang. Buyurtma holatini ilovada kuzating.</p></div>
+      <div class="step gl rv"><div class="si"><svg class="ic"><use href="#i-send"/></svg><em>1</em></div><h3 data-i="s1h">Ilovani oching</h3><p data-i="s1p">Telegram'da botni ochib, «Ilovani ochish» tugmasini bosing. Ro'yxatdan o'tish shart emas.</p></div>
+      <div class="step gl rv"><div class="si"><svg class="ic"><use href="#i-wallet"/></svg><em>2</em></div><h3 data-i="s2h">Balansni to'ldiring</h3><p data-i="s2p">Humo yoki Uzcard kartasidan o'tkazing. To'lov odatda bir necha daqiqada balansga tushadi.</p></div>
+      <div class="step gl rv"><div class="si"><svg class="ic"><use href="#i-check"/></svg><em>3</em></div><h3 data-i="s3h">Tanlang va oling</h3><p data-i="s3p">Mahsulotni tanlab, ma'lumotlarni kiriting va balansdan to'lang. Buyurtma holatini ilovada kuzating.</p></div>
     </div>
   </div>
 </section>
 
-<section id="why">
+<section id="trust" style="padding-top:20px">
   <div class="wrap">
-    <div class="sh rv"><div class="kick" data-i="w_kick">Afzalliklar</div><h2 data-i="w_h">Nega Verion Shop</h2></div>
-    <div class="fgrid">
-      <div class="feat rv"><div class="fi"><svg class="ic"><use href="#i-send"/></svg></div><h3 data-i="f1h">Telegram ichida</h3><p data-i="f1p">Alohida ilova yoki parol yo'q. Telegram akkauntingizning o'zi yetarli.</p></div>
-      <div class="feat rv"><div class="fi"><svg class="ic"><use href="#i-coin"/></svg></div><h3 data-i="f2h">Narxlar so'mda</h3><p data-i="f2p">Hisob-kitob o'zbek so'mida. Valyuta kursi bilan o'zingiz shug'ullanmaysiz.</p></div>
-      <div class="feat rv"><div class="fi"><svg class="ic"><use href="#i-wallet"/></svg></div><h3 data-i="f3h">Balans va keshbek</h3><p data-i="f3p">Sodiqlik darajalari: ko'proq xarid qilsangiz, keshbek foizi oshadi.</p></div>
-      <div class="feat rv"><div class="fi"><svg class="ic"><use href="#i-pct"/></svg></div><h3 data-i="f4h">Promokod va referal</h3><p data-i="f4p">Chegirma kodlari va do'stlarni taklif qilib bonus olish imkoniyati.</p></div>
-      <div class="feat rv"><div class="fi"><svg class="ic"><use href="#i-list"/></svg></div><h3 data-i="f5h">Buyurtma kuzatuvi</h3><p data-i="f5p">Har bir buyurtmaning holati va tarixi ilovada ko'rinib turadi.</p></div>
-      <div class="feat rv"><div class="fi"><svg class="ic"><use href="#i-headset"/></svg></div><h3 data-i="f6h">AI yordam 24/7</h3><p data-i="f6p">Savollarga AI yordamchi har payt javob beradi, kerak bo'lsa operator ulanadi (10:00–22:00).</p></div>
+    <div class="sh rv"><div class="kick"><span data-i="t_kick">Kafolatlar</span></div><h2 data-i="t_h">Xotirjam xarid qiling</h2></div>
+    <div class="ggrid">
+      <div class="gcard gl rv"><div class="fi"><svg class="ic"><use href="#i-undo"/></svg></div><h3 data-i="g1h">Bajarilmasa — pul qaytadi</h3><p data-i="g1p">Buyurtma bajarilmasa yoki bekor qilinsa, summa balansingizga qaytariladi.</p><a href="/oferta" data-i="g_more1">Oferta →</a></div>
+      <div class="gcard gl rv"><div class="fi"><svg class="ic"><use href="#i-clock"/></svg></div><h3 data-i="g2h">Tez to'lov</h3><p data-i="g2p">To'lov odatda 1–15 daqiqada balansga tushadi.</p></div>
+      <div class="gcard gl rv"><div class="fi"><svg class="ic"><use href="#i-headset"/></svg></div><h3 data-i="g3h">Doim aloqada</h3><p data-i="g3p">AI yordamchi 24/7 javob beradi, operator har kuni 10:00–22:00.</p></div>
+      <div class="gcard gl rv"><div class="fi"><svg class="ic"><use href="#i-lock"/></svg></div><h3 data-i="g4h">Ma'lumotlar himoyada</h3><p data-i="g4p">Ma'lumotlaringizni sotmaymiz va reklama uchun bermaymiz.</p><a href="/maxfiylik" data-i="g_more2">Maxfiylik siyosati →</a></div>
+    </div>
+    <div class="fgrid" id="why">
+      <div class="feat gl rv"><div class="fi"><svg class="ic"><use href="#i-send"/></svg></div><div><h3 data-i="f1h">Telegram ichida</h3><p data-i="f1p">Alohida ilova yoki parol yo'q. Telegram akkauntingiz yetarli.</p></div></div>
+      <div class="feat gl rv"><div class="fi"><svg class="ic"><use href="#i-coin"/></svg></div><div><h3 data-i="f2h">Narxlar so'mda</h3><p data-i="f2p">Hisob-kitob o'zbek so'mida, valyuta kursi bilan bosh qotirmaysiz.</p></div></div>
+      <div class="feat gl rv"><div class="fi"><svg class="ic"><use href="#i-wallet"/></svg></div><div><h3 data-i="f3h">Balans va keshbek</h3><p data-i="f3p">Ko'proq xarid qilsangiz, sodiqlik darajangiz va keshbek oshadi.</p></div></div>
+      <div class="feat gl rv"><div class="fi"><svg class="ic"><use href="#i-pct"/></svg></div><div><h3 data-i="f4h">Promokod va referal</h3><p data-i="f4p">Chegirma kodlari va do'stlarni taklif qilib bonus olish.</p></div></div>
+      <div class="feat gl rv"><div class="fi"><svg class="ic"><use href="#i-list"/></svg></div><div><h3 data-i="f5h">Buyurtma kuzatuvi</h3><p data-i="f5p">Har bir buyurtmaning holati va tarixi ilovada.</p></div></div>
+      <div class="feat gl rv"><div class="fi"><svg class="ic"><use href="#i-users"/></svg></div><div><h3 data-i="f6h">Do'stingizga sovg'a</h3><p data-i="f6p">Stars, Premium va sovg'alarni boshqa akkauntga ham yuborish mumkin.</p></div></div>
     </div>
   </div>
 </section>
 
 <section style="padding-top:0">
   <div class="wrap">
-    <div class="pay rv">
-      <div class="pt"><h2 data-i="pay_h">Qulay to'lov</h2><p data-i="pay_p">Balansni Humo yoki Uzcard kartasidan o'tkazib to'ldiring. To'lov tasdiqlangach summa balansingizga qo'shiladi, xaridlar shu balansdan to'lanadi.</p></div>
-      <div class="cards"><span class="cardp h">HUMO</span><span class="cardp u">UZCARD</span></div>
+    <div class="pay gl rv">
+      <div><h2 data-i="pay_h">Qulay to'lov</h2><p data-i="pay_p">Balansni Humo yoki Uzcard kartasidan o'tkazib to'ldiring. To'lov tasdiqlangach summa balansingizga qo'shiladi va xaridlar shu balansdan to'lanadi.</p></div>
+      <div class="cards" aria-hidden="true">
+        <div class="bcard h"><b>HUMO</b><span class="row"><span class="chp"></span><i>•••• ••••</i></span></div>
+        <div class="bcard u"><b>UZCARD</b><span class="row"><span class="chp"></span><i>•••• ••••</i></span></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="faq" style="padding-top:24px">
-  <div class="wrap">
-    <div class="sh rv"><div class="kick" data-i="q_kick">Savol-javob</div><h2 data-i="q_h">Ko'p so'raladigan savollar</h2></div>
-    <div class="faq rv">
+<section id="faq" style="padding-top:10px">
+  <div class="wrap fq">
+    <div class="side rv">
+      <div class="sh" style="margin-bottom:0"><div class="kick"><span data-i="q_kick">Savol-javob</span></div><h2 data-i="q_h">Ko'p so'raladigan savollar</h2></div>
+      <div class="help gl"><b data-i="hp_h">Javob topmadingizmi?</b><p data-i="hp_p">Yordam akkauntiga yozing — AI yordamchi darhol javob beradi, kerak bo'lsa operator ulanadi.</p><a class="btn sec sm" href="https://t.me/__SUPPORT__" rel="noopener"><svg class="ic"><use href="#i-headset"/></svg><span data-i="hp_btn">Yordamga yozish</span></a></div>
+    </div>
+    <div class="rv">
       <details><summary><span data-i="q1">To'lov qancha vaqtda tushadi?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a1">Odatda 1–15 daqiqa ichida. To'lov tasdiqlangach summa balansingizga qo'shiladi.</p></details>
       <details><summary><span data-i="q2">Ro'yxatdan o'tish kerakmi?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a2">Yo'q. Telegram akkauntingiz yetarli: botni ochib, ilovaga kirasiz.</p></details>
-      <details><summary><span data-i="q3">Promokodni qanday ishlataman?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a3">Mahsulotni tanlab, xarid oynasidagi «Promo-kod» maydoniga kodni yozing va «Qo'llash»ni bosing.</p></details>
-      <details><summary><span data-i="q4">Buyurtma kelmasa nima qilaman?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a4">Ilovadagi «Texnik yordam» bo'limi orqali yozing va buyurtma raqamini ko'rsating.</p></details>
+      <details><summary><span data-i="q3">Buyurtma bajarilmasa nima bo'ladi?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a3">Buyurtma bajarilmasa yoki bekor qilinsa, summa balansingizga qaytariladi. Savol bo'lsa, ilovadagi «Texnik yordam» orqali buyurtma raqamini yozing.</p></details>
+      <details><summary><span data-i="q4">Promokodni qanday ishlataman?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a4">Mahsulotni tanlab, xarid oynasidagi «Promo-kod» maydoniga kodni yozing va «Qo'llash»ni bosing.</p></details>
       <details><summary><span data-i="q5">Qaysi tillar bor?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a5">Ilova o'zbek, rus va ingliz tillarida ishlaydi.</p></details>
       <details><summary><span data-i="q6">Operator qachon javob beradi?</span><svg class="ic"><use href="#i-down"/></svg></summary><p data-i="a6">AI yordamchi 24/7 ishlaydi. Operator har kuni 10:00–22:00 (Toshkent vaqti) javob beradi.</p></details>
     </div>
   </div>
 </section>
 
-<section style="padding-top:0">
+<section style="padding-top:10px" id="finalSec">
   <div class="wrap">
     <div class="final rv">
-      <h2 data-i="fin_h">Boshlashga tayyormi?</h2>
-      <p data-i="fin_p">Telegram'da ilovani oching, balansni to'ldiring va birinchi buyurtmangizni bering.</p>
-      <div class="cta"><a class="btn pri" href="__APP__" data-open=""><svg class="ic"><use href="#i-send"/></svg><span data-i="open_app">Ilovani ochish</span></a></div>
+      <div>
+        <h2 data-i="fin_h">Boshlashga tayyormisiz?</h2>
+        <p data-i="fin_p">Telegram'da ilovani oching, balansni to'ldiring va birinchi buyurtmangizni bering.</p>
+        <div class="cta"><a class="btn pri" href="__APP__" data-open=""><svg class="ic"><use href="#i-send"/></svg><span data-i="open_app">Ilovani ochish</span></a><a class="btn sec" href="__BOT__" data-bot><span data-i="go_bot">Botga o'tish</span></a></div>
+      </div>
+      <div class="qr" id="qrBox" hidden><img id="qrImg" alt="QR" width="180" height="180"><b data-i="qr_h">Kompyuterdamisiz?</b><span data-i="qr_p">Telefon kamerasi bilan skanerlang — ilova Telegram'da ochiladi.</span></div>
     </div>
   </div>
 </section>
@@ -339,8 +509,8 @@ footer{margin-top:72px;border-top:1px solid var(--line);padding:44px 0 34px;back
 <footer>
   <div class="wrap">
     <div class="fg">
-      <div><img src="/assets/logo.svg" alt="Verion Shop" width="124" height="33" loading="lazy"><p data-i="foot_p">O'zbekistondagi raqamli mahsulotlar do'koni. Telegram ichida, so'mda.</p></div>
-      <div><h4 data-i="foot_nav">Bo'limlar</h4><ul><li><a href="#products" data-i="nav_products">Mahsulotlar</a></li><li><a href="#how" data-i="nav_how">Qanday ishlaydi</a></li><li><a href="#faq" data-i="nav_faq">Savollar</a></li></ul></div>
+      <div><img src="/assets/logo.svg" alt="Verion Shop" width="128" height="34" loading="lazy"><p data-i="foot_p">O'zbekistondagi raqamli mahsulotlar do'koni. Telegram ichida, so'mda.</p></div>
+      <div><h4 data-i="foot_nav">Bo'limlar</h4><ul><li><a href="#products" data-i="nav_products">Mahsulotlar</a></li><li><a href="#how" data-i="nav_how">Qanday ishlaydi</a></li><li><a href="#trust" data-i="nav_trust">Kafolatlar</a></li><li><a href="#faq" data-i="nav_faq">Savollar</a></li></ul></div>
       <div><h4 data-i="foot_docs">Hujjatlar</h4><ul><li><a href="/oferta" data-i="doc_offer">Ommaviy oferta</a></li><li><a href="/maxfiylik" data-i="doc_priv">Maxfiylik siyosati</a></li></ul></div>
       <div><h4 data-i="foot_contact">Aloqa</h4><ul>
         <li><a href="__BOT__" data-bot>Telegram bot</a></li>
@@ -350,139 +520,237 @@ footer{margin-top:72px;border-top:1px solid var(--line);padding:44px 0 34px;back
     <div class="copy"><span>© 2026 Verion Shop. <span data-i="rights">Barcha huquqlar himoyalangan.</span></span><span>verionshop.uz</span></div>
   </div>
 </footer>
+<div class="mcta" id="mcta"><a class="btn pri" href="__APP__" data-open=""><svg class="ic"><use href="#i-send"/></svg><span data-i="open_app">Ilovani ochish</span></a></div>
 
 <script>
 (function(){
 "use strict";
-var APP="__APP__",BOT="__BOT__";
-/* ---- tillar: asl matn (o'zbekcha) HTML'da; ru/en shu yerda ---- */
+var APP="__APP__",BOT="__BOT__",TG=/^https:\/\/t\.me\//.test(APP);
+function openUrl(sec){return sec&&TG?APP+(APP.indexOf("?")<0?"?":"&")+"startapp=open_"+sec:APP;}
 var T={
-ru:{nav_products:"Товары",nav_how:"Как это работает",nav_why:"Преимущества",nav_faq:"Вопросы",open_app:"Открыть приложение",go_bot:"Перейти в бота",
-pill:"Магазин цифровых товаров в Telegram",h1a:"Цифровые товары —",h1b:"в сумах, за несколько минут",
-lead:"Игровые донаты, Telegram Stars и Premium, пополнение Steam, скины CS2, виртуальные номера и AI-подписки. Всё внутри Telegram, без регистрации.",
+ru:{nav_products:"Товары",nav_prices:"Цены",nav_how:"Как это работает",nav_trust:"Гарантии",nav_faq:"Вопросы",open_app:"Открыть приложение",go_bot:"Перейти в бота",
+pill:"Магазин цифровых товаров в Telegram",h1a:"Цифровые товары\u00a0—",h1b:"в сумах, за несколько минут",
+lead:"Telegram Stars и Premium, подарки, пополнение Steam, скины CS2, виртуальные номера и AI-подписки. Всё внутри Telegram, без регистрации.",
 chip1:"Humo · Uzcard",chip2:"O'zbek · Русский · English",chip3:"AI-поддержка 24/7",
-p_kick:"Каталог",p_h:"Что можно купить",p_p:"Все товары в одном приложении. Пополните баланс и выберите нужное.",open:"Открыть",
-c1h:"Stars и Premium",c1p:"Telegram Stars, подписка Premium и подарки прямо на ваш аккаунт.",
-c2h:"Игровые донаты",c2p:"Валюта и наборы для популярных игр. Введите ID — остальное сделаем мы.",
-c3h:"Пополнение Steam",c3p:"Пополняйте Steam в сумах. Без возни с валютой и курсом.",
-c4h:"Скины",c4p:"Скины CS2, Dota 2 и Rust. Доставка на вашу trade-ссылку Steam.",
-c5h:"Виртуальный номер",c5p:"Номер для регистрации в Telegram и других сервисах. Код приходит прямо в приложении.",
-c6h:"AI и подписки",c6p:"AI-сервисы вроде Gemini Pro и подписки на приложения.",
+ph_search:"Поиск",ph_label:"Популярное",ph_steam:"Пополнение Steam",ph_skins:"Скины CS2",
+mq_gifts:"Подарки Telegram",mq_steam:"Пополнение Steam",mq_cs2:"Скины CS2",mq_vnum:"Виртуальный номер",mq_games:"Игровые донаты",mq_smm:"Накрутка",
+pr_kick:"Живые цены",pr_h:"Цены как в приложении",pr_p:"Цены берутся прямо из базы магазина и обновляются здесь сразу, как только меняются.",
+p_kick:"Каталог",p_h:"Что можно купить",p_p:"Все товары в одном приложении. Пополните баланс один раз и выбирайте нужное.",open:"Открыть",
+c1h:"Сервисы Telegram",c1p:"Stars, подписка Premium и подарки — прямо на ваш аккаунт или другу.",tag_gifts:"Подарки",
+c2h:"Игровые донаты",c2p:"Игровая валюта и наборы. Введите ID — остальное сделаем мы.",
+c3h:"Пополнение Steam",c3p:"Пополняйте Steam в сумах.",
+c4h:"Скины",c4p:"CS2, Dota 2 и Rust — доставка на вашу trade-ссылку.",
+c5h:"Виртуальный номер",c5p:"Номер для регистрации. Код приходит прямо в приложении.",
+c6h:"AI и подписки",c6p:"AI-сервисы вроде Gemini Pro и подписки на приложения — подключаем к вашему аккаунту.",tag_apps:"Приложения",
 c7h:"Накрутка",c7p:"Подписчики и лайки для Telegram, Instagram и других соцсетей.",
-c8h:"Gemini Pro",c8p:"Подписка Google Gemini Pro — подключается к вашему аккаунту.",
-g_h:"Сейчас доступные игры",
+c8h:"Telegram Premium",c8p:"Premium на 3, 6 или 12 месяцев — себе или в подарок.",
+all_h:"Всё в одном приложении",all_p:"Пополните баланс один раз — и получайте любой товар в пару нажатий. Статус заказа виден в приложении.",
+g_h:"Игры, доступные сейчас",
 h_kick:"Как это работает",h_h:"Три шага — и товар у вас",
 s1h:"Откройте приложение",s1p:"Откройте бота в Telegram и нажмите «Открыть приложение». Регистрация не нужна.",
 s2h:"Пополните баланс",s2p:"Переведите с карты Humo или Uzcard. Платёж обычно зачисляется за несколько минут.",
 s3h:"Выберите и получите",s3p:"Выберите товар, введите данные и оплатите с баланса. Следите за статусом заказа в приложении.",
-w_kick:"Преимущества",w_h:"Почему Verion Shop",
-f1h:"Внутри Telegram",f1p:"Не нужно отдельное приложение или пароль. Достаточно вашего аккаунта Telegram.",
-f2h:"Цены в сумах",f2p:"Расчёты в узбекских сумах. Курсом валют вы не занимаетесь.",
-f3h:"Баланс и кешбэк",f3p:"Уровни лояльности: чем больше покупок, тем выше процент кешбэка.",
+t_kick:"Гарантии",t_h:"Покупайте спокойно",
+g1h:"Не выполнен — деньги вернутся",g1p:"Если заказ не выполнен или отменён, сумма возвращается на баланс.",g_more1:"Оферта →",
+g2h:"Быстрая оплата",g2p:"Платёж обычно зачисляется на баланс за 1–15 минут.",
+g3h:"Всегда на связи",g3p:"AI-помощник отвечает 24/7, оператор — ежедневно с 10:00 до 22:00.",
+g4h:"Данные под защитой",g4p:"Мы не продаём ваши данные и не передаём их для рекламы.",g_more2:"Политика конфиденциальности →",
+f1h:"Внутри Telegram",f1p:"Не нужно отдельное приложение или пароль. Достаточно аккаунта Telegram.",
+f2h:"Цены в сумах",f2p:"Расчёты в узбекских сумах — без возни с курсом валют.",
+f3h:"Баланс и кешбэк",f3p:"Чем больше покупок, тем выше уровень лояльности и кешбэк.",
 f4h:"Промокоды и рефералы",f4p:"Скидочные коды и бонусы за приглашённых друзей.",
-f5h:"Отслеживание заказов",f5p:"Статус и история каждого заказа всегда видны в приложении.",
-f6h:"AI-поддержка 24/7",f6p:"AI-помощник отвечает в любое время, при необходимости подключается оператор (10:00–22:00).",
-pay_h:"Удобная оплата",pay_p:"Пополняйте баланс переводом с карты Humo или Uzcard. После подтверждения сумма зачисляется на баланс, покупки оплачиваются с него.",
+f5h:"Отслеживание заказов",f5p:"Статус и история каждого заказа в приложении.",
+f6h:"Подарок другу",f6p:"Stars, Premium и подарки можно отправить на другой аккаунт.",
+pay_h:"Удобная оплата",pay_p:"Пополняйте баланс переводом с карты Humo или Uzcard. После подтверждения сумма зачисляется на баланс, и покупки оплачиваются с него.",
 q_kick:"Вопросы и ответы",q_h:"Частые вопросы",
+hp_h:"Не нашли ответ?",hp_p:"Напишите в поддержку — AI-помощник ответит сразу, при необходимости подключится оператор.",hp_btn:"Написать в поддержку",
 q1:"Как быстро поступает оплата?",a1:"Обычно за 1–15 минут. После подтверждения сумма зачисляется на баланс.",
 q2:"Нужна ли регистрация?",a2:"Нет. Достаточно аккаунта Telegram: откройте бота и войдите в приложение.",
-q3:"Как использовать промокод?",a3:"Выберите товар, введите код в поле «Промокод» в окне покупки и нажмите «Применить».",
-q4:"Что делать, если заказ не пришёл?",a4:"Напишите через раздел «Техподдержка» в приложении и укажите номер заказа.",
+q3:"Что будет, если заказ не выполнен?",a3:"Если заказ не выполнен или отменён, сумма возвращается на баланс. Если есть вопросы — напишите номер заказа через «Техподдержку» в приложении.",
+q4:"Как использовать промокод?",a4:"Выберите товар, введите код в поле «Промокод» в окне покупки и нажмите «Применить».",
 q5:"Какие языки доступны?",a5:"Приложение работает на узбекском, русском и английском языках.",
 q6:"Когда отвечает оператор?",a6:"AI-помощник работает 24/7. Оператор отвечает ежедневно с 10:00 до 22:00 (по Ташкенту).",
 fin_h:"Готовы начать?",fin_p:"Откройте приложение в Telegram, пополните баланс и сделайте первый заказ.",
+qr_h:"Вы за компьютером?",qr_p:"Отсканируйте камерой телефона — приложение откроется в Telegram.",
 foot_p:"Магазин цифровых товаров в Узбекистане. Внутри Telegram, в сумах.",foot_nav:"Разделы",foot_docs:"Документы",doc_offer:"Публичная оферта",doc_priv:"Политика конфиденциальности",
 foot_contact:"Контакты",foot_support:"Поддержка",foot_channel:"Telegram-канал",rights:"Все права защищены."},
-en:{nav_products:"Products",nav_how:"How it works",nav_why:"Why us",nav_faq:"FAQ",open_app:"Open the app",go_bot:"Go to the bot",
-pill:"Digital goods store inside Telegram",h1a:"Digital goods —",h1b:"in soums, within minutes",
-lead:"Game top-ups, Telegram Stars and Premium, Steam wallet, CS2 skins, virtual numbers and AI subscriptions. All inside Telegram, no sign-up.",
+en:{nav_products:"Products",nav_prices:"Prices",nav_how:"How it works",nav_trust:"Guarantees",nav_faq:"FAQ",open_app:"Open the app",go_bot:"Go to the bot",
+pill:"Digital goods store inside Telegram",h1a:"Digital goods\u00a0—",h1b:"in soums, within minutes",
+lead:"Telegram Stars and Premium, gifts, Steam wallet, CS2 skins, virtual numbers and AI subscriptions. All inside Telegram, no sign-up.",
 chip1:"Humo · Uzcard",chip2:"O'zbek · Русский · English",chip3:"AI support 24/7",
-p_kick:"Catalog",p_h:"What you can get",p_p:"Everything in one app. Top up your balance and pick what you need.",open:"Open",
-c1h:"Stars & Premium",c1p:"Telegram Stars, Premium subscription and gifts straight to your account.",
-c2h:"Game top-ups",c2p:"Currency and bundles for popular games. Enter your ID — we do the rest.",
-c3h:"Steam wallet",c3p:"Top up Steam in soums. No hassle with currencies or exchange rates.",
-c4h:"Skins",c4p:"CS2, Dota 2 and Rust skins delivered to your Steam trade link.",
-c5h:"Virtual number",c5p:"A number for signing up to Telegram and other services. The code shows up right in the app.",
-c6h:"AI & subscriptions",c6p:"AI services like Gemini Pro and app subscriptions.",
+ph_search:"Search",ph_label:"Popular",ph_steam:"Steam wallet",ph_skins:"CS2 skins",
+mq_gifts:"Telegram gifts",mq_steam:"Steam wallet",mq_cs2:"CS2 skins",mq_vnum:"Virtual number",mq_games:"Game top-ups",mq_smm:"Social boost",
+pr_kick:"Live prices",pr_h:"Same prices as in the app",pr_p:"Prices come straight from the store database and update here as soon as they change.",
+p_kick:"Catalog",p_h:"What you can get",p_p:"Everything in one app. Top up your balance once and pick what you need.",open:"Open",
+c1h:"Telegram services",c1p:"Stars, Premium subscription and gifts — straight to your account or a friend's.",tag_gifts:"Gifts",
+c2h:"Game top-ups",c2p:"In-game currency and bundles. Enter your ID — we do the rest.",
+c3h:"Steam wallet",c3p:"Top up Steam in soums.",
+c4h:"Skins",c4p:"CS2, Dota 2 and Rust — delivered to your trade link.",
+c5h:"Virtual number",c5p:"A number for sign-ups. The code shows up right in the app.",
+c6h:"AI & subscriptions",c6p:"AI services like Gemini Pro and app subscriptions — linked to your account.",tag_apps:"Apps",
 c7h:"Social boost",c7p:"Followers and likes for Telegram, Instagram and other networks.",
-c8h:"Gemini Pro",c8p:"Google Gemini Pro subscription, linked to your account.",
+c8h:"Telegram Premium",c8p:"Premium for 3, 6 or 12 months — for yourself or as a gift.",
+all_h:"Everything in one app",all_p:"Top up once and get any product in a couple of taps. Order status is always visible in the app.",
 g_h:"Games available now",
 h_kick:"How it works",h_h:"Three steps and it's yours",
 s1h:"Open the app",s1p:"Open the bot in Telegram and tap “Open the app”. No registration needed.",
 s2h:"Top up your balance",s2p:"Transfer from a Humo or Uzcard card. The payment usually reaches your balance within minutes.",
 s3h:"Choose and receive",s3p:"Pick a product, enter the details and pay from your balance. Track the order status in the app.",
-w_kick:"Why us",w_h:"Why Verion Shop",
+t_kick:"Guarantees",t_h:"Shop with peace of mind",
+g1h:"Not delivered — money back",g1p:"If an order fails or is cancelled, the amount goes back to your balance.",g_more1:"Public offer →",
+g2h:"Fast payment",g2p:"Payments usually reach your balance in 1–15 minutes.",
+g3h:"Always reachable",g3p:"The AI assistant answers 24/7, an operator daily from 10:00 to 22:00.",
+g4h:"Your data is safe",g4p:"We don't sell your data or share it for advertising.",g_more2:"Privacy policy →",
 f1h:"Inside Telegram",f1p:"No separate app or password. Your Telegram account is enough.",
-f2h:"Prices in soums",f2p:"Everything is priced in Uzbek soums. No exchange-rate juggling.",
-f3h:"Balance & cashback",f3p:"Loyalty levels: the more you buy, the higher your cashback rate.",
+f2h:"Prices in soums",f2p:"Everything is priced in Uzbek soums — no exchange-rate juggling.",
+f3h:"Balance & cashback",f3p:"The more you buy, the higher your loyalty level and cashback.",
 f4h:"Promo codes & referrals",f4p:"Discount codes and bonuses for inviting friends.",
-f5h:"Order tracking",f5p:"The status and history of every order are always visible in the app.",
-f6h:"AI support 24/7",f6p:"The AI assistant answers any time; an operator joins when needed (10:00–22:00).",
-pay_h:"Easy payment",pay_p:"Top up your balance by transfer from a Humo or Uzcard card. Once confirmed, the amount is added to your balance and purchases are paid from it.",
+f5h:"Order tracking",f5p:"Status and history of every order in the app.",
+f6h:"Gift to a friend",f6p:"Stars, Premium and gifts can be sent to another account.",
+pay_h:"Easy payment",pay_p:"Top up by transfer from a Humo or Uzcard card. Once confirmed, the amount is added to your balance and purchases are paid from it.",
 q_kick:"Q&A",q_h:"Frequently asked questions",
+hp_h:"Didn't find an answer?",hp_p:"Message support — the AI assistant replies instantly, and an operator joins if needed.",hp_btn:"Contact support",
 q1:"How fast does the payment arrive?",a1:"Usually within 1–15 minutes. Once confirmed, the amount is added to your balance.",
 q2:"Do I need to register?",a2:"No. A Telegram account is enough: open the bot and enter the app.",
-q3:"How do I use a promo code?",a3:"Pick a product, type the code into the “Promo code” field in the purchase window and tap “Apply”.",
-q4:"What if my order doesn't arrive?",a4:"Write via the “Support” section in the app and include the order number.",
+q3:"What if an order isn't delivered?",a3:"If an order fails or is cancelled, the amount goes back to your balance. For questions, send the order number via “Support” in the app.",
+q4:"How do I use a promo code?",a4:"Pick a product, type the code into the “Promo code” field in the purchase window and tap “Apply”.",
 q5:"Which languages are available?",a5:"The app works in Uzbek, Russian and English.",
 q6:"When does an operator reply?",a6:"The AI assistant works 24/7. An operator replies daily from 10:00 to 22:00 (Tashkent time).",
 fin_h:"Ready to start?",fin_p:"Open the app in Telegram, top up your balance and place your first order.",
+qr_h:"On a computer?",qr_p:"Scan with your phone camera — the app opens in Telegram.",
 foot_p:"A digital goods store in Uzbekistan. Inside Telegram, in soums.",foot_nav:"Sections",foot_docs:"Documents",doc_offer:"Public offer",doc_priv:"Privacy policy",
 foot_contact:"Contact",foot_support:"Support",foot_channel:"Telegram channel",rights:"All rights reserved."}
 };
+/* narx yozuvlari (jonli ma'lumot uchun) */
+var PT={
+uz:{cur:"so'm",from:function(p){return p+"dan";},stars:"{n} Stars uchun",rate:"1 Stars = {p}",months:"{m} oylik",gifts:"Telegram sovg'alari",subs:"Obunalar",games:"O'yin donatlari",prem:"Telegram Premium",buy:"Olish",min:"eng arzoni"},
+ru:{cur:"сум",from:function(p){return "от "+p;},stars:"за {n} Stars",rate:"1 Stars = {p}",months:"{m} мес.",gifts:"Подарки Telegram",subs:"Подписки",games:"Игровые донаты",prem:"Telegram Premium",buy:"Купить",min:"самый дешёвый"},
+en:{cur:"UZS",from:function(p){return "from "+p;},stars:"for {n} Stars",rate:"1 Star = {p}",months:"{m} months",gifts:"Telegram gifts",subs:"Subscriptions",games:"Game top-ups",prem:"Telegram Premium",buy:"Get it",min:"cheapest"}
+};
 var els=[].slice.call(document.querySelectorAll("[data-i]"));
 els.forEach(function(e){e.setAttribute("data-uz",e.textContent);});
-var LANGS=["uz","ru","en"],ISO={uz:"uz",ru:"ru",en:"en"};
+var curLang="uz";
 function setLang(l,save){
-  if(LANGS.indexOf(l)<0)l="uz";
+  if(["uz","ru","en"].indexOf(l)<0)l="uz";curLang=l;
   els.forEach(function(e){var k=e.getAttribute("data-i");e.textContent=l==="uz"?e.getAttribute("data-uz"):((T[l]&&T[l][k])||e.getAttribute("data-uz"));});
-  document.documentElement.lang=ISO[l];
+  document.documentElement.lang=l;
   [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.setAttribute("aria-pressed",b.getAttribute("data-l")===l?"true":"false");});
   if(save){try{localStorage.setItem("vs_site_lang",l);}catch(e){}}
-  curLang=l;paintGames();
+  paintPrices();paintGames();
 }
-var curLang="uz";
 [].forEach.call(document.querySelectorAll(".lang button"),function(b){b.addEventListener("click",function(){setLang(b.getAttribute("data-l"),true);});});
-(function(){var l="";try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("vs_site_lang")||"";}catch(e){}
-  /* standart — o'zbekcha: telefoni inglizcha o'zbekistonliklar ko'p. Faqat ruscha brauzerda RU o'zi tanlanadi. */
-  if(!l){var n=(navigator.language||"").slice(0,2).toLowerCase();l=n==="ru"?"ru":"uz";}
-  if(l!=="uz")setLang(l,false);})();
 
-/* ---- Telegram havolalari: bo'limga to'g'ridan-to'g'ri ochadigan ?startapp=open_<bo'lim> ---- */
-[].forEach.call(document.querySelectorAll("a[data-open]"),function(a){
-  var s=a.getAttribute("data-open");
-  if(s&&/^https:\/\/t\.me\//.test(APP))a.href=APP+(APP.indexOf("?")<0?"?":"&")+"startapp=open_"+s;
-});
+/* havolalar */
+[].forEach.call(document.querySelectorAll("a[data-open]"),function(a){var s=a.getAttribute("data-open");if(s)a.href=openUrl(s);});
 if(!/^https?:\/\//.test(BOT)&&!/^\//.test(BOT)){[].forEach.call(document.querySelectorAll("a[data-bot]"),function(a){a.setAttribute("href",APP);});}
-var chA=document.querySelector("#chLi a");if(chA&&!/^https:\/\//.test(chA.getAttribute("href")||""))chA.parentNode.style.display="none";
+var chA=document.querySelector("#chLi a");if(chA&&!/^https:\/\//.test(chA.getAttribute("href")||""))chA.parentNode.hidden=true;
+/* yugurib turuvchi lenta: uzluksiz bo'lishi uchun ro'yxat ikki marta */
+var mq=document.getElementById("mqList");if(mq){var cl=mq.cloneNode(true);cl.removeAttribute("id");[].forEach.call(cl.querySelectorAll("[data-i]"),function(e){els.push(e);});mq.parentNode.appendChild(cl);}
 
-/* ---- do'kondagi haqiqiy o'yinlar (admin panel bilan sinxron) ---- */
-var GAMES=null;
+/* ---- jonli narxlar: do'kon bazasidan (soxta raqam yo'q — ma'lumot bo'lmasa bo'lim ko'rinmaydi) ---- */
 function fmt(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g," ");}
+function money(n){return fmt(n)+" "+PT[curLang].cur;}
+var PRICES=[],GAMES=null;
+function getJSON(u){return fetch(u,{headers:{"Accept":"application/json"}}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});}
+function buildPrices(cat,gm){
+  var out=[],items=(Array.isArray(cat)?cat:[]).filter(function(i){return i&&i.active!==false;});
+  var num=function(v){var n=Number(v);return isFinite(n)&&n>0?n:0;};
+  var st=items.filter(function(i){return i.fulfill==="fragment_stars_custom"&&num(i.pricePerStar||i.price);})[0];
+  if(st){var r=num(st.pricePerStar||st.price),m=num(st.minStars)||50;out.push({k:"stars",img:"/assets/t-stars.jpg",name:function(){return "Telegram Stars";},price:r*m,n:m,from:false,unit:function(){return PT[curLang].stars.replace("{n}",m)+" · "+PT[curLang].rate.replace("{p}",money(r));},sec:"telegram"});}
+  var pr=items.filter(function(i){return i.fulfill==="fragment_premium"&&num(i.price);}).sort(function(a,b){return num(a.price)-num(b.price);})[0];
+  if(pr){out.push({k:"prem",img:"/assets/t-premium.jpg",name:function(){return PT[curLang].prem;},price:num(pr.price),from:true,unit:function(){return pr.premiumMonths?PT[curLang].months.replace("{m}",pr.premiumMonths):"";},sec:"telegram"});}
+  var gf=items.filter(function(i){return i.fulfill==="telegram_gift"&&num(i.price);}).map(function(i){return num(i.price);});
+  if(gf.length)out.push({k:"gifts",img:"/assets/t-gifts.jpg",name:function(){return PT[curLang].gifts;},price:Math.min.apply(null,gf),from:true,unit:function(){return "";},sec:"telegram"});
+  var sb=items.filter(function(i){return i.kind==="obuna"&&num(i.price);}).map(function(i){return num(i.price);});
+  var gpk=gm&&gm.packages?gm.packages:[],gg=gm&&gm.games?gm.games:[];
+  var secOf={};gg.forEach(function(g){secOf[g.id]=g.section;});
+  gpk.forEach(function(p){if((secOf[p.gameId]==="ai"||secOf[p.gameId]==="obuna")&&num(p.price))sb.push(num(p.price));});
+  if(sb.length)out.push({k:"subs",img:"/assets/t-gemini.jpg",name:function(){return PT[curLang].subs;},price:Math.min.apply(null,sb),from:true,unit:function(){return "";},sec:"ai"});
+  var gp=gpk.filter(function(p){return secOf[p.gameId]==="games"&&num(p.price);}).map(function(p){return num(p.price);});
+  items.forEach(function(i){if(i.kind==="games"&&num(i.price))gp.push(num(i.price));});
+  if(gp.length)out.push({k:"games",img:"/assets/t-cat-oyinlar.jpg",name:function(){return PT[curLang].games;},price:Math.min.apply(null,gp),from:true,unit:function(){return "";},sec:"games"});
+  return out;
+}
+function paintPrices(){
+  var L=document.getElementById("priceList");if(!L)return;
+  var on=PRICES.length>0;
+  [].forEach.call(document.querySelectorAll('[data-need="prices"]'),function(e){e.hidden=!on;});
+  if(!on)return;
+  L.innerHTML="";
+  PRICES.forEach(function(p){
+    var a=document.createElement("a");a.className="pc gl";a.href=openUrl(p.sec);
+    var top=document.createElement("div");top.className="top";
+    var im=document.createElement("img");im.src=p.img;im.alt="";im.width=52;im.height=52;im.loading="lazy";
+    var tb=document.createElement("div"),b=document.createElement("b");b.textContent=p.name();tb.appendChild(b);
+    top.appendChild(im);top.appendChild(tb);
+    var pr=document.createElement("div");pr.className="pr";
+    var val=fmt(p.price),cur=document.createElement("span");cur.textContent=" "+PT[curLang].cur;
+    if(p.from&&curLang==="uz"){pr.textContent=val;cur.textContent=" "+PT.uz.cur+"dan";}
+    else if(p.from){pr.textContent=(curLang==="ru"?"от ":"from ")+val;}
+    else pr.textContent=val;
+    pr.appendChild(cur);
+    var un=document.createElement("div");un.className="unit";un.textContent=p.unit();
+    var go=document.createElement("span");go.className="go";go.innerHTML='<span></span><svg class="ic"><use href="#i-arrow"/></svg>';go.firstChild.textContent=PT[curLang].buy;
+    a.appendChild(top);a.appendChild(pr);if(un.textContent)a.appendChild(un);a.appendChild(go);L.appendChild(a);
+  });
+  // heroga ikki jonli narx
+  [["fc1",PRICES[0]],["fc2",PRICES[1]]].forEach(function(x){var el=document.getElementById(x[0]),p=x[1];if(!el)return;if(!p){el.hidden=true;return;}
+    el.querySelector("img").src=p.img;el.querySelector("b").textContent=p.name();
+    var line=p.from?PT[curLang].from(money(p.price)):money(p.price);
+    if(p.k==="stars"&&p.n)line=p.n+" Stars — "+money(p.price);
+    el.querySelector("span").textContent=line;
+    el.hidden=false;});
+  glowBind();
+}
 function paintGames(){
   var w=document.getElementById("gwrap"),L=document.getElementById("glist");
-  if(!w||!L||!GAMES||!GAMES.games.length)return;
-  var from={uz:"dan",ru:"от",en:"from"}[curLang],cur={uz:"so'm",ru:"сум",en:"UZS"}[curLang];
-  var min={};GAMES.packages.forEach(function(p){if(!min[p.gameId]||p.price<min[p.gameId])min[p.gameId]=p.price;});
+  if(!w||!L||!GAMES||!GAMES.games||!GAMES.games.length)return;
+  var min={};(GAMES.packages||[]).forEach(function(p){if(!min[p.gameId]||p.price<min[p.gameId])min[p.gameId]=p.price;});
   L.innerHTML="";
-  GAMES.games.filter(function(g){return g.section!=="ai";}).slice(0,24).forEach(function(g){
-    var a=document.createElement("a");a.className="gitem";a.href=APP&&/^https:\/\/t\.me\//.test(APP)?APP+(APP.indexOf("?")<0?"?":"&")+"startapp=open_games":APP;
+  GAMES.games.filter(function(g){return g.section==="games";}).slice(0,24).forEach(function(g){
+    var a=document.createElement("a");a.className="gitem gl";a.href=openUrl("games");
     var gi=document.createElement("div");gi.className="gi";
     if(g.img){var im=document.createElement("img");im.src=g.img;im.alt=g.name;im.loading="lazy";im.width=140;im.height=140;gi.appendChild(im);}
     else{gi.textContent=(g.name||"?").charAt(0).toUpperCase();gi.style.background=g.color||"#1b2038";}
     var b=document.createElement("b");b.textContent=g.name;
-    var s=document.createElement("span");s.textContent=min[g.id]?from+" "+fmt(min[g.id])+" "+cur:"";
+    var s=document.createElement("span");s.textContent=min[g.id]?PT[curLang].from(money(min[g.id])):"";
     a.appendChild(gi);a.appendChild(b);a.appendChild(s);L.appendChild(a);
   });
-  if(L.children.length)w.className="gwrap on";
+  w.hidden=!L.children.length;
 }
-try{fetch("/api/games",{headers:{"Accept":"application/json"}}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(j&&j.games&&j.packages){GAMES=j;paintGames();}}).catch(function(){});}catch(e){}
+Promise.all([getJSON("/api/catalog"),getJSON("/api/games")]).then(function(r){GAMES=r[1];PRICES=buildPrices(r[0],r[1]);paintPrices();paintGames();});
 
-/* ---- ekranga kirganda yumshoq paydo bo'lish ---- */
+/* til: standart — o'zbekcha; faqat ruscha brauzerda RU o'zi tanlanadi */
+(function(){var l="";try{l=new URLSearchParams(location.search).get("lang")||localStorage.getItem("vs_site_lang")||"";}catch(e){}
+  if(!l){var n=(navigator.language||"").slice(0,2).toLowerCase();l=n==="ru"?"ru":"uz";}
+  if(l!=="uz")setLang(l,false);})();
+
+/* kartalarda sichqoncha ortidan yumshoq nur (faqat kompyuter) */
+var fine=window.matchMedia&&window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+function glowBind(){if(!fine)return;[].forEach.call(document.querySelectorAll(".gl:not([data-gb])"),function(c){c.setAttribute("data-gb","1");
+  c.addEventListener("pointermove",function(e){var r=c.getBoundingClientRect();c.style.setProperty("--mx",(e.clientX-r.left)+"px");c.style.setProperty("--my",(e.clientY-r.top)+"px");});
+  c.addEventListener("pointerleave",function(){c.style.removeProperty("--mx");c.style.removeProperty("--my");});});}
+glowBind();
+
+/* kompyuterda: telefon bilan skanerlash uchun QR (faqat Telegram havolasi bo'lsa) */
+if(TG&&window.matchMedia&&window.matchMedia("(min-width:1021px)").matches){
+  var sc=document.createElement("script");sc.src="/site/qr.js";sc.async=true;
+  sc.onload=function(){try{var q=qrcode(0,"M");q.addData(APP);q.make();var img=document.getElementById("qrImg");img.src=q.createDataURL(6,2);document.getElementById("qrBox").hidden=false;}catch(e){}};
+  document.body.appendChild(sc);
+}
+
+/* telefonda pastdagi doimiy tugma: hero tugmalari ko'rinmay qolganda chiqadi, oxirgi chaqiriqda yashirinadi */
+var mc=document.getElementById("mcta"),hc=document.getElementById("heroCta"),fs=document.getElementById("finalSec");
+if(mc&&"IntersectionObserver" in window){var vis={h:true,f:false};
+  var upd=function(){mc.classList.toggle("on",!vis.h&&!vis.f);};
+  new IntersectionObserver(function(es){es.forEach(function(e){if(e.target===hc)vis.h=e.isIntersecting;else vis.f=e.isIntersecting;});upd();},{threshold:0}).observe(hc);
+  new IntersectionObserver(function(es){es.forEach(function(e){vis.f=e.isIntersecting;});upd();},{threshold:.2}).observe(fs);}
+
+/* ekranga kirganda yumshoq paydo bo'lish */
 var rv=[].slice.call(document.querySelectorAll(".rv"));
 if("IntersectionObserver" in window&&!window.matchMedia("(prefers-reduced-motion:reduce)").matches){
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{rootMargin:"0px 0px -8% 0px",threshold:.08});
-  rv.forEach(function(e,i){e.style.transitionDelay=(i%4)*60+"ms";io.observe(e);});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{rootMargin:"0px 0px -8% 0px",threshold:.06});
+  rv.forEach(function(e,i){e.style.transitionDelay=(i%4)*70+"ms";io.observe(e);});
 }else{rv.forEach(function(e){e.classList.add("in");});}
 })();
 </script>

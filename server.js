@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.4";
+const BUILD = "2026-11-06.5";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2558,6 +2558,14 @@ function siteRoute(req, res, url, m) {
       "Content-Type": "text/html; charset=utf-8", "Vary": "Accept-Encoding", "Cache-Control": "public, max-age=300, must-revalidate"
     }, brand ? {} : { "X-Robots-Tag": "noindex" }, enc ? { "Content-Encoding": enc } : {})));
     res.end(m === "HEAD" ? undefined : body);
+    return true;
+  }
+  // Kompyuterda ochilganda "telefon bilan skanerlang" QR kodi uchun kutubxona (MIT, faqat kerak bo'lganda yuklanadi)
+  if (url === "/site/qr.js") {
+    let buf;
+    try { buf = fs.readFileSync(path.join(SITE_DIR, "qr.min.js")); } catch (e) { return false; }
+    res.writeHead(200, siteHeaders({ "Content-Type": "application/javascript; charset=utf-8", "Cache-Control": "public, max-age=604800" }));
+    res.end(m === "HEAD" ? undefined : buf);
     return true;
   }
   if (url === "/robots.txt") {
