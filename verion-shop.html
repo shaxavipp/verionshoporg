@@ -502,7 +502,7 @@ header .hun{font-size:var(--fs-xs);color:var(--mut);line-height:1.25;white-space
 .dim.on{opacity:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;
   background:var(--card);border-radius:var(--r-sheet) var(--r-sheet) 0 0;border-top:1px solid var(--line);padding:0;display:flex;flex-direction:column;
-  max-height:calc(var(--vh, 1vh) * 92);top:auto;overflow:hidden;box-shadow:var(--shadow-pop);
+  max-height:min(calc(var(--vh, 1vh) * 92), calc(var(--vh, 1vh) * 100 - var(--st, 0px) - 8px));top:auto;overflow:hidden;box-shadow:var(--shadow-pop);
   transform:translateY(105%);transition:transform .42s var(--ease);transition:transform .5s var(--ios);}
 .sheet.out{transition:transform .26s var(--ease)}
 .sheet.on{transform:translateY(0)}
@@ -2855,7 +2855,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.15";
+var CLIENT_BUILD="2026-11-06.16";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -9640,7 +9640,7 @@ function prdRowHTML(r){
     +'<span class="prd-chips"><span class="prd-conn '+r.conn.cls+'">'+esc(r.conn.t)+'</span>'+(r.draft?'<span class="sinb-chip closed">qoralama</span>':r.hidden?'<span class="sinb-chip closed">do\'konda yo\'q</span>':'')+'</span></span>'
     +ic("arrowRight",14)+'</button>';
 }
-function openAdminProducts(){
+function openAdminProducts(openKey){
   closeSheet();
   var el=document.getElementById("prdW");if(el)el.remove();
   el=document.createElement("div");el.className="sinb";el.id="prdW";
@@ -9669,7 +9669,7 @@ function openAdminProducts(){
   var qt=null;el.querySelector("#prdQ").addEventListener("input",function(){clearTimeout(qt);var v=this.value;qt=setTimeout(function(){PRD.q=v.trim().toLowerCase();prdPaint();},200);});
   el.querySelector("#prdTabs").addEventListener("click",function(e){var b=e.target.closest("[data-t]");if(!b)return;haptic();PRD.tab=b.getAttribute("data-t");prdPaint();});
   el.querySelector("#prdList").addEventListener("click",function(e){var b=e.target.closest("[data-prd]");if(b){haptic();prdOpen(b.getAttribute("data-prd"));}});
-  prdLoad(false,prdPaint);
+  prdLoad(false,function(){prdPaint();if(typeof openKey==="string")prdOpen(openKey);});
   clearInterval(PRD.timer);PRD.timer=setInterval(function(){
     // Tahrirlash oynasi yopilgach — ro'yxat va ochiq guruh yangilanadi.
     if(!document.getElementById("prdW")){clearInterval(PRD.timer);return;}
@@ -12415,7 +12415,8 @@ function openAdminForm(editId,preset){
     +'<button data-ff="telegramgift" class="'+(F.fulfillType==="telegramgift"?"on":"")+'">'+esc(t("a_fulfill_telegramgift"))+'</button>'
     +'<button data-ff="gifthub" class="'+(F.fulfillType==="gifthub"?"on":"")+'">'+esc(t("a_fulfill_gifthub"))+'</button>'
     +'</div>'
-    +'<div id="ffMonthsWrap" class="hide"><label>'+esc(t("a_months"))+'</label><input id="f_months" type="number" inputmode="numeric" value="'+esc(F.months)+'"></div>'
+    +'<div id="ffMonthsWrap" class="hide"><label>'+esc(t("a_months"))+'</label><select id="f_months">'+[3,6,12].concat([3,6,12].indexOf(Number(F.months))===-1&&Number(F.months)>0?[Number(F.months)]:[]).map(function(m){return '<option value="'+m+'"'+(Number(F.months)===m?" selected":"")+'>'+m+' oy</option>';}).join("")+'</select>'
+    +'<div class="minnote">Hamma Premium paketlari bitta joyda: <button class="btn sm gray" type="button" id="f_pmOpen" style="width:auto;display:inline-flex;margin-left:4px">💎 Premium oynasi</button></div></div>'
     +'<div id="ffStarsWrap" class="hide"><label>'+esc(t("a_stars_amount"))+'</label><input id="f_starsAmount" type="number" inputmode="numeric" value="'+esc(F.starsAmount)+'"></div>'
     +'<div id="ffCustomWrap" class="hide arow">'
     +'<div><label>'+esc(t("a_price_per_star"))+'</label><input id="f_pricePerStar" type="number" inputmode="numeric" value="'+esc(F.pricePerStar)+'"></div>'
@@ -12427,10 +12428,10 @@ function openAdminForm(editId,preset){
     +'<div class="seg" id="ffGiftKindSeg"><button data-gk="oddiy" class="'+(F.giftKind==="oddiy"?"on":"")+'">'+esc(t("gift_tab_oddiy"))+'</button><button data-gk="limited" class="'+(F.giftKind==="limited"?"on":"")+'">'+esc(t("gift_tab_limited"))+'</button></div>'
     +'</div>'
     +'<div id="ffNote" class="paynote hide"></div>'
-    +'<label>Emoji</label><input id="f_emoji" value="'+esc(F.emoji)+'" placeholder="🔥" maxlength="8">'
+    +'<label>Emoji</label><input id="f_emoji" value="'+esc(F.emoji)+'" placeholder="Bo\'sh — masalan 🔥" maxlength="8">'
     +'<div class="minnote">Emoji kiritilsa, kartochkada rasm/fon o\'rniga faqat shu emoji ko\'rsatiladi</div>'
     +'<label>Premium (Telegram) emoji ID</label>'
-    +'<div class="arow"><input id="f_premEmojiId" style="flex:1" value="" placeholder="5433838489083409183" inputmode="numeric">'
+    +'<div class="arow"><input id="f_premEmojiId" style="flex:1" value="" placeholder="ID raqami" inputmode="numeric">'
     +'<button class="btn sm" id="f_premEmojiFetch" type="button">Yuklab olish</button></div>'
     +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — istalgan formatdagi (video, statik yoki eski Lottie/.tgs) premium emoji avtomatik joylashadi.</div>'
     +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
@@ -12536,9 +12537,12 @@ function openAdminForm(editId,preset){
       rd.readAsDataURL(f);
     }catch(e){toast("Rasm xatosi");}
   });
+  var pmo=g("#f_pmOpen");if(pmo)pmo.addEventListener("click",function(){haptic();openAdminProducts("svc:premium");});
   var fs=sh.querySelectorAll("#fulfillSeg [data-ff]");
   for(var fi=0;fi<fs.length;fi++)fs[fi].addEventListener("click",function(){
     F.fulfillType=this.getAttribute("data-ff");
+    // Premium paketlari alohida oynada boshqariladi (3/6/12 oy tayyor, faqat narx yoziladi)
+    if(F.fulfillType==="fragpremium"&&!editId){haptic();toast("💎 Premium shu yerda: 3, 6, 12 oy narxini yozing va «Saqlash»");openAdminProducts("svc:premium");return;}
     var all=sh.querySelectorAll("#fulfillSeg [data-ff]");
     for(var fj=0;fj<all.length;fj++)all[fj].classList.toggle("on",all[fj]===this);
     syncFulfillVisibility();
