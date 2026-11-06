@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.2";
+const BUILD = "2026-11-06.3";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2492,10 +2492,99 @@ function safeEq(a, b) {
   const x = Buffer.from(String(a || "")), y = Buffer.from(String(b || ""));
   return x.length === y.length && x.length > 0 && crypto.timingSafeEqual(x, y);
 }
+/* ---------- ochiq sayt: tanishtiruv sahifasi, hujjatlar, robots/sitemap ----------
+   Brend domenida (verionshop.uz) "/" — mijozlarga ko'rinadigan tanishtiruv sayti (site/landing.html).
+   Do'konning o'zi "/app" da (boshqa domenlarda — Railway manzilida — "/" hamon do'konning o'zi, test va eski
+   havolalar buzilmaydi). Telegram ilovani ildizda ochsa (#tgWebApp… bor) — sahifaning o'zi "/app"ga o'tkazadi.
+   Istalgan domenda ko'rib chiqish: /site. Ro'yxat LANDING_HOSTS o'zgaruvchisi bilan boshqariladi (bo'sh — o'chiq). */
+const SITE_DIR = path.join(__dirname, "site");
+const LANDING_HOSTS = String(process.env.LANDING_HOSTS != null ? process.env.LANDING_HOSTS : "verionshop.uz,www.verionshop.uz")
+  .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+const SITE_PAGES = { landing: "landing.html", oferta: "oferta.html", maxfiylik: "maxfiylik.html" };
+const SITE_RAW = new Map(), SITE_OUT = new Map();
+function reqHost(req) { return String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().toLowerCase().replace(/:\d+$/, ""); }
+function isLandingHost(req) { return LANDING_HOSTS.indexOf(reqHost(req)) !== -1; }
+function siteOrigin() { return (SITE_URL || publicBase() || "").replace(/\/+$/, ""); }
+function siteRaw(name) {
+  const f = path.join(SITE_DIR, SITE_PAGES[name]);
+  const st = fs.statSync(f);
+  let c = SITE_RAW.get(name);
+  if (!c || c.mtime !== st.mtimeMs) { c = { mtime: st.mtimeMs, text: fs.readFileSync(f, "utf8") }; SITE_RAW.set(name, c); SITE_OUT.clear(); }
+  return c;
+}
+// Sahifadagi belgilarni (__APP__, __BOT__ …) haqiqiy qiymatlar bilan almashtirib, bir marta siqadi.
+function siteRender(name) {
+  const raw = siteRaw(name);
+  const safeUrl = s => /^(https:\/\/[A-Za-z0-9._~:\/?#@!$&'()*+,;=%-]+|\/[A-Za-z0-9._\/-]*)$/.test(String(s || "")) ? String(s) : "";
+  const app = BOT_USERNAME ? "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME : "/app";
+  const bot = BOT_USERNAME ? "https://t.me/" + BOT_USERNAME : "/app";
+  const ch = safeUrl(botCfg().channelUrl);
+  const tok = { __SITE__: siteOrigin(), __APP__: safeUrl(app) || "/app", __BOT__: safeUrl(bot) || "/app",
+    __SUPPORT__: String(SUPPORT_USERNAME).replace(/[^A-Za-z0-9_]/g, ""), __CHANNEL__: ch.indexOf("https://") === 0 ? ch : "" };
+  const key = name + "|" + JSON.stringify(tok) + "|" + raw.mtime;
+  let o = SITE_OUT.get(key);
+  if (!o) {
+    let t = raw.text;
+    for (const k in tok) t = t.split(k).join(escHtml(tok[k]).replace(/&#39;/g, "'"));
+    const buf = Buffer.from(t, "utf8");
+    o = { raw: buf, gz: zlib.gzipSync(buf, { level: 9 }), br: zlib.brotliCompressSync(buf, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 9 } }) };
+    if (SITE_OUT.size > 12) SITE_OUT.clear();
+    SITE_OUT.set(key, o);
+  }
+  return o;
+}
+function siteHeaders(extra) {
+  return Object.assign({
+    "X-Content-Type-Options": "nosniff", "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Strict-Transport-Security": "max-age=31536000", "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    // Telegram Web ilovani iframe ichida ochadi — landing ham shuni ko'tarishi shart (keyin o'zi /app'ga o'tadi)
+    "Content-Security-Policy": "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org; object-src 'none'; base-uri 'self'; form-action 'self'"
+  }, extra || {});
+}
+function siteRoute(req, res, url, m) {
+  const brand = isLandingHost(req);
+  let page = "";
+  if (url === "/site" || url === "/site/") page = "landing";
+  else if ((url === "/" || url === "/index.html") && brand) page = "landing";
+  else if (url === "/oferta" || url === "/oferta.html") page = "oferta";
+  else if (url === "/maxfiylik" || url === "/maxfiylik.html") page = "maxfiylik";
+  if (page) {
+    let o;
+    try { o = siteRender(page); } catch (e) { return false; }   // fayl topilmasa — eski xatti-harakat (do'kon)
+    const ae = String(req.headers["accept-encoding"] || "");
+    const enc = /\bbr\b/.test(ae) ? "br" : /\bgzip\b/.test(ae) ? "gzip" : "";
+    const body = enc === "br" ? o.br : enc === "gzip" ? o.gz : o.raw;
+    res.writeHead(200, siteHeaders(Object.assign({
+      "Content-Type": "text/html; charset=utf-8", "Vary": "Accept-Encoding", "Cache-Control": "public, max-age=300, must-revalidate"
+    }, brand ? {} : { "X-Robots-Tag": "noindex" }, enc ? { "Content-Encoding": enc } : {})));
+    res.end(m === "HEAD" ? undefined : body);
+    return true;
+  }
+  if (url === "/robots.txt") {
+    const txt = brand
+      ? "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /app\nSitemap: " + siteOrigin() + "/sitemap.xml\n"
+      : "User-agent: *\nDisallow: /\n";
+    res.writeHead(200, siteHeaders({ "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" }));
+    res.end(m === "HEAD" ? undefined : txt);
+    return true;
+  }
+  if (url === "/sitemap.xml" && brand) {
+    const o = siteOrigin();
+    const mt = n => { try { return new Date(siteRaw(n).mtime).toISOString().slice(0, 10); } catch (e) { return ""; } };
+    const u = (p, n) => "<url><loc>" + o + p + "</loc>" + (mt(n) ? "<lastmod>" + mt(n) + "</lastmod>" : "") + "</url>";
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+      + u("/", "landing") + u("/oferta", "oferta") + u("/maxfiylik", "maxfiylik") + "</urlset>\n";
+    res.writeHead(200, siteHeaders({ "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" }));
+    res.end(m === "HEAD" ? undefined : xml);
+    return true;
+  }
+  return false;
+}
 function handleRequest(req, res) {
   const url = (req.url || "/").split("?")[0];
   const q = new URLSearchParams((req.url || "").split("?")[1] || "");
   const m = req.method;
+  if ((m === "GET" || m === "HEAD") && siteRoute(req, res, url, m)) return;
   if (m === "POST" && url !== "/api/tg-webhook" && url.indexOf("/api/admin/") !== 0 && rateLimited(req)) return send(res, 429, { error: "too_many" });
 
   /* Ochiq holat tekshiruvi: domen ishlayaptimi va qaysi build turibdi — brauzerda

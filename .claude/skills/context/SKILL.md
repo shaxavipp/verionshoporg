@@ -236,3 +236,10 @@ The test scripts from earlier sessions lived in the session scratchpad and are *
 - One-time auto run: server `IMG_CUT_V` vs `DB.settings.imgCutV` → `/api/me.imgCut` for admins; client `admAutoCut()` (4 s after ME loads, retries until the server catalog is loaded) runs `admCutAll(null, done)` headless, publishes via `publishCatalogQuiet` (no navigation), then `POST /api/admin/img-cut-done`. Skipped when the device has unpublished drafts (`S.over/custom/removed/imported`). Bump `IMG_CUT_V` to make it run once more.
 - Test: `img-cut-test.js` (spawns its own server with a pre-seeded sqlite).
 
+
+## Public website (landing)
+- Brand hosts (`LANDING_HOSTS`, default `verionshop.uz,www.verionshop.uz`) serve `site/landing.html` at `/`; the shop itself lives at `/app` (any unknown path still falls through to the shop, other hosts keep the shop at `/`). `/site` previews the landing on any host (`X-Robots-Tag: noindex`). Also `/oferta`, `/maxfiylik`, `/robots.txt`, `/sitemap.xml` (`siteRoute()` in `server.js`; tokens `__SITE__ __APP__ __BOT__ __SUPPORT__ __CHANNEL__` are filled per request and cached/compressed).
+- The landing's first inline script redirects Telegram launches (`#tgWebApp…`, `?tgWebApp…`, `window.TelegramWebviewProxy`) to `/app` keeping search+hash. Its CSP must keep `frame-ancestors` for `web.telegram.org` (Telegram Web iframes the root URL).
+- No fake stats or reviews on the site (user rule). Games strip comes from the public `/api/games`. Default language is Uzbek; only Russian browsers auto-switch to RU; EN by choice.
+- Brand thumbnails `assets/t-*.jpg` (560 px) are made from `assets/cover-*.jpg` with `convert -resize 560x560 -quality 80`.
+- Test: `site-shot.js` (scratchpad) — screenshots, token check, mobile overflow, Telegram redirect.

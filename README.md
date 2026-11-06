@@ -95,6 +95,15 @@ Ilova `ERR_CONNECTION_TIMED_OUT` bilan ochilmasa (domen ba'zi tarmoqlardan ochil
 
 Domen tuzalgach o'sha joyda qayta `verionshop.uz` ni saqlash mumkin.
 
+### Ochiq sayt (tanishtiruv sahifasi)
+
+Brend domenida (`verionshop.uz`, `www.verionshop.uz`) **`/`** — mijozlarga ko'rinadigan tanishtiruv sayti (`site/landing.html`): hero, katalog kartalari (haqiqiy muqovalar), «Hozir mavjud o'yinlar» (`/api/games` dan, admin panel bilan sinxron), 3 qadam, afzalliklar, to'lov, FAQ, o'zbek/rus/ingliz tili. **Soxta statistika va sharhlar yo'q.** Hujjatlar: `/oferta`, `/maxfiylik`; `/robots.txt` va `/sitemap.xml` ham serverdan.
+
+- **Do'kon `/app` da.** Boshqa domenlarda (masalan Railway manzili) `/` hamon do'konning o'zi, shuning uchun hech narsa buzilmaydi. Istalgan domenda sahifani ko'rish: `/site` (qidiruvdan yashirin, `noindex`).
+- **Telegram ildizni ochsa** (`#tgWebApp…` bor) — sahifa mijozni darhol `/app`ga o'tkazadi, `?admin=…` va `#…` saqlanadi. Eng tez ochilishi uchun BotFather'da Web App URL ni `https://verionshop.uz/app` qiling (ixtiyoriy).
+- **Havolalar.** Tugmalar bot va mini-ilova havolasini (`t.me/<bot>/<MINIAPP_NAME>`, bo'limlar uchun `?startapp=open_<bo'lim>`) serverdan oladi; yordam — `SUPPORT_USERNAME`, kanal — admin paneldagi «Kanal» havolasi (bo'sh bo'lsa yashiriladi).
+- **Sozlash.** `LANDING_HOSTS` (vergul bilan; standart `verionshop.uz,www.verionshop.uz`; bo'sh — o'chiq). Matnlar `site/*.html` ichida; oferta/maxfiylik matnini yuridik shaxs rekvizitlari bilan to'ldirish tavsiya etiladi.
+
 **Webhook.** Server Telegram webhook'ini o'zi ulaydi va **har 15 daqiqada tekshirib turadi** — uzilib qolsa o'zi qayta ulaydi. Qo'lda hech narsa sozlash shart emas.
 
 Ilova manzili uch manbadan olinadi, shu tartibda: `PUBLIC_URL` / `RAILWAY_PUBLIC_DOMAIN` o'zgaruvchisi → **admin ilovani ochganda so'rovning `Host` sarlavhasidan o'rganilgan manzil** → yo'q. Ikkinchi manba faqat admin imzosi bilan kelgan so'rovdan olinadi (aks holda kimdir soxta `Host` yuborib webhook'ni o'z domeniga burib yuborardi), va faqat haqiqiy domen + https bo'lsa qabul qilinadi. Ya'ni yangi hostingda ham admin panelni bir marta ochish kifoya.
