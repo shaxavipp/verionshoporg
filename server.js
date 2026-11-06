@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-05.9";
+const BUILD = "2026-11-06.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1985,6 +1985,7 @@ function extrasCfg() {
   if (!Array.isArray(c.banners)) c.banners = [];
   if (!c.payImgs || typeof c.payImgs !== "object") c.payImgs = {};
   if (!c.cards || typeof c.cards !== "object") c.cards = {};   // maxsus kartochkalar (Steam, raqam, skinlar): admin qo'ygan rasm va nom
+  if (c.covers !== "own") c.covers = "builtin";   // "builtin" — ilovaga o'rnatilgan tayyor muqovalar ustun; "own" — admin yuklagan rasmlar
   return c;
 }
 const CARD_KEYS = ["steam", "vnum", "cs2", "dota2", "rust"];
@@ -1995,7 +1996,7 @@ function publicExtras() {
     .filter(p => p.public && p.active && (!p.expiresAt || p.expiresAt > now) && (!p.maxUses || (p.usedCount || 0) < p.maxUses))
     .map(p => ({ code: p.code, desc: p.desc || p.note || "", type: p.type, value: p.value, minOrder: p.minOrder || 0, only: (p.targetNames || []).slice(0, 5) }));
   return { promos, faq: c.blocks.faq ? c.faq : [], social: c.blocks.social ? c.social : [],
-    banners: c.blocks.banners ? c.banners : [], payImgs: c.payImgs, cards: c.cards };
+    banners: c.blocks.banners ? c.banners : [], payImgs: c.payImgs, cards: c.cards, covers: c.covers };
 }
 function isAdm(u) { return !!u && ADMIN_IDS.indexOf(u.id) !== -1; }
 
@@ -2670,6 +2671,7 @@ function handleRequest(req, res) {
       if (Array.isArray(b.faq)) c.faq = b.faq.slice(0, 30).map(x => ({ q: str(x && x.q, 200), a: str(x && x.a, 1000) })).filter(x => x.q && x.a);
       if (Array.isArray(b.social)) c.social = b.social.slice(0, 10).map(x => ({ name: str(x && x.name, 40), url: okUrl(x && x.url) })).filter(x => x.name && x.url);
       if (Array.isArray(b.banners)) c.banners = b.banners.slice(0, 10).map(x => ({ img: okUrl(x && x.img), link: okUrl(x && x.link) })).filter(x => x.img);
+      if (b.covers === "own" || b.covers === "builtin") c.covers = b.covers;
       if (b.payImgs && typeof b.payImgs === "object") { c.payImgs = {}; for (const k of Object.keys(b.payImgs).slice(0, 20)) { const u = okUrl(b.payImgs[k]); if (u) c.payImgs[str(k, 40)] = u; } }
       // Maxsus kartochkalar: faqat yuborilgan kalitlar o'zgaradi; null — asl holiga qaytarish
       if (b.cards && typeof b.cards === "object") for (const k of CARD_KEYS) if (k in b.cards) {

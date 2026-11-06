@@ -2827,7 +2827,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-05.9";
+var CLIENT_BUILD="2026-11-06.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3994,6 +3994,9 @@ function tileIconHTML(tile,fallback){
 function tileHTML(it,big){
   var st=it.tile||{};
   var isGift=it&&it.fulfill==="telegram_gift";
+  var bc=ownCovers()?"":builtinCoverFor(it);
+  if(bc){var bsrc="/assets/cover-"+bc+".jpg";
+    return '<div class="ptile'+(big?" bigtile":"")+'" style="background:#0b0f1f">'+(big?'<img class="bgb" src="'+bsrc+'" alt="" aria-hidden="true">':'')+'<img src="'+bsrc+'" alt="" onerror="this.remove()"></div>';}
   if(st.video){
     return '<div class="ptile vidtile'+(big?" bigtile":"")+'" style="background:#000"><video '+(big?"autoplay":'data-inview preload="metadata"')+' src="'+esc(st.video)+'" loop muted playsinline webkit-playsinline="true"></video></div>';
   }
@@ -4034,9 +4037,19 @@ function cardArt(k){var c=EXTRAS&&EXTRAS.cards&&EXTRAS.cards[k];return c&&typeof
 function cardImgSet(k){var c=cardArt(k);return c&&/^(https:\/\/|\/gimg\/)/.test(String(c.img||""))?c.img:"";}
 /* Admin rasm qo'ymagan bo'lsa — ilovaga o'rnatilgan tayyor muqova (assets/cover-*.jpg) */
 var DEF_COVER={vnum:1,steam:1,cs2:1,dota2:1,rust:1};
-function cardImg(k){return cardImgSet(k)||(DEF_COVER[k]?"/assets/cover-"+k+".jpg":"");}
+/* «Tayyor muqovalar» (admin: Mahsulotlar → 🖼) yoqilgan bo'lsa — ilovaga o'rnatilgan muqovalar ustun; o'chiq bo'lsa — admin yuklagan rasm ustun */
+function ownCovers(){return !!(EXTRAS&&EXTRAS.covers==="own");}
+function cardImg(k){if(DEF_COVER[k]&&(!ownCovers()||!cardImgSet(k)))return "/assets/cover-"+k+".jpg";return cardImgSet(k);}
+function builtinCoverFor(it){
+  if(!it)return "";
+  if(it.fulfill==="fragment_stars_custom")return "stars";
+  if(it.fulfill==="fragment_premium")return "premium";
+  if(it.fulfill==="gift_hub")return "gifts";
+  if(it.kind==="obuna"&&/gemini/i.test(loc(it.title)||""))return "gemini";
+  return "";
+}
 function cardTxt(k,f){var c=cardArt(k),v=c&&c[f],x=v&&(v[S.lang]||v.uz)||"";return x||_t(CARD_DEF[k][f==="name"?0:1]);}
-function cardTile(k,cls,fallback){var im=cardImg(k),own=!!cardImgSet(k);return im?'<div class="'+cls+(own?' cardart':'')+'"><img src="'+esc(im)+'" alt="" loading="lazy"></div>':fallback;}
+function cardTile(k,cls,fallback){var im=cardImg(k),own=ownCovers()&&!!cardImgSet(k);return im?'<div class="'+cls+(own?' cardart':'')+'"><img src="'+esc(im)+'" alt="" loading="lazy"></div>':fallback;}
 function xProductCard(k){
   var body=function(){return '<div class="pbody"><div class="nm">'+esc(cardTxt(k,"name"))+'</div></div></button>';};
   if(SK_G[k])return '<button class="pcard" data-cs2open="'+k+'">'+cardTile(k,"ptile",skTile(k,"ptile"))+body();
@@ -4079,7 +4092,7 @@ function admPenGo(a,arg){
 function openCardArt(k){
   var c=cardArt(k)||{},D=CARD_DEF[k],F={img:c.img||""};
   var html='<h2>🖼 '+esc(D[0])+' — kartochka</h2>'
-    +'<div class="paynote" style="margin:0 0 6px">Bo\'limdagi kartochka. Rasm kartochkani to\'liq to\'ldiradi (kvadrat 1:1, masalan 1024×1024). Rasm qo\'yilmasa — ilovaga o\'rnatilgan tayyor muqova chiqadi. Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi.</div>'
+    +'<div class="paynote" style="margin:0 0 6px">Bo\'limdagi kartochka. Rasm kartochkani to\'liq to\'ldiradi (kvadrat 1:1, masalan 1024×1024). Rasm qo\'yilmasa — ilovaga o\'rnatilgan tayyor muqova chiqadi (agar «Tayyor muqovalar» yoqilgan bo\'lsa, u doim ustun: o\'chirish uchun Mahsulotlar → 🖼). Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi.</div>'
     +gImgPick("ca_img","Rasm (kvadrat)",F.img)
     +'<label>Nomi</label><input id="ca_name" maxlength="60" value="'+esc(c.name&&c.name.uz||"")+'" placeholder="'+esc(D[0])+'">'
     +'<label>Qisqa matn</label><input id="ca_sub" maxlength="60" value="'+esc(c.sub&&c.sub.uz||"")+'" placeholder="'+esc(D[1])+'">'
@@ -4201,7 +4214,7 @@ function categoryCardsHTML(){
     any=true;
     var meta=CatMeta[kind]||{};
     var label=(meta.label&&meta.label[S.lang])?meta.label[S.lang]:t(labelKey);
-    var cimg=meta.img||catDefCover(kind);
+    var cimg=ownCovers()?(meta.img||catDefCover(kind)):(catDefCover(kind)||meta.img);
     var tile=cimg?'<img src="'+esc(cimg)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic(CAT_ICON[kind]||"star",32);
     html+='<button class="pcard" data-opencat="'+esc(kind)+'" style="--cc:'+(CAT_COLOR[kind]||"#2f8fff")+'">'
       +'<div class="ptile" style="background:var(--card2);color:var(--mut2)">'+tile+'</div>'
@@ -4226,7 +4239,7 @@ function categoryCardsHTML(){
   if(nkMeta.enabled!==false){
     any=true;
     ensureNkLoadedForHome(); // hali yuklanmagan bo'lsa fonda yuklaydi, tayyor bo'lgach son yangilanadi
-    var nkImg=nkMeta.img||catDefCover("nakrutka");
+    var nkImg=ownCovers()?(nkMeta.img||catDefCover("nakrutka")):(catDefCover("nakrutka")||nkMeta.img);
     var nkTile=nkImg?'<img src="'+esc(nkImg)+'" alt="" style="width:100%;height:100%;object-fit:cover">':aic("trendUp",32);
     var nkLabel=(nkMeta.label&&nkMeta.label[S.lang])?nkMeta.label[S.lang]:t("tab_nakrutka");
     var nkCountText=NkCache.flat?(nkVisibleFlat().length+' '+esc(t("group_count_unit"))):(NkHomeFail?esc(t("nakrutka_sub")):'…'); // faqat mahsulot soni (yuklanguncha …, xato bo'lsa eski izoh)
@@ -9569,7 +9582,7 @@ function openAdminProducts(){
     +'<button class="adm-hb" id="prdRef" aria-label="Balanslarni yangilash">↻</button><button class="adm-hb" id="prdTools" aria-label="Katalog vositalari">'+ic("gear",16)+'</button></div>'
     +'<div class="prd-prov" id="prdProv"></div>'
     +'<div class="sinb-tools"><input id="prdQ" type="search" placeholder="Mahsulot, o\'yin yoki xizmat" autocomplete="off"></div>'
-    +'<div class="arow" style="padding:0 14px 8px;gap:8px;flex-wrap:wrap"><button class="btn sm gray" id="prdCats" style="width:auto">🗂 Bo\'limlar: nomi va rasmi</button><button class="btn sm gray" id="prdGrps" style="width:auto">📁 Guruhlar</button></div>'
+    +'<div class="arow" style="padding:0 14px 8px;gap:8px;flex-wrap:wrap"><button class="btn sm gray" id="prdCats" style="width:auto">🗂 Bo\'limlar: nomi va rasmi</button><button class="btn sm gray" id="prdGrps" style="width:auto">📁 Guruhlar</button><button class="btn sm gray" id="prdCov" style="width:auto"></button></div>'
     +'<div class="sinb-tabs" id="prdTabs"></div>'
     +'<div class="sinb-list" id="prdList"><div class="sinb-empty">Yuklanmoqda…</div></div>'
     +'<div class="prd-add"><button class="btn" id="prdNew">'+ic("plus",15)+' Yangi mahsulot</button></div>';
@@ -9580,6 +9593,12 @@ function openAdminProducts(){
   el.querySelector("#prdNew").addEventListener("click",function(){haptic();prdNewSheet();});
   el.querySelector("#prdCats").addEventListener("click",function(){haptic();PRD.dirty=true;openAdminCategories();});
   el.querySelector("#prdGrps").addEventListener("click",function(){haptic();PRD.dirty=true;openAdminGroups();});
+  var cvb=el.querySelector("#prdCov");
+  function cvLabel(){cvb.textContent=ownCovers()?"🖼 Tayyor muqovalar: o'chiq":"🖼 Tayyor muqovalar: yoqilgan";}
+  cvLabel();
+  cvb.addEventListener("click",function(){haptic();var next=ownCovers()?"builtin":"own";cvb.disabled=true;
+    api("/api/admin/extras","POST",{covers:next}).then(function(r){EXTRAS=EXTRAS||{};EXTRAS.covers=r.covers||next;loadExtras._sig="";cvb.disabled=false;cvLabel();
+      toast(next==="own"?"Endi o'zingiz yuklagan rasmlar ko'rinadi":"Tayyor muqovalar yoqildi");render();}).catch(function(){cvb.disabled=false;toast(t("srv_off"),true);});});
   var qt=null;el.querySelector("#prdQ").addEventListener("input",function(){clearTimeout(qt);var v=this.value;qt=setTimeout(function(){PRD.q=v.trim().toLowerCase();prdPaint();},200);});
   el.querySelector("#prdTabs").addEventListener("click",function(e){var b=e.target.closest("[data-t]");if(!b)return;haptic();PRD.tab=b.getAttribute("data-t");prdPaint();});
   el.querySelector("#prdList").addEventListener("click",function(e){var b=e.target.closest("[data-prd]");if(b){haptic();prdOpen(b.getAttribute("data-prd"));}});
