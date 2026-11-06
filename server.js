@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.5";
+const BUILD = "2026-11-06.6";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -45,6 +45,24 @@ const PUBLIC_URL = String(
   (process.env.RAILWAY_PUBLIC_DOMAIN ? "https://" + process.env.RAILWAY_PUBLIC_DOMAIN : "")
 ).trim().replace(/\/+$/, "");
 const BANNER_FILE = path.join(__dirname, "assets", "start-banner.png");
+// Brend domenlari: ularda "/" — tanishtiruv sayti (site/landing.html), do'kon esa "/app" da.
+const LANDING_HOSTS = String(process.env.LANDING_HOSTS != null ? process.env.LANDING_HOSTS : "verionshop.uz,www.verionshop.uz")
+  .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+/* Telegram tugmalari (web_app) do'konni oraliq sahifasiz ochsin: brend domenining ildizi berilsa — ".../app".
+   Boshqa domenlarda (Railway manzili) va yo'li bor manzillarda o'zgarishsiz qaytadi. */
+function shopEntry(u) {
+  const s = String(u || "");
+  try {
+    const x = new URL(s);
+    if (LANDING_HOSTS.indexOf(x.hostname.toLowerCase()) !== -1 && (x.pathname === "/" || x.pathname === "")) return x.origin + "/app" + x.search;
+  } catch (e) {}
+  return s;
+}
+// Admin panelni ochadigan manzil: ".../app?admin=1" yoki ".../?admin=1"
+function shopAdminUrl(base, v) {
+  const e = shopEntry(base);
+  return (/\/app$/.test(e) ? e : e.replace(/\/+$/, "") + "/") + "?admin=" + encodeURIComponent(v || "1");
+}
 // Yordam (support) akkaunti — /start xabaridagi "Yordam" tugmasi uchun.
 // Ilovadagi SUPPORT_USERNAME bilan bir xil bo'lishi kerak.
 const SUPPORT_USERNAME = String(process.env.SUPPORT_USERNAME || "verionshop_support").replace(/^@/, "");
@@ -994,9 +1012,9 @@ function siteInfo() { return { url: SITE_URL, ok: SITE.ok, err: SITE.err, ip: SI
 // yo'l yoki parametr bo'lsa — aynan o'zini ishlatamiz, ishlayotgani shu.
 function appOpenUrl() {
   const c = botCfg();
-  if (c.appUrl) return c.appUrl;
-  if (c.menuUrl) return c.menuUrl;
-  return publicBase();
+  if (c.appUrl) return shopEntry(c.appUrl);
+  if (c.menuUrl) return shopEntry(c.menuUrl);
+  return shopEntry(publicBase());
 }
 /* Ko'k «Ilova» tugmasi manzilini Telegram'dan o'qib, tasdiqlangan bo'lsa saqlaydi.
    Faqat manzil rostdan SHU serverga olib borsa qabul qilinadi (statik nusxa yoki
@@ -1096,7 +1114,7 @@ async function syncMenuButton(base) {
     if (mb && mb.type === "web_app" && mb.text) text = mb.text;
   } catch (e) {}
   try {
-    const r = await tgApiPost("setChatMenuButton", { menu_button: { type: "web_app", text, web_app: { url: base } } });
+    const r = await tgApiPost("setChatMenuButton", { menu_button: { type: "web_app", text, web_app: { url: shopEntry(base) } } });
     return r && r.ok ? { ok: true, text } : { ok: false, error: (r && r.description) || "Telegram rad etdi" };
   } catch (e) { return { ok: false, error: e.message }; }
 }
@@ -1262,7 +1280,7 @@ async function handleBotUpdate(upd) {
     }
     const ab = ADMINBOT.status();
     const base = publicBase();
-    const kb = /^https:\/\//.test(base) ? { inline_keyboard: [[{ text: "🛠 Admin panelni ochish", web_app: { url: base + "/?admin=1" } }]].concat(
+    const kb = /^https:\/\//.test(base) ? { inline_keyboard: [[{ text: "🛠 Admin panelni ochish", web_app: { url: shopAdminUrl(base, "1") } }]].concat(
       ab.active && ab.username ? [[{ text: "🛡 Admin botni ochish", url: "https://t.me/" + ab.username }]] : []) } : undefined;
     await tgApiPost("sendMessage", { chat_id: from.id, reply_markup: kb, text:
       "🛠 Admin · versiya " + BUILD + "\n\n"
@@ -2354,7 +2372,7 @@ if (BOT_TOKEN) {
 // Alohida admin bot (adminbot.js) — token bo'lsa ishga tushadi, bo'lmasa jim turadi.
 ADMINBOT = require("./adminbot.js")({
   getDB: () => DB, save, ADMIN_IDS, token: adminBotToken,
-  appUrl: () => publicBase(), shopUsername: () => BOT_USERNAME,
+  appUrl: () => shopEntry(publicBase()), shopUsername: () => BOT_USERNAME,
   finance: computeFinance, lineBalances: force => allLineBalances(force),
   paymentAction: adminPaymentAction, orderAction: adminOrderAction, balanceChange: adminBalanceChange,
   shopSend: tgSend, fallbackSend: tgSend, paymentText: topupMessageText, orderText: orderMessageText,
@@ -2378,7 +2396,7 @@ ADMINBOT = require("./adminbot.js")({
 });
 // AI yordamchi (ai.js) — Claude; kalit admin paneldan yoki ANTHROPIC_API_KEY.
 var AI = require("./ai.js")({
-  getDB: () => DB, save, games: GAMES, catalogArr, appUrl: () => publicBase(),
+  getDB: () => DB, save, games: GAMES, catalogArr, appUrl: () => shopEntry(publicBase()),
   shopApi: (method, payload) => tgApiPost(method, payload).catch(e => ({ ok: false, description: e.message })),
   supportUsername: () => SUPPORT_USERNAME,
   // Operator chaqiruvi va support xabarlari — admin paneldagi «Support»/«Xabarlar» oynasiga; admin botga
@@ -2498,8 +2516,6 @@ function safeEq(a, b) {
    havolalar buzilmaydi). Telegram ilovani ildizda ochsa (#tgWebApp… bor) — sahifaning o'zi "/app"ga o'tkazadi.
    Istalgan domenda ko'rib chiqish: /site. Ro'yxat LANDING_HOSTS o'zgaruvchisi bilan boshqariladi (bo'sh — o'chiq). */
 const SITE_DIR = path.join(__dirname, "site");
-const LANDING_HOSTS = String(process.env.LANDING_HOSTS != null ? process.env.LANDING_HOSTS : "verionshop.uz,www.verionshop.uz")
-  .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
 const SITE_PAGES = { landing: "landing.html", oferta: "oferta.html", maxfiylik: "maxfiylik.html" };
 const SITE_RAW = new Map(), SITE_OUT = new Map();
 function reqHost(req) { return String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().toLowerCase().replace(/:\d+$/, ""); }
