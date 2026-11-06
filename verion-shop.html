@@ -2681,7 +2681,9 @@ body.sinb-open{overflow:hidden}
 .sheet.full .phero-art .ptile.bigtile>*:not(.bgb):not(.tl):not(.ts):not(.favbtn){position:absolute;inset:auto;left:0;right:0;margin:0 auto;top:calc(var(--st,0px) + 34px);width:136px;height:136px;max-width:none;
   transform:none;object-fit:contain;border-radius:22px;box-shadow:none;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45));display:flex;align-items:center;justify-content:center;font-size:96px;line-height:1;z-index:0}
 /* rasm — boshqa botlardagidek eniga to'liq banner (mahsulotning asosiy qismi ko'rinadi) */
-.sheet.full .phero-art .ptile.bigtile>img:not(.bgb):not(.tl):not(.ts):not(.favbtn){left:0;right:0;top:var(--st,0px);width:100%;height:calc(100% - var(--st,0px));margin:0;border-radius:0;filter:none;object-fit:cover;object-position:50% 30%}
+.sheet.full .phero-art .ptile.bigtile>img:not(.bgb):not(.tl):not(.ts):not(.favbtn){left:0;right:0;top:0;width:100%;height:100%;margin:0;border-radius:0;filter:none;object-fit:cover;object-position:50% 30%}
+/* tepada yengil qoraytirish: soat/Telegram tugmalari va «Orqaga» har qanday rasm ustida o'qiladi */
+.phero-art::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--st,0px) + 72px);background:linear-gradient(180deg,rgba(4,7,18,.55),rgba(4,7,18,0));pointer-events:none;z-index:1}
 .phero-art .ptile .bgb{filter:blur(30px) saturate(1.35) brightness(.55);transform:scale(1.4)}
 .phero-art::after{content:"";position:absolute;left:0;right:0;bottom:0;height:96px;background:linear-gradient(180deg,rgba(0,0,0,0),var(--bg) 94%);pointer-events:none;z-index:1}
 .phero-t{position:relative;z-index:2;margin-top:-40px;padding:0 16px}
@@ -2692,7 +2694,10 @@ body.sinb-open{overflow:hidden}
 /* katta rasm bor oynada «Orqaga» tugmasi rasm ustida turadi */
 .sheet.full:has(.phero) .sheet-head{position:absolute;left:0;right:0;top:0;z-index:6;background:none;pointer-events:none}
 .sheet.full:has(.phero) .sheet-head>*{pointer-events:auto}
-.sheet.full:has(.phero) .sheet-back{background:rgba(8,12,26,.55);border-color:rgba(255,255,255,.16);color:#fff;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.sheet.full:has(.phero) .sheet-back{width:40px;height:40px;padding:0;border-radius:50%;font-size:0;display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(8,12,26,.5);border-color:rgba(255,255,255,.16);color:#fff;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.sheet.full:has(.phero) .sheet-back::before{content:"";width:10px;height:10px;margin-left:4px;border-left:2.4px solid currentColor;border-bottom:2.4px solid currentColor;transform:rotate(45deg);border-radius:1px}
+.phero .admpen.abs{width:40px;height:40px;border-radius:50%;background:rgba(8,12,26,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .sheet.full:has(.phero) .sheet-body{padding-top:0}
 .phead .pth{position:relative;width:68px;height:68px;border-radius:18px;overflow:hidden;flex:0 0 auto;background:var(--card2);box-shadow:0 0 0 1px var(--line),0 10px 22px -12px rgba(0,0,0,.7)}
 .phead .pth .ptile{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;margin:0;border-radius:0}
@@ -2887,7 +2892,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.23";
+var CLIENT_BUILD="2026-11-06.24";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
