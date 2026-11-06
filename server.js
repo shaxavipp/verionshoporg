@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.21";
+const BUILD = "2026-11-06.22";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -3215,7 +3215,11 @@ function handleRequest(req, res) {
       fragmentCall("/getInfo", { username: uname }).then(r => {
         const j = r.json;
         if (!j || j.ok !== true) return send(res, 404, { ok: false, message: (j && j.message) || "Topilmadi" });
-        send(res, 200, { ok: true, result: j.result });
+        // Faqat kerakli maydonlar mijozga: username, ism, profil rasmi (faqat https), Premium bor-yo'qligi
+        const x = j.result || {}, s = (v, n) => String(v == null ? "" : v).slice(0, n);
+        const photo = s(x.photo, 500);
+        send(res, 200, { ok: true, result: { username: s(x.username, 32), name: s(x.name, 64),
+          photo: /^https:\/\/[^\s"'<>]+$/.test(photo) ? photo : "", is_premium: x.is_premium === true } });
       }).catch(e => send(res, 502, { ok: false, message: String(e.message || e) }));
     });
   }

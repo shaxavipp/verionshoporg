@@ -2621,6 +2621,13 @@ body.sinb-open{overflow:hidden}
 .pmUc .pmUi{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .pmUc.ok .pmUi{background:rgba(34,197,94,.2);color:var(--ok)}
 .pmUc.warn .pmUi{background:rgba(245,158,11,.22);color:var(--gold)}
+.pmUc .pmUi{position:relative}
+.pmUc .pmUi.av{width:42px;height:42px;background:var(--card2)}
+.pmUc .pmUi.av>svg{opacity:0}
+.pmUc .pmUi img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.pmUc .pmUi .pmUb{position:absolute;right:-3px;bottom:-3px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--ok);box-shadow:0 0 0 2px var(--bg)}
+.pmUc.warn .pmUi .pmUb{background:var(--gold)}
+.pmUc .pmUi:not(.av) .pmUb{display:none}
 .pmUc .pmUn{display:flex;flex-direction:column;min-width:0;flex:1}
 .pmUc .pmUn b{font-size:var(--fs-md);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pmUc .pmUn i{font-style:normal;font-size:var(--fs-sm)}
@@ -2877,7 +2884,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.21";
+var CLIENT_BUILD="2026-11-06.22";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5239,8 +5246,14 @@ function openNeedBalance(price){
   haptic();
 }
 
-function userOkHTML(name,uname,isPrem){
-  return '<div class="pmUc ok"><span class="pmUi">'+ic("check",20)+'</span><span class="pmUn"><b>'+esc(name||uname)+'</b><i>@'+esc(uname)+'</i></span>'+(isPrem?'<span class="pmTag">'+ic("diamond",13)+' Premium</span>':'')+'</div>';
+/* Tekshirilgan foydalanuvchi belgisi: Fragment bergan profil rasmi (bo'lsa) + burchakda ✓; rasm ochilmasa — oddiy ✓ */
+function userAvHTML(photo,warn){
+  var ok=/^https:\/\/[^\s"'<>]+$/.test(String(photo||""));
+  return '<span class="pmUi'+(ok?" av":"")+'">'+ic(warn?"warning":"check",20)
+    +(ok?'<img src="'+esc(photo)+'" alt="" referrerpolicy="no-referrer" onerror="var p=this.parentNode;p.classList.remove(\'av\');this.remove()"><span class="pmUb">'+ic(warn?"warning":"check",11)+'</span>':'')+'</span>';
+}
+function userOkHTML(name,uname,isPrem,photo){
+  return '<div class="pmUc ok">'+userAvHTML(photo,false)+'<span class="pmUn"><b>'+esc(name||uname)+'</b><i>@'+esc(uname)+'</i></span>'+(isPrem?'<span class="pmTag">'+ic("diamond",13)+' Premium</span>':'')+'</div>';
 }
 /* "O'zimga" — ingichka tugma: Telegram username'i bor foydalanuvchiga o'z @username'ini tez qo'yadi */
 function selfUname(){var me=tgUser();return me&&me.username?me.username:"";}
@@ -5276,7 +5289,7 @@ function openPremiumBuy(it){
     var box=sh.querySelector("#pmUser");
     if(checked){
       var warn=!!checked.premium;
-      box.innerHTML='<div class="pmUc '+(warn?"warn":"ok")+'"><span class="pmUi">'+ic(warn?"warning":"check",20)+'</span>'
+      box.innerHTML='<div class="pmUc '+(warn?"warn":"ok")+'">'+userAvHTML(checked.photo,warn)
         +'<span class="pmUn"><b>'+esc(checked.name||checked.uname)+'</b><i>@'+esc(checked.uname)+'</i></span>'
         +'<button type="button" class="pmChg" id="pmChg">'+esc(t("pm_change"))+'</button></div>'
         +(warn?'<div class="pmWarn">'+ic("warning",16)+'<span>'+esc(t("pm_already"))+'</span></div>':'');
@@ -5298,7 +5311,7 @@ function openPremiumBuy(it){
     var cb=sh.querySelector("#pmCheck");if(cb)cb.disabled=true;
     api("/api/fragment/check-user","POST",{username:uname}).then(function(r){
       var rs=r.result||{};
-      checked=PM_STATE={uname:rs.username||uname,name:rs.name||"",premium:rs.is_premium===true,ts:Date.now()};
+      checked=PM_STATE={uname:rs.username||uname,name:rs.name||"",photo:rs.photo||"",premium:rs.is_premium===true,ts:Date.now()};
       haptic("ok");renderUser();renderBuy();
     }).catch(function(){
       renderUser('<div class="paynote" style="color:var(--err)">'+ic("cross",13)+' '+esc(t("user_not_found"))+'</div>');
@@ -5407,7 +5420,7 @@ function openStarsBuy(it){
     api("/api/fragment/check-user","POST",{username:uname}).then(function(r){
       checkedUser=uname;
       var res=r.result||{};
-      sh.querySelector("#stUres").innerHTML=userOkHTML(res.name,res.username||uname,res.is_premium);
+      sh.querySelector("#stUres").innerHTML=userOkHTML(res.name,res.username||uname,res.is_premium,res.photo);
       updatePrice();
     }).catch(function(e){
       checkedUser=null;
@@ -5461,7 +5474,7 @@ function openGiftBuy(it){
   var checkedUser=null,anonOn=false;
   function setChecked(uname,res){
     checkedUser=uname;
-    sh.querySelector("#gUres").innerHTML=userOkHTML(res&&res.name,(res&&res.username)||uname,res&&res.is_premium);
+    sh.querySelector("#gUres").innerHTML=userOkHTML(res&&res.name,(res&&res.username)||uname,res&&res.is_premium,res&&res.photo);
     sh.querySelector("#gBuy").disabled=false;
     sh.querySelector("#gBuyHint").style.display="none";
   }
