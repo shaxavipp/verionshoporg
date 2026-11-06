@@ -2827,7 +2827,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.1";
+var CLIENT_BUILD="2026-11-06.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4038,7 +4038,7 @@ function cardImgSet(k){var c=cardArt(k);return c&&/^(https:\/\/|\/gimg\/)/.test(
 /* Admin rasm qo'ymagan bo'lsa — ilovaga o'rnatilgan tayyor muqova (assets/cover-*.jpg) */
 var DEF_COVER={vnum:1,steam:1,cs2:1,dota2:1,rust:1};
 /* «Tayyor muqovalar» (admin: Mahsulotlar → 🖼) yoqilgan bo'lsa — ilovaga o'rnatilgan muqovalar ustun; o'chiq bo'lsa — admin yuklagan rasm ustun */
-function ownCovers(){return !!(EXTRAS&&EXTRAS.covers==="own");}
+function ownCovers(){return !(EXTRAS&&EXTRAS.coverMode==="builtin");}
 function cardImg(k){if(DEF_COVER[k]&&(!ownCovers()||!cardImgSet(k)))return "/assets/cover-"+k+".jpg";return cardImgSet(k);}
 function builtinCoverFor(it){
   if(!it)return "";
@@ -4092,7 +4092,7 @@ function admPenGo(a,arg){
 function openCardArt(k){
   var c=cardArt(k)||{},D=CARD_DEF[k],F={img:c.img||""};
   var html='<h2>🖼 '+esc(D[0])+' — kartochka</h2>'
-    +'<div class="paynote" style="margin:0 0 6px">Bo\'limdagi kartochka. Rasm kartochkani to\'liq to\'ldiradi (kvadrat 1:1, masalan 1024×1024). Rasm qo\'yilmasa — ilovaga o\'rnatilgan tayyor muqova chiqadi (agar «Tayyor muqovalar» yoqilgan bo\'lsa, u doim ustun: o\'chirish uchun Mahsulotlar → 🖼). Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi.</div>'
+    +'<div class="paynote" style="margin:0 0 6px">Bo\'limdagi kartochka. Rasm kartochkani to\'liq to\'ldiradi (kvadrat 1:1, masalan 1024×1024). Rasm qo\'yilmasa — ilovaga o\'rnatilgan tayyor muqova chiqadi. (Mahsulotlar → «🖼 Tayyor muqovalar» yoqilsa, tayyor muqovalar sizning rasmingizdan ustun bo\'ladi.) Nom va matn rus/ingliz tiliga avtomatik tarjima qilinadi.</div>'
     +gImgPick("ca_img","Rasm (kvadrat)",F.img)
     +'<label>Nomi</label><input id="ca_name" maxlength="60" value="'+esc(c.name&&c.name.uz||"")+'" placeholder="'+esc(D[0])+'">'
     +'<label>Qisqa matn</label><input id="ca_sub" maxlength="60" value="'+esc(c.sub&&c.sub.uz||"")+'" placeholder="'+esc(D[1])+'">'
@@ -9597,7 +9597,7 @@ function openAdminProducts(){
   function cvLabel(){cvb.textContent=ownCovers()?"🖼 Tayyor muqovalar: o'chiq":"🖼 Tayyor muqovalar: yoqilgan";}
   cvLabel();
   cvb.addEventListener("click",function(){haptic();var next=ownCovers()?"builtin":"own";cvb.disabled=true;
-    api("/api/admin/extras","POST",{covers:next}).then(function(r){EXTRAS=EXTRAS||{};EXTRAS.covers=r.covers||next;loadExtras._sig="";cvb.disabled=false;cvLabel();
+    api("/api/admin/extras","POST",{coverMode:next}).then(function(r){EXTRAS=EXTRAS||{};EXTRAS.coverMode=r.coverMode||next;loadExtras._sig="";cvb.disabled=false;cvLabel();
       toast(next==="own"?"Endi o'zingiz yuklagan rasmlar ko'rinadi":"Tayyor muqovalar yoqildi");render();}).catch(function(){cvb.disabled=false;toast(t("srv_off"),true);});});
   var qt=null;el.querySelector("#prdQ").addEventListener("input",function(){clearTimeout(qt);var v=this.value;qt=setTimeout(function(){PRD.q=v.trim().toLowerCase();prdPaint();},200);});
   el.querySelector("#prdTabs").addEventListener("click",function(e){var b=e.target.closest("[data-t]");if(!b)return;haptic();PRD.tab=b.getAttribute("data-t");prdPaint();});
