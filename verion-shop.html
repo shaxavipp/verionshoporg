@@ -2827,7 +2827,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.3";
+var CLIENT_BUILD="2026-11-06.4";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4193,8 +4193,9 @@ function ctaBtn(){return '<span class="pcta" aria-hidden="true"><i class="pgr"><
   document.addEventListener("pointerdown",function(e){var c=e.target&&e.target.closest&&e.target.closest(".homecats .pcard");if(!c||rf())return;
     var r=c.getBoundingClientRect(),sp=document.createElement("span");sp.className="pripple";sp.style.left=(e.clientX-r.left)+"px";sp.style.top=(e.clientY-r.top)+"px";c.appendChild(sp);
     setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},750);},{passive:true});})();
-/* Bo'lim kartasiga admin rasm qo'ymagan bo'lsa — ilovaga o'rnatilgan tayyor muqova (assets/cover-cat-*.jpg) */
-function catDefCover(kind){var f={obuna:"obuna",games:"oyinlar",telegram:"telegram",nakrutka:"nakrutka"}[kind];return f?"/assets/cover-cat-"+f+".jpg":"";}
+/* Bo'lim kartalari (Telegram, O'yinlar, Obuna, Nakrutka): standart holatda eski ko'rinish — admin yuklagan rasm,
+   yo'q bo'lsa ikonkali plitka. Tayyor muqova (assets/cover-cat-*.jpg) FAQAT admin «Tayyor muqovalar»ni yoqqanda chiqadi. */
+function catDefCover(kind){if(ownCovers())return "";var f={obuna:"obuna",games:"oyinlar",telegram:"telegram",nakrutka:"nakrutka"}[kind];return f?"/assets/cover-cat-"+f+".jpg":"";}
 function categoryCardsHTML(){
   var html='<div class="grid groupgrid homecats">',any=false;
   for(var m=0;m<PRODUCTS_PILLS.length;m++){
