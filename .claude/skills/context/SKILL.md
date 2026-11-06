@@ -175,6 +175,11 @@ Full docs are public at `lis-skins.stoplight.io` (Stoplight project id 288247; n
 ### Design reference
 The user likes skinsavdo.uz (an Uzbek CS2 skins market). Take ideas only, not their branding, yellow `#fbd506` (or any yellow/amber accent), logo or text. Owner rule (v3.17): «hamma joyda bizning brend, faqat ularning ko'rinishi».
 
+### Marketing / ad sources (v3.54)
+- Instagram @verion_shop is connected through the vidIQ connector (owner insights + Reels publishing). Publishing a Reel always needs the owner's OK on the exact video + caption; paid ads (target) are turned on by the owner in Instagram («Reklama qilish»), we only prepare audience/budget/text.
+- Track every promo link with `https://t.me/<bot>/shop?startapp=src_<name>` (bot @verionshopbot). New users get `acc.src` once; `/api/admin/dashboard` returns `sources` [{src, users, week, buyers, revenue}] + `appLink`; admin «Reklama manbalari» shows them with ready links (ig, igads, tt, yt, tg). Never overwrite an existing user's `src`.
+- Video voice: ElevenLabs `eleven_v4`, voice «Firdavs Urinov» (`tsHbvXAh0M61xzsgDqlk`), literary Uzbek with ʻ/ʼ letters and numbers in words; verify every take with Scribe (word-exact) and use its word timings for sync; light cleanup `vclean-soft.sh` (the old Mirjalol voice was muddy).
+
 ### Brand (logo) — use these everywhere (owner rule, v3.52)
 The owner's current logo is the chrome «VERION SHOP» wordmark with a blue lightning V. Use only these files for anything new (site, app, videos, posts, covers):
 - `assets/brand-verion-shop.png` — wordmark, transparent, 1116×299 (ratio ≈3.73). Default logo for headers, footers and videos.

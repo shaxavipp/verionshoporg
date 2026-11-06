@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.26";
+const BUILD = "2026-11-06.27";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2829,6 +2829,9 @@ function handleRequest(req, res) {
     const acc = user(u);
     if (isNew && u._startParam && /^ref_\d+$/.test(u._startParam) && canSetReferrer(u.id, Number(u._startParam.slice(4))))
       acc.referredBy = Number(u._startParam.slice(4));
+    // Reklama manbasi: t.me/<bot>/<app>?startapp=src_ig (Instagram), src_tt, src_ads_ig ... — faqat yangi foydalanuvchiga
+    // bir marta yoziladi; admin «Statistika»da manbalar bo'yicha kelganlar, xaridorlar va tushum ko'rinadi.
+    if (isNew && !acc.src && u._startParam && /^src_[a-z0-9_]{1,32}$/.test(u._startParam)) acc.src = u._startParam.slice(4);
     // Botni ishga tushirgan-tushirmagani hali noma'lum bo'lsa — fonda jimgina
     // tekshiramiz. Javob shu so'rovni kutib turmaydi: started null qaytadi va
     // ilova bir-ikki soniyadan keyin qayta so'raganda aniq qiymatni oladi.
@@ -3776,7 +3779,20 @@ function handleRequest(req, res) {
         .sort((a, b) => b.totalSpent - a.totalSpent)
         .slice(0, 20);
 
-      return send(res, 200, { sales, dailySales, topProducts, newUsers, activeUsers, churnUsers, churnCount: churnUsers.length });
+      // Reklama manbalari (acc.src): har biridan nechta odam kelgan, nechtasi xarid qilgan va qancha tushum bergan.
+      const srcMap = {};
+      for (const k of Object.keys(DB.users)) { const v = DB.users[k]; if (!v || !v.src) continue;
+        const r = srcMap[v.src] || (srcMap[v.src] = { src: v.src, users: 0, week: 0, buyers: 0, revenue: 0 });
+        r.users++; if ((v.ts || 0) >= periodStart("week")) r.week++; }
+      if (Object.keys(srcMap).length) {
+        const byUid = {};
+        for (const o of doneOrders) { const v = DB.users[String(o.uid)]; if (!v || !v.src) continue;
+          srcMap[v.src].revenue += Number(o.price) || 0; byUid[String(o.uid)] = v.src; }
+        for (const k in byUid) srcMap[byUid[k]].buyers++;
+      }
+      const sources = Object.values(srcMap).sort((a, b) => b.users - a.users).slice(0, 20);
+      return send(res, 200, { sales, dailySales, topProducts, newUsers, activeUsers, churnUsers, churnCount: churnUsers.length, sources,
+        appLink: BOT_USERNAME ? "https://t.me/" + BOT_USERNAME + "/" + MINIAPP_NAME : "" });
     }
     if (url === "/api/admin/referral-settings" && m === "GET") {
       return send(res, 200, DB.settings.referral || {});
