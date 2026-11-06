@@ -2739,6 +2739,11 @@ body.sinb-open{overflow:hidden}
 .pma-add{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
 .pma-add button{height:36px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:600}
 .pma-add button:disabled{opacity:.35}
+.pma-chk{margin-top:10px;padding:12px;border-radius:var(--r-lg);background:var(--card);border:1px solid var(--line);font-size:13px}
+.pma-v{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;min-width:0}
+.pma-v span{flex:1;min-width:0;overflow-wrap:anywhere;color:var(--mut2)}
+.pma-v img{width:36px;height:36px;object-fit:contain;border-radius:8px;flex:0 0 auto}
+.pma-raw{max-height:260px;overflow:auto;font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--card2);padding:8px;border-radius:10px;margin:6px 0 0}
 .pmPk .nm{font-size:var(--fs-lg)}
 .pmPk .sub{font-size:12px;color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
 .pmPk .pr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
@@ -2850,7 +2855,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.13";
+var CLIENT_BUILD="2026-11-06.14";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -9823,7 +9828,49 @@ function pmAdmHTML(){
   }
   h+='<div class="minnote" style="margin-top:8px">Fragment hozir 3, 6 va 12 oylik Premium beradi. Boshqa muddat qo\'shsangiz va Fragment uni rad etsa, pul mijoz balansiga avtomatik qaytadi.</div>'
     +'<div class="minnote">✨ — paketga Telegram premium emoji qo\'yish (Telegram Desktop\'da emoji ustida «Copy Emoji ID»). Qo\'yilmasa, oy soni yozilgan belgi chiqadi.</div>'
-    +'<div class="arow" style="margin-top:10px"><button class="btn sm" type="button" data-pa="pmsave">Saqlash</button><button class="btn sm gray" type="button" data-pa="pmadd">'+ic("plus",14)+' Oy qo\'shish</button></div>';
+    +'<div class="arow" style="margin-top:10px"><button class="btn sm" type="button" data-pa="pmsave">Saqlash</button><button class="btn sm gray" type="button" data-pa="pmadd">'+ic("plus",14)+' Oy qo\'shish</button></div>'
+    +'<div class="arow" style="margin-top:8px"><button class="btn sm gray" type="button" data-pa="pmcheck">🔎 fragment-api.uz\'dan tekshirish (narx va emoji)</button></div>'
+    +pmCheckHTML(st.check);
+  return h;
+}
+/* fragment-api.uz javobini ko'rsatish: Premium narxlari va (bo'lsa) paketlarning emoji/rasm/stiker maydonlari.
+   API javob shakli hujjatda qat'iy emas — shuning uchun javob umumiy tarzda ko'rib chiqiladi va xom JSON ham ko'rsatiladi. */
+var PM_VIS_RE=/emoji|sticker|icon|image|img|photo|picture|animation|tgs|lottie|thumb/i,PM_PRICE_RE=/price|amount|usd|ton|cost|sum|stars/i;
+function pmMonthsOf(o,key){
+  var v=o&&(o.months!=null?o.months:o.month!=null?o.month:o.duration!=null?o.duration:o.period);
+  var n=parseInt(v!=null?v:key,10);return n>=1&&n<=12?n:0;
+}
+function pmScan(j){
+  var vis=[],prices=[];
+  (function walk(v,path,key,parent){
+    if(v==null)return;
+    if(Array.isArray(v)){v.forEach(function(x,i){walk(x,path+"["+i+"]",String(i),v);});return;}
+    if(typeof v==="object"){var m=pmMonthsOf(v,key),pr=[];
+      Object.keys(v).forEach(function(k){var x=v[k];
+        if(x!==null&&typeof x!=="object"){
+          if(PM_VIS_RE.test(k))vis.push({path:path+"."+k,key:k,val:String(x),m:m});
+          else if(PM_PRICE_RE.test(k))pr.push(k+": "+x);
+        }else walk(x,path+"."+k,k,v);});
+      if(m&&pr.length)prices.push({m:m,t:pr.join(" · ")});
+      return;}
+  })(j,"$","",null);
+  return {vis:vis,prices:prices};
+}
+function pmCheckHTML(c){
+  if(!c)return "";
+  if(c.loading)return '<div class="pma-chk"><div class="minnote">⏳ fragment-api.uz\'dan olinmoqda…</div></div>';
+  if(c.err)return '<div class="pma-chk"><div class="minnote" style="color:var(--err)">⚠️ '+esc(c.err)+'</div></div>';
+  var sc=pmScan(c.data),h='<div class="pma-chk">';
+  h+='<b>Narxlar (fragment-api.uz)</b>'+(sc.prices.length?sc.prices.map(function(x){return '<div class="minnote">'+x.m+' oy — '+esc(x.t)+'</div>';}).join(""):'<div class="minnote">Oy bo\'yicha narx topilmadi — pastdagi javobni ko\'ring.</div>');
+  h+='<b style="display:block;margin-top:8px">Emoji / rasm maydonlari</b>';
+  if(!sc.vis.length)h+='<div class="minnote">fragment-api.uz javobida emoji, stiker yoki rasm yo\'q. Premium emojini har paketga ✨ orqali o\'zingiz qo\'yasiz.</div>';
+  sc.vis.forEach(function(v,i){
+    var isId=/^\d{10,25}$/.test(v.val),isUrl=/^https:\/\//.test(v.val),short=v.val.length<=8&&!isId&&!isUrl;
+    var can=v.m&&(isId||isUrl||short);
+    h+='<div class="pma-v">'+(isUrl?'<img src="'+esc(v.val)+'" alt="">':'')+'<span><code>'+esc(v.path)+'</code><br>'+esc(v.val.slice(0,120))+'</span>'
+      +(can?'<button class="btn sm" type="button" data-pa="pmuse" data-id="'+i+'" style="width:auto">'+v.m+' oyga qo\'yish</button>':'')+'</div>';
+  });
+  h+='<details style="margin-top:8px"><summary class="minnote">Xom javob (JSON)</summary><pre class="pma-raw">'+esc(JSON.stringify(c.data,null,1).slice(0,4000))+'</pre></details></div>';
   return h;
 }
 function pmAdmBind(d,r){
@@ -9850,6 +9897,19 @@ function pmAdmAct(a,id){
     return;
   }
   if(a==="pmsave")return pmAdmSave();
+  if(a==="pmcheck"){
+    st.check={loading:true};pmAdmRepaint();
+    api("/api/admin/fragment-pricing?kind=premium").then(function(j){
+      st.check=(j&&j.ok===false&&!j.result)?{err:(j.message||j.error||"fragment-api.uz javob bermadi")}:{data:j};pmAdmRepaint();
+    }).catch(function(e){st.check={err:(e&&e.resp&&(e.resp.message||e.resp.error))||t("srv_off")};pmAdmRepaint();});
+    return;
+  }
+  if(a==="pmuse"){
+    var v=st.check&&st.check.data?pmScan(st.check.data).vis[Number(id)]:null;if(!v||!v.m)return;
+    if(/^\d{10,25}$/.test(v.val)){st.open[v.m]=v.val;return pmAdmAct("pmfetch",String(v.m));}
+    st.tiles[v.m]=/^https:\/\//.test(v.val)?{img:v.val,video:"",lottie:"",emoji:""}:{img:"",video:"",lottie:"",emoji:v.val};
+    toast("✅ "+v.m+" oyga qo'yildi — «Saqlash»ni bosing");return pmAdmRepaint();
+  }
 }
 function pmAdmSave(){
   var st=pmAdmState(),ms=pmAdmMonths(),n=0,bad=false;
