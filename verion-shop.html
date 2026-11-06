@@ -2859,7 +2859,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.18";
+var CLIENT_BUILD="2026-11-06.19";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5288,7 +5288,7 @@ function openPremiumBuy(it){
       var sv=basePer>0&&x!==b0?Math.round((1-per/basePer)*100):0;
       var xt=x.tile||{},has=!!(xt.video||xt.lottie||xt.img||xt.emoji)||pmHasDefIcon(mo);
       h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic'+(has?" has":"")+'">'+pmIconHTML(xt,mo)+'</span>'
-        +'<span class="tx"><span class="nm">'+esc(months(x))+'</span><span class="sub">'+esc(money(Math.round(per)))+' / '+esc(t("pm_mo"))+'</span></span>'
+        +'<span class="tx"><span class="nm">'+esc(months(x))+'</span></span>'
         +'<span class="pr"><span class="pc">'+esc(money(x.price))+'</span>'+(sv>=1?'<span class="sv">−'+sv+'%</span>':'')+'</span><span class="dot"></span></button>';
     }
     box.innerHTML=h;
