@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.14";
+const BUILD = "2026-11-06.15";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -1756,6 +1756,8 @@ function findCachedPremiumEmoji(emojiId) {
 // FRAGMENT_API_KEY Railway "Variables" orqali beriladi, kodga yozilmaydi (xavfsizlik uchun).
 const FRAGMENT_API_KEY = process.env.FRAGMENT_API_KEY || "";
 const FRAGMENT_HOST = "fragment-api.uz";
+// fragment-api.uz /premium/buy: "duration — 3, 6 yoki 12" (https://fragment-api.uz/docs)
+const PREMIUM_MONTHS = [3, 6, 12];
 // Yetkazib beruvchi (Fragment, Gift bot) rad etganda: mijozga ichki sabab (hamyonda TON
 // qolmadi va h.k.) ko'rsatilmaydi — "hozircha ishlamayapti, keyinroq urinib ko'ring".
 // Haqiqiy sabab adminlarga darhol yuboriladi (bir xil xizmat uchun 10 daqiqada bir marta).
@@ -3255,9 +3257,11 @@ function handleRequest(req, res) {
       if (!/^[A-Za-z0-9_]{4,32}$/.test(uname)) return send(res, 400, { error: "username" });
       const price = Math.round(Number(it.price) || 0);
       if (price <= 0) return send(res, 409, { error: "no_price" });   // narxi qo'yilmagan paket bepul sotilmasin
+      const months = Number(it.premiumMonths) || 3;
+      // fragment-api.uz faqat 3, 6, 12 oyni qabul qiladi — boshqasi Fragment'ga yuborilmaydi (pul ham band qilinmaydi)
+      if (PREMIUM_MONTHS.indexOf(months) === -1) return send(res, 409, { error: "premium_duration" });
       const acc = user(u);
       if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
-      const months = Number(it.premiumMonths) || 3;
       const title = typeof it.title === "string" ? it.title : ((it.title && (it.title.uz || it.title.en)) || "");
       fragmentCall("/premium/buy", { duration: months, username: uname }).then(r => {
         const j = r.json;
@@ -3298,6 +3302,7 @@ function handleRequest(req, res) {
       /* ----- Fragment orqali avtomatik Stars/Premium yetkazish (istalgan @username'ga) ----- */
       if (it.fulfill === "fragment_stars" || it.fulfill === "fragment_premium") {
         if (!u.username) return send(res, 409, { error: "no_username" });
+        if (it.fulfill === "fragment_premium" && PREMIUM_MONTHS.indexOf(Number(it.premiumMonths) || 3) === -1) return send(res, 409, { error: "premium_duration" });
         if (!reserveBalance(acc, price)) return send(res, 402, { error: "balance", need: price - acc.balance });
         const isStars = it.fulfill === "fragment_stars";
         const path = isStars ? "/stars/buy" : "/premium/buy";
