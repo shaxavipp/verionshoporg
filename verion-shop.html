@@ -2716,6 +2716,10 @@ body.sinb-open{overflow:hidden}
 .pmPk button{padding:12px 14px}
 .pmPk .ic{background:linear-gradient(135deg,#6a45ee,#c04fe0 60%,#ff4fc4);color:#fff}
 .pmPk .tx{flex:1}
+#updPill{position:fixed;left:50%;top:calc(10px + var(--st,0px));transform:translateX(-50%);z-index:9999;display:inline-flex;align-items:center;gap:8px;
+  height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(135deg,#2f6bff,#6a45ee);color:#fff;
+  font-size:13.5px;font-weight:650;box-shadow:0 10px 30px rgba(20,40,120,.45);white-space:nowrap;max-width:calc(100vw - 32px)}
+#updPill:disabled{opacity:.7}
 .pmPk .ic.has{background:transparent}
 .pmN{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;color:#fff}
 .pmN b{font-size:19px;font-weight:800;letter-spacing:-.02em}
@@ -2855,7 +2859,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.16";
+var CLIENT_BUILD="2026-11-06.17";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3428,6 +3432,17 @@ function handleAdminDeepLink(){
     else openAdmin();
   }catch(e){}
 }
+/* Ilova ochiq turganda yangi versiya chiqsa (server build ≠ shu HTML'dagi CLIENT_BUILD) — tepada «Yangilash» tugmasi.
+   Avtomatik qayta yuklanmaydi: admin formani to'ldirayotgan bo'lishi mumkin. */
+function checkClientUpdate(srv){
+  try{
+    if(!srv||srv===CLIENT_BUILD||document.getElementById("updPill"))return;
+    var b=document.createElement("button");b.id="updPill";b.type="button";
+    b.innerHTML=ic("sparkles",15)+'<span>'+esc(S.lang==="ru"?"Вышла новая версия — обновить":S.lang==="en"?"New version available — update":"Yangi versiya chiqdi — yangilash")+'</span>';
+    b.addEventListener("click",function(){b.disabled=true;try{location.reload();}catch(e){}});
+    document.body.appendChild(b);
+  }catch(e){}
+}
 function loadMe(cb){
   if(!tgUser()||typeof fetch!=="function"||SESSION_EXPIRED){if(cb)cb();return;}
   api("/api/me").then(function(r){
@@ -3436,6 +3451,7 @@ function loadMe(cb){
     _meSig=sig;
     ME={balance:r.balance,payments:r.payments||[],orders:r.orders||[],favorites:r.favorites||[],notifEnabled:r.notifEnabled!==false,isAdmin:r.isAdmin===true,imgCut:r.imgCut===true,build:r.build||"",started:r.started===undefined?null:r.started,bot:r.bot||null,via:r.via||"main",adminBot:r.adminBot||null,cs2:r.cs2===true,skins:r.skins&&typeof r.skins==="object"?r.skins:null};
     ME_ERROR=false;
+    checkClientUpdate(r.build);
     if(ME.isAdmin&&!GAMES.admin)loadGames();
     if(ME.imgCut&&!admAutoCut.ran)setTimeout(function(){admAutoCut();},4000);   // bir martalik: mahsulot rasmlari fonini olib tashlash
     if(!_adminDeepDone){_adminDeepDone=true;setTimeout(handleAdminDeepLink,350);}
