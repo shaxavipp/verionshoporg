@@ -2827,7 +2827,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.11";
+var CLIENT_BUILD="2026-11-06.12";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4327,7 +4327,10 @@ function openAdminCategories(){
       +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_cat_enabled"))+'</span><button class="swbtn'+(enabledState[kind]?" on":"")+'" data-catsw="'+kind+'"><i></i></button></div>'
       +'<label>'+esc(t("a_cat_name_uz"))+'</label><input id="cn_'+kind+'_uz" value="'+esc(lbl.uz||"")+'" placeholder="'+esc(t(labelKey))+'">'
       +'<div class="minnote">'+ic("wand",12)+' '+esc(t("a_title_autotr"))+'</div>'
-      +'<label>'+esc(t("a_img"))+'</label><input id="cf_'+kind+'" type="file" accept="image/jpeg,image/png,image/webp">'
+      +'<label>'+esc(t("a_img"))+'</label><div class="arow" style="align-items:center;gap:10px">'
+      +'<div id="cp_'+kind+'" style="width:56px;height:56px;border-radius:12px;background:var(--card2);overflow:hidden;flex:0 0 auto;display:flex;align-items:center;justify-content:center">'
+      +(meta.img?'<img src="'+esc(meta.img)+'" alt="" style="width:100%;height:100%;object-fit:cover">':'<span style="opacity:.5;font-size:11px">—</span>')+'</div>'
+      +'<input id="cf_'+kind+'" type="file" accept="image/jpeg,image/png,image/webp" style="flex:1;min-width:0"></div>'
       +(meta.img?'<div class="minnote">'+esc(t("a_cat_has_img"))+' <button class="btn sm red" data-clrimg="'+kind+'" type="button" style="margin-left:6px">'+ic("trash",12)+'</button></div>':'')
       +'</div>';
   }
@@ -4338,9 +4341,14 @@ function openAdminCategories(){
     var f=sh.querySelector("#cf_"+kind);
     if(f)f.addEventListener("change",function(){
       var file=this.files&&this.files[0];if(!file)return;
-      var rd=new FileReader();
-      rd.onload=function(){pendingImg[kind]=rd.result;toast(t("a_img_selected"));};
-      rd.readAsDataURL(file);
+      // Katta rasm (telefon fotosi, 2–5 MB) to'g'ridan-to'g'ri yuborilmaydi: 1024px gacha kichraytiriladi —
+      // server uni /gimg/ faylga aylantiradi va bo'limlar ro'yxati yengil qoladi.
+      imgPrep(file,1024,false,function(e,r){
+        if(e){toast("Rasm o'qilmadi",true);return;}
+        pendingImg[kind]=r.url;
+        var pv=sh.querySelector("#cp_"+kind);if(pv)pv.innerHTML='<img src="'+esc(r.url)+'" alt="" style="width:100%;height:100%;object-fit:cover">';
+        toast(t("a_img_selected"));
+      });
     });
     var clr=sh.querySelector('[data-clrimg="'+kind+'"]');
     if(clr)clr.addEventListener("click",function(){pendingImg[kind]="__clear__";toast(t("a_img_will_clear"));});
@@ -9551,9 +9559,11 @@ function prdRows(){
         sub:(Number(x.price)>0?money(x.price):(x.fulfill==="fragment_stars_custom"?"Istalgan miqdor":"narx qo'yilmagan")),conn:prdItemConn(x),hidden:x.active===false,sold:prdSale("item:"+x.id),item:x});
     });
     if(kind==="telegram"){
-      var gifts=cat.filter(function(x){return x.fulfill==="telegram_gift";});
-      if(gifts.length)rows.push({kind:kind,type:"gifts",key:"gifts",title:"Telegram sovg'alar",icon:"gift",sub:gifts.length+" ta sovg'a · "+prdRange(gifts.map(function(x){return Number(x.price)||0;})),
-        conn:{t:"Gift bot",cls:svc.giftBot?"ok":"err"},hidden:gifts.every(function(x){return x.active===false;}),
+      var gifts=cat.filter(function(x){return x.fulfill==="telegram_gift";}),hub=cat.filter(function(x){return x.fulfill==="gift_hub";})[0]||null;
+      if(gifts.length||hub)rows.push({kind:kind,type:"gifts",key:"gifts",title:(hub&&loc(hub.title))||"Telegram sovg'alar",icon:"gift",hub:hub,
+        img:(hub&&hub.tile&&hub.tile.img)||"",emoji:(hub&&hub.tile&&hub.tile.emoji)||"",
+        sub:gifts.length+" ta sovg'a · "+prdRange(gifts.map(function(x){return Number(x.price)||0;})),
+        conn:{t:"Gift bot",cls:svc.giftBot?"ok":"err"},hidden:(hub&&hub.active===false)||!gifts.length||gifts.every(function(x){return x.active===false;}),
         sold:gifts.reduce(function(s,x){var q=prdSale("item:"+x.id);s.n+=q.n;s.sum+=q.sum;return s;},{n:0,sum:0}),items:gifts});
       if(svc.vnum)rows.push({kind:kind,type:"vnum",key:"svc:vnum",title:cardTxt("vnum","name"),img:cardImg("vnum"),icon:"phone",sub:"Telegram uchun SMS raqamlar · "+(svc.vnum.ttlMin||20)+" daqiqa",
         conn:{t:svc.vnum.provider==="5sim"?"5sim":"TG-Lion",cls:svc.vnum.enabled&&svc.vnum.keySet?"ok":svc.vnum.enabled?"err":"mut"},hidden:!svc.vnum.enabled,sold:prdSale("svc:vnum")});
@@ -9684,6 +9694,9 @@ function prdConnHTML(r){
       else if(k==="Zaxira")h+=prdProvLine("Zaxira (kalitlar, kodlar)","Har sotuvda bitta yozuv mijozga beriladi. Tugasa — «Tugadi» ko'rinadi",c.cls);
       else h+=prdProvLine("Qo'lda","Buyurtma kanalga tushadi, admin bajarib «Bajarildi» bosadi. API orqali sotish uchun — o'yinlar/obuna bo'limidagi kabi paket qilib sayt liniyasiga ulang",c.cls);
     });
+    // Do'kondagi «Telegram sovg'alar» kartochkasi (gift_hub) — nomi va rasmi shu yerdan o'zgaradi
+    if(r.type==="gifts")h+='<div class="arow" style="margin-top:8px">'+(r.hub?'<button class="btn sm" data-pa="edit" data-id="'+esc(r.hub.id)+'">🖼 Kartochka nomi va rasmi</button>'
+      :'<button class="btn sm" data-pa="newhub">🖼 Do\'konga sovg\'alar kartochkasini qo\'shish</button>')+'</div>';
   }else if(r.type==="steam"){var s=svc.steam||{},p=s.line?prdProv(s.line.id):null,b=p?prdBal(p.message):"";
     h+=prdProvLine(s.mode==="manual"?"Qo'lda":"Ludovex API",s.mode==="manual"?"Admin hamyonni o'zi to'ldiradi":(s.line?(s.line.enabled?(p?(p.ok?"Ishlayapti":"Xato: "+esc(p.message)):"Yoqilgan"):"Liniya o'chiq"):"Ludovex liniyasi yo'q")+(b?' · balans <b>'+esc(b)+'</b>':''),r.conn.cls)
       +'<div class="arow" style="margin-top:8px"><button class="btn sm" data-pa="card:steam">🖼 Nomi va rasmi</button><button class="btn sm gray" data-pa="steam">Kurs, chegaralar</button><button class="btn sm gray" data-pa="lines">Ludovex liniyasi</button></div>';
@@ -9732,6 +9745,7 @@ function prdAct(r,a,id){
   PRD.dirty=true;
   if(a==="edit"){ADM_PAGE=true;openAdminForm(id);return;}
   if(a==="newin"){ADM_PAGE=true;var x0=(r.items||[])[0]||{};openAdminForm(null,{kind:r.kind,group:r.group||"",groupLabel:x0.groupLabel||"",groupImg:x0.groupImg||"",fulfillType:r.type==="gifts"?"telegramgift":""});return;}
+  if(a==="newhub"){ADM_PAGE=true;openAdminForm(null,{kind:"telegram",fulfillType:"gifthub"});return;}
   if(a==="groups"){openAdminGroups();return;}
   if(a==="pkg"){gAdmLoad(function(){openAdminPackageForm(r.game.id,id);});return;}
   if(a==="newpkg"){gAdmLoad(function(){openAdminPackageForm(r.game.id,null);});return;}
@@ -12212,7 +12226,9 @@ function openAdminForm(editId,preset){
     +'<div class="minnote" id="f_premEmojiStatus">Telegram Desktop\'da premium emojini ustiga bosib "Copy Emoji ID" orqali ID oling, shu yerga qo\'ying va "Yuklab olish"ni bosing — istalgan formatdagi (video, statik yoki eski Lottie/.tgs) premium emoji avtomatik joylashadi.</div>'
     +'<label>'+esc(t("a_video_label"))+'</label><input id="f_video" value="'+esc(F.video)+'" placeholder="https://.../gift.webm">'
     +'<div class="minnote">'+esc(t("a_video_hint"))+'</div>'
-    +'<label>'+esc(t("a_img"))+'</label><input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
+    +'<label>'+esc(t("a_img"))+'</label>'
+    +((F.lottie||F.video)?'<div class="minnote" id="f_animNote">Hozir kartochkada animatsiyali stiker/video turibdi. Rasm yuklasangiz, uning o\'rniga rasm chiqadi.</div>':'')
+    +'<input id="f_file" type="file" accept="image/jpeg,image/png,image/webp">'
     +'<div class="switch"><span style="font-size:13.5px">🪄 Logo fonini avtomatik olib tashlash (shaffof)</span><button class="swbtn on" id="f_cut" type="button"><i></i></button></div>'
     +(F.img0?'<button class="btn gray sm" id="f_img0" type="button" style="width:auto;margin-bottom:6px">↩ Asl rasmga qaytarish (fon bilan)</button>':'')
     +'<div class="switch"><span style="font-size:13.5px">'+esc(t("a_active"))+'</span><button class="swbtn'+(F.active?" on":"")+'" id="f_active"><i></i></button></div>'
@@ -12328,7 +12344,11 @@ function openAdminForm(editId,preset){
   // Rasm: WebP (shaffoflik saqlanadi), logoning bir xil rangli foni avtomatik olib tashlanadi; serverda faylga aylanadi
   var file=g("#f_file"),lastSrc=null;
   var applyImg=function(){if(!lastSrc)return;
-    imgPrep(lastSrc,600,F.cut!==false,function(e,r){if(e){toast("Rasm xatosi");return;}F.img=r.url;F.fit=r.cut?"contain":"";F.img0="";preview();imgCutToast(r);});};
+    imgPrep(lastSrc,600,F.cut!==false,function(e,r){if(e){toast("Rasm xatosi");return;}F.img=r.url;F.fit=r.cut?"contain":"";F.img0="";
+      // Kartochkada stiker/video/emoji rasmdan ustun turadi — yangi rasm yuklansa, ko'rinishi uchun ular olib tashlanadi
+      var hadAnim=!!(F.lottie||F.video||F.emoji);F.lottie="";F.video="";F.emoji="";
+      var ew0=g("#f_emoji"),vw0=g("#f_video"),an0=g("#f_animNote");if(ew0)ew0.value="";if(vw0)vw0.value="";if(an0)an0.remove();
+      preview();if(hadAnim)toast("✅ Rasm qo'yildi. Eski stiker/emoji o'rniga endi shu rasm chiqadi");else imgCutToast(r);});};
   if(file)file.addEventListener("change",function(){var f=this.files&&this.files[0];if(!f)return;lastSrc=f;applyImg();});
   var cutBtn=g("#f_cut");if(cutBtn)cutBtn.addEventListener("click",function(){F.cut=F.cut===false;this.classList.toggle("on",F.cut!==false);applyImg();});
   var i0=g("#f_img0");if(i0)i0.addEventListener("click",function(){F.img=F.img0;F.img0="";F.fit="";preview();this.remove();toast("↩ Asl rasm qaytarildi");});

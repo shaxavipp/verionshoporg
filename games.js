@@ -21,6 +21,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const MAX_IMG = 1.5 * 1024 * 1024;
+const MAX_DATA_IMG = 8 * 1024 * 1024;
 
 module.exports = function createGames(ctx) {
   const DBx = () => ctx.getDB();
@@ -609,7 +610,9 @@ module.exports = function createGames(ctx) {
     const mm = /^data:image\/(png|jpe?g|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(d || ""));
     if (!mm) return "";
     const buf = Buffer.from(mm[2], "base64");
-    if (!buf.length || buf.length > MAX_IMG) return "";
+    // Bu rasm allaqachon katalog/bo'lim matni ichida turibdi (admin so'rovi 10 MB gacha). Faylga chiqmasa matnda
+    // qolib, har bir mijozga megabaytlab yuboriladi — shuning uchun chegara yuklash chegarasidan kengroq.
+    if (!buf.length || buf.length > MAX_DATA_IMG) return "";
     const file = crypto.createHash("sha1").update(buf).digest("hex") + "." + (mm[1] === "jpeg" ? "jpg" : mm[1]);
     try { const p = path.join(IMG_DIR, file); if (!fs.existsSync(p)) fs.writeFileSync(p, buf); return "/gimg/" + file; } catch (e) { return ""; }
   }
