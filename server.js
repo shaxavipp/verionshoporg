@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-06.17";
+const BUILD = "2026-11-06.18";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -2174,6 +2174,20 @@ function extractImages(v, depth) {
   return { v, n: 0 };
 }
 // Ishga tushganda: avval saqlangan katalog / bo'lim / nakrutka rasmlari ham fayllarga ko'chiriladi (bir marta)
+/* Bir martalik: Telegram bo'limi rasmini yangi (boshqa bo'limlar uslubidagi) rasmga almashtirish — egasi so'ragan.
+   Faqat bo'lim rasmi bo'sh yoki avvalgi eski rasm (1,8 MB plakat) bo'lsa; admin keyin boshqa rasm qo'ygan bo'lsa — tegilmaydi. */
+const TG_SECT_OLD = ["/gimg/0635c50d33e24c6301cf814debff1808f4e6b835.png"];
+function migrateTelegramSection() {
+  if (sdb.kvGet(SQLITE_DB, "mig_tgsect_v1", null)) return;
+  const meta = sdb.kvGet(SQLITE_DB, "catmeta", {}) || {};
+  const tg = meta.telegram || {};
+  if (!tg.img || TG_SECT_OLD.indexOf(tg.img) !== -1) {
+    meta.telegram = Object.assign({ label: { uz: "", ru: "", en: "" }, enabled: true }, tg, { img: "/assets/sect-telegram.jpg" });
+    sdb.kvSet(SQLITE_DB, "catmeta", meta); dropPublic("catmeta");
+    console.log("[rasm] Telegram bo'limi rasmi yangilandi");
+  }
+  sdb.kvSet(SQLITE_DB, "mig_tgsect_v1", Date.now());
+}
 function migrateInlineImages() {
   let total = 0;
   try { const a = catalogArr(); if (Array.isArray(a)) { const r = extractImages(a); if (r.n) { sdb.saveCatalog(SQLITE_DB, r.v); dropPublic("catalog"); total += r.n; } } } catch (e) { console.log("[rasm] katalog: " + e.message); }
@@ -4566,7 +4580,7 @@ function scheduleBackup() {
 if (BOT_TOKEN) scheduleBackup();
 
 server.listen(PORT, "0.0.0.0", () => {
-  setTimeout(() => { try { migrateInlineImages(); } catch (e) {} }, 2000);
+  setTimeout(() => { try { migrateInlineImages(); } catch (e) {} try { migrateTelegramSection(); } catch (e) {} }, 2000);
   setTimeout(() => siteCheck(true), 15000);   // verionshop.uz shu serverga olib boradimi (Steam kirish sahifasi uchun); o'tmasa 30 soniyadan qayta
   console.log("Verion Shop v3 on " + PORT + " | data: " + DATA_DIR + " | BOT_TOKEN " + (BOT_TOKEN ? "set" : "MISSING"));
   // Oxirgi himoya chizig'i (faqat server muvaffaqiyatli ishga tushgandan keyin — ishga tushishdagi

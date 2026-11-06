@@ -2859,7 +2859,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-06.17";
+var CLIENT_BUILD="2026-11-06.18";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -5286,8 +5286,8 @@ function openPremiumBuy(it){
     for(var i=0;i<packs.length;i++){
       var x=packs[i],mo=Number(x.premiumMonths)||1,per=(Number(x.price)||0)/mo;
       var sv=basePer>0&&x!==b0?Math.round((1-per/basePer)*100):0;
-      var xt=x.tile||{},has=!!(xt.video||xt.lottie||xt.img||xt.emoji);
-      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic'+(has?" has":"")+'">'+tileIconHTML(xt,pmBadgeHTML(mo))+'</span>'
+      var xt=x.tile||{},has=!!(xt.video||xt.lottie||xt.img||xt.emoji)||pmHasDefIcon(mo);
+      h+='<button type="button" data-pk="'+esc(x.id)+'" class="'+(x.id===sel.id?"on":"")+'"><span class="ic'+(has?" has":"")+'">'+pmIconHTML(xt,mo)+'</span>'
         +'<span class="tx"><span class="nm">'+esc(months(x))+'</span><span class="sub">'+esc(money(Math.round(per)))+' / '+esc(t("pm_mo"))+'</span></span>'
         +'<span class="pr"><span class="pc">'+esc(money(x.price))+'</span>'+(sv>=1?'<span class="sv">−'+sv+'%</span>':'')+'</span><span class="dot"></span></button>';
     }
@@ -9830,12 +9830,19 @@ function pmAdmMonths(){
 }
 function pmAdmItem(m){var L=pmAdmItems();for(var i=0;i<L.length;i++)if((Number(L[i].premiumMonths)||0)===m)return L[i];return null;}
 function pmBadgeHTML(m){return '<span class="pmN"><b>'+esc(String(m))+'</b><i>'+esc(t("pm_months"))+'</i></span>';}
+/* Paket belgisi: admin qo'ygan premium emoji/rasm; bo'lmasa 3/6/12 uchun tayyor belgi (assets/pm-N.png), boshqasiga oy soni */
+function pmHasDefIcon(m){return m===3||m===6||m===12;}
+function pmIconHTML(tile,m){
+  tile=tile||{};m=Number(m)||0;
+  if(tile.video||tile.lottie||tile.img||tile.emoji)return tileIconHTML(tile,"");
+  return pmHasDefIcon(m)?'<img src="/assets/pm-'+m+'.png" alt="" style="width:100%;height:100%;object-fit:contain">':pmBadgeHTML(m);
+}
 function pmAdmHTML(){
   var st=pmAdmState(),ms=pmAdmMonths(),h='<div class="prd-sect" style="padding:14px 2px 6px">Paketlar — narx qo\'ying</div><div class="pma">';
   ms.forEach(function(m){
     var it=pmAdmItem(m),tile=st.tiles[m]||(it&&it.tile)||{},pr=st.prices.hasOwnProperty(m)?st.prices[m]:(it&&Number(it.price)>0?String(it.price):"");
     var ok=pmOkMonths(m),on=ok&&it&&it.active!==false&&Number(it.price)>0,custom=!!(tile.video||tile.lottie||tile.img||tile.emoji);
-    h+='<div class="pma-r"><span class="pma-ic'+(custom?" has":"")+'">'+tileIconHTML(tile,pmBadgeHTML(m))+'</span>'
+    h+='<div class="pma-r"><span class="pma-ic'+(custom||pmHasDefIcon(m)?" has":"")+'">'+pmIconHTML(tile,m)+'</span>'
       +'<span class="pma-n"><b>'+m+' oy</b><small class="'+(on?"ok":"")+'">'+(!ok?"fragment-api.uz hozircha bermaydi — do'konda ko'rinmaydi":on?"Do'konda":(it?"Yashirin":"Narx qo'yilmagan"))+'</small></span>'
       +'<span class="pma-p"><input inputmode="numeric" data-pmp="'+m+'" value="'+esc(pr)+'" placeholder="Narx" aria-label="'+m+' oy narxi, so\'m"><i>so\'m</i></span>'
       +'<button class="pma-e'+(custom?" on":"")+'" type="button" data-pa="pmemoji" data-id="'+m+'" aria-label="Premium emoji">✨</button></div>'
@@ -9849,7 +9856,7 @@ function pmAdmHTML(){
     h+='<div class="pma-add">'+[1,2,3,4,5,6,7,8,9,10,11,12].map(function(m){return '<button type="button" data-pa="pmaddm" data-id="'+m+'"'+(used[m]?" disabled":"")+'>'+m+' oy</button>';}).join("")+'</div>';
   }
   h+='<div class="minnote" style="margin-top:8px">fragment-api.uz hozir faqat 3, 6 va 12 oylik Premium beradi. Boshqa muddatni qo\'shib narx qo\'ysangiz saqlanadi, lekin do\'konda ko\'rinmaydi — fragment-api.uz qo\'shganda yoqiladi.</div>'
-    +'<div class="minnote">✨ — paketga Telegram premium emoji qo\'yish (Telegram Desktop\'da emoji ustida «Copy Emoji ID»). fragment-api.uz emoji bermaydi; qo\'yilmasa, oy soni yozilgan belgi chiqadi.</div>'
+    +'<div class="minnote">✨ — paketga o\'zingizning Telegram premium emojingizni qo\'yish (ID bo\'yicha). Qo\'yilmasa, 3/6/12 oy uchun tayyor belgi chiqadi.</div>'
     +'<div class="arow" style="margin-top:10px"><button class="btn sm" type="button" data-pa="pmsave">Saqlash</button><button class="btn sm gray" type="button" data-pa="pmadd">'+ic("plus",14)+' Oy qo\'shish</button></div>'
     +'<div class="arow" style="margin-top:8px"><button class="btn sm gray" type="button" data-pa="pmcheck">🔎 fragment-api.uz\'dan tekshirish (narx va emoji)</button></div>'
     +pmCheckHTML(st.check);
