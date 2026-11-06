@@ -175,6 +175,15 @@ Full docs are public at `lis-skins.stoplight.io` (Stoplight project id 288247; n
 ### Design reference
 The user likes skinsavdo.uz (an Uzbek CS2 skins market). Take ideas only, not their branding, yellow `#fbd506` (or any yellow/amber accent), logo or text. Owner rule (v3.17): «hamma joyda bizning brend, faqat ularning ko'rinishi».
 
+### Brand (logo) — use these everywhere (owner rule, v3.52)
+The owner's current logo is the chrome «VERION SHOP» wordmark with a blue lightning V. Use only these files for anything new (site, app, videos, posts, covers):
+- `assets/brand-verion-shop.png` — wordmark, transparent, 1116×299 (ratio ≈3.73). Default logo for headers, footers and videos.
+- `assets/brand-verion-logo.png` — square: blue V above the wordmark, transparent, 580×486.
+- `assets/brand-verion-skins.png` — «VERION SKINS» wordmark for the skins store (same as inline `SK_LOGO`).
+- `assets/brand-verion-square.jpg` — square logo on black (avatars, social posts).
+- Icons: `icon-32.png` (V only), `icon-180.png`, `icon-512.png` (square logo).
+The old flat `logo.svg` is deleted; never bring it back or redraw the logo. `/assets/` serves flat names only (no subfolders), so keep brand files flat with the `brand-` prefix. Video scenes (scratchpad `vid/web/stage.html`) use the same wordmark.
+
 ## Deploy
 
 - Railway auto-deploys `main`.
