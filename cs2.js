@@ -32,8 +32,10 @@ const GAMES = {
 };
 const GAME_KEYS = Object.keys(GAMES);
 const SNIPERS = ["AWP", "SSG 08", "SCAR-20", "G3SG1"];
+const MGUNS = ["M249", "Negev"];   // og'ir qurollar: pulemyotlar, qolgani — drobovik
+const heavyKey = w => MGUNS.indexOf(w) !== -1 ? "mg" : "shotgun";
 const CATS = {
-  cs2: [["knife", "Pichoqlar"], ["gloves", "Qo'lqoplar"], ["rifle", "Avtomatlar"], ["sniper", "Snayperlar"], ["pistol", "To'pponchalar"], ["smg", "PP"], ["heavy", "Og'ir qurollar"]],
+  cs2: [["knife", "Pichoqlar"], ["pistol", "To'pponchalar"], ["rifle", "Avtomatlar"], ["sniper", "Snayperlar"], ["smg", "PP"], ["shotgun", "Drobovik"], ["mg", "Pulemyot"], ["gloves", "Qo'lqoplar"]],
   dota2: [["wearable", "Kiyimlar"], ["courier", "Kuryerlar"], ["ward", "Wardlar"], ["treasure", "Sandiqlar"], ["bundle", "To'plamlar"], ["taunt", "Taunt"], ["other", "Boshqa"]],
   rust: [["weapon", "Qurollar"], ["tool", "Asboblar"], ["clothing", "Kiyimlar"], ["deploy", "Jihozlar"], ["other", "Boshqa"]]
 };
@@ -141,7 +143,7 @@ module.exports = function (ctx) {
     if (c === "Rifles") return SNIPERS.indexOf(w) !== -1 ? "sniper" : "rifle";
     if (c === "Pistols") return "pistol";
     if (c === "SMGs") return "smg";
-    if (c === "Heavy") return "heavy";
+    if (c === "Heavy") return heavyKey(w);
     return "other";
   }
   // CS2: bitta skin (masalan "AK-47 | Redline") — barcha eskirganlik darajalari, StatTrak™ va Souvenir variantlari bir guruhda.
@@ -153,6 +155,7 @@ module.exports = function (ctx) {
     const C = cat(g); C.list = []; C.BY_NAME = new Map(); const m = new Map();
     for (const e of list) {
       if (C.BY_NAME.has(e.n)) continue;   // Doppler fazalari bir xil nom bilan keladi
+      if (e.c === "heavy") e.c = heavyKey(e.w);   // diskdagi eski katalog: «Og'ir» → drobovik / pulemyot
       C.BY_NAME.set(e.n, e); C.list.push(e);
       const b = baseOf(e.n, g);
       let G = m.get(b);
@@ -303,7 +306,7 @@ module.exports = function (ctx) {
   }
   setTimeout(() => { if (Date.now() - BASE.ts > 7 * 86400e3) loadBase(); }, 6000).unref();
   { const t = setInterval(() => { if (Date.now() - BASE.ts > 7 * 86400e3) loadBase(); }, 12 * 3600e3); if (t.unref) t.unref(); }
-  const CAT_REP = { knife: "Karambit", gloves: "Sport Gloves", rifle: "AK-47", sniper: "AWP", pistol: "Desert Eagle", smg: "P90", heavy: "Nova" };
+  const CAT_REP = { knife: "Karambit", gloves: "Sport Gloves", rifle: "AK-47", sniper: "AWP", pistol: "Desert Eagle", smg: "P90", shotgun: "Nova", mg: "M249" };
   const CI_C = {};
   function catImgs(g) {
     const C = cat(g), k = C.TS + "|" + BASE.ts + "|" + C.GROUPS.length;
@@ -443,7 +446,7 @@ module.exports = function (ctx) {
   function fromOf(G, f, g) {
     const c = cfg(), C = cat(g), P = pr(g).map; let best = null, cnt = 0;
     for (const n of G.v) {
-      if (f && f.wear.length && f.wear.indexOf((C.BY_NAME.get(n) || {}).wr) === -1) continue;
+      if (f && f.wear.length && f.wear.indexOf((C.BY_NAME.get(n) || {}).wr || "NP") === -1) continue;   // NP — bo'yalmagan (vanilla)
       if (f && f.types.length) {   // st — StatTrak™, sv — Souvenir, plain — oddiy
         const t = n.indexOf("StatTrak™") !== -1 ? "st" : /^Souvenir /.test(n) ? "sv" : "plain";
         if (f.types.indexOf(t) === -1) continue;
@@ -1036,7 +1039,7 @@ module.exports = function (ctx) {
     tradeBan: acc.steam.tradeBan && acc.steam.tradeBan !== "None" ? acc.steam.tradeBan : "", vac: !!acc.steam.vac } : null;
 
   /* ---------- HTTP ---------- */
-  const WEAR_KEYS = ["FN", "MW", "FT", "WW", "BS"];
+  const WEAR_KEYS = ["FN", "MW", "FT", "WW", "BS", "NP"];
   let RECENT = {}, DONE_C = { ts: 0, n: 0 };
   // Yetkazilgan skin buyurtmalari soni (ishonch uchun), 1 daqiqa keshlanadi
   const DONE_N = () => { if (Date.now() - DONE_C.ts > 60000) { let n = 0; for (const o of DBx().orders) if (o.cs2 && o.status === "done") n++; DONE_C = { ts: Date.now(), n }; } return DONE_C.n; };
@@ -1130,6 +1133,7 @@ module.exports = function (ctx) {
         if (sort === "rare") rows.sort((a, b) => (RARITY_RANK[a.G.r] ?? 9) - (RARITY_RANK[b.G.r] ?? 9) || b.f.usd - a.f.usd);
         else if (sort === "cheap") rows.sort((a, b) => a.f.usd - b.f.usd);
         else if (sort === "expensive") rows.sort((a, b) => b.f.usd - a.f.usd);
+        else if (sort === "name") rows.sort((a, b) => a.G.b.replace(/^★\s*/, "").localeCompare(b.G.b.replace(/^★\s*/, "")) || a.f.usd - b.f.usd);
         // Ommabop: bozorda ko'p sotiladigan (taklif soni) va noyobroq skinlar oldinda
         else rows.sort((a, b) => b.f.cnt * (7 - (RARITY_RANK[b.G.r] ?? 6)) - a.f.cnt * (7 - (RARITY_RANK[a.G.r] ?? 6)) || a.G.b.localeCompare(b.G.b));
         const slice = rows.slice(page * PER, page * PER + PER);
