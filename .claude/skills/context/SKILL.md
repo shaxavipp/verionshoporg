@@ -62,6 +62,10 @@ Modules receive a `ctx` from `server.js` and expose `handle(req, res, url, m, q)
 
 On every user-visible release, bump both `BUILD` (in `server.js`) and `CLIENT_BUILD` (in `verion-shop.html`) to the same value, formatted `YYYY-MM-DD.N`.
 
+### In-place checkout (v3.59)
+- Every "not enough balance" path calls `openNeedBalance(price, retry)`. It never navigates away: it creates the top-up in an overlay (`#nbOv`), shows exact amount + card + timer + «To'lov qildim», polls `/api/me` every 3.5 s and, when the payment is `done` or the balance covers the price, runs `retry` (or re-clicks the last clicked buy button via `NB_LAST` / `nbAutoRetry`). New purchase flows should pass an explicit `retry` when the buy button is re-rendered with a different id or needs local state refreshed first.
+- Owner rule: money is never refunded to a card. Failed or cancelled purchases refund to the in-app balance only.
+
 ### Money-flow invariants (keep these in every new product)
 
 1. **Reserve first, then call out.** Deduct the balance and create the order (`status: "pending"`) before calling the supplier. Use the order id as the supplier's idempotency key (`custom_id`) so a retry can never buy twice.

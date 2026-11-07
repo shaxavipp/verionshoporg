@@ -2879,6 +2879,34 @@ body.sinb-open{overflow:hidden}
 .nbov-sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:var(--r-sheet) var(--r-sheet) 0 0;border-top:1px solid var(--line);padding:10px 16px calc(22px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .38s var(--ease);box-shadow:var(--shadow-pop)}
 .nbov.on .nbov-sheet{transform:translateY(0)}
 .nbov-sheet .grab{margin:0 auto 4px}
+/* v3.59 — shu joyda to'lov */
+.nbov-sheet.nbc{max-height:92vh;overflow-y:auto;overscroll-behavior:contain}
+.nbc .nbIc.nbAcc{background:rgba(47,143,255,.14);color:var(--acc)}
+.nbc .nbIc.nbGood{background:rgba(34,197,94,.14);color:var(--ok)}
+.nbc .nbTbl .r.acc span,.nbc .nbTbl .r.acc b{color:var(--acc)}
+.nbc .nbTbl .r.acc b{font-size:var(--fs-lg);font-weight:750}
+.nbM{display:flex;gap:10px;margin-top:12px}
+.nbMb{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--card2);color:var(--txt);font-weight:650;font-size:var(--fs-sm);transition:border-color .15s,background .15s}
+.nbMb .lg{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:46px;height:30px;border-radius:8px;background:#fff;overflow:hidden}
+.nbMb .lg img{max-width:100%;max-height:100%;object-fit:contain}
+.nbMb.on{border-color:var(--acc);background:rgba(47,143,255,.1)}
+.nbNote{display:flex;align-items:flex-start;justify-content:center;gap:7px;margin-top:12px;font-size:var(--fs-xs);color:var(--mut);line-height:1.45;text-align:left}
+.nbNote svg{flex:0 0 auto;margin-top:2px}
+.nbErr{color:var(--err);margin-top:10px}
+.nbc .nbT.sm{font-size:var(--fs-lg);margin-top:4px}
+.nbAmt{margin-top:12px;padding:14px;border-radius:var(--r-lg);background:var(--card2);border:1px solid var(--line)}
+.nbAmt small{display:block;font-size:var(--fs-xs);color:var(--mut)}
+.nbAmt>div{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px}
+.nbc .nbCard{margin:10px 0 0;text-align:left}
+.nbTimer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:var(--fs-sm);color:var(--mut)}
+.nbTimer span{display:flex;align-items:center;gap:6px}
+.nbTimer b{font-variant-numeric:tabular-nums;color:var(--txt)}.nbTimer b.urgent{color:var(--err)}
+.nbc #nbPaid{width:100%;margin-top:14px}
+.nbc .nbAbort{display:block;margin:12px auto 0;color:var(--mut);font-size:var(--fs-sm)}
+.nbc .nbWide{width:100%;margin-top:16px}
+.nbSpin{width:56px;height:56px;margin:14px auto 16px;border-radius:50%;border:4px solid var(--card2);border-top-color:var(--acc);animation:nbspin .9s linear infinite}
+@keyframes nbspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.nbSpin{animation-duration:2.4s}}
 
 
 
@@ -2970,7 +2998,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-07.1";
+var CLIENT_BUILD="2026-11-07.2";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -3110,7 +3138,7 @@ en:{
   a_publish:"Publish — show to everyone",a_publish_hint:"Sends the current catalog to the server: every customer sees it immediately.",
   a_publish_ok:"Published — visible to everyone ✓",a_publish_err:"Publish failed — open via Telegram / check server",
   bal_title:"Balance",bal_topup:"Top up",bal_support:"Support",
-  pm_mo:"mo",back_btn:"Back",nb_title:"Insufficient balance",nb_sub:"Your balance is not enough to buy this product. Top up your balance first.",nb_price:"Product price",nb_short:"Short by",nb_close:"Close",nb_topup:"Top up balance",pm_sub:"Official subscription · activated by username",pm_change:"Change",pm_months:"months",pm_already:"This user already has Telegram Premium. It cannot be bought again.",pm_already_short:"Premium is already active for this user",
+  pm_mo:"mo",back_btn:"Back",nb_title:"Insufficient balance",nb_sub:"Your balance is not enough to buy this product. Top up your balance first.",nb_price:"Product price",nb_short:"Short by",nbc_title:"Pay for the purchase",nbc_sub:"Your balance is short. Pay the rest by card — the purchase continues by itself once the payment is confirmed.",nbc_topay:"To pay",nbc_method:"Payment method",nbc_go:"Pay",nbc_note:"The money goes to your balance. If the purchase fails, it stays on your balance.",nbc_send:"Transfer to the card",nbc_exact:"Transfer exactly this amount",nbc_auto:"Once the payment is confirmed, the purchase continues by itself",nbc_check:"Checking the payment…",nbc_check_sub:"Usually 1–2 minutes. Keep this window open — the purchase continues by itself.",nbc_done:"Balance topped up",nbc_cont:"Continuing the purchase…",nbc_press:"Balance topped up — tap the buy button again",nbc_fail:"Payment not confirmed",nbc_fail_sub:"If you transferred money, contact support — we will check and credit your balance.",nbc_exp:"Payment time is over",nbc_retry:"Try again",nbc_saved:"The payment window is saved in «Top up»",nbc_later:"The payment is being checked. Continue the purchase once your balance is topped up.",nb_close:"Close",nb_topup:"Top up balance",pm_sub:"Official subscription · activated by username",pm_change:"Change",pm_months:"months",pm_already:"This user already has Telegram Premium. It cannot be bought again.",pm_already_short:"Premium is already active for this user",
   buy_confirm:"Confirm purchase",pay_from_balance:"Pay from balance",after_left:"Balance after",
   need_more:"Not enough balance — top up first",bought_ok:"Purchased! Delivery started — see Orders.",
   pw_exact:"Transfer EXACTLY this amount",pw_timer_hint:"Pay before the time runs out",pw_rule1:"Do not change the amount even by 1 sum",
@@ -3209,7 +3237,7 @@ uz:{
   a_publish:"Nashr qilish — hammaga ko'rsatish",a_publish_hint:"Joriy katalogni serverga yuboradi: barcha mijozlar darhol ko'radi.",
   a_publish_ok:"Nashr qilindi — hammaga ko'rinadi ✓",a_publish_err:"Nashr bo'lmadi — Telegram orqali oching / serverni tekshiring",
   bal_title:"Balans",bal_topup:"To'ldirish",bal_support:"Qo'llab-quvvatlash",
-  pm_mo:"oy",back_btn:"Orqaga",nb_title:"Balans yetarli emas",nb_sub:"Bu mahsulotni olish uchun balansingiz yetarli emas. Avval balansni to'ldiring.",nb_price:"Mahsulot narxi",nb_short:"Yetishmaydi",nb_close:"Yopish",nb_topup:"Balansni to'ldirish",pm_sub:"Rasmiy obuna · username orqali yoqiladi",pm_change:"O'zgartirish",pm_months:"oylik",pm_already:"Bu foydalanuvchida allaqachon Telegram Premium mavjud. Qayta sotib olish mumkin emas.",pm_already_short:"Bu foydalanuvchida Premium allaqachon bor",
+  pm_mo:"oy",back_btn:"Orqaga",nb_title:"Balans yetarli emas",nb_sub:"Bu mahsulotni olish uchun balansingiz yetarli emas. Avval balansni to'ldiring.",nb_price:"Mahsulot narxi",nb_short:"Yetishmaydi",nbc_title:"Xaridni to'lash",nbc_sub:"Balansingiz yetmaydi. Qolganini kartadan to'lang — to'lov tasdiqlangach xarid o'zi davom etadi.",nbc_topay:"To'lanadi",nbc_method:"To'lov usuli",nbc_go:"To'lash",nbc_note:"Pul balansingizga tushadi. Xarid amalga oshmasa ham, pul balansda qoladi.",nbc_send:"Kartaga o'tkazing",nbc_exact:"Aynan shu summani o'tkazing",nbc_auto:"To'lov tasdiqlangach xarid o'zi davom etadi",nbc_check:"To'lov tekshirilmoqda…",nbc_check_sub:"Odatda 1–2 daqiqa. Oynani yopmang — xarid o'zi davom etadi.",nbc_done:"Balans to'ldirildi",nbc_cont:"Xarid davom etmoqda…",nbc_press:"Balans to'ldirildi — endi xarid tugmasini qayta bosing",nbc_fail:"To'lov tasdiqlanmadi",nbc_fail_sub:"Pul o'tkazgan bo'lsangiz, qo'llab-quvvatlashga yozing — tekshirib, balansingizga tushiramiz.",nbc_exp:"To'lov vaqti tugadi",nbc_retry:"Qayta urinish",nbc_saved:"To'lov oynasi «To'ldirish» bo'limida saqlandi",nbc_later:"To'lov tekshirilmoqda. Balans to'lgach, xaridni davom ettiring.",nb_close:"Yopish",nb_topup:"Balansni to'ldirish",pm_sub:"Rasmiy obuna · username orqali yoqiladi",pm_change:"O'zgartirish",pm_months:"oylik",pm_already:"Bu foydalanuvchida allaqachon Telegram Premium mavjud. Qayta sotib olish mumkin emas.",pm_already_short:"Bu foydalanuvchida Premium allaqachon bor",
   buy_confirm:"Xaridni tasdiqlang",pay_from_balance:"Balansdan to'lash",after_left:"Qolgan balans",
   need_more:"Balans yetarli emas — avval to'ldiring",bought_ok:"Sotib olindi! Yetkazish boshlandi — Buyurtmalarda.",
   pw_exact:"AYNAN shu summani o'tkazing",pw_timer_hint:"Shu vaqt tugaguncha to'lovni amalga oshiring",pw_rule1:"Summani 1 so'mga ham o'zgartirmang",
@@ -3308,7 +3336,7 @@ ru:{
   a_publish:"Опубликовать — показать всем",a_publish_hint:"Отправляет текущий каталог на сервер: все клиенты увидят его сразу.",
   a_publish_ok:"Опубликовано — видно всем ✓",a_publish_err:"Не удалось — откройте через Telegram / проверьте сервер",
   bal_title:"Баланс",bal_topup:"Пополнить",bal_support:"Поддержка",
-  pm_mo:"мес",back_btn:"Назад",nb_title:"Недостаточно средств",nb_sub:"Для покупки не хватает средств на балансе. Сначала пополните баланс.",nb_price:"Цена товара",nb_short:"Не хватает",nb_close:"Закрыть",nb_topup:"Пополнить баланс",pm_sub:"Официальная подписка · активация по username",pm_change:"Изменить",pm_months:"мес.",pm_already:"У этого пользователя уже есть Telegram Premium. Купить повторно нельзя.",pm_already_short:"У пользователя уже есть Premium",
+  pm_mo:"мес",back_btn:"Назад",nb_title:"Недостаточно средств",nb_sub:"Для покупки не хватает средств на балансе. Сначала пополните баланс.",nb_price:"Цена товара",nb_short:"Не хватает",nbc_title:"Оплата покупки",nbc_sub:"Баланса не хватает. Доплатите картой — после подтверждения оплаты покупка продолжится сама.",nbc_topay:"К оплате",nbc_method:"Способ оплаты",nbc_go:"Оплатить",nbc_note:"Деньги зачисляются на баланс. Если покупка не состоится, они останутся на балансе.",nbc_send:"Переведите на карту",nbc_exact:"Переведите ровно эту сумму",nbc_auto:"После подтверждения оплаты покупка продолжится сама",nbc_check:"Проверяем оплату…",nbc_check_sub:"Обычно 1–2 минуты. Не закрывайте окно — покупка продолжится сама.",nbc_done:"Баланс пополнен",nbc_cont:"Продолжаем покупку…",nbc_press:"Баланс пополнен — снова нажмите кнопку покупки",nbc_fail:"Оплата не подтверждена",nbc_fail_sub:"Если вы перевели деньги, напишите в поддержку — проверим и зачислим на баланс.",nbc_exp:"Время оплаты истекло",nbc_retry:"Попробовать снова",nbc_saved:"Окно оплаты сохранено в разделе «Пополнение»",nbc_later:"Оплата проверяется. Когда баланс пополнится, продолжите покупку.",nb_close:"Закрыть",nb_topup:"Пополнить баланс",pm_sub:"Официальная подписка · активация по username",pm_change:"Изменить",pm_months:"мес.",pm_already:"У этого пользователя уже есть Telegram Premium. Купить повторно нельзя.",pm_already_short:"У пользователя уже есть Premium",
   buy_confirm:"Подтвердите покупку",pay_from_balance:"Оплатить с баланса",after_left:"Останется",
   need_more:"Недостаточно средств — пополните баланс",bought_ok:"Куплено! Доставка началась — см. Заказы.",
   pw_exact:"Переведите РОВНО эту сумму",pw_timer_hint:"Оплатите до истечения времени",pw_rule1:"Не меняйте сумму даже на 1 сум",
@@ -4926,8 +4954,8 @@ function openGameBuy(g,p){
     if(cl)cl.addEventListener("click",closeSheet);
     var tp=root.querySelector("#gTop");
     if(tp)tp.addEventListener("click",function(){
-      S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil((total()-(bal||0))/1000)*1000);
-      closeSheet();go("pay");
+      // shu joyda to'lov: to'lov tasdiqlangach shu varaq yangilanadi va «To'lash» o'zi bosiladi
+      openNeedBalance(total(),function(){bal=ME.balance;draw();var b=root.querySelector("#gPay");if(b)b.click();});
     });
     root.querySelector("#gPromoBtn").addEventListener("click",function(){
       var code=(root.querySelector("#gPromo").value||"").trim().toUpperCase();
@@ -5305,30 +5333,154 @@ function openProduct(id){
   if(btn&&!out&&!guest)btn.addEventListener("click",function(){openBuyConfirm(it,qty);});
 }
 
-/* ===== "Balans yetarli emas" oynasi — narx / balans / yetishmaydi + pastda «Hisobni to'ldirish» tugmasi ===== */
-function openNeedBalance(price){
+/* ===== Shu joyda to'lov (v3.59): balans yetmasa mijoz mahsulotdan chiqmaydi — shu oynaning o'zida
+   kerakli summa, karta raqami va taymer chiqadi. To'lov tasdiqlangach (bank SMS orqali avtomatik) xarid
+   tugmasi o'zi qayta bosiladi va xarid davom etadi. Pul faqat balansga tushadi; kartaga qaytarish yo'q.
+   retry — xaridni davom ettiruvchi funksiya; berilmasa oxirgi bosilgan xarid tugmasi qayta bosiladi. ===== */
+var NB_LAST=null;
+document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e.target.closest("button"):null;
+  if(b&&!b.closest("#nbOv"))NB_LAST={el:b,id:b.id||"",skm:b.getAttribute("data-skm")||"",t:Date.now()};},true);
+function nbAutoRetry(){
+  var L=NB_LAST;if(!L||Date.now()-L.t>120000)return null;
+  var sel=L.id?"#"+(window.CSS&&CSS.escape?CSS.escape(L.id):L.id):(L.skm?'[data-skm="'+L.skm+'"]':"");
+  return function(){var b=null;try{b=sel?document.querySelector(sel):null;}catch(e){}
+    if(!b&&L.el&&L.el.isConnected)b=L.el;
+    if(b&&!b.disabled&&b.getClientRects().length){b.click();return true;}return false;};
+}
+function openNeedBalance(price,retry){
   price=Math.round(Number(price)||0);
-  var bal=Math.round(Number(ME&&ME.balance)||0),need=Math.max(0,price-bal);
-  var oldOv=document.getElementById("nbOv");if(oldOv)oldOv.remove();
+  if(typeof retry!=="function")retry=nbAutoRetry();
+  var cards=CARDS.filter(function(c){return c.enabled&&c.number;});
+  var st={step:"pick",method:(cards.filter(function(c){return c.id===S.topup.method;})[0]||cards[0]||{}).id,pay:null,poll:0,tick:0,busy:false,err:false};
+  var old=document.getElementById("nbOv");if(old){if(old._nbStop)old._nbStop();old.remove();}
   var ov=document.createElement("div");ov.id="nbOv";ov.className="nbov";
-  ov.innerHTML='<div class="nbov-dim"></div><div class="nbov-sheet" role="dialog" aria-modal="true" aria-label="'+esc(t("nb_title"))+'"><div class="grab"></div>'
-    +'<div class="nbWrap"><div class="nbIc">'+ic("wallet",38)+'</div>'
-    +'<div class="nbT">'+esc(t("nb_title"))+'</div>'
-    +'<div class="nbS">'+esc(t("nb_sub"))+'</div>'
-    +'<div class="nbTbl"><div class="r"><span>'+esc(t("nb_price"))+'</span><b>'+esc(money(price))+'</b></div>'
-    +'<div class="r"><span>'+esc(t("bal_title"))+'</span><b>'+esc(money(bal))+'</b></div>'
-    +'<div class="r bad"><span>'+esc(t("nb_short"))+'</span><b>'+esc(money(need))+'</b></div></div>'
-    +'<div class="nbBtns"><button class="btn gray big" id="nbClose" type="button">'+esc(t("nb_close"))+'</button>'
-    +'<button class="btn big" id="nbTop" type="button">'+ic("plus",16)+' '+esc(t("nb_topup"))+'</button></div></div></div>';
+  ov.innerHTML='<div class="nbov-dim"></div><div class="nbov-sheet nbc" role="dialog" aria-modal="true" aria-label="'+esc(t("nbc_title"))+'"><div class="grab"></div><div class="nbWrap" id="nbBody" aria-live="polite"></div></div>';
   document.body.appendChild(ov);
+  var body=ov.querySelector("#nbBody");
+  function bal(){return Math.round(Number(ME&&ME.balance)||0);}
+  function need(){return Math.max(0,price-bal());}
+  function amount(){return Math.max(MIN_AMOUNT,Math.ceil(need()/1000)*1000);}
+  function stop(){clearInterval(st.poll);clearInterval(st.tick);st.poll=0;st.tick=0;}
+  ov._nbStop=stop;
+  function shut(silent){
+    stop();
+    if(!silent){if(st.step==="pay")toast(t("nbc_saved"));else if(st.step==="check")toast(t("nbc_later"));}
+    ov.classList.remove("on");setTimeout(function(){ov.remove();},300);
+  }
+  function success(){
+    if(st.step==="done")return;
+    stop();st.step="done";S.activePay=null;persist();draw();haptic("ok");
+    setTimeout(function(){
+      shut(true);
+      var ok=false;try{ok=retry?retry()!==false:false;}catch(e){}
+      if(!ok)toast(t("nbc_press"));
+    },retry?900:1300);
+  }
+  function startPoll(){
+    if(st.poll)return;
+    st.poll=setInterval(function(){
+      loadMe(function(){
+        if(!document.body.contains(ov)){stop();return;}
+        if(st.step!=="pay"&&st.step!=="check")return;
+        // 20 daqiqadan ortiq tekshiruv — oyna yopiladi (to'lov serverda davom etadi, balans to'lgach mijoz xaridni o'zi davom ettiradi)
+        if(st.step==="check"&&st.checkTs&&Date.now()-st.checkTs>20*60e3){shut();return;}
+        var p=st.pay&&(ME.payments||[]).filter(function(x){return x.id===st.pay.id;})[0];
+        if((p&&p.status==="done")||bal()>=price){success();return;}
+        if(p&&p.status==="cancelled"){stop();S.activePay=null;persist();st.step=st.step==="pay"&&Date.now()>=st.pay.expiresAt?"exp":"fail";draw();}
+      });
+    },3500);
+  }
+  function tick(){
+    clearInterval(st.tick);
+    var upd=function(){
+      if(st.step!=="pay"||!st.pay){clearInterval(st.tick);return;}
+      var left=Math.floor((st.pay.expiresAt-Date.now())/1000);
+      if(left<=0){stop();S.activePay=null;persist();st.step="exp";draw();return;}
+      var el=body.querySelector("#nbTm"),bar=body.querySelector("#nbTb");
+      if(el){el.textContent=("0"+Math.floor(left/60)).slice(-2)+":"+("0"+(left%60)).slice(-2);el.classList.toggle("urgent",left<=60);}
+      if(bar){bar.style.width=Math.max(0,Math.min(100,left/420*100))+"%";bar.classList.toggle("urgent",left<=60);}
+    };
+    upd();st.tick=setInterval(upd,1000);
+  }
+  function create(){
+    if(st.busy)return;
+    if(need()<=0){success();return;}
+    st.busy=true;st.err=false;draw();
+    api("/api/topup","POST",{amount:amount(),method:st.method}).then(function(r){
+      st.busy=false;
+      st.pay={id:r.payment.id,pay:r.payment.pay,amount:r.payment.amount,method:r.payment.method,expiresAt:r.expiresAt};
+      S.activePay=st.pay;MARKPAID_ERR=false;persist();
+      st.step="pay";haptic("ok");draw();startPoll();
+    }).catch(function(){st.busy=false;st.err=true;haptic();draw();});
+  }
+  function paid(){
+    if(st.busy||!st.pay)return;
+    st.busy=true;st.err=false;draw();
+    api("/api/paid","POST",{id:st.pay.id}).then(function(){
+      st.busy=false;S.activePay=null;persist();st.step="check";st.checkTs=Date.now();haptic("ok");draw();startPoll();
+    }).catch(function(e){
+      var c=e&&e.resp&&e.resp.error;st.busy=false;
+      if(c==="state"||c==="not found"){S.activePay=null;persist();st.step="check";st.checkTs=Date.now();draw();startPoll();return;}
+      st.err=true;haptic();draw();
+    });
+  }
+  function abort(){
+    var id=st.pay&&st.pay.id;stop();
+    if(id)api("/api/topup-cancel","POST",{id:id}).catch(function(){});
+    S.activePay=null;persist();st.pay=null;st.step="pick";st.err=false;draw();
+  }
+  function draw(){
+    var h="";
+    if(st.step==="pick"){
+      h='<div class="nbIc nbAcc">'+ic("wallet",36)+'</div><div class="nbT">'+esc(t("nbc_title"))+'</div>'
+        +'<div class="nbS">'+esc(t("nbc_sub"))+'</div>'
+        +'<div class="nbTbl"><div class="r"><span>'+esc(t("nb_price"))+'</span><b>'+esc(money(price))+'</b></div>'
+        +'<div class="r"><span>'+esc(t("bal_title"))+'</span><b>'+esc(money(bal()))+'</b></div>'
+        +'<div class="r acc"><span>'+esc(t("nbc_topay"))+'</span><b>'+esc(money(amount()))+'</b></div></div>'
+        +(cards.length>1?'<div class="nbM" role="radiogroup" aria-label="'+esc(t("nbc_method"))+'">'+cards.map(function(c){var on=c.id===st.method;
+          return '<button type="button" class="nbMb'+(on?' on':'')+'" data-nbm="'+esc(c.id)+'" role="radio" aria-checked="'+on+'"><span class="lg">'+(payLogoHTML(c)||esc(c.name))+'</span><span>'+esc(c.name)+'</span></button>';}).join("")+'</div>':'')
+        +'<div class="nbBtns"><button class="btn gray big" id="nbClose" type="button">'+esc(t("nb_close"))+'</button>'
+        +'<button class="btn big" id="nbGo" type="button"'+(st.busy||!cards.length?' disabled':'')+'>'+(st.busy?esc(t("processing")):esc(t("nbc_go"))+' — '+esc(money(amount())))+'</button></div>'
+        +(st.err?'<div class="paynote nbErr">'+ic("warning",13)+' '+esc(t("srv_off"))+'</div>':'')
+        +'<div class="nbNote">'+ic("info",13)+'<span>'+esc(t("nbc_note"))+'</span></div>';
+    }else if(st.step==="pay"){
+      var c=cards.filter(function(x){return x.id===st.pay.method;})[0]||{};
+      h='<div class="nbT sm">'+esc(t("nbc_send"))+'</div>'
+        +'<div class="nbAmt"><small>'+esc(t("nbc_exact"))+'</small><div><span class="payhuge" id="nbPay">'+esc(money(st.pay.pay))+'</span>'
+        +'<button class="btn sm gray" type="button" data-copy="'+esc(String(st.pay.pay))+'" aria-label="'+esc(t("copy"))+'">'+ic("clipboard",13)+'</button></div></div>'
+        +'<div class="cardbox nbCard"><div class="crow"><div><div class="cnum">'+esc(c.number||"")+'</div><div class="chold"><span class="bankpill">'+esc(c.name||"")+'</span>'+esc(c.holder||"")+'</div></div>'
+        +'<button class="cpy" type="button" data-copy="'+esc(String(c.number||"").replace(/\s/g,""))+'" aria-label="'+esc(t("copy"))+'">'+ic("clipboard",14)+'</button></div></div>'
+        +'<div class="nbTimer"><span>'+ic("clock",14)+' '+esc(t("pw_card_active"))+'</span><b id="nbTm">--:--</b></div><div class="timerbarwrap"><div class="timerbar" id="nbTb" style="width:100%"></div></div>'
+        +'<button class="btn big green" id="nbPaid" type="button"'+(st.busy?' disabled':'')+'>'+ic("check",15)+' '+esc(st.busy?t("processing"):t("pw_paid"))+'</button>'
+        +(st.err?'<div class="paynote nbErr">'+ic("warning",13)+' '+esc(t("srv_off"))+'</div>':'')
+        +'<div class="nbNote">'+ic("bolt",13)+'<span>'+esc(t("nbc_auto"))+'</span></div>'
+        +'<button class="linklike nbAbort" id="nbAbort" type="button">'+esc(t("pw_abort"))+'</button>';
+    }else if(st.step==="check"){
+      h='<div class="nbSpin" aria-hidden="true"></div><div class="nbT">'+esc(t("nbc_check"))+'</div><div class="nbS">'+esc(t("nbc_check_sub"))+'</div>'
+        +'<button class="btn gray big nbWide" id="nbClose" type="button">'+esc(t("nb_close"))+'</button>';
+    }else if(st.step==="done"){
+      h='<div class="nbIc nbGood">'+ic("check",38)+'</div><div class="nbT">'+esc(t("nbc_done"))+'</div><div class="nbS">'+esc(retry?t("nbc_cont"):t("nbc_press"))+'</div>';
+    }else{
+      h='<div class="nbIc">'+ic(st.step==="exp"?"clock":"warning",36)+'</div><div class="nbT">'+esc(t(st.step==="exp"?"nbc_exp":"nbc_fail"))+'</div>'
+        +'<div class="nbS">'+esc(t("nbc_fail_sub"))+'</div>'
+        +'<div class="nbBtns"><button class="btn gray big" id="nbSup" type="button">'+ic("headset",15)+' '+esc(t("support"))+'</button><button class="btn big" id="nbRetry" type="button">'+esc(t("nbc_retry"))+'</button></div>';
+    }
+    body.innerHTML=h;bind();if(st.step==="pay")tick();
+  }
+  function bind(){
+    var q=function(x){return body.querySelector(x);};
+    var cl=q("#nbClose");if(cl)cl.addEventListener("click",function(){haptic();shut();});
+    body.querySelectorAll("[data-nbm]").forEach(function(b){b.addEventListener("click",function(){haptic();st.method=b.getAttribute("data-nbm");draw();});});
+    var go=q("#nbGo");if(go)go.addEventListener("click",function(){haptic();create();});
+    var pd=q("#nbPaid");if(pd)pd.addEventListener("click",function(){haptic();paid();});
+    var ab=q("#nbAbort");if(ab)ab.addEventListener("click",function(){haptic();abort();});
+    var rt=q("#nbRetry");if(rt)rt.addEventListener("click",function(){haptic();st.step="pick";st.pay=null;st.err=false;draw();});
+    var sp=q("#nbSup");if(sp)sp.addEventListener("click",function(){openLink("https://t.me/"+SUPPORT_USERNAME);});
+    body.querySelectorAll("[data-copy]").forEach(function(b){b.addEventListener("click",function(){copyText(b.getAttribute("data-copy"));});});
+  }
+  ov.querySelector(".nbov-dim").addEventListener("click",function(){shut();});
+  draw();
   requestAnimationFrame(function(){ov.classList.add("on");});
-  function shut(){ov.classList.remove("on");setTimeout(function(){ov.remove();},300);}
-  ov.querySelector(".nbov-dim").addEventListener("click",shut);
-  ov.querySelector("#nbClose").addEventListener("click",shut);
-  ov.querySelector("#nbTop").addEventListener("click",function(){
-    S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
-    ov.remove();closeSheet(true);go("pay");
-  });
   haptic();
 }
 
@@ -5661,7 +5813,7 @@ function openBuyConfirm(it,qty){
   function bindActionButtons(){
     var b=sh.querySelector("#doBuy");
     if(b)b.addEventListener("click",function(){
-      if(!enough()){openNeedBalance(total());return;}
+      if(!enough()){openNeedBalance(total(),retryBuy);return;}
       b.disabled=true;b.textContent=t("processing");
       api("/api/buy","POST",{itemId:it.id,quantity:qty,promoCode:promo?promo.code:undefined}).then(function(r){
         ME.balance=r.balance;haptic("ok");closeSheet();
@@ -5672,7 +5824,7 @@ function openBuyConfirm(it,qty){
         });
       }).catch(function(e){
         var code=e.resp&&e.resp.error;
-        if(code==="balance"){bal=Math.max(0,total()-(e.resp.need||0));renderTotals();openNeedBalance(total());}
+        if(code==="balance"){bal=Math.max(0,total()-(e.resp.need||0));renderTotals();openNeedBalance(total(),retryBuy);}
         else if(code==="out_of_stock"){closeSheet();toast(t("out_stock"));render();}
         else if(code==="no_username"){closeSheet();toast(t("need_username"));}
         else if(code==="fragment_failed"){closeSheet();toast((e.resp.message)||t("fragment_err"));}
@@ -5688,12 +5840,10 @@ function openBuyConfirm(it,qty){
       });
     });
     var g=sh.querySelector("#goTopup");
-    if(g)g.addEventListener("click",function(){
-      var need=total()-(bal||0);
-      S.topup.amount=Math.max(MIN_AMOUNT,Math.ceil(need/1000)*1000);
-      closeSheet();go("pay");
-    });
+    if(g)g.addEventListener("click",function(){openNeedBalance(total(),retryBuy);});
   }
+  // shu joyda to'lov tasdiqlangach: balans yangilanadi va «Balansdan to'lash» o'zi bosiladi
+  function retryBuy(){bal=ME.balance;renderTotals();var b=sh.querySelector("#doBuy");if(b)b.click();}
   sh.querySelector("#promoApplyBtn").addEventListener("click",function(){
     var code=(sh.querySelector("#promoInput").value||"").trim().toUpperCase();
     if(!code)return;
@@ -12270,7 +12420,9 @@ function vnBuySheet(x){
     +'<button class="vn2-ghost" id="vnBuyNo">'+esc(_x("Bekor qilish"))+'</button></div>';
   var sh=openSheet(h);
   var no=sh.querySelector("#vnBuyNo");if(no)no.addEventListener("click",function(){haptic();closeSheet();});
-  var top=sh.querySelector("#vnBuyTop");if(top)top.addEventListener("click",function(){haptic();closeSheet(true);go("pay");});
+  var top=sh.querySelector("#vnBuyTop");if(top)top.addEventListener("click",function(){haptic();
+    // shu joyda to'lov: tasdiqlangach varaq yangi balans bilan qayta ochiladi va «To'lash» o'zi bosiladi
+    openNeedBalance(x.price,function(){closeSheet(true);setTimeout(function(){vnBuySheet(x);setTimeout(function(){var g=document.getElementById("vnBuyGo");if(g)g.click();},450);},380);});});
   var go2=sh.querySelector("#vnBuyGo");
   if(go2)go2.addEventListener("click",function(){
     var b=this;b.disabled=true;b.innerHTML='<span class="vn-spin" aria-hidden="true"></span> '+esc(_x("Raqam olinmoqda…"));haptic();
