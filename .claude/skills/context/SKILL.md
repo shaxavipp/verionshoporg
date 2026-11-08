@@ -62,6 +62,9 @@ Modules receive a `ctx` from `server.js` and expose `handle(req, res, url, m, q)
 
 On every user-visible release, bump both `BUILD` (in `server.js`) and `CLIENT_BUILD` (in `verion-shop.html`) to the same value, formatted `YYYY-MM-DD.N`.
 
+### Nakrutka types (v3.60)
+- Client groups SMM services as network → type → services. `nkTypeOf(svc)` classifies by regex rules in `NK_TYPE_RULES` (order matters); labels in `NK_TYPES` (uz/ru/en). Tiles use generated SVG art `nkTypeArt(app,type)`; admin overrides/hides per type with catMeta key `app::t:<type>` (legacy raw-category keys `app::<category>` are still honoured for hiding). Prices shown per 1000 = `rate × NkCache.usdRate`, same formula as the order form.
+
 ### In-place checkout (v3.59)
 - Every "not enough balance" path calls `openNeedBalance(price, retry)`. It never navigates away: it creates the top-up in an overlay (`#nbOv`), shows exact amount + card + timer + «To'lov qildim», polls `/api/me` every 3.5 s and, when the payment is `done` or the balance covers the price, runs `retry` (or re-clicks the last clicked buy button via `NB_LAST` / `nbAutoRetry`). New purchase flows should pass an explicit `retry` when the buy button is re-rendered with a different id or needs local state refreshed first.
 - Owner rule: money is never refunded to a card. Failed or cancelled purchases refund to the in-app balance only.
