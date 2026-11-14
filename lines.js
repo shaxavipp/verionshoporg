@@ -167,12 +167,65 @@ function g2List(j, keys) {
   return [];
 }
 const g2Img = x => S(x && (x.image_url || x.imageUrl || x.image || x.logo || x.icon || x.thumbnail || x.cover), 500);
+/* Sovg'a kartalari (Steam Wallet, PSN, iTunes ...): G2Bulk'da "toifa → mahsulot" ko'rinishida.
+   Bizda toifa = o'yin (kod "p:<toifa id>"), mahsulot = paket (sku "p:<mahsulot id>").
+   Mijoz hech narsa kiritmaydi — xariddan keyin kod beriladi. */
+const G2_PRODUCT_SKU = /^p:(\d{1,12})$/;
+// Bir buyurtma uchun doim bir xil kalit: qayta yuborilsa (30 daqiqa ichida) G2Bulk ikki marta yechmaydi.
+function g2Uuid(seed) {
+  const h = crypto.createHash("sha256").update(String(seed)).digest("hex");
+  return h.slice(0, 8) + "-" + h.slice(8, 12) + "-4" + h.slice(13, 16) + "-a" + h.slice(17, 20) + "-" + h.slice(20, 32);
+}
+const g2Codes = j => arr(j && (j.delivery_items || (j.data && j.data.delivery_items)))
+  .map(x => typeof x === "string" ? x : (x && (x.code || x.key || x.pin || x.serial || x.value)) || "")
+  .map(x => S(x, 300).trim()).filter(Boolean).slice(0, 20);
+const g2CodesMsg = (title, codes) => "🎁 " + S(title, 120) + "\n" + (codes.length > 1 ? "Kodlar:\n" : "Kod: ") + codes.join("\n");
+// PENDING sovg'a kartasi: kod tayyormi? null — hali tayyorlanmoqda (keyinroq yana so'raladi).
+async function g2Delivery(line, id, title) {
+  const r = await httpReq({ url: G2 + "orders/" + encodeURIComponent(id) + "/delivery", headers: g2Headers(line) });
+  if (r.status === 200 && r.json) {
+    const codes = g2Codes(r.json);
+    if (codes.length) return { state: "done", codes, message: g2CodesMsg(title, codes) };
+    return { state: "unknown", message: "G2Bulk buyurtmani bajardi, lekin kod qaytarmadi — saytdan tekshiring (buyurtma " + S(id, 40) + ")" };
+  }
+  if (r.status === 410) return { state: "failed", message: S((r.json && r.json.message) || "G2Bulk bekor qildi, pul G2Bulk balansiga qaytdi", 200) };
+  if (r.status === 403 && r.json) return { state: "unknown", message: S(r.json.message || "kod endi berilmaydi", 200) };
+  return null;
+}
+const g2Wait = ms => new Promise(r => setTimeout(r, ms));
+async function g2BuyProduct(line, o, pid) {
+  const h = Object.assign({ "X-Idempotency-Key": g2Uuid("verion:" + o.id + ":" + pid) }, g2Headers(line));
+  const r = await httpReq({ url: G2 + "products/" + encodeURIComponent(pid) + "/purchase", method: "POST",
+    json: { quantity: 1, description: S(o.id, 60) }, headers: h });
+  if (r.status === 401 || (r.status === 403 && !r.json)) return transportVerdict(r);
+  const j = r.json;
+  if (j && r.status >= 200 && r.status < 300 && j.success !== false) {
+    const id = S(j.order_id != null ? j.order_id : (j.data && j.data.order_id) || "", 60);
+    const ref = id ? "p:" + id : "";
+    const codes = g2Codes(j);
+    if (codes.length) return { state: "done", ref, codes, message: g2CodesMsg(o.item, codes) };
+    if (/^(FAILED|REFUNDED|CANCELLED)$/i.test(String(j.status || ""))) return { state: "failed", ref, message: S(j.message || j.status, 200) };
+    if (!id) return { state: "unknown", message: "G2Bulk buyurtma raqamini qaytarmadi — saytdan tekshiring" };
+    // Odatda kod bir necha soniyada tayyor bo'ladi — mijoz kutib qolmasin.
+    for (let i = 0; i < Number(process.env.G2_FAST_POLLS == null ? 4 : process.env.G2_FAST_POLLS); i++) {
+      await g2Wait(Number(process.env.G2_FAST_POLL_MS) || 3000);
+      const st = await g2Delivery(line, id, o.item).catch(() => null);
+      if (st) return Object.assign({ ref }, st);
+    }
+    return { state: "accepted", ref, message: "kod tayyorlanmoqda" };
+  }
+  if (j && r.status >= 400 && r.status < 500)
+    return { state: "failed", disableLine: r.status === 401, message: S(j.message || j.error || ("HTTP " + r.status), 200) };
+  return transportVerdict(r);
+}
 const g2bulk = {
   label: "G2Bulk",
   fields: [
     { key: "apiKey", label: "API key (G2Bulk Telegram botidan)", secret: true, required: true }
   ].concat(PRICE_FIELDS),
   async order(line, o, pkg, route, env) {
+    const pm = G2_PRODUCT_SKU.exec(String(route.sku || ""));
+    if (pm) return g2BuyProduct(line, o, pm[1]);
     const p = playerOf(o);
     const game = S(route.meta && route.meta.game, 60);
     if (!game) return { state: "failed", message: "paketga G2Bulk o'yin kodi biriktirilmagan (katalogdan import qiling)" };
@@ -195,19 +248,56 @@ const g2bulk = {
       return { state: "failed", disableLine: r.status === 401, message: S(r.json.message || r.json.error || ("HTTP " + r.status), 200) };
     return transportVerdict(r);
   },
+  // Buyurtma holati: o'yin to'ldirish — GET games/orders/{id}; sovg'a kartasi ("p:<id>") — orders/{id}/delivery.
+  async status(line, ref, o) {
+    ref = String(ref || "");
+    if (ref.indexOf("p:") === 0) return g2Delivery(line, ref.slice(2), o && o.item);
+    if (!ref) return null;
+    const r = await httpReq({ url: G2 + "games/orders/" + encodeURIComponent(ref), headers: g2Headers(line) });
+    if (r.status !== 200 || !r.json) return null;
+    const ord = (r.json.order && typeof r.json.order === "object") ? r.json.order : (r.json.data || r.json);
+    const st = String(ord.status || "").toUpperCase();
+    if (st === "COMPLETED" || st === "SUCCESS") return { state: "done", message: "" };
+    if (ord.is_refunded === true || /^(FAILED|REFUNDED|CANCELLED|CANCELED)$/.test(st)) return { state: "failed", message: S(ord.message || st, 200) };
+    return null;
+  },
+  // Kalitni haqiqatan tekshiradi (getMe) va hamyon balansini ko'rsatadi.
   async test(line) {
-    const r = await httpReq({ url: G2 + "games", headers: g2Headers(line) });
-    const list = g2List(r.json, ["games"]);
-    if (r.status === 200 && list.length) return { ok: true, message: "Sayt ochildi: " + list.length + " ta o'yin. Kalit birinchi buyurtmada tekshiriladi." };
+    const r = await httpReq({ url: G2 + "getMe", headers: g2Headers(line) });
+    if (r.status === 200 && r.json && r.json.success !== false)
+      return { ok: true, message: "Kalit to'g'ri. Balans: $" + num(r.json.balance).toFixed(2) };
+    if (r.status === 401) return { ok: false, message: "API key noto'g'ri (401)" };
+    if (r.status === 403) return { ok: false, message: "Ruxsat yo'q (403): kalitga server IP manzili qo'shilmagan bo'lishi mumkin" + (r.json && r.json.message ? " — " + S(r.json.message, 120) : "") };
     return { ok: false, message: transportVerdict(r).message };
   },
   async games(line) {
     const r = await httpReq({ url: G2 + "games", headers: g2Headers(line) });
     const list = g2List(r.json, ["games"]);
     if (!list.length) throw new Error(transportVerdict(r).message);
-    return list.map(x => ({ code: S(x.code || x.slug || x.id, 60), name: S(x.name || x.title, 80), img: g2Img(x) })).filter(x => x.code);
+    const out = list.map(x => ({ code: S(x.code || x.slug || x.id, 60), name: S(x.name || x.title, 80), img: g2Img(x) })).filter(x => x.code);
+    // Sovg'a kartalari toifalari (Steam, PSN, iTunes ...) — ro'yxat oxirida, "🎁" belgisi bilan.
+    try {
+      const c = await httpReq({ url: G2 + "category", headers: g2Headers(line) });
+      for (const x of g2List(c.json, ["categories"]))
+        if (x && x.id != null && !(Number(x.product_count) === 0)) out.push({ code: "p:" + S(x.id, 12), name: S(x.title || x.name, 80), img: g2Img(x), card: true });
+    } catch (e) {}
+    return out;
   },
   async packages(line, code) {
+    const cm = /^p:(\d{1,12})$/.exec(String(code || ""));
+    if (cm) {
+      const r = await httpReq({ url: G2 + "category/" + cm[1], headers: g2Headers(line) });
+      const list = g2List(r.json, ["products"]);
+      if (r.status !== 200 && !list.length) throw new Error(r.status === 404 ? "toifa topilmadi" : transportVerdict(r).message);
+      let cat = {};
+      try { const c = await httpReq({ url: G2 + "category", headers: g2Headers(line) }); cat = g2List(c.json, ["categories"]).find(x => String(x.id) === cm[1]) || {}; } catch (e) {}
+      return {
+        name: S(cat.title || (list[0] || {}).category_title, 80), img: g2Img(cat), fields: [], noAccount: true, meta: { product: "card" },
+        items: list.filter(x => x && x.id != null && Number(x.stock) !== 0)
+          .map(x => ({ sku: "p:" + S(x.id, 12), name: S(x.title || x.name, 80), cost: num(x.unit_price != null ? x.unit_price : x.price), img: g2Img(x),
+            face: x.face_value != null ? num(x.face_value) : null }))
+      };
+    }
     const r = await httpReq({ url: G2 + "games/" + encodeURIComponent(code) + "/catalogue", headers: g2Headers(line) });
     const list = g2List(r.json, ["catalogues", "catalogue", "items", "packages"]);
     if (!list.length) throw new Error(transportVerdict(r).message);

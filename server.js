@@ -14,7 +14,7 @@ const ADMIN_IDS = (process.env.ADMIN_IDS || "5606872249,8684274899")
 /* Deploy belgisi — Railway rostdan yangi kodni ko'tardimi yoki eski build turibdimi,
    shuni ko'rish uchun. Profil ekranida ID ostida ko'rinadi (server/ilova alohida).
    Kod o'zgarganda shu satrni yangilab qo'yiladi. */
-const BUILD = "2026-11-08.1";
+const BUILD = "2026-11-14.1";
 // Har ishga tushishda yangi tasodifiy belgi — /api/health orqali "bu manzil aynan
 // SHU serverga olib keladimi" tekshiruvi uchun (maxfiy emas).
 const INSTANCE_ID = crypto.randomBytes(8).toString("hex");
@@ -589,8 +589,10 @@ async function computeReadiness() {
   add("should", "smm", "Nakrutka paneli ulangan", smmReady.length > 0, smmReady.length ? smmReady.map(l => l.name).join(", ") : "Admin panel → Nakrutka → panel kaliti", "nakrutka");
   const st = EXTRA.steamCfg(), vn = EXTRA.vnCfg();
   const lvx = GAMES.store().lines.some(l => l.type === "ludovex" && l.enabled && l.config && l.config.apiKey);
-  add("should", "steam", "Steam to'ldirish", !!st.enabled && (st.mode === "manual" || lvx),
-    !st.enabled ? "O'chiq" : st.mode === "manual" ? "Qo'lda (admin bajaradi)" : lvx ? "Avtomatik (Ludovex)" : "Ludovex liniyasi yoqilmagan", "steam");
+  const stCodes = st.mode === "codes" && GAMES.gameOnSale(st.gameId);
+  add("should", "steam", "Steam to'ldirish", !!st.enabled && (st.mode === "manual" || stCodes || (st.mode === "auto" && lvx)),
+    !st.enabled ? "O'chiq" : st.mode === "manual" ? "Qo'lda (admin bajaradi)" : st.mode === "codes" ? (stCodes ? "G2Bulk kodlari (Steam Wallet)" : "Steam Wallet o'yini sotuvda emas — O'yinlar → Steam (G2Bulk)")
+      : lvx ? "Avtomatik (Ludovex)" : "Ludovex liniyasi yoqilmagan", "steam");
   const vnOk = !!(vn.enabled && EXTRA.vnReady()), vnProvName = EXTRA.vnProv() === "tglion" ? "TG-Lion" : "5sim";
   add("should", "vnum", "Virtual raqamlar (" + vnProvName + ")", vnOk, vn.enabled ? (EXTRA.vnReady() ? "Yoqilgan" : "API kalit kiritilmagan") : "O'chiq", "vnum");
   const c2 = CS2.cfg();
@@ -2302,7 +2304,8 @@ const GAMES = require("./games.js")({
 const EXTRA = require("./extra.js")({
   getDB: () => DB, save, auth, isAdm, send, readBody, user, genId, nextOrderSeq,
   notifyOrder, notifyOrderChannel, tgSend, notifyAdmins, creditReferralOnOrder, creditLoyaltyOnOrder, pubOrder,
-  gameLines: () => GAMES.store().lines
+  gameLines: () => GAMES.store().lines,
+  gameOnSale: id => GAMES.gameOnSale(id)
 });
 // CS2 skinlar do'koni (cs2.js): lis-skins.com orqali.
 const CS2 = require("./cs2.js")({
@@ -3495,7 +3498,8 @@ function handleRequest(req, res) {
         smm: SMM.store().lines.map(l => ({ id: l.id, name: l.name, enabled: !!l.enabled, ready: !!SMM.ready(l) })),
         services: {
           fragment: !!FRAGMENT_API_KEY, giftBot: !!(GIFT_BOT_URL && GIFT_BOT_SECRET),
-          steam: { enabled: !!st.enabled, mode: st.mode, rate: st.rate, min: st.min, max: st.max, line: lvx ? { id: lvx.id, name: lvx.name, enabled: !!lvx.enabled } : null },
+          steam: { enabled: !!st.enabled, mode: st.mode, rate: st.rate, min: st.min, max: st.max, line: lvx ? { id: lvx.id, name: lvx.name, enabled: !!lvx.enabled } : null,
+            codes: st.mode === "codes" ? { gameId: st.gameId, live: GAMES.gameOnSale(st.gameId) } : null },
           vnum: { enabled: !!vn.enabled, keySet: EXTRA.vnReady(), provider: EXTRA.vnProv(), rate: EXTRA.vnProv() === "tglion" ? vn.tl.rate : vn.rate, markup: vn.markup, ttlMin: vn.ttlMin },
           skins: { enabled: !!c2.enabled, keySet: !!c2.apiKey, games: CS2.games(), rate: c2.rate, markup: c2.markup }
         },

@@ -76,7 +76,10 @@ module.exports = function (ctx) {
     if (!(c.min > 0)) c.min = 1;
     if (!(c.max > 0)) c.max = 250;
     if (!Array.isArray(c.presets) || !c.presets.length) c.presets = [5, 10, 20, 50, 100];
-    if (!c.mode) c.mode = "auto";       // auto — Ludovex yoqilgan bo'lsa avtomatik; manual — doim admin
+    // auto — Ludovex yoqilgan bo'lsa avtomatik; manual — doim admin;
+    // codes — G2Bulk Steam Wallet kodlari («Steam Wallet» o'yin sahifasi, O'yinlar → Steam G2Bulk).
+    if (!c.mode) c.mode = "auto";
+    if (!c.gameId) c.gameId = "steam-wallet";
     return c;
   }
   const LVX = () => process.env.LUDOVEX_BASE || "https://api.ludovex.org/api/v2/";
@@ -85,10 +88,16 @@ module.exports = function (ctx) {
   }
   const lvxH = l => ({ "X-API-Key": String(l.config.apiKey) });
   function steamPrice(usd) { return Math.ceil(usd * steamCfg().rate / 100) * 100; }
+  // Kod rejimi faqat «Steam Wallet» o'yini haqiqatan sotuvda bo'lsa ishlaydi; aks holda login orqali (qo'lda) qoladi.
+  function steamCodesGame() {
+    const c = steamCfg();
+    try { return c.mode === "codes" && ctx.gameOnSale && ctx.gameOnSale(c.gameId) ? c.gameId : ""; } catch (e) { return ""; }
+  }
 
   function steamPublic() {
     const c = steamCfg();
-    return { enabled: !!c.enabled, rate: c.rate, min: c.min, max: c.max, presets: c.presets, auto: c.mode !== "manual" && !!lvxLine() };
+    return { enabled: !!c.enabled, rate: c.rate, min: c.min, max: c.max, presets: c.presets, auto: c.mode === "auto" && !!lvxLine(),
+      gameId: c.enabled ? steamCodesGame() : "" };
   }
   // Ludovex holat so'zi → bizning holat
   function lvxState(d) {
@@ -100,7 +109,7 @@ module.exports = function (ctx) {
   }
   async function steamFulfill(o) {
     const l = lvxLine(), c = steamCfg();
-    if (c.mode === "manual" || !l) {
+    if (c.mode !== "auto" || !l) {
       ctx.notifyAdmins("🎮 #" + o.seq + " Steam: $" + o.steam.usd + " → login «" + o.steam.login + "» (" + money(o.price) + ")\nQo'lda to'ldiring va «Bajarildi» bosing.", { order: o });
       return;
     }
@@ -415,6 +424,7 @@ module.exports = function (ctx) {
       ctx.readBody(req, res, b => {
         const c = steamCfg();
         if (!c.enabled) return send(res, 503, { error: "off", message: "Steam to'ldirish hozircha o'chiq" });
+        if (steamCodesGame()) return send(res, 409, { error: "codes", gameId: c.gameId, message: "Steam endi kod orqali sotiladi — Steam Wallet bo'limini oching" });
         const login = str(b.login, 64);
         if (!/^[A-Za-z0-9_.-]{2,64}$/.test(login)) return send(res, 400, { error: "login", message: "Steam loginni to'g'ri kiriting (faqat lotin harflari, raqam, _ . -)" });
         const usd = Math.round(Number(b.usd) * 100) / 100;
@@ -459,7 +469,8 @@ module.exports = function (ctx) {
     // --- admin ---
     if (url === "/api/admin/extra" && (m === "GET" || m === "POST")) {
       if (!ctx.isAdm(ctx.auth(req))) { send(res, 403, { error: "not admin" }); return true; }
-      const view = () => { const v = vnCfg(); return { steam: steamCfg(), ludovex: !!lvxLine(),
+      const view = () => { const v = vnCfg(); return { steam: steamCfg(), ludovex: !!lvxLine(), codesLive: !!steamCodesGame(),
+        g2bulk: (() => { try { return ctx.gameLines().some(l => l.type === "g2bulk"); } catch (e) { return false; } })(),
         vnum: Object.assign(vnAdminView(), { rate: v.rate, product: v.product, apiKeySet: !!v.apiKey }) }; };
       if (m === "GET") { send(res, 200, view()); return true; }
       ctx.readBody(req, res, b => {
@@ -469,7 +480,7 @@ module.exports = function (ctx) {
           const r = num(b.steam.rate, 1000, 100000); if (r) s.rate = r;
           const mn = num(b.steam.min, 0.5, 100); if (mn) s.min = mn;
           const mx = num(b.steam.max, 1, 500); if (mx) s.max = mx;
-          if (b.steam.mode === "manual" || b.steam.mode === "auto") s.mode = b.steam.mode;
+          if (b.steam.mode === "manual" || b.steam.mode === "auto" || b.steam.mode === "codes") s.mode = b.steam.mode;
           if (Array.isArray(b.steam.presets)) { const p = b.steam.presets.map(Number).filter(x => x > 0 && x <= 500).slice(0, 6); if (p.length) s.presets = p; }
         }
         if (b.vnum) {

@@ -762,6 +762,50 @@ nav button svg{width:24px;height:24px}
   font-size:var(--fs-sm);font-weight:500;color:var(--mut2);font-variant-numeric:tabular-nums}
 .chips button:active{transform:scale(.96)}
 .chips button.on{color:var(--acc2);background:var(--acc-soft);font-weight:600;box-shadow:inset 0 0 0 1px var(--acc)}
+/* admin: o'yinlar ro'yxati — saytlar bo'yicha, qidiruv, tanlab amal qilish, arxiv */
+.gachips{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 10px;padding:2px 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gachips::-webkit-scrollbar{display:none}
+.gachips button{flex:none;height:34px;padding:0 12px;border-radius:999px;background:var(--card2);border:none;color:var(--mut2);font:inherit;font-size:12.5px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.gachips button i{font-style:normal;font-size:11px;font-variant-numeric:tabular-nums;color:var(--mut);background:rgba(255,255,255,.06);border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
+.gachips button.on{background:var(--acc-soft);color:var(--acc2);box-shadow:inset 0 0 0 1px var(--acc)}
+.gachips button.on i{color:var(--acc2);background:rgba(var(--acc-rgb),.18)}
+.gachips button:active{transform:scale(.96)}
+.gatools{display:flex;gap:6px;align-items:center;margin:0 0 8px}
+.gatools .gaq{flex:1;min-width:0;display:flex;align-items:center;gap:6px;height:40px;padding:0 10px;border-radius:var(--r-sm);background:var(--card2);color:var(--mut)}
+.gatools .gaq input{flex:1;min-width:0;margin:0;padding:0;height:100%;background:none;border:none;box-shadow:none;color:var(--txt);font:inherit;font-size:14px}
+.gatools .gaq input:focus{outline:none}
+.gatools select{width:104px;flex:none;margin:0;height:40px;padding:0 26px 0 10px;font-size:12.5px;text-overflow:ellipsis}
+.gatools .btn{flex:none;width:auto;height:40px;margin:0;padding:0 12px}
+.gastat{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:0 0 10px}
+.gastat b{color:var(--mut2);font-variant-numeric:tabular-nums}
+.garow{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:10px;border-radius:var(--r-md,14px);background:var(--card2);border:1px solid transparent}
+.garow.arch{opacity:.82}
+.garow.sel{border-color:var(--acc);background:var(--acc-soft)}
+.garow.selm{cursor:pointer}
+.garow .gav{width:42px;height:42px;flex:none;font-size:15px;background:var(--card3);color:var(--mut2)}
+.garow .gainfo{flex:1;min-width:0}
+.garow .gainfo>b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.garow .gameta{display:flex;flex-wrap:wrap;gap:4px;margin:3px 0 0;align-items:center;font-size:11.5px;color:var(--mut)}
+.garow .gameta .badge{margin:0}
+.gasite{display:inline-flex;align-items:center;height:18px;font-size:10.5px;font-weight:600;padding:0 6px;border-radius:6px;background:var(--card3);color:var(--mut2)}
+.garow .btn.sm{flex:none;width:auto;margin:0}
+.garow .gaic{width:36px;height:36px;padding:0;display:grid;place-items:center;font-size:17px;line-height:1}
+.garow .gack{width:24px;height:24px;flex:none;border-radius:50%;display:grid;place-items:center;box-shadow:inset 0 0 0 2px var(--line2);color:transparent}
+.garow.sel .gack{background:var(--acc);box-shadow:none;color:#fff}
+.gabar{position:sticky;bottom:calc(-32px - env(safe-area-inset-bottom));z-index:3;margin:10px -16px 0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(19,23,40,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line2)}
+.gabar[hidden]{display:none}
+.gabar .gbtop{display:flex;align-items:center;gap:8px;font-size:13px}
+.gabar .gbtop b{flex:1}
+.gabar .gbtop button{background:none;border:none;color:var(--acc2);font:inherit;font-size:12.5px;font-weight:600;padding:6px 4px}
+.gabar .gbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin-top:8px}
+.gabar .gbtns button{height:44px;border-radius:12px;border:none;background:var(--card3);color:var(--txt);font:inherit;font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.gabar .gbtns button.red{background:rgba(255,92,114,.16);color:#ff8394}
+.gabar .gbtns button:disabled{opacity:.4}
+.gabar .gbtns button:active{transform:scale(.96)}
+.gpck{width:20px;height:20px;flex:none;margin:0;accent-color:var(--acc)}
+.gplist:not(.selm) .gpck{display:none}
+.gptool{display:flex;gap:6px;align-items:center;margin:0 0 6px}
+.gptool .btn{width:auto;margin:0}
 .methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 /* To'lov sahifasidagi balans — shaffof shisha karta (egasi so'ragan eski uslub), rangi hozirgi brend ko'ki (--acc) */
 .pbal{margin:6px 16px 4px;padding:18px 20px;border-radius:var(--r-xl);border:1px solid rgba(var(--acc-rgb),.38);
@@ -3012,7 +3056,7 @@ var ADMIN_IDS=[5606872249, 8684274899];
 /* Deploy belgisi — Profil ekranida ID ostida ko'rinadi. Ikkita raqam bo'ladi:
    birinchisi shu HTML fayl (Telegram keshi eski bo'lsa eskiligicha qoladi),
    ikkinchisi server (Railway). Ikkalasi bir xil bo'lmasa — kesh yoki deploy eski. */
-var CLIENT_BUILD="2026-11-08.1";
+var CLIENT_BUILD="2026-11-14.1";
 
 /* ===== Telegram init (guarded) ===== */
 var TG=null;
@@ -4772,7 +4816,8 @@ function gamePageHTML(){
     });
     if(g.canCheck)html+='<button class="gchkbtn" id="gCheck">'+esc(t("g_check"))+'</button>';
     html+='</div><div class="gchk'+(S.game.chk?(" "+S.game.chk.cls):"")+'" id="gChk">'+esc(S.game.chk?S.game.chk.text:t(g.section==="ai"||g.section==="obuna"?"ai_hint":"g_id_hint"))+'</div></div>';
-  }else if(g.section==="obuna"){
+  }else{
+    // Maydonsiz o'yin/obuna (sovg'a kartasi, Steam Wallet kodi): kod buyurtmada beriladi.
     html+='<div class="paynote" style="margin:12px 16px 0">'+ic("key",14)+' '+esc(t("sub_code_hint"))+'</div>';
   }
   html+='<div class="sect">'+esc(t("g_choose"))+'</div>';
@@ -8395,14 +8440,24 @@ function openAdminSteam(backFn){
     var S1=c.steam;
     var html='<h2>'+ic("wallet",18)+' Steam hamyon</h2>'
       +admSw("svOn","Mijozlarga ochiq",S1.enabled)
-      +'<div class="paynote" style="margin:6px 0">'+(c.ludovex?'✅ Ludovex liniyasi yoqilgan — Steam avtomatik to\'ldiriladi (narx himoyasi bilan).':'⚠️ Ludovex liniyasi yoqilmagan — Steam buyurtmalari sizga qo\'lda bajarish uchun keladi. Liniya: O\'yinlar va liniyalar → Ludovex.')+'</div>'
-      +'<label>Rejim</label><select id="svMode"><option value="auto"'+(S1.mode!=="manual"?" selected":"")+'>Avtomatik (Ludovex)</option><option value="manual"'+(S1.mode==="manual"?" selected":"")+'>Qo\'lda (admin bajaradi)</option></select>'
+      +'<div class="paynote" style="margin:6px 0">'+(S1.mode==="codes"
+        ?(c.codesLive?'✅ Steam G2Bulk kodlari orqali sotilmoqda: mijoz hudud va summani tanlaydi, to\'lagach kod darhol beriladi. Narxlar: O\'yinlar → Steam Wallet → Narxlar.'
+          :'⚠️ «G2Bulk kodlari» tanlangan, lekin «Steam Wallet» o\'yini hali sotuvda emas — pastdagi tugma bilan yuklang. Hozircha login orqali (qo\'lda) ishlaydi.')
+        :S1.mode==="manual"?'Steam buyurtmalari sizga qo\'lda bajarish uchun keladi.'
+        :(c.ludovex?'✅ Ludovex liniyasi yoqilgan — Steam avtomatik to\'ldiriladi (narx himoyasi bilan).':'⚠️ Ludovex liniyasi yoqilmagan — Steam buyurtmalari sizga qo\'lda bajarish uchun keladi.'))+'</div>'
+      +'<label>Rejim</label><select id="svMode"><option value="codes"'+(S1.mode==="codes"?" selected":"")+'>G2Bulk kodlari (Steam Wallet, hudud tanlanadi)</option>'
+      +'<option value="auto"'+(S1.mode==="auto"?" selected":"")+'>Login orqali — avtomatik (Ludovex)</option><option value="manual"'+(S1.mode==="manual"?" selected":"")+'>Login orqali — qo\'lda (admin bajaradi)</option></select>'
+      +(c.g2bulk?'<button class="btn gray" id="svG2" style="margin-top:10px">⬇️ G2Bulk\'dan Steam kodlarini yuklash / yangilash</button>'
+        :'<div class="d" style="margin-top:6px">G2Bulk kodlari uchun avval O\'yinlar → Liniya qo\'shish → G2Bulk (API key) ulang.</div>')
+      +'<div class="d" style="margin:10px 0 0">Quyidagi kurs va summalar faqat login orqali to\'ldirishga tegishli.</div>'
       +'<label>Kurs: 1$ = necha so\'m</label><input id="svRate" type="number" value="'+S1.rate+'">'
       +'<div class="arow"><div style="flex:1"><label>Eng kam, $</label><input id="svMin" type="number" step="0.5" value="'+S1.min+'"></div><div style="flex:1"><label>Eng ko\'p, $</label><input id="svMax" type="number" value="'+S1.max+'"></div></div>'
       +'<label>Tez tugmalar ($, vergul bilan)</label><input id="svPre" value="'+esc(S1.presets.join(", "))+'">'
       +'<div style="height:12px"></div><button class="btn" id="svSave">'+esc(t("a_save"))+'</button><div style="height:20px"></div>';
     var sh=openSheet(html,backFn||openAdmin);
     sh.querySelector("#svOn").addEventListener("click",function(){this.classList.toggle("on");});
+    var g2b=sh.querySelector("#svG2");
+    if(g2b)g2b.addEventListener("click",function(){gaSteamG2(function(){openAdminSteam(backFn);});});
     sh.querySelector("#svSave").addEventListener("click",function(){
       var b=this,v=function(id){return sh.querySelector("#"+id).value;};
       b.disabled=true;
@@ -8922,58 +8977,191 @@ function gAfterSave(fallback){
   if(GEDIT_SHOP){GEDIT_SHOP=false;closeSheet();GAMES.etag="";loadGames();return;}
   if(fallback)fallback();
 }
+/* ---- O'yinlar admin: saytlar (API) bo'yicha alohida, qidiruv, holat filtri, tanlab amal qilish, arxiv ----
+   GA_F — tanlangan sayt ("all" | liniya id | "manual" | "arch"), qidiruv, holat va tanlanganlar (sel). */
+var GA_F={site:"all",q:"",vis:"all",sel:null};
+function gaInfo(){
+  var G=GADM,ln={},info={};
+  (G.lines||[]).forEach(function(l){if(l.id!=="manual"&&l.type!=="manual")ln[l.id]=l;});
+  G.games.forEach(function(g){var x=info[g.id]={sites:{},on:0,all:0,arch:0};
+    (g.sources||(g.source?[g.source]:[])).forEach(function(sr){if(sr&&ln[sr.lineId])x.sites[sr.lineId]=1;});});
+  G.packages.forEach(function(p){var x=info[p.gameId];if(!x)return;if(p.archived){x.arch++;return;}x.all++;if(p.active&&p.price>0)x.on++;
+    (p.routes||[]).forEach(function(r){if(ln[r.lineId])x.sites[r.lineId]=1;});});
+  return {ln:ln,info:info};
+}
+function gaLive(g,x){return !!(g.active&&!g.draft&&!g.archived&&x&&x.on>0);}
+// Bir nechta o'yin yoki paket bilan amal: hide | show | archive | unarchive | delete.
+function gaBulk(kind,ids,action,done){
+  if(!ids.length){toast("Hech narsa tanlanmagan",true);return;}
+  var what=kind==="pkg"?"paket":"o'yin";
+  if(action==="delete"&&!confirm(ids.length+" ta "+what+" butunlay o'chirilsinmi? Qaytarib bo'lmaydi.\n\nQaytarsa bo'ladigan yo'l — «Arxivlash»."))return;
+  if(action==="archive"&&ids.length>1&&!confirm(ids.length+" ta "+what+" arxivga o'tsinmi? Mijozlarga ko'rinmaydi, istalgan payt «Arxiv»dan qaytarasiz."))return;
+  api("/api/admin/games/bulk","POST",{kind:kind,ids:ids,action:action}).then(function(r){
+    haptic("ok");
+    var w={hide:"yashirildi",show:"ochildi",archive:"arxivga o'tdi",unarchive:"arxivdan qaytdi",delete:"o'chirildi"}[action];
+    toast("✅ "+r.changed+" ta "+what+" "+w+(r.skipped?" · narxi yo'q "+r.skipped+" ta ochilmadi":"")+(r.blocked?" · "+r.blocked+" tasida buyurtma bajarilmoqda":""),!!(r.blocked||r.skipped));
+    GAMES.etag="";loadGames();if(done)done();
+  }).catch(function(e){toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+}
 function openAdminGames(sec){
-  if(typeof sec==="string")GADM_SEC=sec;
+  if(typeof sec==="string"){GADM_SEC=sec;GA_F.sel=null;}
   gAdmLoad(function(){
-    var G=GADM,html='<h2>'+(GADM_SEC==="obuna"?ic("key",18)+' Obunalar va liniyalar':ic("gamepad",18)+' O\'yinlar, obunalar va liniyalar')+'</h2>'
-      +'<div class="paynote" style="margin:0 0 10px">Do\'konda faqat narxi qo\'yilgan va yoqilgan paketi bor o\'yin yoki obuna ko\'rinadi. '
-      +'Paketni kim bajarishini <b>liniyalar</b> (sayt API) hal qiladi: biri ishlamasa — keyingisi. Obunada akkaunt maydoni bo\'lmasa, sayt bergan kod mijozga buyurtmada chiqadi.</div>';
     var secs=GADM_SEC==="obuna"?["obuna"]:GADM_SEC==="games"?["games"]:["games","obuna"];
-    secs.forEach(function(sc){
-    html+='<div class="sect" style="margin:6px 0">'+(sc==="obuna"?"Obunalar (Obuna bo\'limi)":"O\'yinlar")+'</div>';
-    G.games.filter(function(g){return (g.section||"games")===sc;}).sort(function(a,b){return (a.sort||0)-(b.sort||0);}).forEach(function(g){
-      var all=G.packages.filter(function(p){return p.gameId===g.id;});
-      var on=all.filter(function(p){return p.active&&p.price>0;}).length;
-      html+='<div class="card" style="margin:0 0 8px;padding:10px;display:flex;align-items:center;gap:10px">'
-        +'<div class="gav" style="width:44px;height:44px;font-size:15px;background:var(--card3);color:var(--mut2)">'+gameAvatarHTML(g)+'</div>'
-        +'<div style="flex:1;min-width:0"><b>'+esc(g.name)+'</b>'+(g.active?'':' <span class="badge cncl">o\'chiq</span>')+(g.draft?' <span class="badge pend">qoralama</span>':'')
-        +'<div class="d">'+on+' / '+all.length+' paket do\'konda</div></div>'
-        +'<button class="btn sm" data-gaprice="'+esc(g.id)+'" style="width:auto">Narxlar</button>'
-        +'<button class="btn gray sm" data-gaedit="'+esc(g.id)+'" style="width:auto">'+ic("pencil",14)+'</button></div>';
-    });
-    html+='<button class="btn gray" data-ganew="'+sc+'">'+ic("plus",15)+(sc==="obuna"?' Yangi obuna':' Yangi o\'yin')+'</button>';
-    });
-    html+='<button class="btn" id="gaReprice" style="margin-top:10px">💲 Narxlarni yangilash (kurs + ustama)</button>';
-    html+='<button class="btn" id="gaAuto" style="margin-top:10px">🤖 Avto-narx va rasmlar</button>';
-    html+='<button class="btn gray" id="gaMerge" style="margin-top:10px">🔗 Bir xil o\'yinlarni birlashtirish (regionlar)</button>';
-    html+='<button class="btn" id="gaImportAll" style="margin-top:10px">⬇️ Saytdan HAMMA o\'yinlarni yuklash</button>'
-      +'<div class="d" style="margin:6px 0 0">Paketlar, rasmlar va narxlar (kurs × ustama) bilan qoralama bo\'lib tushadi — mijozlar ko\'rmaydi. Do\'konning o\'zida ko\'rib, 🔧 bilan tuzatib, «🚀 Mijozlarga ochish» bosasiz.</div>'
-      +'<div class="sect" style="margin:18px 0 6px">Liniyalar (yetkazib beruvchilar)</div>';
-    G.lines.slice().sort(function(a,b){return (a.priority||0)-(b.priority||0);}).forEach(function(l){
-      var used=G.packages.filter(function(p){return (p.routes||[]).some(function(r){return r.lineId===l.id;});}).length;
-      html+='<div class="card" style="margin:0 0 8px;padding:10px;display:flex;align-items:center;gap:10px">'
-        +'<div style="flex:1;min-width:0"><b>'+esc(l.name)+'</b> '+(l.enabled?'<span class="badge ok">yoqilgan</span>':'<span class="badge cncl">o\'chiq</span>')
-        +'<div class="d">'+esc(lineTypeLabel(l.type))+' · ustuvorlik '+(l.priority||0)+' · '+used+' paket</div></div>'
-        +'<button class="btn gray sm" data-galine="'+esc(l.id)+'" style="width:auto">'+ic("pencil",14)+'</button></div>';
-    });
-    html+='<button class="btn gray" id="gaNewLine">'+ic("plus",15)+' Liniya qo\'shish</button>'
-      +'<div class="d" style="margin-top:8px">Hozir mavjud turlar: '+esc((G.lineTypes||[]).map(function(x){return x.label;}).join(", "))
+    var html='<h2>'+(GADM_SEC==="obuna"?ic("key",18)+' Obunalar va liniyalar':ic("gamepad",18)+' O\'yinlar, obunalar va liniyalar')+'</h2>'
+      +'<div class="paynote" style="margin:0 0 10px">Tepada — <b>saytlar</b> (API): har birining o\'yinlari alohida. Do\'konda faqat narxi qo\'yilgan va yoqilgan paketi bor o\'yin ko\'rinadi. '
+      +ic("eye",13)+' — yashirish/ochish, <b>⋯</b> — arxivlash va o\'chirish, «Tanlash» — bir nechtasini birga.</div>'
+      +'<div class="gachips" id="gaSites"></div>'
+      +'<div class="gatools"><label class="gaq">'+ic("search",15)+'<input id="gaQ" type="search" placeholder="Qidirish: nomi yoki ID" autocomplete="off" value="'+esc(GA_F.q)+'"></label>'
+      +'<select id="gaVis" aria-label="Holat">'+[["all","Hammasi"],["live","Do'konda"],["hidden","Yashirin"],["draft","Qoralama"]].map(function(o){return '<option value="'+o[0]+'"'+(GA_F.vis===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select>'
+      +'<button class="btn gray sm" id="gaSelBtn">'+(GA_F.sel?"Bekor":"Tanlash")+'</button></div>'
+      +'<div class="gastat" id="gaStat"></div>'
+      +'<div id="gaList"></div>'
+      +'<div class="gabar" id="gaBar" hidden></div>'
+      +'<div class="sect" style="margin:16px 0 6px">Asboblar</div>'
+      +'<button class="btn" id="gaReprice">💲 Narxlarni yangilash (kurs + ustama)</button>'
+      +'<button class="btn" id="gaAuto" style="margin-top:10px">🤖 Avto-narx va rasmlar</button>'
+      +'<button class="btn gray" id="gaImg" style="margin-top:10px">🖼 Saytlardan rasmlarni yangilash</button>'
+      +'<div class="d" style="margin:6px 0 0">O\'yin logolari va paket rasmlari saytdan yuklab, o\'zimizda saqlanadi. Siz o\'zingiz qo\'ygan rasmga tegilmaydi.</div>'
+      +'<button class="btn gray" id="gaSteam" style="margin-top:10px">🎮 Steam Wallet kodlari (G2Bulk)</button>'
+      +'<div class="d" style="margin:6px 0 0">G2Bulk\'dagi Steam kodlari (Global, EU, UK, Brazil …) bitta «Steam Wallet» o\'yiniga hudud bo\'lib tushadi. Bosh sahifadagi Steam kartasi shu sahifani ochadi.</div>'
+      +'<button class="btn gray" id="gaMerge" style="margin-top:10px">🔗 Bir xil o\'yinlarni birlashtirish (regionlar)</button>'
+      +'<button class="btn" id="gaImportAll" style="margin-top:10px">⬇️ Saytdan HAMMA o\'yinlarni yuklash</button>'
+      +'<div class="d" style="margin:6px 0 0">Paketlar, rasmlar va narxlar (kurs × ustama) bilan qoralama bo\'lib tushadi — mijozlar ko\'rmaydi. O\'chirilgan yoki arxivdagi o\'yinlar qayta qo\'shilmaydi.</div>'
+      +'<div class="sect" style="margin:18px 0 6px">Liniyalar (yetkazib beruvchilar)</div><div id="gaLines"></div>'
+      +'<button class="btn gray" id="gaNewLine">'+ic("plus",15)+' Liniya qo\'shish</button>'
+      +'<div class="d" style="margin-top:8px">Hozir mavjud turlar: '+esc((GADM.lineTypes||[]).map(function(x){return x.label;}).join(", "))
       +'. Yangi saytni (API) ulash uchun uning hujjati va kalitlari kerak — yangi tur sifatida qo\'shiladi.</div>'
       +'<div style="height:20px"></div>';
     var sh=openSheet(html,openAdmin);
-    var b,i;
-    b=sh.querySelectorAll("[data-gaprice]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminGamePrices(this.getAttribute("data-gaprice"));});
-    b=sh.querySelectorAll("[data-gaedit]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminGameForm(this.getAttribute("data-gaedit"));});
-    b=sh.querySelectorAll("[data-galine]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminLineForm(this.getAttribute("data-galine"));});
-    b=sh.querySelectorAll("[data-ganew]");for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){openAdminGameForm(null,this.getAttribute("data-ganew"));});
-    sh.querySelector("#gaNewLine").addEventListener("click",function(){openAdminLineForm(null);});
-    sh.querySelector("#gaImportAll").addEventListener("click",openAdminImportAll);
-    sh.querySelector("#gaMerge").addEventListener("click",function(){
+    var I,shown=[],q=function(x){return sh.querySelector(x);};
+    function row(g){
+      var x=I.info[g.id],sel=GA_F.sel,on=!!(sel&&sel[g.id]);
+      var sites=Object.keys(x.sites).map(function(k){return '<span class="gasite">'+esc(I.ln[k].name)+'</span>';}).join("")||'<span class="gasite">Qo\'lda</span>';
+      var badges=(g.archived?'<span class="badge cncl">arxiv</span>':gaLive(g,x)?'<span class="badge ok">do\'konda</span>':g.draft?'<span class="badge pend">qoralama</span>':!g.active?'<span class="badge cncl">yashirin</span>':'<span class="badge pend">narx yo\'q</span>');
+      var acts;
+      if(sel)acts='<span class="gack" aria-hidden="true">'+ic("check",14)+'</span>';
+      else if(g.archived)acts='<button class="btn gray sm gaic" data-gaunarch="'+esc(g.id)+'" aria-label="Arxivdan qaytarish" title="Qaytarish">'+ic("history",16)+'</button>'
+        +'<button class="btn gray sm gaic" data-gadel="'+esc(g.id)+'" aria-label="O\'chirish" title="O\'chirish" style="color:#ff8394">'+ic("trash",16)+'</button>';
+      else acts='<button class="btn gray sm gaic" data-gavis="'+esc(g.id)+'" aria-label="'+(g.active&&!g.draft?"Yashirish":"Mijozlarga ochish")+'" title="'+(g.active&&!g.draft?"Yashirish":"Ochish")+'"'+(g.active&&!g.draft?'':' style="color:var(--mut)"')+'>'+ic(g.active&&!g.draft?"eye":"eyeOff",16)+'</button>'
+        +'<button class="btn sm" data-gaprice="'+esc(g.id)+'">Narxlar</button>'
+        +'<button class="btn gray sm gaic" data-gamore="'+esc(g.id)+'" aria-label="Boshqa amallar">⋯</button>';
+      return '<div class="garow'+(on?" sel":"")+(sel?" selm":"")+(g.archived?" arch":"")+'" data-garow="'+esc(g.id)+'">'
+        +'<div class="gav">'+gameAvatarHTML(g)+'</div>'
+        +'<div class="gainfo"><b>'+esc(g.name)+'</b><div class="gameta">'+badges+' '+x.on+' / '+x.all+' paket'+(x.arch?' · '+x.arch+' arxivda':'')+'</div>'
+        +'<div class="gameta">'+sites+'</div></div>'+acts+'</div>';
+    }
+    function paint(){
+      I=gaInfo();
+      var pool=GADM.games.filter(function(g){return secs.indexOf(g.section||"games")!==-1;});
+      var cnt={all:0,manual:0,arch:0},st={live:0,hidden:0,draft:0};
+      pool.forEach(function(g){var x=I.info[g.id];if(g.archived){cnt.arch++;return;}cnt.all++;
+        var ks=Object.keys(x.sites);if(!ks.length)cnt.manual++;ks.forEach(function(k){cnt[k]=(cnt[k]||0)+1;});
+        if(g.draft)st.draft++;else if(gaLive(g,x))st.live++;else st.hidden++;});
+      if(["all","manual","arch"].indexOf(GA_F.site)===-1&&!I.ln[GA_F.site])GA_F.site="all";
+      var chip=function(k,label,n){return '<button data-gasite="'+esc(k)+'" class="'+(GA_F.site===k?"on":"")+'">'+label+' <i>'+n+'</i></button>';};
+      var lines=(GADM.lines||[]).filter(function(l){return I.ln[l.id];}).sort(function(a,b){return (a.priority||0)-(b.priority||0);});
+      var ch=chip("all","Hammasi",cnt.all);
+      lines.forEach(function(l){if(cnt[l.id]||l.enabled)ch+=chip(l.id,esc(l.name),cnt[l.id]||0);});
+      ch+=chip("manual","Qo'lda",cnt.manual)+chip("arch",ic("archive",13)+" Arxiv",cnt.arch);
+      q("#gaSites").innerHTML=ch;
+      q("#gaStat").innerHTML='<span>Do\'konda <b>'+st.live+'</b></span><span>Yashirin <b>'+st.hidden+'</b></span><span>Qoralama <b>'+st.draft+'</b></span><span>Arxiv <b>'+cnt.arch+'</b></span>';
+      q("#gaVis").style.display=GA_F.site==="arch"?"none":"";
+      // ro'yxat
+      var qs=GA_F.q.trim().toLowerCase();
+      shown=pool.filter(function(g){var x=I.info[g.id];
+        if(GA_F.site==="arch"){if(!g.archived)return false;}
+        else{
+          if(g.archived)return false;
+          var ks=Object.keys(x.sites);
+          if(GA_F.site==="manual"&&ks.length)return false;
+          if(GA_F.site!=="all"&&GA_F.site!=="manual"&&!x.sites[GA_F.site])return false;
+          if(GA_F.vis==="live"&&!gaLive(g,x))return false;
+          if(GA_F.vis==="draft"&&!g.draft)return false;
+          if(GA_F.vis==="hidden"&&(gaLive(g,x)||g.draft))return false;
+        }
+        return !qs||String(g.name).toLowerCase().indexOf(qs)!==-1||String(g.id).toLowerCase().indexOf(qs)!==-1;
+      }).sort(function(a,b){return (a.sort||0)-(b.sort||0)||String(a.name).localeCompare(String(b.name));});
+      var h="";
+      secs.forEach(function(sc){
+        var part=shown.filter(function(g){return (g.section||"games")===sc;});
+        if(secs.length>1)h+='<div class="sect" style="margin:6px 0">'+(sc==="obuna"?"Obunalar (Obuna bo\'limi)":"O\'yinlar")+' · '+part.length+'</div>';
+        if(!part.length)h+='<div class="d" style="margin:0 0 10px">'+(GA_F.site==="arch"?"Arxiv bo\'sh":"Hech narsa topilmadi")+'</div>';
+        part.slice(0,300).forEach(function(g){h+=row(g);});
+        if(part.length>300)h+='<div class="d" style="margin:0 0 10px">… yana '+(part.length-300)+' ta — qidiruv yoki sayt filtridan foydalaning</div>';
+        if(GA_F.site!=="arch"&&!GA_F.sel)h+='<button class="btn gray" data-ganew="'+sc+'" style="margin:0 0 10px">'+ic("plus",15)+(sc==="obuna"?' Yangi obuna':' Yangi o\'yin')+'</button>';
+      });
+      q("#gaList").innerHTML=h;
+      // liniyalar
+      var lh="";
+      (GADM.lines||[]).slice().sort(function(a,b){return (a.priority||0)-(b.priority||0);}).forEach(function(l){
+        var used=GADM.packages.filter(function(p){return !p.archived&&(p.routes||[]).some(function(r){return r.lineId===l.id;});}).length;
+        lh+='<div class="garow">'
+          +'<div class="gainfo"><b>'+esc(l.name)+'</b><div class="gameta">'+(l.enabled?'<span class="badge ok">yoqilgan</span>':'<span class="badge cncl">o\'chiq</span>')
+          +' '+esc(lineTypeLabel(l.type))+' · ustuvorlik '+(l.priority||0)+' · '+used+' paket'+(I.ln[l.id]?' · '+(cnt[l.id]||0)+' o\'yin':'')+'</div></div>'
+          +(I.ln[l.id]?'<button class="btn gray sm" data-gasitego="'+esc(l.id)+'">O\'yinlari</button>':'')
+          +'<button class="btn gray sm gaic" data-galine="'+esc(l.id)+'" aria-label="Tahrirlash">'+ic("pencil",14)+'</button></div>';
+      });
+      q("#gaLines").innerHTML=lh;
+      q("#gaSelBtn").textContent=GA_F.sel?"Bekor":"Tanlash";
+      bar();
+    }
+    function bar(){
+      var B=q("#gaBar");
+      if(!GA_F.sel){B.hidden=true;B.innerHTML="";return;}
+      var ids=Object.keys(GA_F.sel),arch=GA_F.site==="arch",n=ids.length;
+      var btn=function(act,icon,label,red){return '<button data-gabulk="'+act+'"'+(red?' class="red"':'')+(n?'':' disabled')+'>'+ic(icon,16)+label+'</button>';};
+      B.hidden=false;
+      B.innerHTML='<div class="gbtop"><b>'+n+' ta tanlandi</b><button id="gaSelAll">Hammasi ('+shown.length+')</button><button id="gaSelNone">Tozalash</button></div>'
+        +'<div class="gbtns">'+(arch?btn("unarchive","history","Qaytarish")+btn("delete","trash","O\'chirish",true)
+          :btn("show","eye","Ochish")+btn("hide","eyeOff","Yashirish")+btn("archive","archive","Arxiv")+btn("delete","trash","O\'chirish",true))+'</div>';
+    }
+    function refresh(){gAdmLoad(paint);}
+    function gameOf(id){return GADM.games.filter(function(x){return x.id===id;})[0];}
+    paint();
+    // Bitta tinglovchi (delegation) — ro'yxat qayta chizilsa ham ishlaydi.
+    sh.addEventListener("click",function(ev){
+      var el=ev.target.closest&&ev.target.closest("button,[data-garow]");if(!el||!sh.contains(el))return;
+      var A=function(k){return el.getAttribute(k);};
+      if(el.hasAttribute("data-gasite")){GA_F.site=A("data-gasite");if(GA_F.sel)GA_F.sel={};haptic();paint();return;}
+      if(el.hasAttribute("data-gasitego")){GA_F.site=A("data-gasitego");GA_F.vis="all";q("#gaVis").value="all";haptic();paint();sh.querySelector(".sheet-body").scrollTo({top:0,behavior:"smooth"});return;}
+      if(el.id==="gaSelBtn"){GA_F.sel=GA_F.sel?null:{};haptic();paint();return;}
+      if(el.id==="gaSelAll"){GA_F.sel={};shown.forEach(function(g){GA_F.sel[g.id]=1;});haptic();paint();return;}
+      if(el.id==="gaSelNone"){GA_F.sel={};haptic();paint();return;}
+      if(el.hasAttribute("data-gabulk")){var act=A("data-gabulk");gaBulk("game",Object.keys(GA_F.sel||{}),act,function(){GA_F.sel={};refresh();});return;}
+      if(el.hasAttribute("data-garow")){
+        if(!GA_F.sel)return;
+        var id=A("data-garow");if(GA_F.sel[id])delete GA_F.sel[id];else GA_F.sel[id]=1;
+        el.classList.toggle("sel",!!GA_F.sel[id]);haptic();bar();return;
+      }
+      if(el.hasAttribute("data-gaprice")){openAdminGamePrices(A("data-gaprice"));return;}
+      if(el.hasAttribute("data-gaedit")){openAdminGameForm(A("data-gaedit"));return;}
+      if(el.hasAttribute("data-galine")){openAdminLineForm(A("data-galine"));return;}
+      if(el.hasAttribute("data-ganew")){openAdminGameForm(null,A("data-ganew"));return;}
+      if(el.hasAttribute("data-gamore")){gaMore(A("data-gamore"));return;}
+      if(el.hasAttribute("data-gavis")){var g=gameOf(A("data-gavis"));if(!g)return;
+        var hide=g.active&&!g.draft;
+        if(!hide&&g.draft&&!confirm("«"+g.name+"» mijozlarga ochilsinmi? (qoralama → do'konda)"))return;
+        gaBulk("game",[g.id],hide?"hide":"show",function(){refresh();if(!hide&&!(I.info[g.id]&&I.info[g.id].on))toast("Ochildi, lekin narxi qo'yilgan paketi yo'q — «Narxlar»dan qo'ying",true);});return;}
+      if(el.hasAttribute("data-gaunarch")){gaBulk("game",[A("data-gaunarch")],"unarchive",refresh);return;}
+      if(el.hasAttribute("data-gadel")){gaBulk("game",[A("data-gadel")],"delete",refresh);return;}
+    });
+    var qi=q("#gaQ");
+    qi.addEventListener("input",function(){GA_F.q=this.value;paint();});
+    q("#gaVis").addEventListener("change",function(){GA_F.vis=this.value;paint();});
+    q("#gaNewLine").addEventListener("click",function(){openAdminLineForm(null);});
+    q("#gaImportAll").addEventListener("click",openAdminImportAll);
+    q("#gaImg").addEventListener("click",function(){
+      var b=this;b.disabled=true;
+      api("/api/admin/games/refresh-images","POST",{}).then(function(){b.disabled=false;toast("🖼 Rasmlar fonda yangilanmoqda — bir necha daqiqada tayyor bo'ladi");})
+        .catch(function(e){b.disabled=false;toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
+    });
+    q("#gaSteam").addEventListener("click",function(){gaSteamG2(function(){refresh();});});
+    q("#gaMerge").addEventListener("click",function(){
       if(!confirm("Bir xil nomli o'yinlar (masalan Mobile Legends BR/PH/ID) bitta o'yinga birlashtiriladi, regionlar tepada tab bo'ladi. Turli liniyalardagi bir xil paketlar bitta paketga qo'shiladi. Davom etaymi?"))return;
-      api("/api/admin/games/merge","POST",{}).then(function(r){toast("✅ Birlashtirildi: "+r.mergedGames+" o'yin, "+r.mergedPkgs+" paket");loadGames();openAdminGames();})
+      api("/api/admin/games/merge","POST",{}).then(function(r){toast("✅ Birlashtirildi: "+r.mergedGames+" o'yin, "+r.mergedPkgs+" paket");loadGames();refresh();})
         .catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xato");});
     });
-    sh.querySelector("#gaAuto").addEventListener("click",function(){
+    q("#gaAuto").addEventListener("click",function(){
       api("/api/admin/games/autoprice").then(function(r){
         var c=r.cfg||{};
         var on=confirm("🤖 Avto-narx hozir: "+(c.enabled?"YOQIQ":"O'CHIQ")+"\nHar "+(c.hours||6)+" soatda saytdan tannarx va rasmlar yangilanadi, narx = tannarx × "+c.rate+" + "+c.markup+"%."
@@ -8984,15 +9172,46 @@ function openAdminGames(sec){
         return api("/api/admin/games/autoprice","POST",b).then(function(){toast(on?"✅ Avto-narx yoqildi. Natija admin botga keladi":"Avto-narx o'chirildi");});
       }).catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xato");});
     });
-    sh.querySelector("#gaReprice").addEventListener("click",function(){
+    q("#gaReprice").addEventListener("click",function(){
       var rate=prompt("Dollar kursi (so'm):","12500");if(rate==null)return;
       var mk=prompt("Ustama, %:","20");if(mk==null)return;
       if(!confirm("PUBG, Free Fire, MLBB, Arena Breakout — tayyor narxlar; qolgan o'yinlar: tannarx × "+rate+" + "+mk+"%. Davom etaymi?"))return;
       api("/api/admin/games/reprice","POST",{rate:Number(rate),markup:Number(mk)}).then(function(r){
-        toast("✅ Tayyor narx: "+r.preset+", hisoblangan: "+r.calc+(r.skipped?", tannarxsiz: "+r.skipped:""));loadGames();
+        toast("✅ Tayyor narx: "+r.preset+", hisoblangan: "+r.calc+(r.skipped?", tannarxsiz: "+r.skipped:""));loadGames();refresh();
       }).catch(function(e){toast((e&&e.resp&&e.resp.error)||"Xato");});
     });
   });
+}
+// «⋯» — bitta o'yin bilan boshqa amallar.
+function gaMore(gid){
+  var g=GADM.games.filter(function(x){return x.id===gid;})[0];if(!g)return;
+  var x=gaInfo().info[gid]||{on:0,all:0,arch:0};
+  var open=g.active&&!g.draft;
+  var html='<h2>'+esc(g.name)+'</h2><div class="d" style="margin:0 0 12px">'+x.on+' / '+x.all+' paket do\'konda'+(x.arch?' · '+x.arch+' paket arxivda':'')+' · ID: '+esc(g.id)+'</div>'
+    +'<button class="btn" data-gmp="1">Narxlar va paketlar</button>'
+    +'<button class="btn gray" data-gaedit="'+esc(g.id)+'" style="margin-top:8px">'+ic("pencil",15)+' Sozlamalar (nom, rasm, maydonlar, regionlar)</button>'
+    +(open?'<button class="btn gray" data-gma="hide" style="margin-top:8px">'+ic("eyeOff",15)+' Mijozlardan yashirish</button>'
+      :'<button class="btn" data-gma="show" style="margin-top:8px">'+ic("eye",15)+' Mijozlarga ochish</button>')
+    +'<button class="btn gray" data-gma="archive" style="margin-top:8px">'+ic("archive",15)+' Arxivlash</button>'
+    +'<div class="d" style="margin:6px 0 0">Arxivdagi o\'yin mijozga ko\'rinmaydi, asosiy ro\'yxatdan chiqadi va import uni qayta qo\'shmaydi. Istalgan payt «Arxiv»dan qaytarasiz.</div>'
+    +'<button class="btn red" data-gma="delete" style="margin-top:14px">'+ic("trash",15)+' Butunlay o\'chirish</button>'
+    +'<div style="height:20px"></div>';
+  var sh=openSheet(html,openAdminGames);
+  sh.querySelector("[data-gmp]").addEventListener("click",function(){openAdminGamePrices(gid);});
+  sh.querySelector("[data-gaedit]").addEventListener("click",function(){openAdminGameForm(gid);});
+  var b=sh.querySelectorAll("[data-gma]");
+  for(var i=0;i<b.length;i++)b[i].addEventListener("click",function(){
+    gaBulk("game",[gid],this.getAttribute("data-gma"),function(){openAdminGames();});
+  });
+}
+// Steam kodlari: G2Bulk'dagi Steam toifalarini «Steam Wallet» o'yiniga yuklash.
+function gaSteamG2(done){
+  if(!confirm("G2Bulk'dagi Steam Wallet kodlari (hamma hududlar) «Steam Wallet» o'yiniga yuklanadi va narx (G2Bulk liniyasidagi kurs × ustama) bilan sotuvga chiqadi. Bosh sahifadagi Steam kartasi shu sahifani ochadi.\n\nDavom etaymi?"))return;
+  toast("⏳ G2Bulk'dan yuklanmoqda…");
+  api("/api/admin/games/steam-g2","POST",{}).then(function(r){
+    haptic("ok");toast("✅ Steam: "+r.regions+" ta hudud, yangi "+r.added+" ta, yangilangan "+r.updated+" ta kod"+(r.errors&&r.errors.length?" · xato: "+r.errors.length:""));
+    STEAM=null;GAMES.etag="";loadGames();if(done)done();
+  }).catch(function(e){toast((e&&e.resp&&e.resp.error)||t("srv_off"),true);});
 }
 /* Saytdan hamma o'yinlarni bir yo'la yuklash (fonda) — holatini kuzatib turadi. */
 function openAdminImportAll(){
@@ -9037,7 +9256,8 @@ function openAdminImportAll(){
 /* Narxlar: bitta o'yinning barcha paketlari bitta ro'yxatda — narx va yoqish. */
 function openAdminGamePrices(gid){
   var g=GADM.games.filter(function(x){return x.id===gid;})[0];if(!g)return;
-  var pk=GADM.packages.filter(function(p){return p.gameId===gid;});
+  var pk=GADM.packages.filter(function(p){return p.gameId===gid&&!p.archived;});
+  var pkArch=GADM.packages.filter(function(p){return p.gameId===gid&&p.archived;});
   var lab=function(list,key){var r=(list||[]).filter(function(x){return x.key===key;})[0];return r?r.label:(key||"—");};
   var groups={},order=[];
   pk.slice().sort(function(a,b){return (a.sort||0)-(b.sort||0);}).forEach(function(p){
@@ -9046,12 +9266,15 @@ function openAdminGamePrices(gid){
     groups[k].push(p);
   });
   var html='<h2>'+esc(g.name)+' — narxlar</h2>'
-    +'<div class="paynote" style="margin:0 0 10px">Narx yozilmagan (0) paket do\'konda ko\'rinmaydi. Kalitni yoqing — darhol sotuvga chiqadi.</div>';
+    +'<div class="paynote" style="margin:0 0 10px">Narx yozilmagan (0) paket do\'konda ko\'rinmaydi. Kalitni yoqing — darhol sotuvga chiqadi. «Tanlash» — bir nechta paketni birga yashirish, arxivlash yoki o\'chirish.</div>'
+    +(pk.length?'<div class="gptool"><button class="btn gray sm" id="gpSelBtn">Tanlash</button><span class="d" style="flex:1">'+pk.length+' paket'+(pkArch.length?' · '+pkArch.length+' arxivda':'')+'</span></div>':'')
+    +'<div class="gplist" id="gpList">';
   order.forEach(function(k){
     var parts=k.split("|");
     html+='<div class="sect" style="margin:12px 0 6px">'+esc(lab(g.regions,parts[0]))+' · '+esc(lab(g.tabs,parts[1]))+'</div>';
     groups[k].forEach(function(p){
       html+='<div style="display:flex;align-items:center;gap:8px;margin:0 0 7px">'
+        +'<input type="checkbox" class="gpck" data-gpck="'+esc(p.id)+'" aria-label="Tanlash">'
         +'<div style="flex:1;min-width:0;font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p.name)
         +(p.sub?' <span style="color:var(--mut);font-weight:500">'+esc(p.sub)+'</span>':'')+(p.badge?' <span class="badge pend">'+esc(p.badge)+'</span>':'')+'</div>'
         +'<input data-gpprice="'+esc(p.id)+'" type="number" inputmode="numeric" min="0" step="100" value="'+(p.price||"")+'" placeholder="narx" style="width:104px;margin:0;padding:9px 10px">'
@@ -9059,9 +9282,50 @@ function openAdminGamePrices(gid){
         +'<button class="btn gray sm" data-gpedit="'+esc(p.id)+'" style="width:auto;padding:8px">'+ic("pencil",13)+'</button></div>';
     });
   });
+  html+='</div><div class="gabar" id="gpBar" hidden></div>';
+  if(pkArch.length){
+    html+='<div class="sect" style="margin:16px 0 6px">'+ic("archive",14)+' Arxivdagi paketlar · '+pkArch.length+'</div>';
+    pkArch.forEach(function(p){
+      html+='<div style="display:flex;align-items:center;gap:8px;margin:0 0 7px;opacity:.85">'
+        +'<div style="flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>'+esc(p.name)+'</b>'+(p.sub?' <span style="color:var(--mut)">'+esc(p.sub)+'</span>':'')
+        +' <span class="d">'+esc(lab(g.regions,p.region))+(p.price?' · '+esc(money(p.price)):'')+'</span></div>'
+        +'<button class="btn gray sm" data-gpunarch="'+esc(p.id)+'" style="width:auto;padding:8px 10px">'+ic("history",13)+' Qaytarish</button>'
+        +'<button class="btn gray sm" data-gpdel="'+esc(p.id)+'" style="width:auto;padding:8px;color:#ff8394" aria-label="O\'chirish">'+ic("trash",13)+'</button></div>';
+    });
+  }
   html+='<div style="height:10px"></div><button class="btn" id="gpSave">'+esc(t("a_save"))+'</button>'
     +'<div style="height:8px"></div><button class="btn gray" id="gpNew">'+ic("plus",15)+' Paket qo\'shish</button><div style="height:20px"></div>';
   var sh=openSheet(html,openAdminGames),i,b;
+  var reopen=function(){gAdmLoad(function(){openAdminGamePrices(gid);});};
+  var gpSel=null;
+  function gpBar(){
+    var B=sh.querySelector("#gpBar");if(!B)return;
+    if(!gpSel){B.hidden=true;B.innerHTML="";return;}
+    var n=Object.keys(gpSel).length,btn=function(act,icon,label,red){return '<button data-gpbulk="'+act+'"'+(red?' class="red"':'')+(n?'':' disabled')+'>'+ic(icon,16)+label+'</button>';};
+    B.hidden=false;
+    B.innerHTML='<div class="gbtop"><b>'+n+' ta tanlandi</b><button data-gpall="1">Hammasi ('+pk.length+')</button><button data-gpnone="1">Tozalash</button></div>'
+      +'<div class="gbtns">'+btn("show","eye","Ochish")+btn("hide","eyeOff","Yashirish")+btn("archive","archive","Arxiv")+btn("delete","trash","O\'chirish",true)+'</div>';
+  }
+  var selBtn=sh.querySelector("#gpSelBtn");
+  if(selBtn)selBtn.addEventListener("click",function(){
+    gpSel=gpSel?null:{};this.textContent=gpSel?"Bekor":"Tanlash";
+    sh.querySelector("#gpList").classList.toggle("selm",!!gpSel);
+    var c=sh.querySelectorAll("[data-gpck]");for(var k=0;k<c.length;k++)c[k].checked=false;
+    haptic();gpBar();
+  });
+  sh.addEventListener("change",function(ev){
+    var c=ev.target;if(!c.hasAttribute||!c.hasAttribute("data-gpck")||!gpSel)return;
+    if(c.checked)gpSel[c.getAttribute("data-gpck")]=1;else delete gpSel[c.getAttribute("data-gpck")];gpBar();
+  });
+  sh.addEventListener("click",function(ev){
+    var el=ev.target.closest&&ev.target.closest("button");if(!el||!sh.contains(el))return;
+    var c,k;
+    if(el.hasAttribute("data-gpall")){gpSel={};c=sh.querySelectorAll("[data-gpck]");for(k=0;k<c.length;k++){c[k].checked=true;gpSel[c[k].getAttribute("data-gpck")]=1;}gpBar();return;}
+    if(el.hasAttribute("data-gpnone")){gpSel={};c=sh.querySelectorAll("[data-gpck]");for(k=0;k<c.length;k++)c[k].checked=false;gpBar();return;}
+    if(el.hasAttribute("data-gpbulk")){gaBulk("pkg",Object.keys(gpSel||{}),el.getAttribute("data-gpbulk"),reopen);return;}
+    if(el.hasAttribute("data-gpunarch")){gaBulk("pkg",[el.getAttribute("data-gpunarch")],"unarchive",reopen);return;}
+    if(el.hasAttribute("data-gpdel")){gaBulk("pkg",[el.getAttribute("data-gpdel")],"delete",reopen);return;}
+  });
   b=sh.querySelectorAll("[data-gpact]");
   for(i=0;i<b.length;i++)b[i].addEventListener("click",function(){this.classList.toggle("on");haptic();});
   // Narx yozilganda kalitni o'zi yoqamiz — eng ko'p uchraydigan holat.
@@ -9279,9 +9543,34 @@ function openAdminLineForm(lid){
   });
   var del=sh.querySelector("#lfDel");
   if(del)del.addEventListener("click",function(){
-    if(!confirm(l.name+" o'chirilsinmi? Paketlardan ham olib tashlanadi."))return;
-    api("/api/admin/games/line-delete","POST",{id:l.id}).then(function(){toast("O'chirildi");openAdminGames();})
-      .catch(function(){toast(t("srv_off"),true);});
+    var used=GADM.packages.filter(function(p){return (p.routes||[]).some(function(r){return r.lineId===l.id;});});
+    var only=used.filter(function(p){return !(p.routes||[]).some(function(r){return r.lineId!==l.id&&r.lineId!=="manual";});}).length;
+    var h='<h2>'+ic("trash",18)+' '+esc(l.name)+' — o\'chirish</h2>'
+      +'<div class="paynote" style="margin:0 0 12px">Bu saytga <b>'+used.length+'</b> ta paket ulangan, ulardan <b>'+only+'</b> tasini faqat shu sayt bajaradi. Liniya o\'chgach ular nima bo\'lsin?</div>'
+      +'<button class="btn gray" data-ldm="keep">Faqat liniyani o\'chirish</button>'
+      +'<div class="d" style="margin:6px 0 12px">O\'yin va paketlar qoladi; boshqa sayt ulanmagan paketlarni «Qo\'lda» (admin) bajaradi.</div>'
+      +'<button class="btn" data-ldm="archive">Liniya + shu saytning o\'yinlarini arxivlash</button>'
+      +'<div class="d" style="margin:6px 0 12px">Faqat shu saytdan kelgan paket va o\'yinlar mijozdan yashiriladi va «Arxiv»da turadi (rasm va narxlari saqlanadi). Boshqa sayt ham ulangan paketlarga tegilmaydi.</div>'
+      +'<button class="btn red" data-ldm="delete">Liniya + shu saytning o\'yinlarini o\'chirish</button>'
+      +'<div class="d" style="margin:6px 0 20px">Qaytarib bo\'lmaydi. Bajarilayotgan buyurtmasi bor paketlar o\'chirilmaydi.</div>';
+    var s2=openSheet(h,function(){openAdminLineForm(l.id);});
+    function go(mode,force){
+      api("/api/admin/games/line-delete","POST",{id:l.id,mode:mode,force:force||undefined}).then(function(r){
+        haptic("ok");toast("✅ "+l.name+" o'chirildi"+(mode!=="keep"?" · "+(mode==="archive"?"arxivga":"o'chirildi")+": "+(r.games||0)+" o'yin, "+(r.packages||0)+" paket":""));
+        GAMES.etag="";loadGames();openAdminGames();
+      }).catch(function(e){
+        var R=e&&e.resp;
+        if(R&&R.needForce){if(confirm(R.error+". Liniya o'chsa ularning holati endi saytdan so'ralmaydi — saytdan o'zingiz tekshirib, «Bajarildi» yoki «Bekor qilish» bosasiz.\n\nBaribir o'chirilsinmi?"))go(mode,true);return;}
+        toast((R&&R.error)||t("srv_off"),true);
+      });
+    }
+    var bb=s2.querySelectorAll("[data-ldm]");
+    for(var k=0;k<bb.length;k++)bb[k].addEventListener("click",function(){
+      var mode=this.getAttribute("data-ldm");
+      if(mode==="delete"&&!confirm(l.name+" va faqat shu saytdan kelgan "+only+" paket (va paketsiz qolgan o'yinlar) butunlay o'chirilsinmi?"))return;
+      if(mode==="keep"&&!confirm(l.name+" o'chirilsinmi?"))return;
+      go(mode,false);
+    });
   });
 }
 
@@ -12318,6 +12607,13 @@ function steamPriceOf(usd){return Math.ceil(usd*(STEAM&&STEAM.rate||0)/100)*100;
 function steamHTML(){
   if(!S.st)S.st={login:Store.get("steamLogin","")||"",usd:"10"};
   if(!STEAM){loadSteam(render);return '<div class="xpage"><div class="vn-head"><div class="vn-spin" style="margin:30px auto"></div></div></div>';}
+  // Steam G2Bulk kodlari orqali sotilsa — «Steam Wallet» o'yin sahifasi ochiladi (hudud va summa tanlanadi).
+  if(STEAM.gameId){
+    var sgid=STEAM.gameId;
+    if(gameById(sgid)){S.steamPage=false;S.game={id:sgid,region:null,tab:null,pkg:null,acc:{},chk:null};setTimeout(function(){render();window.scrollTo(0,0);},0);}
+    else if(!steamHTML._wait){steamHTML._wait=1;loadGames(function(){steamHTML._wait=0;if(!gameById(sgid))STEAM.gameId="";render();});}
+    return '<div class="xpage"><div class="vn-head"><div class="vn-spin" style="margin:30px auto"></div></div></div>';
+  }
   var usd=steamUsd(),price=steamPriceOf(usd),ok=STEAM.enabled&&usd>=STEAM.min&&usd<=STEAM.max;
   var h='<button class="backrow" id="xBack">'+ic("arrowLeft",16)+' <b>Steam</b>'+admPen("steam")+'</button><div class="xpage">'
     +'<div class="xhero"><div class="xlogo" style="background:none">'+(cardImgSet("steam")?'<img src="'+esc(cardImgSet("steam"))+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':'<img src="/assets/steam.svg" alt="Steam" style="width:100%;height:100%">')+'</div><div class="xht"><h2>'+esc(_x("Steam hamyonini to'ldirish"))+'</h2><p>'+esc(_x(STEAM.auto?"Login kiriting — hamyon avtomatik to'ldiriladi":"Login kiriting — hamyon tez to'ldiriladi"))+'</p></div></div>'

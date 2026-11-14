@@ -56,6 +56,9 @@ module.exports = function createGames(ctx) {
     if (!Array.isArray(s.games)) s.games = [];
     if (!Array.isArray(s.packages)) s.packages = [];
     if (!Array.isArray(s.lines)) s.lines = [];
+    // Admin o'chirgan o'yin/paketlar: "Hammasini yuklash" va avto-narx ularni qayta qo'shmaydi.
+    if (!Array.isArray(s.skipSrc)) s.skipSrc = [];   // "lineId|code"
+    if (!Array.isArray(s.skipSku)) s.skipSku = [];   // "lineId|sku"
     // 2-versiya: uchta sayt liniyasi va ikkita bo'sh joy. Kalitsiz bo'lgani uchun
     // o'chiq holda qo'shiladi; "Qo'lda" eng oxirgi zaxira bo'lib qoladi.
     if ((s.linesV || 1) < 2) {
@@ -112,6 +115,10 @@ module.exports = function createGames(ctx) {
     return s;
   }
   const gameById = id => store().games.find(g => g.id === id);
+  // Mijoz ko'radigan va sotib oladigan: o'yin yoqilgan, qoralama/arxiv emas; paket yoqilgan, arxiv emas, narxi bor.
+  const gameLive = g => !!(g && g.active && !g.draft && !g.archived);
+  const pkgLive = (g, p) => !!(gameLive(g) && p && p.active && !p.archived && p.price > 0);
+  const skipPush = (list, key) => { if (key && list.indexOf(key) === -1) { list.push(key); if (list.length > 5000) list.splice(0, list.length - 5000); } };
   const pkgById = id => store().packages.find(p => p.id === id);
   const lineById = id => store().lines.find(l => l.id === id);
 
@@ -258,7 +265,9 @@ module.exports = function createGames(ctx) {
     return { base: t || String(raw || "").trim(), region: region || "global" };
   }
   const gameKey = n => splitRegion(n).base.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const regionLabel = k => (REGIONS.find(r => r[0] === k) || [k, k.toUpperCase()])[1];
+  const REGION_EXTRA = { uk: "🇬🇧 UK", ar: "🇦🇷 AR", hk: "🇭🇰 HK", sa: "🇸🇦 KSA", kw: "🇰🇼 KW", qa: "🇶🇦 QA", ae: "🇦🇪 UAE", za: "🇿🇦 ZA",
+    kr: "🇰🇷 KR", tw: "🇹🇼 TW", mx: "🇲🇽 MX", pl: "🇵🇱 PL", jp: "🇯🇵 JP", ca: "🇨🇦 CA", au: "🇦🇺 AU", ua: "🇺🇦 UA", cn: "🇨🇳 CN" };
+  const regionLabel = k => (REGIONS.find(r => r[0] === k) || [k, REGION_EXTRA[k] || k.toUpperCase()])[1];
   function addRegion(g, k) {
     if (!Array.isArray(g.regions)) g.regions = [];
     if (!g.regions.some(r => r.key === k)) {
@@ -285,7 +294,7 @@ module.exports = function createGames(ctx) {
   // Mavjud dublikatlarni birlashtiradi (admin tugmasi va har import oxirida).
   function mergeDuplicates() {
     const s = store(), groups = new Map();
-    for (const g of s.games) { const k = gameKey(g.name); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(g); }
+    for (const g of s.games) { if (g.archived) continue; const k = gameKey(g.name); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(g); }
     const pendingPk = new Set((DBx().orders || []).filter(o => o.status === "pending" && o.game).map(o => o.game.packageId));
     let mergedGames = 0, mergedPkgs = 0;
     for (const list of groups.values()) {
@@ -414,9 +423,9 @@ module.exports = function createGames(ctx) {
     if (pubCache.body && Date.now() - pubAt < 2000) return pubCache;
     pubAt = Date.now();
     const s = store();
-    const pk = s.packages.filter(p => p.active && p.price > 0 && s.games.some(g => g.id === p.gameId && g.active && !g.draft));
+    const pk = s.packages.filter(p => pkgLive(s.games.find(g => g.id === p.gameId), p));
     const gids = new Set(pk.map(p => p.gameId));
-    const games = s.games.filter(g => g.active && !g.draft && gids.has(g.id)).sort((a, b) => (a.sort || 0) - (b.sort || 0))
+    const games = s.games.filter(g => gameLive(g) && gids.has(g.id)).sort((a, b) => (a.sort || 0) - (b.sort || 0))
       .map(g => ({ id: g.id, name: g.name, section: secOf(g.section), img: g.img || "", banner: g.banner || "", color: g.color || "",
         fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
         regions: g.regions || [], tabs: g.tabs || [],
@@ -460,7 +469,7 @@ module.exports = function createGames(ctx) {
     o.line = { id: line.id, name: line.name, ref: res.ref || "", state: "done" };
     ctx.save();
     try { ctx.creditReferralOnOrder(o); ctx.creditLoyaltyOnOrder(o); } catch (e) {}
-    ctx.tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item);
+    ctx.tgSend(o.uid, "✅ Buyurtmangiz bajarildi: " + o.item + (Array.isArray(res.codes) && res.codes.length ? "\n\n🎁 " + (res.codes.length > 1 ? "Kodlar" : "Kod") + ":\n" + res.codes.join("\n") : ""));
     ctx.notifyOrderChannel(o);
   }
   // Admin bot ulangan bo'lsa — o'sha orqali (buyurtma tugmalari bilan), aks holda do'kon boti.
@@ -760,6 +769,9 @@ module.exports = function createGames(ctx) {
           fields, regions: list(x.regions, 15), tabs: list(x.tabs, 8),
           active: x.active !== false, sort: Number(x.sort) || 0, draft: !!x.draft, status: x.status === "maint" || x.status === "na" ? x.status : "", statusAuto: false };
         const i = s.games.findIndex(z => z.id === id);
+        if (i >= 0 && s.games[i].archived) g.archived = true;
+        if (i >= 0 && s.games[i].img === g.img && s.games[i].imgSrc) g.imgSrc = s.games[i].imgSrc;
+        if (i >= 0 && s.games[i].banner === g.banner && s.games[i].bannerSrc) g.bannerSrc = s.games[i].bannerSrc;
         if (i >= 0 && s.games[i].source) g.source = s.games[i].source;
         if (i >= 0 && s.games[i].sources) g.sources = s.games[i].sources;
         if (i >= 0 && Number(x.sort) !== Number(s.games[i].sort)) g.sortManual = true; else if (i >= 0 && s.games[i].sortManual) g.sortManual = true;
@@ -771,9 +783,8 @@ module.exports = function createGames(ctx) {
     }
     if (url === "/api/admin/games/game-delete" && m === "POST") {
       ctx.readBody(req, res, b => {
-        const id = str(b.id, 40);
-        s.games = s.games.filter(g => g.id !== id);
-        s.packages = s.packages.filter(p => p.gameId !== id);
+        const r = removeGames([str(b.id, 40)]);
+        if (r.blocked) return sendJSON(res, 409, { error: "Bu o'yinda bajarilayotgan buyurtma bor — avval uni yakunlang yoki arxivlang" });
         ctx.save();
         sendJSON(res, 200, { ok: true });
       });
@@ -805,6 +816,8 @@ module.exports = function createGames(ctx) {
           icon: ICONS.indexOf(x.icon) !== -1 ? x.icon : "diamond", img: imgUrl(x.img), badge: str(x.badge, 10),
           price, active: !!x.active && price > 0, sort: Number(x.sort) || 0,
           routes: routes.length ? routes : [{ lineId: "manual", sku: "", cost: 0 }].filter(r => lineById(r.lineId)) };
+        if (prevPkg && prevPkg.archived) p.archived = true;
+        if (prevPkg && prevPkg.img === p.img && prevPkg.imgSrc) p.imgSrc = prevPkg.imgSrc;
         const i = s.packages.findIndex(z => z.id === id);
         if (i >= 0) s.packages[i] = p; else s.packages.push(p);
         ctx.save();
@@ -814,10 +827,82 @@ module.exports = function createGames(ctx) {
     }
     if (url === "/api/admin/games/package-delete" && m === "POST") {
       ctx.readBody(req, res, b => {
-        const id = str(b.id, 80);
-        s.packages = s.packages.filter(p => p.id !== id);
+        const r = removePackages([str(b.id, 80)]);
+        if (r.blocked) return sendJSON(res, 409, { error: "Bu paketda bajarilayotgan buyurtma bor — avval uni yakunlang yoki arxivlang" });
         ctx.save();
         sendJSON(res, 200, { ok: true });
+      });
+      return true;
+    }
+    /* Ommaviy amallar: bir nechta o'yin yoki paketni bir bosishda yashirish / ko'rsatish /
+       arxivlash / arxivdan qaytarish / o'chirish. Arxiv — mijozga ko'rinmaydi, admin ro'yxatidan
+       ham chiqadi («Arxiv» bo'limida turadi), lekin import uni qayta qo'shmaydi va narx tarixi saqlanadi. */
+    if (url === "/api/admin/games/bulk" && m === "POST") {
+      ctx.readBody(req, res, b => {
+        const kind = b.kind === "pkg" ? "pkg" : "game", act = String(b.action || "");
+        if (["hide", "show", "archive", "unarchive", "delete"].indexOf(act) === -1) return sendJSON(res, 400, { error: "Amal noma'lum" });
+        const ids = (Array.isArray(b.ids) ? b.ids : []).slice(0, 2000).map(x => str(x, 80)).filter(Boolean);
+        if (!ids.length) return sendJSON(res, 400, { error: "Hech narsa tanlanmagan" });
+        let n = 0, skipped = 0, blocked = 0;
+        if (act === "delete") {
+          const r = kind === "game" ? removeGames(ids) : removePackages(ids);
+          n = r.removed; blocked = r.blocked;
+        } else {
+          const list = kind === "game" ? s.games.filter(g => ids.indexOf(g.id) !== -1) : s.packages.filter(p => ids.indexOf(p.id) !== -1);
+          for (const x of list) {
+            if (act === "hide") x.active = false;
+            else if (act === "show") {
+              if (kind === "game") { x.active = true; x.draft = false; x.archived = false; }
+              else if (x.price > 0) { x.active = true; x.archived = false; }
+              else { skipped++; continue; }
+            }
+            else if (act === "archive") { x.archived = true; x.archivedAt = Date.now(); }
+            else if (act === "unarchive") { x.archived = false; delete x.archivedAt; }
+            n++;
+          }
+        }
+        ctx.save();
+        sendJSON(res, 200, { ok: true, changed: n, skipped, blocked });
+      });
+      return true;
+    }
+    /* Steam hamyon kodlari G2Bulk orqali: saytdagi hamma "Steam" sovg'a karta toifalari
+       (Global, EU, UK, Brazil ...) bitta «Steam Wallet» o'yiniga hudud sifatida yuklanadi.
+       Mijoz hududni va summani tanlaydi, to'lagach kod darhol beriladi. Bosh sahifadagi
+       Steam kartasi ham shu sahifani ochadi (Steam sozlamasi → «G2Bulk kodlari»). */
+    if (url === "/api/admin/games/steam-g2" && m === "POST") {
+      ctx.readBody(req, res, async b => {
+        const T = LINE_TYPES.g2bulk;
+        const l = (b.lineId && lineById(str(b.lineId, 40))) || s.lines.find(x => x.type === "g2bulk" && x.enabled) || s.lines.find(x => x.type === "g2bulk");
+        if (!T || !l || l.type !== "g2bulk") return sendJSON(res, 400, { error: "G2Bulk liniyasi yo'q — O'yinlar → Liniya qo'shish → G2Bulk" });
+        let cats;
+        try { cats = (await T.games(l)).filter(x => x.card && /steam/i.test(x.name) && !/deck|points/i.test(x.name)); }
+        catch (e) { return sendJSON(res, 400, { error: "Sayt: " + str(e.message, 200) }); }
+        if (!cats.length) return sendJSON(res, 404, { error: "G2Bulk'da Steam toifasi topilmadi" });
+        let g = gameById(STEAM_GAME);
+        if (!g) {
+          g = { id: STEAM_GAME, name: "Steam Wallet", section: "games", img: "", banner: "", color: "#1b2838", fields: [], regions: [],
+            tabs: [{ key: "main", label: "Kodlar" }], active: true, sort: popRank("Steam"), draft: false, status: "", statusAuto: false };
+          s.games.push(g);
+        }
+        g.fields = [];
+        let added = 0, updated = 0, images = 0;
+        const errors = [], regions = [];
+        cats.sort((a, c) => (steamRegion(a.name) === "global" ? -1 : 0) - (steamRegion(c.name) === "global" ? -1 : 0));
+        for (const c of cats) {
+          const region = steamRegion(c.name);
+          const r = await importGame(l, T, c.code, { gameId: g.id, region, activate: b.activate !== false, images: b.images !== false, updatePrices: !!b.updatePrices });
+          if (r.error) { errors.push(c.name + ": " + r.error); continue; }
+          added += r.added; updated += r.updated; images += r.images || 0; regions.push(region);
+          if (!g.img && c.img) { const u = await fetchImage(c.img); if (u) { g.img = u; g.imgSrc = "site"; if (!g.banner) { g.banner = u; g.bannerSrc = "site"; } } }
+        }
+        if (regions.length && b.useForSteam !== false) {
+          const st = DBx().settings.steam || (DBx().settings.steam = {});
+          st.mode = "codes"; st.gameId = g.id;
+        }
+        ctx.save();
+        sendJSON(res, regions.length ? 200 : 400, { ok: regions.length > 0, gameId: g.id, regions: regions.length, added, updated, images, errors: errors.slice(0, 10),
+          error: regions.length ? undefined : (errors[0] || "Yuklanmadi") });
       });
       return true;
     }
@@ -861,6 +946,13 @@ module.exports = function createGames(ctx) {
         ctx.save();
         sendJSON(res, 200, { ok: true, img: u, updated: n });
       });
+      return true;
+    }
+    // Saytlardan rasmlarni hozir yangilash (tungi yangilanish bilan bir xil) — fonda ishlaydi.
+    if (url === "/api/admin/games/refresh-images" && m === "POST") {
+      if (imgRun) { sendJSON(res, 409, { error: "Rasmlar allaqachon yangilanmoqda" }); return true; }
+      imgRun = refreshSiteImages().then(n => console.log("[games] rasm yangilanishi (admin): " + n)).catch(() => {}).then(() => { imgRun = null; });
+      sendJSON(res, 200, { ok: true, started: true });
       return true;
     }
     if (url === "/api/admin/games/merge" && m === "POST") { sendJSON(res, 200, Object.assign({ ok: true }, mergeDuplicates())); return true; }
@@ -930,10 +1022,31 @@ module.exports = function createGames(ctx) {
     if (url === "/api/admin/games/line-delete" && m === "POST") {
       ctx.readBody(req, res, b => {
         const id = str(b.id, 40);
-        s.lines = s.lines.filter(l => l.id !== id);
+        if (id === "manual") return sendJSON(res, 400, { error: "«Qo'lda» liniyasi o'chirilmaydi" });
+        // Saytda bajarilayotgan buyurtma bor — liniya o'chsa uning holati endi so'ralmaydi.
+        const busy = DBx().orders.filter(o => o.status === "pending" && o.line && o.line.id === id && (o.line.state === "accepted" || o.line.state === "unknown")).length;
+        if (busy && b.force !== true) return sendJSON(res, 409, { error: "Bu saytda " + busy + " ta buyurtma bajarilmoqda", busy, needForce: true });
+        const mode = b.mode === "archive" || b.mode === "delete" ? b.mode : "keep";
+        // Faqat shu saytdan kelgan (boshqa avtomatik sayti yo'q) paketlar.
+        const only = s.packages.filter(p => (p.routes || []).some(r => r.lineId === id) && !(p.routes || []).some(r => r.lineId !== id && r.lineId !== "manual"));
+        const onlyIds = only.map(p => p.id);
         for (const p of s.packages) p.routes = (p.routes || []).filter(r => r.lineId !== id);
+        for (const g of s.games) if (sourcesOf(g).some(x => x.lineId === id)) { const left = sourcesOf(g).filter(x => x.lineId !== id); g.sources = left; g.source = left[0]; if (!left.length) delete g.source; }
+        s.lines = s.lines.filter(l => l.id !== id);
+        let pk = 0, gm = 0;
+        if (mode !== "keep") {
+          // Paketi qolmagan (yoki faqat shu saytniki bo'lgan) o'yinlar.
+          const games = s.games.filter(g => only.some(p => p.gameId === g.id) && !s.packages.some(p => p.gameId === g.id && onlyIds.indexOf(p.id) === -1));
+          if (mode === "archive") {
+            for (const p of only) { p.archived = true; p.archivedAt = Date.now(); pk++; }
+            for (const g of games) { g.archived = true; g.archivedAt = Date.now(); gm++; }
+          } else {
+            pk = removePackages(onlyIds).removed;
+            gm = removeGames(games.map(g => g.id)).removed;
+          }
+        }
         ctx.save();
-        sendJSON(res, 200, { ok: true });
+        sendJSON(res, 200, { ok: true, packages: pk, games: gm });
       });
       return true;
     }
@@ -976,7 +1089,7 @@ module.exports = function createGames(ctx) {
           if (!b.code) return sendJSON(res, 200, { ok: true, games: (await T.games(l)).slice(0, 400) });
           const pk = await T.packages(l, str(b.code, 60));
           const rate = Number(l.config.rate) || 0, markup = Number(l.config.markup) || 0;
-          pk.items = pk.items.slice(0, 300).map(x => Object.assign({ raw: x.name }, x, smartName(x.name, pk.name), { price: calcPrice(x.cost, rate, markup) }));
+          pk.items = pk.items.slice(0, 300).map(x => Object.assign({ raw: x.name }, x, pk.noAccount ? cardName(x.name, pk.name) : smartName(x.name, pk.name), { price: calcPrice(x.cost, rate, markup) }));
           sendJSON(res, 200, { ok: true, pkg: pk, rate, markup });
         } catch (e) { sendJSON(res, 400, { error: "Sayt: " + str(e.message, 200) }); }
       });
@@ -1005,7 +1118,7 @@ module.exports = function createGames(ctx) {
         if (!l || !T || typeof T.games !== "function") return sendJSON(res, 400, { error: "Bu liniyada katalog yo'q" });
         if (importJob && importJob.running) return sendJSON(res, 409, { error: "Yuklash allaqachon ketyapti", job: jobView() });
         startImportAll(l, T, { section: secOf(b.section), limit: Math.max(1, Math.min(300, Number(b.limit) || 60)),
-          query: str(b.query, 60).toLowerCase(), images: b.images !== false });
+          query: str(b.query, 60).toLowerCase(), images: b.images !== false, cards: b.cards === true });
         sendJSON(res, 200, { ok: true, job: jobView() });
       });
       return true;
@@ -1033,6 +1146,59 @@ module.exports = function createGames(ctx) {
     balCache = { ts: Date.now(), list };
     return list;
   }
+  /* ---------- o'chirish (bitta yoki ko'p) ---------- */
+  // Bajarilayotgan buyurtmasi bor paket o'chirilmaydi (buyurtma paket ma'lumotiga tayanadi).
+  const pendingPkgIds = () => new Set((DBx().orders || []).filter(o => o.status === "pending" && o.game).map(o => o.game.packageId));
+  function removePackages(ids) {
+    const s = store(), busy = pendingPkgIds();
+    let removed = 0, blocked = 0;
+    for (const id of ids) {
+      const p = s.packages.find(x => x.id === id);
+      if (!p) continue;
+      if (busy.has(p.id)) { blocked++; continue; }
+      for (const r of p.routes || []) if (r.lineId !== "manual" && r.sku) skipPush(s.skipSku, r.lineId + "|" + r.sku);
+      s.packages.splice(s.packages.indexOf(p), 1); removed++;
+    }
+    return { removed, blocked };
+  }
+  function removeGames(ids) {
+    const s = store(), busy = pendingPkgIds();
+    let removed = 0, blocked = 0;
+    for (const id of ids) {
+      const g = s.games.find(x => x.id === id);
+      if (!g) continue;
+      if (s.packages.some(p => p.gameId === g.id && busy.has(p.id))) { blocked++; continue; }
+      for (const src of sourcesOf(g)) skipPush(s.skipSrc, src.lineId + "|" + src.code);
+      s.packages = s.packages.filter(p => p.gameId !== g.id);
+      s.games.splice(s.games.indexOf(g), 1); removed++;
+    }
+    return { removed, blocked };
+  }
+  /* ---------- Steam Wallet (G2Bulk sovg'a kartalari) ---------- */
+  const STEAM_GAME = "steam-wallet";
+  const STEAM_REG = [[/global|world/i, "global"], [/south ?africa/i, "za"], [/\beu\b|europe/i, "eu"], [/\buk\b|united kingdom|britain/i, "uk"],
+    [/brazil|brasil/i, "br"], [/argentin/i, "ar"], [/hong ?kong/i, "hk"], [/india/i, "in"], [/indonesia/i, "id"], [/\bksa\b|saudi/i, "sa"],
+    [/kuwait/i, "kw"], [/malaysia/i, "my"], [/mexic/i, "mx"], [/philippin/i, "ph"], [/poland|polska/i, "pl"], [/qatar/i, "qa"],
+    [/singapore/i, "sg"], [/korea/i, "kr"], [/taiwan/i, "tw"], [/thai/i, "th"], [/\buae\b|emirates/i, "ae"], [/vietnam/i, "vn"],
+    [/\busa?\b|united states|america/i, "us"], [/turk/i, "tr"], [/russia/i, "ru"], [/kazakh/i, "kz"], [/\bcis\b/i, "cis"],
+    [/japan/i, "jp"], [/canada/i, "ca"], [/australia/i, "au"], [/ukrain/i, "ua"], [/chin/i, "cn"]];
+  function steamRegion(name) {
+    for (const r of STEAM_REG) if (r[0].test(String(name || ""))) return r[1];
+    return slug(String(name || "").toLowerCase().replace(/steam|wallet|gift ?card|code|voucher/g, "").replace(/[^a-z0-9]+/g, "").slice(0, 12), 16) || "global";
+  }
+  // "Steam Wallet Code 10 EUR (EU)" → "10 EUR": toifa nomidagi so'zlar va keraksiz qo'shimchalar olib tashlanadi.
+  function cardName(raw, cat) {
+    let t = String(raw || "").replace(/\s+/g, " ").trim();
+    for (const w of String(cat || "").split(/\s+/).filter(x => x.length > 1)) t = t.replace(new RegExp("(^|[^A-Za-z0-9])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?=$|[^A-Za-z0-9])", "ig"), "$1 ");
+    t = t.replace(/\b(steam|gift ?cards?|wallet|vouchers?|codes?|digital|cards?|top ?up)\b/ig, " ").replace(/[()\[\]]/g, " ")
+      .replace(/\s+/g, " ").replace(/^[\s\-–|:]+|[\s\-–|:]+$/g, "").trim();
+    return { name: (t || String(raw || "")).slice(0, 40), sub: "", icon: "gift" };
+  }
+  // Steam bo'limi uchun: o'yin sotuvda (kamida bitta paket bilan) bormi.
+  function gameOnSale(id) {
+    const s = store(), g = s.games.find(x => x.id === id);
+    return !!(gameLive(g) && s.packages.some(p => p.gameId === g.id && pkgLive(g, p)));
+  }
   /* ---------- import (bitta o'yin) — /import va /import-all ishlatadi ---------- */
   async function importGame(l, T, code, b) {
     let pk;
@@ -1055,7 +1221,7 @@ module.exports = function createGames(ctx) {
       const id = slug(String(ng.id || "").toLowerCase(), 40);
       // Obuna: saytda akkaunt maydoni bo'lsa — email so'raladi, bo'lmasa (kod/vaucher) — maydonsiz.
       g = { id, name: str(sr.base || ng.name || pk.name || id, 60), section: secOf(ng.section), img: "", banner: "", color: "#2f8fff",
-        fields: isSub ? (pk.fields && pk.fields.length ? [{ key: "email", label: "Akkaunt (email yoki login)", ph: "siz@gmail.com", re: "" }] : [])
+        fields: pk.noAccount ? [] : isSub ? (pk.fields && pk.fields.length ? [{ key: "email", label: "Akkaunt (email yoki login)", ph: "siz@gmail.com", re: "" }] : [])
           : [{ key: "userId", label: "Player ID", ph: "", re: "" }].concat(pk.fields && pk.fields[1] ? [{ key: "zoneId", label: str(pk.fields[1], 30) || "Server ID", ph: "", re: "" }] : []),
         regions: [], tabs: [{ key: "main", label: "Paketlar" }], active: true, sort: popRank(sr.base || ng.name),
         draft: !!ng.draft };
@@ -1077,13 +1243,16 @@ module.exports = function createGames(ctx) {
     const rate = Number(b.rate != null ? b.rate : l.config.rate) || 0;
     const markup = Number(b.markup != null ? b.markup : l.config.markup) || 0;
     const want = new Set((Array.isArray(b.skus) ? b.skus : []).map(x => String(x)));
-    const items = pk.items.filter(x => !want.size || want.has(String(x.sku)));
+    // Admin o'chirgan paket faqat o'zi qayta tanlab import qilsa qaytadi.
+    for (const k of want) { const i = s.skipSku.indexOf(l.id + "|" + k); if (i !== -1) s.skipSku.splice(i, 1); }
+    const items = pk.items.filter(x => want.size ? want.has(String(x.sku)) : s.skipSku.indexOf(l.id + "|" + String(x.sku)) === -1);
+    { const i = s.skipSrc.indexOf(l.id + "|" + String(code)); if (i !== -1) s.skipSrc.splice(i, 1); }
     const meta = cleanMeta(Object.assign({ fields: pk.fields || [] }, pk.meta || {}));
     const manual = lineById("manual");
     let added = 0, updated = 0, imgs = 0, sort = s.packages.filter(p => p.gameId === g.id).length;
     for (const it of items) {
       let linked = false;
-      const nm = smartName(it.name, pk.name || g.name);
+      const nm = pk.noAccount ? cardName(it.name, pk.name || g.name) : smartName(it.name, pk.name || g.name);
       const price = calcPrice(it.cost, rate, markup);
       let p = s.packages.find(z => z.gameId === g.id && (z.routes || []).some(r => r.lineId === l.id && r.sku === String(it.sku)));
       if (!p) {
@@ -1105,7 +1274,7 @@ module.exports = function createGames(ctx) {
         updated++;
       } else {
         p = { id: g.id + "-" + crypto.randomBytes(4).toString("hex"), gameId: g.id, region, tab, name: nm.name, sub: nm.sub,
-          icon: g.section === "obuna" ? "pass" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
+          icon: g.section === "obuna" && !pk.noAccount ? "pass" : nm.icon, img: "", badge: "", price, active: !!b.activate && price > 0, sort: ++sort,
           routes: [{ lineId: l.id, sku: String(it.sku), cost: it.cost, meta }].concat(manual ? [{ lineId: "manual", sku: "", cost: 0 }] : []) };
         s.packages.push(p);
         added++;
@@ -1136,7 +1305,7 @@ module.exports = function createGames(ctx) {
     const s = store(), changes = [], errors = [];
     let imgs = 0;
     try {
-      for (const g of s.games.slice()) for (const src of sourcesOf(g)) {
+      for (const g of s.games.slice()) if (!g.archived) for (const src of sourcesOf(g)) {
         const l = lineById(src.lineId), T = l && LINE_TYPES[l.type];
         if (!l || !l.enabled || !T || typeof T.packages !== "function") continue;
         const reg = (s.packages.find(p => p.gameId === g.id && (p.routes || []).some(r => r.lineId === l.id)) || {}).region;
@@ -1145,7 +1314,7 @@ module.exports = function createGames(ctx) {
       }
       for (const p of s.packages) {
         const g = gameById(p.gameId), rt = (p.routes || []).find(x => Number(x.cost) > 0);
-        if (!g || !rt) continue;
+        if (!g || !rt || g.archived || p.archived) continue;
         const calc = calcPrice(rt.cost, c.rate, c.markup), floor = calcPrice(rt.cost, c.rate, 5);
         const fixed = mainRegion(g, p) ? presetPrice(g.name, p.name) : 0;
         let np = fixed ? (fixed < floor ? calc : fixed) : calc;
@@ -1161,9 +1330,10 @@ module.exports = function createGames(ctx) {
   const apTimer = setInterval(() => { runAutoPrice(false).catch(() => {}); }, 15 * 60 * 1000);
   /* Har kuni Toshkent vaqti bilan 03:30 da — saytdan kelgan rasmlarni yangilash (kunduzi mijozlar
      birinchi kirganda rasmlar tayyor turadi, yuklanish vaqtida "oqarib" qolmaydi). */
+  let imgRun = null;
   async function refreshSiteImages() {
     const s = store(); let n = 0;
-    for (const g of s.games.slice()) for (const src of sourcesOf(g)) {
+    for (const g of s.games.slice()) if (!g.archived) for (const src of sourcesOf(g)) {
       const l = lineById(src.lineId), T = l && LINE_TYPES[l.type];
       if (!l || !l.enabled || !T || typeof T.packages !== "function") continue;
       const reg = (s.packages.find(p => p.gameId === g.id && (p.routes || []).some(r => r.lineId === l.id)) || {}).region;
@@ -1193,6 +1363,8 @@ module.exports = function createGames(ctx) {
       const s = store();
       const have = new Set();
       for (const g of s.games) for (const src of sourcesOf(g)) if (src.lineId === l.id) have.add(String(src.code));
+      for (const k of s.skipSrc) if (k.indexOf(l.id + "|") === 0) have.add(k.slice(l.id.length + 1));
+      if (!opt.cards) list = list.filter(x => !x.card);
       const todo = list.filter(x => !have.has(String(x.code)));
       importJob.skipped = list.length - todo.length;
       importJob.total = Math.min(todo.length, opt.limit);
@@ -1232,13 +1404,13 @@ module.exports = function createGames(ctx) {
   // Admin ko'rinishi: hamma o'yin va paketlar, mijozga ko'rinmaydiganlari belgilangan.
   function previewCatalog() {
     const s = store();
-    const vis = p => { const g = gameById(p.gameId); return !!(g && g.active && !g.draft && p.active && p.price > 0); };
-    const games = s.games.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(g => ({ id: g.id, name: g.name, section: secOf(g.section),
+    const vis = p => pkgLive(gameById(p.gameId), p);
+    const games = s.games.filter(g => !g.archived).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(g => ({ id: g.id, name: g.name, section: secOf(g.section),
       img: g.img || "", banner: g.banner || "", color: g.color || "",
       fields: (g.fields || []).map(f => ({ key: f.key, label: f.label, ph: f.ph || "", re: f.re || "", type: f.type === "email" ? "email" : "" })),
       regions: g.regions || [], tabs: g.tabs || [], canCheck: !!checkLineFor(g),
       draft: !!g.draft, status: g.status || "", hidden: !g.active || !!g.draft || !s.packages.some(p => p.gameId === g.id && vis(p)) }));
-    const packages = s.packages.slice().sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(p => ({ id: p.id, gameId: p.gameId, region: p.region || "", tab: p.tab || "",
+    const packages = s.packages.filter(p => !p.archived && games.some(g => g.id === p.gameId)).sort((a, b) => (a.sort || 0) - (b.sort || 0)).map(p => ({ id: p.id, gameId: p.gameId, region: p.region || "", tab: p.tab || "",
       name: p.name, sub: p.sub || "", icon: p.icon || "diamond", img: p.img || "", badge: p.badge || "", price: p.price, hidden: !vis(p), noPrice: !(p.price > 0) }));
     return { games, packages, admin: true };
   }
@@ -1249,7 +1421,7 @@ module.exports = function createGames(ctx) {
   function buyPackage(u, packageId, account, promoCode) {
     const p = pkgById(str(packageId, 80));
     const g = p && gameById(p.gameId);
-    if (!p || !g || !p.active || !g.active || g.draft || !(p.price > 0)) return { ok: false, code: 404, body: { error: "no item" } };
+    if (!pkgLive(g, p)) return { ok: false, code: 404, body: { error: "no item" } };
     if (g.status) return { ok: false, code: 409, body: { error: g.status === "maint" ? "Texnik nosozlik — keyinroq urinib ko'ring" : "Vaqtincha mavjud emas" } };
     const c = cleanAccount(g, account);
     if (c.error) return { ok: false, code: 400, body: { error: c.error, field: c.field, label: c.label } };
@@ -1285,7 +1457,7 @@ module.exports = function createGames(ctx) {
   function quotePackage(packageId, account) {
     const p = pkgById(str(packageId, 80));
     const g = p && gameById(p.gameId);
-    if (!p || !g || !p.active || !g.active || g.draft || !(p.price > 0)) return { ok: false, error: "Bunday paket sotuvda yo'q" };
+    if (!pkgLive(g, p)) return { ok: false, error: "Bunday paket sotuvda yo'q" };
     if (g.status) return { ok: false, error: g.status === "maint" ? "Texnik nosozlik" : "Vaqtincha mavjud emas" };
     const c = cleanAccount(g, account);
     if (c.error) return { ok: false, error: (c.error === "required" ? "Kerak: " : "Noto'g'ri format: ") + c.label, field: c.field };
@@ -1294,5 +1466,6 @@ module.exports = function createGames(ctx) {
   }
   // Tashqaridan (masalan AI orqali narx) o'zgartirilganda ochiq katalog darhol yangilansin.
   function touch() { pubAt = 0; }
-  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog, touch, saveDataImage };
+  return { handle, registerLineType, store, fulfill, pollAccepted, smartName, calcPrice, lineBalances, buyPackage, quotePackage, pkgById, gameById, publicCatalog, touch, saveDataImage,
+    gameOnSale, cardName, steamRegion, STEAM_GAME };
 };

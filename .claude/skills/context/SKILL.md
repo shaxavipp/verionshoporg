@@ -62,6 +62,13 @@ Modules receive a `ctx` from `server.js` and expose `handle(req, res, url, m, q)
 
 On every user-visible release, bump both `BUILD` (in `server.js`) and `CLIENT_BUILD` (in `verion-shop.html`) to the same value, formatted `YYYY-MM-DD.N`.
 
+### Games admin, archive, G2Bulk cards (v3.63)
+- Visibility rule lives in `gameLive(g)` / `pkgLive(g,p)` in games.js (active, not draft, not `archived`, price > 0) — use it for any new sale path.
+- `POST /api/admin/games/bulk {kind:'game'|'pkg', ids, action:'hide'|'show'|'archive'|'unarchive'|'delete'}`. Deletes go through `removeGames`/`removePackages`, which refuse items with pending orders and remember `skipSrc` ('lineId|code') / `skipSku` ('lineId|sku') so imports do not bring them back (explicit `skus` import clears the skip).
+- `line-delete {id, mode:'keep'|'archive'|'delete', force}` — 409 `needForce` while the line has accepted/unknown orders; never deletes `manual`.
+- G2Bulk gift cards: game code `p:<categoryId>`, package sku `p:<productId>`; purchase uses `X-Idempotency-Key = g2Uuid('verion:'+orderId+':'+productId)`; refs `p:<orderId>` are polled via `/v1/orders/{id}/delivery`. Codes go to `o.delivered` and the customer's Telegram message (`res.codes`). G2Bulk has no coin/package images.
+- Steam codes: game `steam-wallet`, `settings.steam.mode='codes'` + `gameId`; `/api/steam` returns `gameId` only when `GAMES.gameOnSale(id)`; client `steamHTML()` then opens that game page.
+
 ### Nakrutka types (v3.60)
 - Client groups SMM services as network → type → services. `nkTypeOf(svc)` classifies by regex rules in `NK_TYPE_RULES` (order matters); labels in `NK_TYPES` (uz/ru/en). Tiles use generated SVG art `nkTypeArt(app,type)`; admin overrides/hides per type with catMeta key `app::t:<type>` (legacy raw-category keys `app::<category>` are still honoured for hiding). Prices shown per 1000 = `rate × NkCache.usdRate`, same formula as the order form.
 
